@@ -13,7 +13,7 @@
     // Set the breadcrumb title key to one of the keys for create/edit question or nothing if we're not on a sub-page
     $breadcrumb_title_key = isset($_GET['action']) ? ['edit_template' => 'EditQuestionnaireTemplate', 'add_template' => 'NewQuestionnaireTemplate', 'add_template_from_scf' => 'NewQuestionnaireTemplate'][$_GET['action']] : '';
 
-    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'datatables:rowreorder', 'WYSIWYG', 'WYSIWYG:Assessments', 'tabs:logic', 'multiselect', 'CUSTOM:common.js', 'cve_lookup', 'CUSTOM:pages/assessment.js', 'EXTRA:JS:assessments:questionnaire_templates.js', 'editable', 'JSLocalization'], ["check_assessments" => true], $breadcrumb_title_key, required_localization_keys: ['SearchForControl', 'SearchForFramework']);
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'datatables:rowreorder', 'WYSIWYG', 'WYSIWYG:Assessments', 'tabs:logic', 'multiselect', 'CUSTOM:common.js', 'cve_lookup', 'CUSTOM:pages/assessment.js', 'EXTRA:JS:assessments:questionnaire_templates.js', 'editable', 'JSLocalization'], ["check_assessments" => true], $breadcrumb_title_key, required_localization_keys: ['SearchForControl', 'SearchForFramework', 'Generating']);
 
     // Check if assessment extra is enabled
     if (assessments_extra()) {

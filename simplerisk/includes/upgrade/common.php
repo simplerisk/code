@@ -2325,3 +2325,20 @@ function upgrade_add_asset_scoring_columns($db)
         }
     }
 }
+
+/**
+ * SR-2040: rewrite the inaccurate comment_risk_management description on
+ * existing installs. Idempotent: only a row whose text differs is touched, and
+ * no other permission is affected. Stored as an English literal in the
+ * permissions table, like every other seeded permission description.
+ *
+ * Upgrade-only: called from the current unreleased upgrade_from_*().
+ */
+function upgrade_reword_comment_risk_management_description($db)
+{
+    $description = 'This permission allows a user to add comments to risks. Reading a risk or its existing comments requires the Allow Access to "Risk Management" Menu permission, and when the Team Separation Extra is active, comments are limited to risks within the user\'s teams.';
+    $stmt = $db->prepare("UPDATE `permissions` SET `description` = :description WHERE `key` = 'comment_risk_management' AND `description` <> :description2");
+    $stmt->bindParam(':description', $description, PDO::PARAM_STR);
+    $stmt->bindParam(':description2', $description, PDO::PARAM_STR);
+    $stmt->execute();
+}

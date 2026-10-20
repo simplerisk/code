@@ -13,6 +13,8 @@ require_once(realpath(__DIR__ . '/includes/functions.php'));
 // directly here — every direct consumer declares its own require_once (per the
 // CLAUDE.md function-reachability rule) rather than relying on include ordering.
 require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
+require_once(realpath(__DIR__ . '/includes/display.php'));
+require_once(realpath(__DIR__ . '/includes/settings_catalog.php'));
 
 // Define the localization keys required by certain scripts and if there's a match in the requested scripts then the required localizations will be made available for the script to use
 // In the script and the page using it you will be able to use _lang['localization_key'] in javascript.
@@ -22,7 +24,7 @@ $localization_required_by_scripts = get_localization_required_by_scripts();
 <!DOCTYPE html>
 <html dir="ltr" lang="<?= $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?= $escaper->escapeHtml($_SESSION['lang']); ?>">
   <head>
-    <title><?= isset($title) ? $title : 'SimpleRisk: Enterprise Risk Management Simplified';?></title>
+    <title><?= $escaper->escapeHtml(isset($title) ? $title : 'SimpleRisk: Enterprise Risk Management Simplified');?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <!-- Favicon icon -->
@@ -966,18 +968,14 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             <ul class="navbar-nav float-start me-auto">
               <!-- Search -->
               <?php
-if (!advanced_search_extra()) { ?>
-				<li class="nav-item dropdown nav-item-search">
-            		<div class="nav-link">
-            			<div class="search-box">
-            				<form action="../management/view.php" method="get" autocomplete="off">
-            					<button class="search-button" type="button"><i class="fas fa-search align-middle"></i></button>
-        	    				<input type="text" class="search-input" name="id" placeholder="ID#" />
-    	    				</form>
-            			</div>
-            		</div>
-            	</li>
-<?php } else{
+$advanced_search_locked = advanced_search_acquisition_state(is_admin(), get_setting('registration_registered') == 1);
+if ($advanced_search_locked['locked']) {
+    // Extra not active: show what it would unlock instead of a bare ID# box.
+    // The locked control has no search behavior.
+    display_locked_topbar_search($advanced_search_locked);
+?>
+              <script src="../js/simplerisk/theme/topbar-search-locked.js?<?= $current_app_version ?>" defer></script>
+<?php } else {
     require_once(realpath(__DIR__ . '/extras/advanced_search/index.php'));
     render_advanced_search();
 }?>

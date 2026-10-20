@@ -55,9 +55,11 @@ function workflow_action_send_email(array $inputs, array $context): array
     // Enrich context with display-friendly values before variable resolution
     $enriched = workflow_enrich_email_context($context);
 
-    // Resolve {{variables}} in subject and body
+    // Resolve {{variables}} in subject and body. The body is HTML and several
+    // variables are user-supplied text (such as a risk subject), so it is
+    // sanitized after substitution, as send_notification does.
     $subject = resolve_workflow_variables($subject_raw, $enriched, []);
-    $body    = resolve_workflow_variables($body_raw,    $enriched, []);
+    $body    = workflow_build_email_body($body_raw, $enriched);
 
     // Resolve recipients
     $recipients = workflow_resolve_email_recipients($to_raw, $enriched);
@@ -93,6 +95,16 @@ function workflow_action_send_email(array $inputs, array $context): array
         'output' => ['to' => array_column($recipients, 'email'), 'subject' => $subject, 'count' => count($recipients)],
         'error'  => null,
     ];
+}
+
+/***********************************************
+ * HELPER: WORKFLOW BUILD EMAIL BODY           *
+ * Substitute, then sanitize: the substituted  *
+ * values are user-editable text.              *
+ ***********************************************/
+function workflow_build_email_body(string $body_raw, array $context): string
+{
+    return purify_html(resolve_workflow_variables($body_raw, $context, []));
 }
 
 /***********************************************

@@ -556,7 +556,7 @@
 
 </script>
 <script>
-    <?php prevent_form_double_submit_script(['test-new-form', 'update-test-form']); ?>
+    <?php /* update-test-form is AJAX-submitted and guards itself in compliance.js */ prevent_form_double_submit_script(['test-new-form']); ?>
 </script>
 <?php
     // Render the footer of the page. Please don't put code after this part.

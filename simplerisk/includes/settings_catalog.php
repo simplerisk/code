@@ -624,6 +624,24 @@ function seed_default_favorite_settings(int $user_id, ?PDO $db = null): void
  * FUNCTION: FIND SETTINGS HUB BREADCRUMB FOR REQUEST *
  ******************************************************/
 /**
+ * Pages that are reached from a Settings Hub tile but are not tiles themselves
+ * (an edit screen opened from a list page). Keyed by script path relative to
+ * the application root; `parent_tile` is a settings_catalog() key and
+ * `leaf_label` the lang key naming the page in the breadcrumb.
+ *
+ * @return array<string, array{parent_tile: string, leaf_label: string}>
+ */
+function settings_hub_child_pages(): array
+{
+    return [
+        'admin/view_user_details.php' => [
+            'parent_tile' => 'user_management',
+            'leaf_label'  => 'UpdateAnExistingUser',
+        ],
+    ];
+}
+
+/**
  * Match the current request against the Settings Hub catalog. Returns
  * an array describing the breadcrumb to render, or null when the
  * current page is not a Settings Hub destination.
@@ -635,6 +653,11 @@ function seed_default_favorite_settings(int $user_id, ?PDO $db = null): void
  *      'sub_hub' => ['heading_lang_key' => '<key>',
  *                    'section_key'      => '<key>']]
  *                                             — IM sub-hub destination.
+ *   - ['leaf_label' => '<page label>',
+ *      'parent' => ['label_key' => '<tile label>',
+ *                   'path'      => '<tile path>']]
+ *                                             — child page of a top-level tile
+ *                                               (see settings_hub_child_pages()).
  *
  * The caller resolves the labels via $lang and emits the breadcrumb
  * with "Settings >" as the root and an /admin/index.php href.
@@ -701,6 +724,25 @@ function find_settings_hub_breadcrumb(string $current_script, ?string $current_m
                 ],
             ];
         }
+    }
+
+    // Third pass: a child page opened from a top-level tile (e.g. editing a user
+    // from User Management). Breadcrumb is "Settings > <tile> > <page>".
+    foreach (settings_hub_child_pages() as $child_script => $child) {
+        if (!str_ends_with($current_script, '/' . $child_script)) {
+            continue;
+        }
+        $parent = settings_catalog()[$child['parent_tile']] ?? null;
+        if ($parent === null) {
+            continue;
+        }
+        return [
+            'leaf_label' => $child['leaf_label'],
+            'parent'     => [
+                'label_key' => $parent['label_key'],
+                'path'      => $parent['path'],
+            ],
+        ];
     }
     return null;
 }
@@ -1016,5 +1058,41 @@ function import_export_acquisition_state($is_admin, $is_registered) {
         'deactivated'    => ['note' => 'UnlockActivateImportExportNote',   'link' => 'UnlockActivateImportExportLink'],
         'admin_required' => ['note' => 'UnlockNeedsAdministrator',         'link' => null],
     ]);
+}
+
+/******************************************************
+ * FUNCTION: ADVANCED SEARCH LOCKED COPY               *
+ ******************************************************/
+/**
+ * The state => copy table for the topbar search's locked affordance. Split out
+ * of advanced_search_acquisition_state() so a test can assert every key it
+ * names exists in lang.en.php. Same three reachable states as Customization:
+ * the Extra has no registration-gated free tier.
+ *
+ * @return array<string, array{note: string, link: ?string}>
+ */
+function advanced_search_locked_copy() {
+    return [
+        'purchase'       => ['note' => 'RequiresAdvancedSearchExtra',      'link' => 'UnlockAdvancedSearchLink'],
+        'deactivated'    => ['note' => 'UnlockActivateAdvancedSearchNote', 'link' => 'UnlockActivateAdvancedSearchLink'],
+        'admin_required' => ['note' => 'UnlockNeedsAdministrator',         'link' => null],
+    ];
+}
+
+/******************************************************
+ * FUNCTION: ADVANCED SEARCH ACQUISITION STATE         *
+ ******************************************************/
+/**
+ * extra_acquisition_state() for the topbar search box (header.php): locked
+ * when the Advanced Search Extra is not active, so the box is shown-and-
+ * explained instead of being a bare "ID#" jump field.
+ *
+ * @param bool $is_admin      is_admin()
+ * @param bool $is_registered get_setting('registration_registered') == 1
+ *
+ * @return array{state: string, locked: bool, note_key: ?string, link_key: ?string, unlock_href: ?string, external: bool}
+ */
+function advanced_search_acquisition_state($is_admin, $is_registered) {
+    return extra_acquisition_state('advanced_search', advanced_search_extra(), $is_admin, $is_registered, advanced_search_locked_copy());
 }
 

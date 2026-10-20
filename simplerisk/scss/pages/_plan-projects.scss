@@ -45,6 +45,54 @@
   @include sr-subtable-drawer;
 }
 
+// Responsive toolbar. Six status chips plus the search/Filters/Columns/Add
+// cluster outgrow the card well before the sidebar collapses. Chips never
+// wrap their own label ("On hold" / "Completed 0" broke onto two lines) --
+// the pill scrolls sideways inside its own bounds instead of being clipped
+// by the card -- and below 700px the tools become a full-width search row
+// over one evenly-spread button row rather than three ragged, right-aligned
+// fragments. The breakpoint is the viewport on purpose: the sidebar rail
+// collapses below 992px, so between 701px and 991px the card is never
+// narrower than ~600px and the one-row tools layout still fits (measured
+// at 701/800/900/1000px with the sidebar in both states).
+#plan-projects-status-filter {
+  max-width: 100%; min-width: 0; overflow-x: auto; scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+  .sr-status-chip { flex: none; white-space: nowrap; }
+}
+// The shared .sr-qf-toggle rule carries `margin: 0 0 12px 16px` for its life
+// beside a filter row. In this toolbar the toggle only ever sits in the tools
+// row (visible at 1100px and below), where the 12px bottom pushes it 4px above
+// its neighbours' centre line and, in the stacked tier, would make it 52px
+// tall against 40px siblings -- so drop the whole margin at every width.
+#plan-projects-toolbar .sr-table-tools > .sr-qf-toggle { margin: 0; }
+@media (max-width: 700px) {
+  #plan-projects-toolbar {
+    #plan-projects-status-filter { display: flex; width: 100%; }
+    .sr-table-tools { flex: 1 1 100%; margin-left: 0; }
+    .sr-table-tools .dt-search { flex: 1 1 100%; max-width: none; }
+    // Basis auto + nowrap: each button keeps its label on one line and the
+    // row spreads the leftover space evenly (flex-grow does the spreading;
+    // the shared rule's align-items: center is right once every control is
+    // the same height below).
+    .sr-table-tools > .sr-qf-toggle,
+    .sr-table-tools > .colpicker,
+    .sr-table-tools > .btn { flex: 1 1 auto; white-space: nowrap; }
+    .sr-table-tools > .colpicker { display: flex; }
+    .sr-table-tools > .colpicker .filterbtn { flex: 1 1 auto; }
+    .sr-table-tools > .sr-qf-toggle { justify-content: center; }
+    // Filters, Columns and Add project come from three different component
+    // rules with three intrinsic heights (32/44/36px); pin them to one.
+    .sr-table-tools > .sr-qf-toggle,
+    .sr-table-tools > .colpicker .filterbtn,
+    .sr-table-tools > .btn { height: 40px; padding-top: 0; padding-bottom: 0; }
+  }
+}
+// Phone widths: Filters + Columns split one row, the primary action gets its own.
+@media (max-width: 480px) {
+  #plan-projects-toolbar .sr-table-tools > .btn { flex-basis: 100%; }
+}
+
 // The Unassigned chip carries an attention count once there is intake work.
 #plan-projects-card .sr-status-chip.sr-status-chip--attn.has-items .n {
   color: $sr-important;

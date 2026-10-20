@@ -149,6 +149,7 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'O' =>
         array (
             'OpenSpout\\' => 10,
+            'OpenApi\\Rector\\' => 15,
             'OpenApi\\' => 8,
         ),
         'N' =>
@@ -543,6 +544,10 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'OpenSpout\\' =>
         array (
             0 => __DIR__ . '/..' . '/openspout/openspout/src',
+        ),
+        'OpenApi\\Rector\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/zircote/swagger-php/rector/src',
         ),
         'OpenApi\\' =>
         array (

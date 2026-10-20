@@ -1421,7 +1421,7 @@ $lang = array(
     'NotifyApprover' => 'הודעה למאשר',
     'AutomatedNotificationsOfUnReviewedPastdueControlPolicyExceptions' => 'הודעות אוטומטיות של חריגים בלתי נסקרו/מדיניות בעבר וחריגות בפקדים',
     'PolicyControlExeptionReviewNotificationEamilDescription' => 'אתה מקבל הודעה זו מכיוון שאתה הבעלים של המדיניות או הפקד, המאשר או שהם בעל עניין נוסף המשויך למדיניות הבאה ולחריגים של פקדים שאמורים לעבור סקירה.  תמשיך לקבל תזכורות בדואר אלקטרוני עד לאישור חריג.',
-    'AutomatedNotificationsOfUnmitigatedRisks' => 'התראות אוטומטיות על סיכונים שלא הוקצו',
+    'AutomatedNotificationsOfUnmitigatedRisks' => 'התראות אוטומטיות על סיכונים שלא הופחתו',
     'SelectForAffectedAssets' => 'בחר עבור נכסים מושפעים',
     'SearchForQuestion' => 'חפש שאלה',
     'Required' => 'נדרש',
@@ -1959,7 +1959,7 @@ $lang = array(
     'Fields' => 'שדות',
     'TemplateGroup' => 'קבוצת תבניות',
     'AddTemplateGroup' => 'הוסף קבוצת תבניות',
-    'UpdateTemplateGroup' => 'קבוצת תבניות עדכנית',
+    'UpdateTemplateGroup' => 'עדכן קבוצת תבניות',
     'AreYouSureYouWantToDeleteThisTemplateGroup' => 'האם אתה בטוח שברצונך למחוק את קבוצת התבניות הזו?',
     'CantDeleteDefaultTemplateGroup' => 'לא ניתן למחוק את קבוצת התבניות המוגדרת כברירת מחדל.',
     'IncidentAddPermissionMessage' => 'אין לך הרשאה להגיש אירועים חדשים. כל אירוע שתנסה להגיש לא יירשם. אנא צור קשר עם מנהל אם אתה סבור שקיבלת הודעה זו בטעות.',
@@ -2004,7 +2004,7 @@ $lang = array(
     'AccessComplexity' => 'מורכבות גישה',
     'MaturityAudit' => 'ביקורת בגרות',
     'DefaultCurrentMaturity' => 'בגרות נוכחית כברירת מחדל',
-    'DefaultDesiredMaturity' => 'מועד ברירת מחדל לפדיון רצוי',
+    'DefaultDesiredMaturity' => 'בשלות רצויה כברירת מחדל',
     'ComplianceAssessment' => 'הערכת תאימות',
     'MaturityAssessment' => 'הערכת בגרות',
     'FileAttachment' => 'קובץ מצורף',
@@ -2043,7 +2043,7 @@ $lang = array(
     'BackupSettingsUpdated' => 'הגדרות הגיבוי עודכנו על ידי המשתמש "{$user_name}".',
     'BackupInitiatedByUser' => 'הגיבוי בוצע על ידי המשתמש "{$user_name}".',
     'BackupInitiated' => 'הגיבוי החל. השלמת התהליך עשויה להימשך מספר דקות.',
-    'NoControlsAvailable' => 'אין פקדים זמינים',
+    'NoControlsAvailable' => 'אין בקרות זמינות',
     'AdminCantDisableItself' => 'מנהל לא יכול להשבית את עצמו.',
     'AdminCantDeleteItself' => 'מנהל לא יכול למחוק את עצמו.',
     'NoFrameworksFromGithub' => 'אין מסגרות ספציפיות שיובאו מ-Github',
@@ -2501,7 +2501,7 @@ $lang = array(
     'MissingFile' => 'קובץ חסר',
     'ConfirmDeleteBackup' => 'האם אתה בטוח שברצונך למחוק את הגיבוי הזה?',
     'DeleteBackup_Success' => 'הגיבוי הוסר בהצלחה.',
-    'DeleteBackup_Expired_Success' => 'הגיבוי הוסר בהצלחה מעל {$backup_remove} ימים: "{$parent_directory}".',
+    'DeleteBackup_Expired_Success' => 'גיבוי ישן מ-{$backup_remove} ימים הוסר בהצלחה: "{$parent_directory}".',
     'DeleteBackup_Cleanup_Success' => 'ספריית הגיבוי "{$parent_directory}" כבר נמחקה, ניקה את ערך מסד הנתונים המשויך.',
     'DeleteBackup_Failed' => 'הסרת ספריית הגיבוי "{$parent_directory}" נכשלה, לא מחיקת את ערך מסד הנתונים המשויך.',
     'PleaseSelectAnExtensionBeforeDeleting' => 'אנא בחר תוסף לפני המחיקה.',
@@ -2515,7 +2515,7 @@ $lang = array(
     'EnterAValuationLevelName' => 'הזן שם של רמת הערכה.',
     'TheNameFieldCannotBeEmptyOrContainOnlySpaces' => 'שדה השם לא יכול להיות ריק או להכיל רק רווחים.',
     'EditAsset' => 'ערוך נכס',
-    'TheSelectedControlsWereDeletedSuccessfully' => 'הפקדים שנבחרו נמחקו בהצלחה.',
+    'TheSelectedControlsWereDeletedSuccessfully' => 'הבקרות שנבחרו נמחקו בהצלחה.',
     'NothingControlsForDeletingWereSelected' => 'שום בקרות למחיקה לא נבחרו.',
     'PleaseSelectARoleBeforeDeleting' => 'אנא בחר תפקיד לפני המחיקה.',
     'DocumentInstallation' => 'התקנת מסמך',
@@ -2534,9 +2534,9 @@ $lang = array(
     'ToBeDetermined' => 'ייקבע',
     'Matching' => 'תוֹאֵם',
     'Recommendation' => 'הַמלָצָה',
-    'AddControlToPolicy' => 'הוסף שליטה למדיניות',
-    'ConsiderAddingControl' => 'שקול להוסיף שליטה',
-    'RemoveControlFromPolicy' => 'הסר שליטה ממדיניות',
+    'AddControlToPolicy' => 'הוסף בקרה למדיניות',
+    'ConsiderAddingControl' => 'שקול להוסיף בקרה',
+    'RemoveControlFromPolicy' => 'הסר בקרה ממדיניות',
     'NoActionRequired' => 'אין צורך בפעולה',
     'DefiniteMatch' => 'התאמה מובטחת',
     'LikelyMatch' => 'התאמה סבירה',
@@ -2544,7 +2544,7 @@ $lang = array(
     'UnlikelyMatch' => 'התאמה לא סבירה',
     'NotAMatch' => 'לא התאמה',
     'ReviewManually' => 'סקירה ידנית',
-    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'תשובות לשאלות עם פקדים מקושרים יעדכנו את סוג הפקד ל-',
+    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'תשובות לשאלות עם בקרות מקושרות יעדכנו את סוג הבקרה ל-',
     'AuditLog_IncidentUpdated' => 'התקרית "{$incident_summary}"(מזהה: {$incident_id}) עודכנה על ידי המשתמש "{$user_name}". שינויים: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'התשובות יישמרו אוטומטית בהערכות',
     'SecondsAssessmentsAreAutoSaved' => 'הערכות של שניות נשמרות אוטומטית',
@@ -2602,7 +2602,7 @@ $lang = array(
     'TFIDFMatch' => 'התאמת TF-IDF',
     'CompletionDate' => 'תאריך השלמה',
     'AssetsAndControls' => 'נכסים ובקרות',
-    'AssetsByControl' => 'נכסים לפי שליטה',
+    'AssetsByControl' => 'נכסים לפי בקרה',
     'ControlsByAsset' => 'בקרות לפי נכס',
     'NoIncidentDetectionDataAvailable' => 'לא תועדו אירועים עם תאריכי "התחיל בתאריך" ו"זוהה בתאריך".',
     'IncidentDashboard' => 'לוח מחוונים לאירועים',
@@ -2625,7 +2625,7 @@ $lang = array(
     'NoPermissionDeleteSavedRiskReports' => 'אין לך הרשאה למחוק דוחות סיכון שנשמרו.',
     'LimitedPeriodTestmailMessage' => 'נשלח לאחרונה אימייל ניסיון. ניתן לשלוח עד 5 אימיילים לניסיון בשעה.',
     'ATestEmailHasBeenSentUsingTheCurrentSettings' => 'נשלחה הודעת דוא"ל לניסיון באמצעות ההגדרות הנוכחיות.',
-    'ControlPassFailStatus' => 'סטטוס שליטה עברה/נכשלה',
+    'ControlPassFailStatus' => 'סטטוס בקרה עברה/נכשלה',
     'GovernanceDashboard' => 'לוח מחוונים לממשל',
     'GovernanceDashboardDescription' => 'תרשים זה מציג את רמת הבשלות הנוכחית של כל הבקרות.',
     'GovernanceControlsByFrameworkMaturityStacked' => 'בקרות לפי מסגרת ובגרות נוכחית',
@@ -2663,7 +2663,7 @@ $lang = array(
     'Reports'                  => 'דוחות',
     'Dashboards'               => 'לוחות מחוונים',
     'RiskCharts'               => 'תרשימי סיכונים',
-    'SearchReports'            => 'דוחות חיפוש...',
+    'SearchReports'            => 'חיפוש דוחות...',
     'SearchConfigure'          => 'הגדרות חיפוש...',
     'Favorites'                => 'מועדפים',
     'AddToFavorites'           => 'הוסף למועדפים',
@@ -2683,7 +2683,7 @@ $lang = array(
     'RiskAppetiteReportDesc'                  => 'השווה את הסיכונים הפתוחים הנוכחיים מול ספי תיאבון הסיכון שתצורתם נקבעה.',
     'RiskTrendDesc'                           => 'ספירות סיכונים מצטברות של פתוחים וסגורים מוצגות לאורך זמן.',
     'DynamicRiskReportDesc'                   => 'בונה דוחות הניתן להגדרה ולייצוא עבור שאילתות סיכון אד-הוק.',
-    'GraphicalRiskAnalysisDesc'               => 'המחשף סיכונים על פני ממדים מרובים באמצעות תצוגות קווים ותרשים עמודות.',
+    'GraphicalRiskAnalysisDesc'               => 'הצג סיכונים באופן חזותי על פני ממדים מרובים באמצעות תצוגות של תרשים קווים ותרשים עמודות.',
     'RiskAverageOverTimeDesc'                 => 'ציון סיכון מובנה ושיורי ממוצע לאורך זמן, לפי קטגוריה או צוות.',
     'MeanTimeToRemediateDesc'                 => 'כמה זמן לוקח לצמצם או להיסגר סיכונים פתוחים, מחולק לפי חומרה.',
     'LikelihoodImpactDesc'                    => 'מפת חום של סיכונים פתוחים המוצגת על רשת הסבירות-השפעה.',
@@ -2710,7 +2710,7 @@ $lang = array(
     'DynamicAuditReportDesc'                  => 'דוח התקדמות ביקורת ניתן להגדרה עם מסנני מסגרת ובקרה.',
     'AuditTimelineDesc'                       => 'תצוגה כרונולוגית של פעילויות ביקורת, שינויי סטטוס וממצאים.',
     'AuditRemediationCycleTimeDesc'           => 'זמן ממוצע מממצאי ביקורת ועד לתיקון, לפי מסגרת.',
-    'ControlGapAnalysisDesc'                  => 'פקדים חסרים להם בדיקות, בעלים או שאינם מעודכנים.',
+    'ControlGapAnalysisDesc'                  => 'בקרות שחסרים להן בדיקות, בעלים או שאינן מעודכנות.',
     'DocumentProgramReportDesc'               => 'סטטוס תוכנית המסמכים: ספירות, אישורים וסקירות ממתינות.',
     'ExceptionReportDesc'                     => 'חריגים פתוחים עם תאריכי תפוגה ומצב אישור.',
     'ConnectivityVisualizerDesc'              => 'גרף אינטראקטיבי של האופן שבו סיכונים, נכסים, בקרות ומסגרות קשורים זה לזה.',
@@ -2740,7 +2740,7 @@ $lang = array(
     'SettingsPreferencesDesc'             => 'ערכי ברירת מחדל והעדפות התנהגותיות ב-SimpleRisk: שפה, אזור זמן, סטטוסי ביקורת, דרישות מיפוי סיכונים, כפתורי התנהגות בממשק המשתמש וכדומה.',
     'SettingsFileUploadDesc'              => 'סוגי העלאת קבצים מותרים ומגבלות גודל עבור שדות הקבצים המצורפים השונים.',
     'SettingsMailDesc'                    => 'תצורת SMTP עבור התראות דוא"ל יוצאות, כולל הובלה, אירוח, אימות ומענה.',
-    'SettingsBackupsDesc'                 => 'הגדר קישורי שמירת גיבויים, תזמון וקישורי הורדה עבור גיבויי מסד נתונים של SimpleRisk.',
+    'SettingsBackupsDesc'                 => 'הגדר את שמירת הגיבויים, התזמון וקישורי ההורדה עבור גיבויי מסד הנתונים של SimpleRisk.',
     'SettingsSecurityDesc'                => 'אימות, הפעלה, מדיניות סיסמאות, כתובת URL בסיסית והגדרות אבטחה של API.',
     'SettingsLoggingDesc'                 => 'תצורת רישום באגים וביקורת: רמות יומן, שמירה ומיקום קבצי יומן.',
     'HealthCheckDesc'                     => 'אבחון מצב המערכת: גרסת PHP, סיומות, הרשאות קבצים, קישוריות מסד נתונים, לוח זמנים של cron והפעלות נוספות.',
@@ -2776,7 +2776,7 @@ $lang = array(
     'ImportExportExtraDesc'               => 'ייבוא-ייצוא נוסף מספק את היכולת לייבא נתונים ל-SimpleRisk על ידי מיפוי שדות בקובץ CSV לשדות במסד הנתונים של SimpleRisk. ניתן להשתמש בו כדי לייבא תוצאות ביקורת מגיליון אלקטרוני של צד שלישי, תוצאות סריקת פגיעויות מכלי אחר, נכסים מ-CMDB שלך ועוד. היישום הנוסף מספק גם את היכולת לייצא קבצי CSV מ-SimpleRisk המכילים סיכונים, פעולות הקלה, ביקורות או דוח משולב של שלושתם.',
     'JiraExtraDesc'                       => 'Jira Integration Extra מספק למשתמשים את היכולת לשלב באופן דו-כיווני עם מופע של Jira. הוא מאפשר לחבר סיכונים לבעיות Jira, כמו גם לסנכרן את הנתונים, הסטטוס וההערות שלהם.',
     'APIExtraDesc'                        => 'ה-API Extra מאפשר ללקוחות להשתמש ב-API RESTful כדי ליצור אינטראקציות מבוססות סקריפטים עם יישומים אחרים כדי להשיג אוטומציה מתקדמת ולמנף תשתית קיימת.',
-    'AdvancedSearchExtraDesc'             => "תוספת החיפוש המתקדמת מרחיבה את הפונקציונליות של תיבת החיפוש בסרגל העליון כדי שתוכל למצוא סיכונים על ידי ביצוע חיפוש טקסטואלי בנתוני סיכונים.",
+    'AdvancedSearchExtraDesc'             => "תוספת החיפוש המתקדמת הופכת את תיבת החיפוש בסרגל העליון לחיפוש אחד הכולל סיכונים, מסגרות, בקרות, מסמכים, חריגים, בדיקות, ביקורות, נכסים וקבוצות נכסים, עם דף חיפוש מלא לעבודה על התוצאות. היא מציגה רק רשומות שהמשתמש רשאי לראות.",
     'AssessmentsExtraDesc'                => 'הערכת הסיכונים הנוספת מספקת למשתמשים את היכולת להגדיר אנשי קשר, ליצור שאלות (כולל לוגיקה), להרכיב מספר שאלות באמצעות תבנית שאלון, ליצור שאלונים ולשלוח אותם לאנשי קשר, לצפות בתוצאות השאלון, להוסיף סיכונים על סמך תוצאות אלו ולהשוות את התוצאות לאורך זמן, לייבא ולייצא הערכות מותאמות אישית חיצונית ולסקור את נתיב הביקורת של הערכת הסיכונים.',
     'ActiveAssessmentsDesc'               => 'הצג ונהל הערכות הנמצאות כעת בתהליך עיבוד.',
     'WorkflowsExtraDesc'                  => 'Workflows Extra מספק מנוע זרימת עבודה ויזואלי, מונחה אירועים, אשר הופך פעולות ניהול סיכונים לאוטומטיות בתגובה לאירועים בתוך SimpleRisk. ניתן לעצב זרימות עבודה המופעלות בעקבות שינויים - כגון הגשת סיכון, עדכון או סקירה - כדי לנתב אישורים, להקצות עבודה ולשמור על התהליך בתנועה ללא התערבות ידנית.',
@@ -2886,7 +2886,7 @@ $lang = array(
     'SpecificUsers' => 'משתמשים ספציפיים',
     'Help' => 'עֶזרָה',
     'Profile' => 'פּרוֹפִיל',
-    'Scoring' => 'מְנִיָה',
+    'Scoring' => 'ניקוד',
     'EncryptionMissingLockTablesPrivilege'   => 'למשתמש מסד הנתונים SimpleRisk אין את ההרשאה LOCK TABLES, הנדרשת להצפנת מסד הנתונים בצורה בטוחה. בקש ממנהל מסד הנתונים להריץ את משפט GRANT המוחזר בתגובה ונסה שוב.',
     'EncryptionMissingLockTablesPrivilegeUi' => 'למשתמש מסד הנתונים של SimpleRisk אין את הרשאת LOCK TABLES הנדרשת להצפנה. מנהל מסד נתונים חייב להפעיל: GRANT LOCK TABLES ON {$db}.* TO {$user}; לאחר מכן נסה שוב.',
     'EncryptionRequiredGrantLabel' => 'הצהרת GRANT נדרשת:',
@@ -2972,9 +2972,9 @@ $lang = array(
     'ContextQuestions' => 'שאלות הקשר',
     'AIProviderNotConfiguredWarning' => 'ספק הבינה המלאכותית אינו מוגדר. לא ניתן לייצר תוצאות בזמן אמת עד שתגדיר את הספק ומפתח ה-API בכרטיסייה תצורת ספק.',
     'AutoProcessSCFUpdates' => 'עבד באופן אוטומטי מהדורות חדשות של Secure Controls Framework (SCF)',
-    'AddNewControls' => 'הוסף פקדי SCF חדשים',
+    'AddNewControls' => 'הוסף בקרות SCF חדשות',
     'UpdateExistingControls' => 'עדכון בקרות SCF קיימות',
-    'DeleteRemovedControls' => 'מחיקת פקדי SCF שהוסרו',
+    'DeleteRemovedControls' => 'מחיקת בקרות SCF שהוסרו',
     'CreateEvidenceRequests' => 'צור בקשות ראיות עבור בקרות SCF',
     'SelectSCFFrameworks' => 'בחר מסגרות SCF',
     'SCFReleaseProcessing' => 'עיבוד שחרור SCF',
@@ -2997,7 +2997,7 @@ $lang = array(
     'PassingControls' => 'בקרות עוברות',
     'FailingControls' => 'בקרות כושלות',
     'ControlsByFramework' => 'בקרות לפי מסגרת',
-    'NumberOfControls' => 'מספר פקדים',
+    'NumberOfControls' => 'מספר בקרות',
     'PasswordResetTokenExpirationPeriod' => 'תקופת תפוגת אסימון איפוס סיסמה',
     'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'תקופת התפוגה של אסימון איפוס סיסמה צריכה להיות יותר מ-5 דקות.',
     'MeanTimeToRemediate' => 'זמן ממוצע לתיקון',
@@ -3040,7 +3040,7 @@ $lang = array(
     'ExtraInstallDisabledByEnforcement' => 'התקנה נוספת מושבתת כעת עקב מצב הרישיון שלך. צור קשר עם מנהל המערכת או עם תמיכת SimpleRisk.',
     'LicenseStateUnknownRetryShortly' => 'פרטי הרישיון אינם זמינים עדיין. אנא נסה שוב בעוד מספר רגעים.',
     'LicenseExpiringSoonTitle' => 'רישיון עומד לפוג בקרוב: {$extra}',
-    'LicenseExpiringSoonBody' => 'תוקף הרישיון שלך {$extra} יפוג בעוד {$date} (נותרו{$days} ימים). חדש אותו דרך הרשמה ושדרוג כדי למנוע אובדן גישה.',
+    'LicenseExpiringSoonBody' => 'תוקף הרישיון שלך {$extra} יפוג ב-{$date} (נותרו{$days} ימים). חדש אותו דרך הרשמה ושדרוג כדי למנוע אובדן גישה.',
     'LicenseExpiredTitle' => 'פג תוקף הרישיון: {$extra}',
     'LicenseExpiredBody' => 'תוקף הרישיון שלך {$extra} פג בתאריך {$date}. חדש אותו דרך "הרשמה ושדרוג" כדי לשחזר את הגישה.',
     'Licenses' => 'רישיונות',
@@ -3163,7 +3163,7 @@ $lang = array(
     'HomeKpiOpenAudits' => 'ביקורות פתוחות',
     'HomeKpiTestsDueSoon' => 'בדיקות בקרוב',
     'HomeKpiActiveFrameworks' => 'מסגרות פעילות',
-    'HomeKpiTotalControls' => 'בקרות מלאות',
+    'HomeKpiTotalControls' => 'סך הבקרות',
     // Home dashboard — What's Next feed
     'WhatsNext' => 'מה הלאה?',
     'WhatsNextAllCaughtUp' => 'סיימתם את כל העניינים.',
@@ -3189,11 +3189,11 @@ $lang = array(
     'ListRecentFailures' => 'כשלים אחרונים',
     'ListPoliciesReview' => 'מסמכים לבדיקה',
     'ListExpiringExceptions' => 'חריגים שפג תוקפם',
-    'ImKpiOpenIncidents' => 'סך כל הפתיחה',
+    'ImKpiOpenIncidents' => 'סה"כ פתוחים',
     'ImKpiOverdue' => 'איחור במועד',
-    'ImKpiMttr30' => 'רזולוציה ממוצעת',
+    'ImKpiMttr30' => 'זמן פתרון ממוצע',
     'ImKpiMttrQuarter' => 'רזולוציה ממוצעת (90 ימים)',
-    'ImKpiMttrYear' => 'רזולוציה ממוצעת (שנה אחת)',
+    'ImKpiMttrYear' => 'זמן פתרון ממוצע (שנה אחת)',
     'ImKpiMttrAll' => 'ממוצע פתרון (הכל)',
     'ImKpiResolved30' => 'נפתר',
     'ImChartBySeverity' => 'לפי חומרה',
@@ -3291,7 +3291,7 @@ $lang = array(
     'ControlsByPriority' => 'בקרות לפי עדיפות',
     'ControlsByCurrentMaturity' => 'בקרות לפי רמת הבגרות הנוכחית',
     'ControlStatusOverTime' => 'סטטוס בקרה לאורך זמן',
-    'ComplianceTotalControls' => 'בקרות מלאות',
+    'ComplianceTotalControls' => 'סך הכל בקרות',
     'HomeKpiOverdueTests' => 'בדיקות שאיחרו',
     'Total' => 'סַך הַכֹּל',
     'StartTheTest' => 'התחל את המבחן',
@@ -3457,13 +3457,13 @@ $lang = array(
 
     // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
     'LastResult' => 'תוצאה אחרונה',
-    'NextDue' => 'מועד אחרון',
+    'NextDue' => 'המועד הבא',
     'DueSoon' => 'בקרוב',
     'Retired' => 'בְּדִימוּס',
     'MyTests' => 'הבדיקות שלי',
     'Failing' => 'כָּשֵׁל',
     'Untested' => 'לא נבדק',
-    'ShowRetired' => 'הצג פרש',
+    'ShowRetired' => 'הצג לא פעילים',
     'Tests' => 'בדיקות',
     'NoTestsForThisControl' => 'עדיין אין בדיקות עבור בקרה זו.',
     'NoControlsDefinedYet' => 'עדיין לא הוגדרו בקרות',
@@ -3508,7 +3508,7 @@ $lang = array(
     'Sample' => 'מדגם',
     'RequiredEvidence' => 'ראיות נדרשות',
     'Approvers' => 'מאשרים',
-    'AuditLog_TestAuditApproved' => 'הביקורת "{$test_audit_name}" (מזהה: {$test_audit_id}אושרה על ידי המשתמש "{$user_name}".',
+    'AuditLog_TestAuditApproved' => 'הביקורת "{$test_audit_name}" (מזהה: {$test_audit_id}) אושרה על ידי המשתמש "{$user_name}".',
     'AuditLog_TestAuditRejected' => 'הביקורת "{$test_audit_name}" (מזהה: {$test_audit_id}) נדחתה על ידי המשתמש "{$user_name}" עם התגובה "{$comment}".',
     'AuditLog_TestAuditAwaitingApproval' => 'הביקורת "{$test_audit_name}" (מזהה: {$test_audit_id}) הוגשה לסגירה על ידי המשתמש "{$user_name}" וממתינה לאישור. שינויים: {$changes}.',
     'AuditApproved' => 'הביקורת אושרה בהצלחה.',
@@ -3531,7 +3531,7 @@ $lang = array(
     'DtNCommonAcrossNControls' => '{$common} נפוץ · {$n} בקרות',
     'DtUntestedControls' => 'בקרות שלא נבדקו',
     'DtControlsInScopeNoCoverage' => 'אין כיסוי',
-    'Passing' => 'חוֹלֵף',
+    'Passing' => 'עובר',
     'DtLastResultPassed' => 'התוצאה האחרונה עברה',
     'AllFamilies' => 'כל המשפחות',
     'SearchTestsPlaceholder' => 'בדיקות חיפוש, בקרות ומסגרות',
@@ -3545,9 +3545,9 @@ $lang = array(
     'AddTheFirstTest' => 'הוסף את הבדיקה הראשונה',
     'ApplyCommonTestHint' => 'החל בדיקה קיימת אחת או יותר על בקרה זו. כל בדיקה שומרת על הבקרות הנוכחיות שלה והופכת לבדיקה משותפת המכסה גם את הבדיקה הזו.',
     'CommonTestApplied' => 'בדיקה הוחלת על בקרה זו.',
-    'CouldNotApplyCommonTest' => 'לא ניתן היה להחיל את הבדיקה על פקד זה.',
+    'CouldNotApplyCommonTest' => 'לא ניתן היה להחיל את הבדיקה על בקרה זו.',
     'SelectOneOrMoreTests' => 'בחר בדיקה אחת או יותר',
-    'CommonTestsApplied' => 'בדיקות {n} הוחלו על פקד זה.',
+    'CommonTestsApplied' => '{n} בדיקות הוחלו על בקרה זו.',
     'ApplyCommonTests' => 'החל בדיקות נפוצות…',
     'History' => 'הִיסטוֹרִיָה',
     'Result' => 'תוֹצָאָה',
@@ -3558,11 +3558,11 @@ $lang = array(
     'IdentitySectionHint' => 'שם, בודק ובקרות שהוא מאמת',
     'WhenTheAuditInitiates' => 'כאשר הביקורת מתחילה',
     'ProcedureAndEvidence' => 'הליך וראיות',
-    'CommonTestControlsHint' => 'בדיקה אחת יכולה לאמת בקרות רבות - בדיקה נפוצה. פתיחת בדיקה זו מתוך "+ הוסף בדיקה" של פקד תסמן אותו מראש כאן.',
+    'CommonTestControlsHint' => 'בדיקה אחת יכולה לאמת בקרות רבות - בדיקה נפוצה. פתיחת בדיקה זו מתוך "+ הוסף בדיקה" של בקרה תסמן אותה מראש כאן.',
     'SeparationOfDutiesNote' => 'הפרדת תפקידים - מאשר לא יכול להיות גם הבוחן.',
     'CommonTestEditScopeHint' => 'שינויים חלים בכל מקום בו נעשה שימוש במבחן נפוץ זה.',
     'Mode' => 'מצב',
-    'AddOrRemove' => 'הוסף או הסרה של…',
+    'AddOrRemove' => 'הוסף או הסר…',
     'AddOrSearchTags' => 'הוסף או חפש תגיות…',
     'CreateTagX' => 'צור "{tag}"',
     'Archived' => 'הועבר לארכיון',
@@ -3572,7 +3572,7 @@ $lang = array(
     'UntestedControls' => 'בקרות שלא נבדקו',
     'OverdueByXDays' => 'איחור במועד · {n} ימים',
     'OverdueByOneDay' => 'איחור במועד · יום אחד',
-    'DueInXDays' => 'מועד אחרון לשיווק תוך {n} ימים',
+    'DueInXDays' => 'מועד אחרון בעוד {n} ימים',
     'DueTomorrow' => 'מועד אחרון למחר',
     'DueToday' => 'מועד אחרון להיום',
     'ScheduledForX' => 'מתוזמן · {date}',
@@ -3583,20 +3583,20 @@ $lang = array(
     'DueStatus' => 'סטטוס מועד אחרון',
     'AllResults' => 'כל התוצאות',
     // Remove a test from one control (Define Tests grid unlink row action)
-    'RemoveFromThisControl' => 'הסר מפקד זה',
+    'RemoveFromThisControl' => 'הסר מבקרה זו',
     'RemoveTestFromControl' => 'הסר את הבדיקה מהבקרה',
     'RemoveTestFromControlConfirm' => 'להסיר את "{test_name}" מתוך {control_name}?',
-    'RemoveTestFromControlStays' => 'הבדיקה נשארת על הפקדים האחרים שלה {n} . שום דבר לא נמחק.',
+    'RemoveTestFromControlStays' => 'הבדיקה נשארת על {n} הבקרות האחרות שלה. שום דבר לא נמחק.',
     'RemoveTestFromControlStaysOne' => 'הבדיקה נשארת בבקרה השנייה שלה. שום דבר לא נמחק.',
     'CannotRemoveTestsOnlyControl' => 'בדיקה חייבת להשתייך לפחות לפקד אחד. הסר או מחק את הבדיקה במקום זאת.',
     'TestRemovedFromControl' => 'הבדיקה הוסרה מהבקרה.',
     'CouldNotRemoveTestFromControl' => 'לא ניתן היה להסיר את הבדיקה מהבקרה.',
     'TestRemovedFromControlAuditLogMessage' => 'הבדיקה "{$test_name}" (מזהה: {$test_id}) הוסרה מהבקרה (מזהה: {$control_id}) על ידי המשתמש "{$user}".',
-    'DeleteTestUsedByNControls' => 'הוא משמש את פקדי {n} ויוסר מכולם.',
-    'BulkDeleteSharedTestsNote' => '{n} מתוכם משמשים פקדים אחרים ויוסרו גם מהם.',
-    'BulkRetireSharedTestsNote' => '{n} מתוכם משמשים פקדים אחרים ויוצאו משימוש גם שם.',
-    'BulkDeleteOneSharedTestNote' => 'אחד מהם משמש פקדים אחרים ויוסר גם מהם.',
-    'BulkRetireOneSharedTestNote' => 'אחד מהם משמש פקדים אחרים ויצא משימוש גם שם.',
+    'DeleteTestUsedByNControls' => 'הוא משמש {n} בקרות ויוסר מכולן.',
+    'BulkDeleteSharedTestsNote' => '{n} מתוכם בשימוש על ידי בקרות אחרות ויוסרו גם מהן.',
+    'BulkRetireSharedTestsNote' => '{n} מתוכם משמשים בקרות אחרות ויוצאו משימוש גם שם.',
+    'BulkDeleteOneSharedTestNote' => 'אחד מהם משמש בקרות אחרות ויוסר גם מהן.',
+    'BulkRetireOneSharedTestNote' => 'אחד מהם משמש בקרות אחרות ויצא משימוש גם שם.',
     'CouldNotLoadTest' => 'לא ניתן היה לטעון את הבדיקה הזו.',
     'Expand' => 'לְהַרְחִיב',
     'SearchMappings' => 'חיפוש מסגרות עבודה והפניות',
@@ -3604,16 +3604,16 @@ $lang = array(
     'Insights' => 'תובנות',
     'ShowInsights' => 'הצג את אריחי התובנות',
     'HideInsights' => 'כיווץ אריחי התובנות לשורת סיכום',
-    'ChooseControls' => 'בחירת פקדים',
+    'ChooseControls' => 'בחירת בקרות',
     'UseTheseControls' => 'השתמש בפקדים אלה',
     'SearchControlsPlaceholder' => 'חיפוש לפי מספר או שם',
     'PickerKeyboardHint' => 'למעלה/למטה כדי לנוע, Enter לבחירה, Esc לביטול',
     'NoControlsMatchFilters' => 'שום דבר כאן לא תואם. הרחב שלב משמאל, או נקה את החיפוש.',
     'NoControlsSelectedYet' => 'עדיין לא נבחר כלום.',
-    'AllControls' => 'כל הפקדים',
+    'AllControls' => 'כל הבקרות',
     'AddOrRemoveControls' => 'הוספה או הסרה של פקדים…',
     'LastTested' => 'נבדק לאחרונה',
-    'LastTestDateAnchorHint' => 'תזמון מרווחי זמן של עוגנים (תאריך זה בתוספת התדירות). לאחר שהבדיקה תיעדה את תוצאותיה, הרשת מציגה את תאריך התוצאה החדשה ביותר.',
+    'LastTestDateAnchorHint' => 'מגדיר את נקודת העוגן של תזמון המרווחים (תאריך זה בתוספת התדירות). לאחר שהבדיקה תיעדה את תוצאותיה, הרשת מציגה את תאריך התוצאה החדשה ביותר.',
     'Filters' => 'מסננים',
     'ShowFilters' => 'הצג מסננים',
     'HideFilters' => 'הסתר מסננים',
@@ -3629,7 +3629,7 @@ $lang = array(
     'ClickToDisable' => 'לחץ כדי להשבית',
     'ClickToEnable' => 'לחץ כדי להפעיל',
     'ENABLED' => 'מופעל',
-    'DISABLED' => 'נָכֶה',
+    'DISABLED' => 'מושבת',
     'BackToWorkflows' => 'חזרה לתהליכי עבודה',
     'BackToHistory' => 'חזרה להיסטוריה',
     'NewWorkflow' => 'זרימת עבודה חדשה',
@@ -3655,11 +3655,11 @@ $lang = array(
     'AICapSurfacedControlTestGeneration' => 'תאימות - הגדרת בדיקות',
     'AIControlTestGenUnavailable' => 'השירות אינו זמין: מנהל מערכת חייב להפעיל פונקציונליות זו בהגדרות הבינה המלאכותית.',
     'AIControlTestGenInvalidId' => 'בקשה שגויה: נדרש מזהה בקרה חיובי.',
-    'AIControlTestGenNotFound' => 'לא נמצא: לא ניתן היה למצוא את הפקד שצוין.',
-    'AIControlTestGenConflict' => 'התנגשות: יצירת האובייקט כבר נמצאת בתור עבור פקד זה.',
+    'AIControlTestGenNotFound' => 'לא נמצא: לא ניתן היה למצוא את הבקרה שצוינה.',
+    'AIControlTestGenConflict' => 'התנגשות: היצירה כבר נמצאת בתור עבור בקרה זו.',
     'AIControlTestGenQueued' => 'התקבל: יצירת בדיקת בקרה הועברה לתור.',
-    'AIControlTestGenFailed' => 'שגיאת שרת פנימית: יצירת בדיקת בקרת תור נכשלה.',
-    'AIControlTestGenCheckFailed' => 'שגיאה: לא ניתן לאמת את הפקד לפני יצירת התור.',
+    'AIControlTestGenFailed' => 'שגיאת שרת פנימית: הוספת יצירת בדיקת הבקרה לתור נכשלה.',
+    'AIControlTestGenCheckFailed' => 'שגיאה: לא ניתן לאמת את הבקרה לפני הוספה לתור.',
     'GenerateTestsWithAI' => 'צור בדיקות בעזרת בינה מלאכותית',
     'ShowAiSuggestedTests' => 'בדיקות מוצעות של בינה מלאכותית',
     'AiSuggested' => 'בינה מלאכותית מוצעת',
@@ -3680,9 +3680,9 @@ $lang = array(
     'AICtxAppetiteAggressive' => 'תוֹקפָּנִי',
     'TestGenerationComplete' => 'מבחני בקרה שנוסחו על ידי בינה מלאכותית מוכנים לסקירה.',
     'TestGenerationStillRunning' => 'יצירת הבדיקות עדיין פועלת; הטיוטות יופיעו בקרוב.',
-    'TestGenerationNoNew' => 'הדור הסתיים - אין בדיקות חדשות להציע עבור בקרה זו.',
+    'TestGenerationNoNew' => 'היצירה הסתיימה - אין בדיקות חדשות להציע עבור בקרה זו.',
     'SearchEntities' => 'חיפוש ישויות',
-    'SearchEntitiesPlaceholder' => 'סיכוני חיפוש, בקרות, מדיניות, חריגים…',
+    'SearchEntitiesPlaceholder' => 'חפש סיכונים, בקרות, מדיניות, חריגים…',
     'ShowTypes' => 'הצג סוגים',
     'Depth' => 'עוֹמֶק',
     'Inspector' => 'מְפַקֵחַ',
@@ -3690,7 +3690,7 @@ $lang = array(
     'NoConnectionsFound' => 'לא נמצאו קשרים עבור הישות שנבחרה.',
     'CouldNotLoadGraph' => 'לא ניתן היה לטעון את גרף הקישוריות.',
     'CouldNotSearchEntities' => 'לא ניתן היה לחפש ישויות.',
-    'ShowingTopNOfM' => 'מציג את החלק העליון של {0} מתוך {1}',
+    'ShowingTopNOfM' => 'מציג את {0} המובילים מתוך {1}',
     'RankedByMaturityGap' => 'מדורג לפי פער בגרות',
     'RankedByRiskScore' => 'מדורג לפי ציון סיכון',
     'RankedByRecentFailure' => 'מדורג לפי הכישלון האחרון',
@@ -3866,13 +3866,13 @@ $lang = array(
     // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
     // reader to guess unfavourably.
     'SoaLegendTitle' => 'איך לקרוא את ההצהרה הזו',
-    'SoaLegendYes' => 'כל בדיקה שהוגדרה עבור פקד זה עברה את הפעולה האחרונה שלה.',
+    'SoaLegendYes' => 'כל בדיקה שהוגדרה עבור בקרה זו עברה בהרצתה האחרונה.',
     'SoaLegendPartial' => 'מבחני הבקרה אינם מסכימים: לפחות אחד עבר, ולפחות אחד נכשל או לא הניב תוצאה.',
     'SoaLegendNo' => 'אף בדיקה של בקרה זו לא עברה את הרצה האחרונה שלה, ולפחות אחת נכשלה.',
     // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
     // and the labels alone do not quite carry that -- so the legend spells it
     // out. This is the distinction the whole six-state set exists for.
-    'SoaLegendNoTestDefined' => 'לא הוגדרה בדיקה עבור בקרה זו, כך שפעולתה מעולם לא אומתה. אין מדובר בהצהרה שהבקרה חסרה או שהיא נכשלת - רק שהצהרה זו אינה מדגימה זאת. פער ממשלתי: איש לא החליט כיצד בקרה זו נבדקת.',
+    'SoaLegendNoTestDefined' => 'לא הוגדרה בדיקה עבור בקרה זו, כך שפעולתה מעולם לא אומתה. אין מדובר בהצהרה שהבקרה חסרה או שהיא נכשלת - רק שהצהרה זו אינה מדגימה זאת. פער בממשל: איש לא החליט כיצד בקרה זו נבדקת.',
     'SoaLegendNeverRun' => 'קיימות בדיקות לבקרה זו, אך אף אחת מהן לא בוצעה מעולם, כך שפעולתה אינה מוצגת כאן. אין מדובר בהצהרה שהבקרה חסרה או שהיא נכשלת. פער תפעולי: הוחלט על הבדיקות ולא בוצעו.',
     'SoaLegendNotApplicable' => 'הבקרה אינה חלק מתחום מסגרת זו, ולכן אין לה סטטוס יישום.',
     // The one most in need of explaining: with nothing to define it, this reads
@@ -3984,7 +3984,7 @@ $lang = array(
     'UnlockNeedsAdministrator' => 'מנהל יכול להגדיר זאת.',
     // API date parsing. {$field} is the request field name (next_date, last_date,
     // test_date); {$format} is this instance's configured display date format.
-    'InvalidSubmittedDate' => 'הערך {$field} אינו תאריך חוקי. יש לשלוח אותו כתאריך YYYY-MM-DD או במקרה זה בפורמט התאריך ({$format}).',
+    'InvalidSubmittedDate' => 'הערך {$field} אינו תאריך חוקי. יש לשלוח אותו בפורמט YYYY-MM-DD או בפורמט התאריך של מופע זה ({$format}).',
     // Companion to InvalidSubmittedDate, for a value that matches the expected
     // shape but names a day that does not exist (February 31st, month 13).
     // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
@@ -4046,15 +4046,15 @@ $lang = array(
     // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
     // soa_export_sheet_name() truncates rather than failing the export, so a long
     // translation loses its tail on the tab.
-    'SoaSheetCover' => 'לְכַסוֹת',
+    'SoaSheetCover' => 'שער',
 
     'SearchFrameworks' => 'מסגרות חיפוש',
-    'SearchControls' => 'פקדי חיפוש',
+    'SearchControls' => 'חיפוש בקרות',
     'AddFramework' => 'הוסף מסגרת',
     'Applicability' => 'יָשִׂימוּת',
     'AnyFamily' => 'כל משפחה',
     'AnyOwner' => 'כל בעלים',
-    'AnyClass' => 'כל כיתה',
+    'AnyClass' => 'כל סיווג',
     'AnyPhase' => 'כל שלב',
     'AnyPriority' => 'כל עדיפות',
     'AnyType' => 'כל סוג',
@@ -4065,21 +4065,21 @@ $lang = array(
     'OwnershipAndMaturity' => 'בעלות ובגרות',
     'MappingsAndGuidance' => 'מיפויים והדרכה',
     'DeleteFrameworkTitle' => 'למחוק את המסגרת \'{$name}\'?',
-    'DeleteControlTitle' => 'למחוק את הפקד \'{$name}\'?',
-    'DeleteControlsTitle' => 'למחוק את הפקדים {$n}?',
+    'DeleteControlTitle' => 'למחוק את הבקרה \'{$name}\'?',
+    'DeleteControlsTitle' => 'למחוק {$n} בקרות?',
     'DeleteCannotBeUndone' => 'לא ניתן לבטל את זה.',
     'DeleteFrameworkConsequence' => 'פעולה זו מסירה את המסגרת ואת כל מיפויי הבקרה שלה.',
-    'DeleteControlConsequence' => 'זה מסיר את השליטה מכל מסגרת שאליה היא ממופה.',
-    'DeleteControlsConsequence' => 'פעולה זו מסירה כל פקד שנבחר מכל מסגרת שאליה הוא ממופה.',
+    'DeleteControlConsequence' => 'זה מסיר את הבקרה מכל מסגרת שאליה היא ממופה.',
+    'DeleteControlsConsequence' => 'פעולה זו מסירה כל בקרה שנבחרה מכל מסגרת שאליה היא ממופה.',
     // Task 9: empty states (design-system.md §10) -- the four intents on
     // Define Control Frameworks. Reuses existing keys where the copy already
     // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
     // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
     // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
     // with no existing match are added below.
-    'NoControlsMatch' => 'אין פקדים התואמים את המסננים שלך',
-    'CouldNotLoadControls' => 'לא ניתן היה לטעון את הפקדים',
-    'ControlsYouAddWillAppearHere' => 'פקדים שתוסיף יופיעו כאן.',
+    'NoControlsMatch' => 'אין בקרות התואמות את המסננים שלך',
+    'CouldNotLoadControls' => 'לא ניתן היה לטעון את הבקרות',
+    'ControlsYouAddWillAppearHere' => 'בקרות שתוסיף יופיעו כאן.',
     'NoFrameworksYet' => 'עדיין אין מסגרות',
     'FrameworksYouAddWillAppearHere' => 'מסגרות שתוסיף או תייבא יופיעו כאן.',
     'CouldNotLoadFrameworks' => 'לא ניתן היה לטעון את המסגרות',
@@ -4220,9 +4220,9 @@ $lang = array(
     // while "Select all N" escalates to the whole filtered result set -- the two
     // genuinely differ once the table pages, and a note that blurred them would
     // let the user write 1,535 decisions believing they had written 25.
-    'ApplicabilityScopeNote' => 'החלטה זו חלה רק בתוך "{$framework}". אותה פקד יכולה להישאר רלוונטי גם במסגרת אחרת.',
-    'ApplicabilityAppliesToSelected' => 'זה יירשם כנגד הפקד/ים {$n} שנבחרו בדף זה.',
-    'ApplicabilityAppliesToAllFiltered' => 'הוא יירשם כנגד כל הפקדים {$n} התואמים למסננים הנוכחיים, כולל אלו שבדפים אחרים.',
+    'ApplicabilityScopeNote' => 'החלטה זו חלה רק בתוך "{$framework}". אותה בקרה יכולה להישאר רלוונטית גם במסגרת אחרת.',
+    'ApplicabilityAppliesToSelected' => 'זה יירשם כנגד {$n} הבקרות שנבחרו בדף זה.',
+    'ApplicabilityAppliesToAllFiltered' => 'הוא יירשם עבור כל הבקרות {$n} התואמות למסננים הנוכחיים, כולל אלו שבדפים אחרים.',
     // Per-state hints under the segmented control. The "applicable" one is the
     // load-bearing sentence of the whole modal, and the SoA audit-readiness work
     // rewrote it: an applicable control MAY now carry its own reasons and
@@ -4241,8 +4241,8 @@ $lang = array(
     // Result toasts. Both interpolate a COUNT taken from the API response and
     // nothing else -- no submitted text is ever reflected into a toast, which
     // toastr renders as HTML.
-    'ApplicabilitySetResult' => 'עודכנה תחולת השליטה עבור {$n}.',
-    'ApplicabilityClearResult' => 'תחולת הפעולה אופסה ל"ישימה" עבור פקדים {$n}.',
+    'ApplicabilitySetResult' => 'עודכנה התחולה עבור {$n} בקרות.',
+    'ApplicabilityClearResult' => 'התחולה אופסה ל"ישימה" עבור {$n} בקרות.',
     // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
     // final either way the delete engine implements it: a control with test
     // history is soft-deleted (framework_controls.deleted = 1) to keep test
@@ -4258,11 +4258,11 @@ $lang = array(
     // stop reading. Every {$...} is a count from the API response; no user
     // text is ever interpolated, which matters because toastr renders HTML.
     'DeleteControlsPreviewChecking' => 'בודק מה יימחק...',
-    'DeleteControlsPreviewSplit' => 'פקדים {$n} יימחקו. לא ניתן לבטל פעולה זו. תוצאות הבדיקה עבור {$m} מהן נשמרות לצורך היסטוריית הביקורת.',
-    'DeleteControlsPreviewKeptOnly' => 'כל הפקדים {$n} יימחקו. לא ניתן לבטל פעולה זו. תוצאות הבדיקה נשמרות לצורך היסטוריית הביקורת.',
-    'DeleteControlsPreviewRemovedOnly' => 'פקדים {$n} יימחקו. לא ניתן לבטל פעולה זו.',
-    'DeleteControlsPreviewNone' => 'אין מה למחוק: הפקד/ים שנבחרו אינם קיימים עוד.',
-    'ControlsDeletedResult' => 'פקדים {$n} נמחקו.',
+    'DeleteControlsPreviewSplit' => '{$n} בקרות יימחקו. לא ניתן לבטל פעולה זו. תוצאות הבדיקה עבור {$m} מהן נשמרות לצורך היסטוריית הביקורת.',
+    'DeleteControlsPreviewKeptOnly' => 'כל הבקרות ({$n}) יימחקו. לא ניתן לבטל פעולה זו. תוצאות הבדיקה נשמרות לצורך היסטוריית הביקורת.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} בקרות יימחקו. לא ניתן לבטל פעולה זו.',
+    'DeleteControlsPreviewNone' => 'אין מה למחוק: הבקרות שנבחרו אינן קיימות עוד.',
+    'ControlsDeletedResult' => '{$n} בקרות נמחקו.',
 
     // The Add/Edit framework modal's Status field. The label reuses the existing
     // 'Status' key -- the same word the rail's Active/Inactive/All filter already
@@ -4271,7 +4271,7 @@ $lang = array(
     // to retire a framework (unlike Delete, which cannot be undone), and that the
     // change cascades through the hierarchy, which is what update_framework_status()
     // has always done and is genuinely surprising when a parent is deactivated.
-    'FrameworkStatusHint' => 'מסגרות לא פעילות שומרות על כל הפקדים והמיפויים שלהן, אך הן מוסתרות מרשימת המסגרות המוגדרת כברירת מחדל ונשארות מחוץ ללוח המחוונים של הממשל. ביטול הפעלה של מסגרות גם מבטל כל מסגרות שמתחתיה; הפעלת מסגרות אחת מפעילה גם את המסגרות ההורות שלהן.',
+    'FrameworkStatusHint' => 'מסגרות לא פעילות שומרות על כל הבקרות והמיפויים שלהן, אך הן מוסתרות מרשימת המסגרות המוגדרת כברירת מחדל ונשארות מחוץ ללוח המחוונים של הממשל. ביטול הפעלה של מסגרות גם מבטל כל מסגרות שמתחתיה; הפעלת מסגרות אחת מפעילה גם את המסגרות ההורות שלהן.',
 
     // Task 60: the same #applicability--set modal, opened from ONE control's row
     // action instead of the selection bulk bar. The button's own label reuses
@@ -4350,8 +4350,8 @@ $lang = array(
     // generic sentence is not the organization's own, and an auditor reading 1,500
     // identical rows of boilerplate is entitled to ask whose risk assessment it
     // refers to.
-    'SoaMissingFieldsTitle' => 'להצהרה זו חסרים פרטי כיסוי',
-    'SoaMissingScopeStatement' => 'לא נרשמה הצהרת היקף עבור מסגרת זו. הודעה על תנאי שימוש (SoA) צריכה לציין את ההיקף שלגביו היא מתבצעת.',
+    'SoaMissingFieldsTitle' => 'להצהרה זו חסרים פרטי עמוד השער',
+    'SoaMissingScopeStatement' => 'לא נרשמה הצהרת היקף עבור מסגרת זו. הצהרת תחולה (SoA) צריכה לציין את ההיקף שלגביו היא מתבצעת.',
     'SoaMissingInclusionJustification' => 'לא נרשמה הצדקת ברירת מחדל להכללה. בקרות רלוונטיות ללא סיכונים קשורים יחזרו להצהרה כללית ולא שלך.',
     'SoaEditFrameworkToAdd' => 'הוסף אותם על המסגרת',
 
@@ -4384,7 +4384,7 @@ $lang = array(
     // A framework with no controls mapped into it. Not an error -- it is a real
     // and recoverable state, and saying so beats an empty table.
     'SoaNoControls' => 'למסגרת הזו אין בקרה',
-    'SoaNoControlsHint' => 'מיפוי פקדים לתוך המסגרת והצהרת הישימות שלה תפרט אותם.',
+    'SoaNoControlsHint' => 'מפו בקרות אל תוך המסגרת, והצהרת הישימות שלה תפרט אותן.',
 
     // The second half of the statement-of-applicability launcher's affordance
     // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
@@ -4403,7 +4403,7 @@ $lang = array(
     // Placeholder/help text under that field, and the reason it is worth
     // filling in: without it the Statement of Applicability has nothing to
     // print but the source catalogue's name for its own control.
-    'ReferenceSubjectHint' => "הכותרת של המסגרת עצמה עבור פקד זה.",
+    'ReferenceSubjectHint' => "הכותרת של המסגרת עצמה עבור בקרה זו.",
 
     // Task 63: the row-scoped population sentence in the Set applicability
     // modal, in the one situation where the plain
@@ -4416,7 +4416,7 @@ $lang = array(
     // about to overwrite it, and {$n} is the count of the OTHER selected
     // controls -- the target is excluded, because it is very often ticked too
     // and a promise that included it would be false.
-    'ApplicabilityAppliesToControlNotSelection' => 'הוא יירשם כנגד "{$name}" בלבד - הפקדים {$n} שבחרת לא יושפעו.',
+    'ApplicabilityAppliesToControlNotSelection' => 'הוא יירשם כנגד "{$name}" בלבד - הבקרות {$n} שבחרת לא יושפעו.',
 
     // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
     // sentence ('GenerateStatementOfApplicability' above) stays as the button's
@@ -4428,7 +4428,7 @@ $lang = array(
     // "SoA" is safe to abbreviate HERE and only here: the button appears solely
     // when a single framework is scoped, beside an Applicability column, and it
     // expands on hover.
-    'GenerateSoa' => 'צור את נושא הקריאה (SoA)',
+    'GenerateSoa' => 'צור הצהרת תחולה (SoA)',
 
     // ===== Clone framework (Task 64) =======================================
     // The framework half of Clone control's framing (CloneOfControlTitle /
@@ -4453,7 +4453,7 @@ $lang = array(
     // under two clause numbers, and the rail excludes deleted controls), and the
     // number to promise is the one the user is looking at when they click and
     // the one the clone's own rail row will show afterwards.
-    'ClonedFromFrameworkNotice' => 'משוכפל מ-"{$name}". פקדי {$n} שלו יועתקו למסגרת החדשה, כאשר כל אחד מהם רלוונטי מלכתחילה - אף אחת מהחלטות הישימות שלו לא תעבור הלאה. הצהרת ההיקף ריקה במכוון: ציין את ההיקף שמסגרת זו מכסה לפני יצירת הצהרת הישימות שלה.',
+    'ClonedFromFrameworkNotice' => 'משוכפל מ-"{$name}". {$n} הבקרות שלו יועתקו למסגרת החדשה, כאשר כל אחת מהן רלוונטית מלכתחילה - אף אחת מהחלטות הישימות שלו לא תעבור הלאה. הצהרת ההיקף ריקה במכוון: ציין את ההיקף שמסגרת זו מכסה לפני יצירת הצהרת הישימות שלה.',
     // Seeds the name field so the clone can be saved without a rename --
     // framework names are unique, so a verbatim copy is refused on save.
     'CloneOfFrameworkName' => '{$name} (שיבוט)',
@@ -4470,12 +4470,12 @@ $lang = array(
     // someone who cannot take it.
     'HowDoYouWantToAddAFramework' => 'איך אתה רוצה להוסיף מסגרת?',
     'CreateFrameworkManually' => 'צור אחד באופן ידני',
-    'CreateFrameworkManuallyHint' => 'תן שם למסגרת בעצמך, לאחר מכן הוסף או מפה את הפקדים שלה.',
+    'CreateFrameworkManuallyHint' => 'תן שם למסגרת בעצמך, לאחר מכן הוסף או מפה את הבקרות שלה.',
     // Named for the framework rather than for its vendor. The hint was reworded
     // at the same time: it used to end "...load its Secure Controls Framework
     // controls", which read as a stutter once the label carried those words.
     'GetFrameworkFromScf' => 'קבל אחד ממסגרת הבקרה המאובטחת',
-    'GetFrameworkFromScfHint' => 'בחר מסגרת שפורסמה וטען את הפקדים הממופים שלה בשלב אחד.',
+    'GetFrameworkFromScfHint' => 'בחר מסגרת שפורסמה וטען את הבקרות הממופות שלה בשלב אחד.',
     'ImportFrameworkFromCatalog' => 'ייבא אחד',
     'ImportFrameworkFromCatalogHint' => 'התקן מסגרת ובקרותיה מקטלוג התוכן של SimpleRisk.',
 
@@ -4486,7 +4486,7 @@ $lang = array(
     // customer maintaining a custom lang.<locale>.php still reconciles by tail
     // diff.
     'ImportFrameworkFromSpreadsheet' => 'ייבא אחד מגיליון אלקטרוני',
-    'ImportFrameworkFromSpreadsheetHint' => 'העלה גיליון אלקטרוני של פקדים שמעניק שם למסגרת, ושניהם נוצרים.',
+    'ImportFrameworkFromSpreadsheetHint' => 'העלה גיליון אלקטרוני של בקרות שמעניק שם למסגרת, ושניהם נוצרים.',
 
     // The Define Control Frameworks rail's second synthetic scope: the controls
     // mapped to no framework at all. Its first, "All controls", reuses the
@@ -4495,7 +4495,7 @@ $lang = array(
     // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
     // is left in place and unreferenced by that page: other surfaces still use
     // it, and every locale carries it.
-    'UnassignedControls' => 'פקדים שלא הוקצו',
+    'UnassignedControls' => 'בקרות שלא הוקצו',
     // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
     // returns the exception's message as the API status message and the page
     // renders it in a toast, so a hardcoded English literal here would be
@@ -4520,7 +4520,7 @@ $lang = array(
     'ControlIdOrShortNameFieldRequired' => 'יש למפות את השדה מזהה הבקרה או את השדה שם הבקרה המקוצר - לא ניתן לזהות שורה ללא אחד מהם.',
     'RiskImportSubjectNull' => 'מזהה סיכון {$risk_id}: לא עודכן מכיוון ששדה הנושא ריק או חסר.',
     'RiskImportSummary' => 'סיכון/י {$submitted} הוגשו ועדכנו סיכון/י {$updated}.',
-    'ControlImportSummary' => 'נוצר/י פקד/ות {$created} ועדכן/י פקד/ות {$updated}.',
+    'ControlImportSummary' => 'נוצרו {$created} בקרות ועודכנו {$updated} בקרות.',
     'ImportAdditionalIssuesSuppressed' => 'ב-{$count} שורה/ות נוספות היו בעיות שלא מוצגות כאן בנפרד.',
     'EncryptionPipelineStalledTask' => 'נראה כי צינור הצפנה (משימה #{$id}, {$type}) תקועה - היא הייתה {$status} במשך זמן רב באופן חריג ללא התקדמות. משמעות הדבר בדרך כלל היא שעובד תור הרקע אינו פועל; בדוק שהוא מתוזמן, ולאחר מכן נסה שוב לאחר שיעבד את המשימה התקועה.',
     'EncryptionPipelineStalledState' => 'נראה כי צינור הצפנה תקוע - הוא סומן כמתבצע במשך זמן רב באופן חריג ללא משימת רקע תואמת להצביע אליה. משמעות הדבר בדרך כלל היא שעובד התור אינו פועל, או שצינור קודם הסתיים מבלי לעדכן אותו כהלכה. בדוק את יומן ניפוי השגיאות לפני שתנסה שוב.',
@@ -4551,11 +4551,11 @@ $lang = array(
     'UpgradingTo' => 'משדרג ל- {version}',
     'UpgradeSafeToClose' => 'ניתן לסגור חלון זה בבטחה. השדרוג ממשיך בשרת ודף זה יתחבר מחדש.',
     'UpgradeDownloadLog' => 'הורדת יומן',
-    'UpgradeStatementsApplied' => 'הוחלו משפטי {started} · הוחלו משפטי {count}',
+    'UpgradeStatementsApplied' => 'התחיל ב-{started} · הוחלו {count} פקודות',
     // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
     'UpgradeCheckingInstance' => 'בודק את המופע הזה',
     'UpgradeInstanceChecked' => 'המופע נבדק, אין צורך בתיקונים.',
-    'UpgradeBlockedByCorrections' => 'השדרוג הופסק מכיוון שלמקרה זה נדרש תיקון שלא ניתן היה להחיל אותו באופן אוטומטי. פעל לפי ההוראות לעיל, ולאחר מכן הפעל את השדרוג שוב. לא השתנה דבר נוסף.',
+    'UpgradeBlockedByCorrections' => 'השדרוג הופסק מכיוון שלמופע זה נדרש תיקון שלא ניתן היה להחיל אותו באופן אוטומטי. פעל לפי ההוראות לעיל, ולאחר מכן הפעל את השדרוג שוב. לא השתנה דבר נוסף.',
     // Shown when an upgrade replaced the instance's configuration file and could not put the original back
     'ConfigRestoreFailed' => 'השדרוג לא הצליח לשחזר את קובץ התצורה של מופע זה. שחזר את simplerisk/includes/config.php מהגיבוי לפני שתמשיך.',
     'UpgradeDidNotAdvance' => 'פונקציית השדרוג עבור גרסה "{$version}" לא קידמה את גרסת מסד הנתונים; היא נעצרת כדי שלא תפעל שוב.',
@@ -4569,7 +4569,7 @@ $lang = array(
     'UpgradeDatabaseHeading' => 'שדרוג מסד הנתונים',
     'UpgradeDatabaseComplete' => 'שדרוג מסד הנתונים הושלם.',
     'UpgradeHideWhatItDid' => 'הסתר את מה שזה עשה',
-    'UpgradeStateRunning' => 'רִיצָה',
+    'UpgradeStateRunning' => 'פועל',
     'UpgradeSessionExpired' => 'פג תוקף הסשן שלך. היכנס שוב כדי לראות את השדרוג.',
     'UpgradeLostContact' => 'אבד קשר עם השרת. טען מחדש דף זה כדי להתחבר מחדש לשדרוג.',
     'UpgradeDatabaseAlreadyCurrent' => 'מסד הנתונים כבר נמצא בגרסת האפליקציה.',
@@ -4693,7 +4693,7 @@ $lang = array(
     'BackupTargetChangedOrExists' => 'סירוב לכתוב את הגיבוי לתוך "{$dir}": היעד השתנה באופן בלתי צפוי או שכבר קיים.',
     'BackupDirectoryUnsafe' => 'סירוב להשתמש בספריית הגיבוי "{$location}": זהו קישור סימבולי או שהוא בבעלות חשבון אחר.',
     'DocumentAuditLogApprove' => 'המסמך "{$document_name}" אושר על ידי {$user}.',
-    'DocumentAuditLogUnapprove' => 'המסמך "{$document_name}" בוטל על ידי {$user}.',
+    'DocumentAuditLogUnapprove' => 'אישור המסמך "{$document_name}" בוטל על ידי {$user}.',
     'NoApproveDocumentationPermission' => 'אין לך הרשאה לאשר מסמכים.',
     'DocumentApproved' => 'המסמך אושר.',
     'DocumentUnapproved' => 'המסמך לא אושר.',
@@ -4765,7 +4765,7 @@ $lang = array(
     'Uploaded' => 'הועלה',
     'AllDocuments' => 'כל המסמכים',
     'AllUsers' => 'כל המשתמשים',
-    'SearchAuditTrailPlaceholder' => 'נתיב ביקורת חיפוש',
+    'SearchAuditTrailPlaceholder' => 'חפש בנתיב הביקורת',
     'NoAuditLogEntries' => 'עדיין אין רשומות יומן ביקורת',
     'NoAuditLogEntriesBody' => 'הפעילות במסמכי דף זה תופיע כאן.',
     'NoAuditLogEntriesMatchFilters' => 'אין ערכים התואמים את החיפוש שלך',
@@ -4803,7 +4803,7 @@ $lang = array(
     // Scheduled report "Run Now" success alerts (process_run_now_notification())
     'AutomatedNotificationOfRisksSent' => 'ההודעה האוטומטית על סיכונים שלא נבדקו וסיכונים שעברו את מועד הפירעון נשלחה.',
     'AutomatedNotificationOfAuditsSent' => 'ההודעה האוטומטית על ביקורות נשלחה.',
-    'AutomatedNotificationOfMitigationsSent' => 'ההודעה האוטומטית על הקלות נשלחה.',
+    'AutomatedNotificationOfMitigationsSent' => 'ההודעה האוטומטית על אמצעי הפחתה נשלחה.',
     'AutomatedNotificationOfUnmitigatedRisksSent' => 'ההודעה האוטומטית על סיכונים שלא טופלו נשלחה.',
     'AutomatedNotificationOfPolicyControlExceptionsSent' => 'ההודעה האוטומטית על חריגים למדיניות ובקרה שלא נבדקו או שמועדם חלף נשלחה.',
     'AutomatedNotificationOfDocumentReviewsSent' => 'ההודעה האוטומטית על סקירות מסמכים נשלחה.',
@@ -5120,7 +5120,7 @@ $lang = array(
     // source table for the original wording).
     'ThreatAgentFactorsDescription' => 'מעריך את הסבירות להצלחה של מתקפה על ידי קבוצת סוכני איום זו.',
     'VulnerabilityFactorsDescription' => 'מעריך את הסבירות שפגיעות זו תתגלה ותינוצל.',
-    'TechnicalImpactDescription' => 'מחלק את ההשפעה לפי סודיות, יושרה, זמינות ואחריות.',
+    'TechnicalImpactDescription' => 'מחלק את ההשפעה לפי סודיות, שלמות, זמינות ואחריות.',
     'BusinessImpactDescription' => 'משקף את מה שחשוב לעסק, מעבר להשפעה הטכנית הגולמית.',
     // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
     // a labelKey ('Exploitability') with DREAD's own field, so both would
@@ -5156,7 +5156,7 @@ $lang = array(
     // text) rather than duplicating it -- 'ContributingRisk'/
     // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
     'ContributingLikelihoodDescription' => 'כמה סביר להניח שסיכון זה יתרחש.',
-    'ContributingRiskDescription' => 'כל גורם להלן משוקלל לפי חשיבותו היחסית -- בחר באיזו מידה כל אחד מהם מושפע מסיכון זה.',
+    'ContributingRiskDescription' => 'כל גורם להלן משוקלל לפי חשיבותו היחסית -- בחר באיזו מידה סיכון זה מושפע מכל אחד מהם.',
     // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
     // the live calculation formula under each of the 4 sub-group names
     // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
@@ -5218,7 +5218,7 @@ $lang = array(
     'SupportingDocumentationRequiresSubmitRisk' => 'נדרשת הרשאת "שלח סיכון" להעלאת קבצים.',
     'SupportingDocumentationRequiresModifyRisks' => 'נדרשת הרשאת שינוי סיכונים לניהול קבצים.',
     'MitigationSupportingDocumentationRequiresPlanMitigations' => 'נדרשת הרשאת תוכנית Mitigations לניהול קבצים.',
-    'MitigationSubmittedBy' => 'הוגשה על ידי',
+    'MitigationSubmittedBy' => 'הפחתה שהוגשה על ידי',
     'UseADifferentDate' => 'השתמש בתאריך אחר',
     'AssetGroup' => 'קבוצת נכסים',
     // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
@@ -5231,7 +5231,7 @@ $lang = array(
     'DiscoveryResolveNames' => 'חפש שמות מארחים',
     'DiscoveryAddAs' => 'הוסף נכסים חדשים כ',
     'DiscoveryStart' => 'התחל גילוי',
-    'DiscoveryBackgroundNote' => 'פועל ברקע. כתובות שכבר קיימות מדלגות.',
+    'DiscoveryBackgroundNote' => 'פועל ברקע. כתובות שכבר קיימות מדולגות.',
     'DiscoveryRangeInvalid' => 'הזן כתובת IPv4, טווח או בלוק CIDR חוקיים.',
     'DiscoveryRangeTooLarge' => 'טווח זה גדול מדי. המגבלה היא {$max} כתובות.',
     'DiscoveryRunQueued' => 'התגליות החלו.',
@@ -5403,15 +5403,15 @@ $lang = array(
     // Asset record modal
     'AssetNotAvailable' => 'נכס זה אינו זמין. ייתכן שהוא נמחק, או שאין לך גישה אליו.',
     'AssetCustomFieldNotInTemplate' => 'שדה מותאם אישית אחד או יותר אינם שייכים לתבנית של נכס זה. לא בוצע שינוי.',
-    'AssetMappedControlsInvalid' => 'לא ניתן היה לשמור את הפקדים הממופים. כל שורה זקוקה לגיל בגרות ולפחות פקד קיים אחד. לא השתנה דבר.',
-    'AssetMappedControlsTooMany' => 'ניתן למפות נכס לפקדים לכל היותר {$max} . לא השתנה דבר.',
-    'AddControlsAtAnotherMaturity' => 'הוסף בקרות במועד בוגר אחר',
+    'AssetMappedControlsInvalid' => 'לא ניתן היה לשמור את הפקדים הממופים. כל שורה זקוקה לרמת בשלות ולפחות פקד קיים אחד. לא השתנה דבר.',
+    'AssetMappedControlsTooMany' => 'ניתן למפות נכס לכל היותר ל-{$max} בקרות. לא השתנה דבר.',
+    'AddControlsAtAnotherMaturity' => 'הוסף בקרות ברמת בשלות אחרת',
     'ChoosingControlsNeedsGovernancePermission' => 'בחירת בקרות דורשת הרשאת ממשל.',
-    'NControls' => 'פקדים {n}',
+    'NControls' => '{n} בקרות',
     'SavingKeepsTheCurrentControlMappings' => 'שמירה שומרת על מיפויי הבקרה הנוכחיים.',
     'LoadingControls' => 'טעינת בקרות…',
     'ControlListCouldNotBeLoaded' => 'לא ניתן היה לטעון את רשימת הבקרה, לכן לא ניתן לשנות כעת את הבקרות הממופות.',
-    'RemoveControlsAtMaturity' => 'הסר בקרות במועד הפדיון {maturity}',
+    'RemoveControlsAtMaturity' => 'הסר בקרות ברמת הבשלות {maturity}',
     'ControlIdUnavailable' => '#{id} (לא זמין)',
     'AssetRecordEdit' => 'עריכת נכס',
     'AssetRecordIdN' => 'נכס #{$id}',
@@ -5443,7 +5443,7 @@ $lang = array(
     'Integrity' => 'שְׁלֵמוּת',
     'Availability' => 'זְמִינוּת',
     'AssetScoringLevelLow' => 'נָמוּך',
-    'AssetScoringLevelModerate' => 'לְמַתֵן',
+    'AssetScoringLevelModerate' => 'בינוני',
     'AssetScoringLevelHigh' => 'גָבוֹהַ',
     'AssetScoringValueInvalid' => 'סודיות, שלמות וזמינות מקבלים ערכים נמוכים, בינוניים או גבוהים (סודיות מקבלת גם ערכים של לא רלוונטי).',
     'AssetScoringChangedLog' => 'הנכס "{$name}" {$objective} שונה מ- {$from} ל- {$to} על ידי המשתמש "{$user}".',
@@ -5458,24 +5458,24 @@ $lang = array(
     'AssetFilteringByBand' => 'סינון לפי רצועה משוקללת {$name}',
     'AssetScoring' => 'ניקוד נכסים',
     'AssetScoringSettingsHint' => 'כל נכס מדורג כנמוך, בינוני או גבוה מבחינת סודיות, שלמות וזמינות, וסודיות עשויה להיות מדורג במקום זאת כ"לא רלוונטי", מה שמשאיר אותו מחוץ לשתי התוצאות. סיווג ה-FIPS שלו הוא הגבוה ביותר מבין שלושת הדירוגים. הציון המשוקלל שלו הוא הממוצע המשוקלל של שלושת ערכי הרמה, וספי הטווח הופכים את הציון הזה לטווח נמוך, בינוני או גבוה. שינוי הגדרות אלו יגרום לכל נכס להיות מדורג מחדש באופן מיידי.',
-    'Weights' => 'משקולות',
+    'Weights' => 'משקלים',
     'AssetScoringWeightsHint' => 'כמה כל מטרה נחשבת בציון המשוקלל: 0 עד 100, עם עד שתי ספרות עשרוניות. משקל של 0 משאיר את המטרה הזו מחוץ לרשימה. יושרה וזמינות לא יכולות להיות שתיהן 0, מכיוון שסודיות "לא רלוונטי" תמיד מושמטת.',
     'LevelValues' => 'ערכי רמה',
     'AssetScoringLevelValuesHint' => 'המספר שכל דירוג תורם לציון המשוקלל: מעל 0 ועד 100, עם עד שתי ספרות עשרוניות, ונמוך מתחת לבינוני מתחת לגבוה. ברירות המחדל הן נמוך 1, בינוני 2 וגבוה 3.',
     'BandThresholds' => 'ספי פס',
     'AssetScoringBandThresholdsHint' => 'ציון משוקלל הנמצא בסף מסוים או מעליו נמצא בטווח זה, וציון מתחת לסף הבינוני נחשב נמוך. בינוני חייב להתחיל מעל הערך הנמוך, וציון גבוה חייב להתחיל מעל בינוני ולא גבוה מהערך הגבוה.',
-    'ModerateStartsAt' => 'מתחיל ב-',
+    'ModerateStartsAt' => 'בינוני מתחיל ב-',
     'HighStartsAt' => 'גבוה מתחיל ב',
     'DefaultScoringForNewAssets' => 'ניקוד ברירת מחדל עבור נכסים חדשים',
-    'AssetScoringDefaultsHint' => 'בוחר מראש את הדירוגים האלה כאשר מישהו מוסיף נכס בטופס הנכס. נכסים שנוצרו על ידי גילוי, ייבוא או ה-API נשארים ללא ציון אלא אם כן הם מספקים דירוגים משלהם. השאר את שלושתם מוגדרים כ"לא" כדי לכבות אפשרות זו.',
-    'AssetScoringWeightsInvalid' => 'משקלי ניקוד נכסים חייבים להיות מספרים מ-0 עד 100 עם לכל היותר שתי ספרות עשרוניות, ו-Integrity ו-Availability לא יכולים להיות שניהם 0.',
+    'AssetScoringDefaultsHint' => 'בוחר מראש את הדירוגים האלה כאשר מישהו מוסיף נכס בטופס הנכס. נכסים שנוצרו על ידי גילוי, ייבוא או ה-API נשארים ללא ציון אלא אם כן הם מספקים דירוגים משלהם. השאר את שלושתם כ"לא מוגדר" כדי לכבות אפשרות זו.',
+    'AssetScoringWeightsInvalid' => 'משקלי ניקוד נכסים חייבים להיות מספרים מ-0 עד 100 עם לכל היותר שתי ספרות עשרוניות, ושלמות וזמינות לא יכולות להיות שתיהן 0.',
     'AssetScoringValuesInvalid' => 'ערכי רמת ניקוד הנכסים חייבים להיות מספרים מעל 0 ועד 100 עם לכל היותר שתי ספרות עשרוניות, כאשר "נמוך" מתחת לבינוני מתחת לגבוה.',
     'AssetScoringThresholdsInvalid' => 'ספי ניקוד הנכסים חייבים להכיל לכל היותר שתי ספרות עשרוניות, כאשר בינוני מתחיל מעל הערך הנמוך, גבוה מתחיל מעל בינוני, וגבוה מתחיל לא גבוה מהערך הגבוה.',
     'AssetScoringDefaultsInvalid' => 'ניקוד ברירת המחדל עבור נכסים חדשים חייב להיות רמה שכל מטרה מציעה.',
     'AssetScoringSettingsNotSaved' => 'לא ניתן היה לשמור את הגדרות ניקוד הנכסים. לא השתנה דבר.',
     'AssetScoringSettingsChangedLog' => 'הגדרות ניקוד הנכסים שונו על ידי המשתמש "{$user}".',
     'AssetScoringNotSet' => 'לא מוגדר',
-    'NotScored' => 'לא ניקח תוצאה',
+    'NotScored' => 'לא קיבל ציון',
     'AssetScoringNotScoredHint' => 'ענו על כל שלושת המטרות כדי לצבור ציון לנכס זה.',
     'ImportAssetScoringValueIgnored' => 'הערך {$objective} "{$value}" עבור הנכס "{$asset_name}" אינו דירוג תקין והוזנח.',
     'AssetScoringSecurityObjectives' => 'יעדי אבטחה',
@@ -5483,11 +5483,11 @@ $lang = array(
     'AssetScoringIntegrityHelp' => 'מהי ההשפעה הפוטנציאלית אם יהיה שינוי או השמדה בלתי מורשים של המידע בנכס זה?',
     'AssetScoringAvailabilityHelp' => 'מהי ההשפעה הפוטנציאלית אם תהיה שיבוש בגישה או בשימוש בנכס זה?',
     'AssetScoringHelpHigh' => 'השפעה שלילית חמורה או קטסטרופלית',
-    'AssetScoringHelpModerate' => 'תופעת לוואי חמורה',
+    'AssetScoringHelpModerate' => 'השפעה שלילית חמורה',
     'AssetScoringHelpLow' => 'השפעה שלילית מוגבלת או ללא השפעה שלילית',
     'AssetScoringHelpNotApplicable' => 'סודיות אינה מהווה דאגה עבור נכס זה (לדוגמה, מידע ציבורי)',
     'AssetScoringHelpLabel' => 'הנחיות דירוג {$objective}',
-    'AssetScoringMeterValue' => '{$score}, {$band} להקה',
+    'AssetScoringMeterValue' => '{$score}, טווח {$band}',
     'AssetScoringNoWeightedScore' => 'אין ציון משוקלל',
     'AssetScoringNoWeightedScoreNote' => 'אין ציון משוקלל: לכל מטרה שקובעת יש משקל של 0.',
     'AssetScoringUpgradePending' => 'לא ניתן לשמור את ניקוד הנכסים עד להפעלת שדרוג מסד הנתונים של SimpleRisk. לא השתנה דבר.',
@@ -5497,7 +5497,7 @@ $lang = array(
     'AssetScoringBandHelp' => 'הקבוצה ממקמת את הציון המשוקלל בסולם נמוך, בינוני או גבוה. ציון מתחת ל- {$moderate} הוא נמוך, מ- {$moderate} עד {$highAt} הוא בינוני, ו- {$highAt} ומעלה הוא גבוה. ערכי הסף מוגדרים בהעדפות.',
     // Manage assets: Confidentiality / Integrity / Availability rating filters
     'AllConfidentialityRatings' => 'כל דירוגי הסודיות',
-    'AllIntegrityRatings' => 'כל דירוגי היושרה',
+    'AllIntegrityRatings' => 'כל דירוגי השלמות',
     'AllAvailabilityRatings' => 'כל דירוגי הזמינות',
     'AssetFilterByConfidentiality' => 'סנן לפי סודיות {$name}',
     'AssetFilteringByConfidentiality' => 'סינון לפי סודיות {$name}',
@@ -5531,8 +5531,105 @@ $lang = array(
     'DeleteAssetGroups' => 'מחיקת קבוצות',
     'AssetGroupBulkDeletedSummary' => 'קבוצות {$ok} נמחקו, קבוצות {$failed} דילגו עליהן',
     'ChoosingRisksNeedsRiskManagementPermission' => 'בחירת סיכונים קשורים דורשת הרשאת ניהול סיכונים.',
-    'NAssociatedRisks' => '{n} associated risk(s)',
-    'SavingKeepsTheCurrentRiskAssociations' => 'חיסכון שומר על הסיכונים הנוכחיים הנלווים.',
+    'NAssociatedRisks' => '{n} סיכונים קשורים',
+    'SavingKeepsTheCurrentRiskAssociations' => 'שמירה משמרת את הסיכונים המשויכים הנוכחיים.',
+    'UpgradePhpPartialTarget' => 'משדרג ל-{$target}, הגרסה העדכנית ביותר שגרסת PHP {$php} תומכת בה. גרסה {$blocked} ואילך דורשות PHP {$needed} או גרסה חדשה יותר.',
+    'UpgradeNoPhpCli' => 'השדרוג דורש את ממשק שורת הפקודה של PHP, עם הסיומת pdo_mysql, כדי לשדרג את מסד הנתונים, ולא נמצא דבר בשרת זה. לא השתנה דבר. התקן אותו (גם המשימות המתוזמנות של SimpleRisk זקוקות לו), ולאחר מכן הפעל את השדרוג שוב.',
+    'UpgradeDatabaseStepFailed' => 'שדרוג מסד הנתונים נכשל. מסד הנתונים הוא בגרסה {$reached}. עיין בהודעות לעיל וביומן SimpleRisk, ולאחר מכן הפעל את השדרוג שוב.',
+    'UpgradeReplacingVendorDirectory' => 'החלפת ספריית הצד השלישי.',
+    'AdvancedSearchLockedPlaceholder' => 'חפש את כל התוכנית שלך',
+    'AdvancedSearchLockedAria' => 'חפש בכל התוכנית שלך. נעול: דורש את תוספת החיפוש המתקדם.',
+    'AdvancedSearchLockedPitch' => 'מצא סיכון, בקרה, מסמך או נכס מתוך תיבה אחת, ודלג לרשומות הקשורות אליו.',
+    'AdvancedSearchUnlocksLabel' => 'פותח את החיפוש ברחבי',
+    'RequiresAdvancedSearchExtra' => 'דורש את תוספת החיפוש המתקדם.',
+    'UnlockAdvancedSearchLink' => 'תראה מה זה מוסיף',
+    'UnlockActivateAdvancedSearchNote' => 'תוספת החיפוש המתקדמת מותקנת אך אינה מופעלת.',
+    'UnlockActivateAdvancedSearchLink' => 'הפעל אותו',
+    'AdvancedSearchControlCount' => 'בקרות: {$count}',
+    'AdvancedSearchAssetCount' => 'נכסים: {$count}',
+    'AdvancedSearchValuationRange' => '{$min} עד {$max}',
+    'AdvancedSearchTypes' => 'סוגים',
+    'AdvancedSearchTypesToggle' => 'סוגים · {$count}',
+    'AdvancedSearchViewAll' => 'הצג הכל',
+    'AdvancedSearchMatchedIn' => 'תואם ב- {$field}:',
+    'AdvancedSearchMatchedInFilter' => 'תואם ב',
+    'AdvancedSearchAnyField' => 'כל שדה',
+    'AdvancedSearchSortBest' => 'ההתאמה הטובה ביותר',
+    'AdvancedSearchSummary' => 'תוצאות: {$count}',
+    'AdvancedSearchSummaryTypes' => 'סוגים שנחפשו: {$types}',
+    'AdvancedSearchNoResultsTitle' => 'אין תוצאות עבור "{$q}"',
+    'AdvancedSearchNoResultsTip' => 'בדוק את האיות, או נסה פחות מילים.',
+    'AdvancedSearchFailedTitle' => 'לא ניתן היה לחפש כרגע',
+    'AdvancedSearchFailedBody' => 'הנתונים שלך בטוחים. נסה שוב בעוד רגע.',
+    'AdvancedSearchIncompleteTitle' => 'ייתכן שהתוצאות אינן שלמות.',
+    'AdvancedSearchIncompleteDetail' => 'סוג זה חיפש רק את הרשומות האחרונות שלו. צמצם את החיפוש כדי לראות עוד.',
+    'AdvancedSearchTimeLimitNote' => 'החיפוש הופסק מוקדם כדי להישאר מהיר, ולכן סוגים מסוימים לא נבדקו. צמצם את החיפוש כדי לכלול אותם.',
+    'AdvancedSearchNotSearched' => 'לא נחפש',
+    'AdvancedSearchMinChars' => 'הקלד לפחות {$count} תווים כדי לחפש.',
+    'AdvancedSearchEmptyPrompt' => 'חיפוש סיכונים, בקרות, מסמכים, נכסים ועוד.',
+    'AdvancedSearchFirstPage' => 'עמוד ראשון',
+    'AdvancedSearchNoAccess' => 'חשבונך אינו יכול לחפש סוגי רשומות. בקש גישה ממנהל מערכת.',
+    'AdvancedSearchSort' => 'מיון',
+    'AdvancedSearchConnectedRecords' => 'רשומות מחוברות',
+    'AdvancedSearchConnectedRecordsNote' => 'מציג רק רשומות שיש לך גישה אליהן.',
+    'AdvancedSearchNoConnections' => 'אין רשומות מחוברות שניתן לראות.',
+    'AdvancedSearchConnectionsFailed' => 'לא ניתן היה לטעון רשומות מחוברות.',
+    'AdvancedSearchShowConnections' => 'הצג רשומות מחוברות עבור {$title}',
+    'AdvancedSearchExploreConnections' => 'חקור קשרים',
+    'AdvancedSearchCopyLink' => 'העתקת קישור',
+    'AdvancedSearchMoreCount' => '+{$count} עוד',
+    'AdvancedSearchCopyLinkFailed' => 'לא הצלחתי להעתיק את הקישור.',
+    'AdvancedSearchOpenRecord' => 'פתח',
+    'ControlDeepLinkUnavailable' => 'בקרה זו אינה זמינה. ייתכן שהיא נמחקה, או שאין לך גישה אליה.',
+    'ExceptionDeepLinkUnavailable' => 'לא ניתן לפתוח את החריג הזה כאן. ייתכן שאין לך גישה למסמך המדיניות שלו.',
+    // Advanced Search: the topbar typeahead
+    'AdvancedSearchSeeAll' => 'ראה את כל התוצאות עבור "{$q}"',
+    'AdvancedSearchTopHit' => 'התוצאה המובילה',
+    'AdvancedSearchKeyMove' => 'הזזה',
+    'AdvancedSearchKeyEsc' => 'Esc',
+    'AdvancedSearchSuggestions' => 'הצעות חיפוש',
+    'AdvancedSearchAssessmentSubtitle' => '{$contact} · {$percent}% הושלם',
+    'AdvancedSearchScannerId' => 'מזהה סורק',
+    'AdvancedSearchVendor' => 'ספק',
+    'AdvancedSearchProduct' => 'מוּצָר',
+    'AdvancedSearchSeverityLevel' => 'חומרה {$level}',
+    'AdvancedSearchFromYourExtras' => 'מהתוספות שלך',
+    'UpdateAnExistingUser' => 'עדכון משתמש קיים',
+    'UserImportProgressTitle' => 'ייבוא משתמשים',
+    'UserImportQueued' => 'בתור. הייבוא יתחיל עוד רגע…',
+    'UserImportProgressCount' => '{$processed} מתוך {$total} שורות שעובדו…',
+    'UserImportComplete' => 'הייבוא הושלם.',
+    'UserImportFailed' => 'לא ניתן היה להשלים את הייבוא.',
+    'UserImportSummary' => '{$created} נוצר, {$updated} עודכן, {$failed} לא יובא.',
+    'UserImportRowInvalid' => 'שורה {$row}: לא יובאה. נדרשים שם משתמש, שם מלא וכתובת דוא"ל תקפה.',
+    'UserImportRowError' => 'שורה {$row}: לא יובאה עקב שגיאה בלתי צפויה.',
+    'UserImportRevealPasswords' => 'הצג סיסמאות זמניות',
+    'UserImportPasswordsOnce' => 'הסיסמאות הזמניות של המשתמשים החדשים מוצגות פעם אחת ולאחר מכן נמחקות. העתיקו אותן כעת ותנו לכל משתמש את שלהן בצורה מאובטחת. כל משתמש חייב לשנות אותה בכניסה הראשונה.',
+    'UserImportPasswordsShownOnce' => 'סיסמאות זמניות אלו נמחקו מ-SimpleRisk ולא ניתן להציג אותן שוב. העתק אותן כעת. כל משתמש חייב לשנות את שלו בכניסה הראשונה.',
+    'UserImportPasswordsUnavailable' => 'לא ניתן עוד להציג את הסיסמאות הזמניות. הן מוצגות פעם אחת, רק למנהל שהתחיל את הייבוא ורק בלשונית הדפדפן שבה התחילה אותו, ו-SimpleRisk לא שומר דבר שיכול להציג אותן שוב. הגדר סיסמה חדשה לכל משתמש חדש על ידי עריכת המשתמש.',
+    'UserImportBackgroundNote' => 'דף זה מתעדכן מעצמו והייבוא ממשיך לפעול אם תעזוב. פתח את הדף שוב כדי לראות את התוצאה.',
+    'AuditAdditionalStakeholdersSetOnTest' => 'בעלי עניין נוספים הוגדרו בבדיקה. כדי לשנות אותם, ערוך את הבדיקה תחת {$page}; השינוי חל על ביקורת זו באופן מיידי.',
+    'QuestionnaireDraftSomeFilesNotSaved' => 'תשובותיך נשמרו, אך קובץ מצורף אחד או יותר לא נשמרו. ייתכן שהקובץ גדול מדי או מסוג שאינו מותר.',
+    'UploadFileTooBigForDatabase' => 'הקובץ שהועלה גדול מדי לאחסון במסד הנתונים. מנהל מערכת של SimpleRisk יכול להגדיל את הערכים max_allowed_packet ו- innodb_log_file_size בתצורת MySQL.',
+    'UploadErrorIniSize' => 'הקובץ שהועלה חורג מההוראת upload_max_filesize ב-php.ini.',
+    'UploadErrorFormSize' => 'הקובץ שהועלה חורג מההוראת MAX_FILE_SIZE שצוינה בטופס ה-HTML.',
+    'UploadErrorPartial' => 'הקובץ שהועלה הועלה רק באופן חלקי.',
+    'UploadErrorNoFile' => 'לא הועלה קובץ.',
+    'UploadErrorNoTmpDir' => 'חסרה תיקייה זמנית.',
+    'UploadErrorCantWrite' => 'כתיבת הקובץ לדיסק נכשלה.',
+    'UploadErrorExtension' => 'סיומת PHP עצרה את העלאת הקובץ.',
+    'MaxUploadSizeNeedsInteger' => 'גודל קובץ ההעלאה המרבי צריך להיות מספר שלם של בייטים גדול מאפס.',
+    'MaxUploadSizeUpdated' => 'גודל קובץ ההעלאה המרבי עודכן בהצלחה.',
+    'MaxUploadSizeCapped' => 'הערך השמור גבוה יותר ממה שמאפשר שרת זה, לכן קבצים גדולים יותר נדחים עד להעלאת מגבלות ה-PHP וה-MySQL או הורדת ערך זה. הקובץ הגדול ביותר המתקבל כעת, בבתים:',
+    'PleaseEnterAValidEmailAddress' => 'אנא הזן כתובת דוא"ל תקפה.',
+    'RiskImportedClosedWithoutCloseReason' => 'סיכון {$risk_id} ("{$subject}") יובא במצב סגור אך ללא סיבת סגירה, כך שפרטי הסגירה שלו אינם שלמים. הוסף סיבת סגירה לקובץ וייבא אותו שוב, או השלם את הסגירה מדף הסיכון.',
+    // SR-115: HTTP Strict Transport Security (HSTS)
+    'EnableHSTS' => 'הפעל אבטחת תעבורה קפדנית של HTTP (HSTS)',
+    'EnableHSTSHelp' => 'מורה לדפדפנים להתחבר ל-SimpleRisk דרך HTTPS רק עבור הגיל המרבי המפורט להלן. הפעל אפשרות זו רק לאחר ש-HTTPS יעבוד בצורה אמינה באתר זה: דפדפנים שראו את הכותרת יסרבו ל-HTTP רגיל, ולא ניתן לעקוף אישור פגום עד שיפוג הגיל המרבי. התחל עם גיל מרבי קצר, כגון 300 שניות, והעלה אותו לאחר אימות HTTPS.',
+    'HSTSMaxAge' => 'גיל מקסימלי של HSTS (שניות)',
+    'HSTSMaxAgeInvalid' => 'הגיל המקסימלי של HSTS חייב להיות מספר שלם של שניות בין 0 ל-63072000.',
+    'HSTSIncludeSubdomains' => 'החלת HSTS על כל תת-הדומיינים',
+    'HSTSIncludeSubdomainsHelp' => 'כמו כן, כופה HTTPS על כל תת-דומיין של מארח זה. יש להשמיט אם תת-דומיין כלשהו מוגש דרך HTTP רגיל.',
     '' => '',
 );
 ?>

@@ -288,7 +288,7 @@ function api_v2_risks_tags_filter_for_access(array $tags): array
     foreach ($tags as $key => $tag)
     {
         // Convert the risk_id string into an array
-        $tags[$key]['risk_ids'] = explode(',', $tag['risk_ids']);
+        $tags[$key]['risk_ids'] = explode(',', (string)($tag['risk_ids'] ?? ''));
 
         // Whether this tag had at least one real associated risk BEFORE any
         // filtering below, so a tag with no risks at all isn't confused with

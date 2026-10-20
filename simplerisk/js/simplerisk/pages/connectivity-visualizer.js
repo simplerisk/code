@@ -38,6 +38,39 @@
     // duplicate rather than an extra round trip just to disable a re-centre.
     const NEIGHBOR_ONLY_TYPES = new Set(['test_result', 'self_assessment_result']);
 
+    /**
+     * The ?type=&id= deep link (spec §5.5; Advanced Search builds it). Only a
+     * lowercase type slug and a positive integer id are accepted; vulnerabilities
+     * (composite ids) and neighbour-only types are excluded. No enumeration
+     * oracle: loadFocal() calls /ai/context/{type}/{id}, which already answers
+     * 403/404 for a forbidden or missing record (the existing "could not load
+     * graph" toast).
+     */
+    function parseDeepLink(search) {
+        const p = new URLSearchParams(search || '');
+        const type = p.get('type');
+        const id = p.get('id');
+        if (!type || !id || !/^[a-z_]+$/.test(type) || !/^\d+$/.test(id)) { return null; }
+        if (type === 'vulnerability' || NEIGHBOR_ONLY_TYPES.has(type)) { return null; }
+        const n = parseInt(id, 10);
+        if (!(n > 0) || n > 2147483647) { return null; }
+        return { type: type, id: n };
+    }
+
+    /**
+     * A ?type= / ?id= pair parseDeepLink() refused is dropped from the address
+     * bar, so a reload or a copied link does not carry it on. Every other
+     * parameter is kept.
+     */
+    function dropDeepLinkParams() {
+        const p = new URLSearchParams(window.location.search);
+        if (!p.has('type') && !p.has('id')) { return; }
+        p.delete('type');
+        p.delete('id');
+        const rest = p.toString();
+        history.replaceState(null, '', window.location.pathname + (rest ? '?' + rest : '') + window.location.hash);
+    }
+
     // Bumped on every runSearch() call so a slower, older request's response
     // can never overwrite a newer one's -- two searches can be in flight at
     // once (a fresh debounce fires while a prior fetch is still pending) and
@@ -219,6 +252,18 @@
         // very first render, same as after clearGraph().
         mount.classList.add('sr-connectivity-explorer--no-selection');
         showLaunchpadTiles(mount);
+
+        // The same focal load a launchpad row click makes (pickBrowseRow()).
+        const deep = parseDeepLink(window.location.search);
+        if (deep) {
+            // A link the server refuses (403/404) is dropped too, so a reload or a
+            // shared copy does not repeat the error toast.
+            loadFocal(mount, deep.type, deep.id, null, true).then(function (refused) {
+                if (refused) { dropDeepLinkParams(); }
+            });
+        } else {
+            dropDeepLinkParams();
+        }
     }
 
     function escapeHtml(s) {
@@ -302,6 +347,7 @@
         const map = {
             risk: L('Risk', 'Risk'),
             asset: L('Asset', 'Asset'),
+            asset_group: L('AssetGroup', 'Asset Group'),
             framework: L('Framework', 'Framework'),
             control: L('Control', 'Control'),
             test: L('Test', 'Test'),
@@ -652,12 +698,12 @@
         }
 
         // Selecting is DEFERRED past Sigma's own doubleClickTimeout (300ms;
-        // verified live against the vendored sigma@3.0.3 build via
+        // verified live against the vendored sigma@4.0.3 build via
         // sigma.getSetting('doubleClickTimeout') rather than assumed) before
         // the layout actually narrows the canvas. Sigma's mouse captor
         // emits "clickNode" for the FIRST click of every double-click
-        // unconditionally (handleClick() only special-cases the SECOND
-        // click, past sigma.esm.js:511-524) -- so this handler always runs
+        // unconditionally (the mouse captor's handleClick() only
+        // special-cases the SECOND click) -- so this handler always runs
         // once before a genuine doubleClickNode ever fires, and narrowing
         // the canvas synchronously on that first click shifts every node's
         // on-screen position (Sigma re-frames to the new width) out from
@@ -670,7 +716,9 @@
         // cancels the pending expand outright and the layout never moves
         // during the gesture; an unanswered single click expands, just
         // slightly late.
-        const SELECTION_LAYOUT_DELAY_MS = 320;
+        // Sigma's doubleClickTimeout plus a 20ms margin, so the deferral
+        // always outlasts a genuine double-click.
+        const selectionLayoutDelayMs = state.sigma.getSetting('doubleClickTimeout') + 20;
         state.selectionLayoutTimer = window.setTimeout(function () {
             state.selectionLayoutTimer = null;
             // Only apply if this node is STILL the selection -- a click on a
@@ -679,13 +727,13 @@
             if (state.selectedNodeId === node.node_id) {
                 mount.classList.remove('sr-connectivity-explorer--no-selection');
             }
-        }, SELECTION_LAYOUT_DELAY_MS);
+        }, selectionLayoutDelayMs);
     }
 
     /**
      * Sigma sizes its canvas to its container ONCE, at construction (`new
-     * Sigma(graph, canvas)` in renderGraph()) -- it does not observe later
-     * size changes on its own (confirmed against sigma@3.0.3's own source,
+     * Sigma(graph, canvas, options)` in renderGraph()) -- it does not observe later
+     * size changes on its own (confirmed against sigma@4.0.3's own source,
      * sigma.esm.js: the container's dimensions are read only inside
      * resize(), which nothing here calls automatically). The inspector
      * column's collapse/expand (setSelection()) is exactly such a later
@@ -724,7 +772,11 @@
             return;
         }
         state.resizeObserver = new ResizeObserver(function () {
-            if (state.sigma) {
+            // Sigma's resize() throws on a zero-width/height container (unless
+            // allowInvalidContainer is set), and the canvas reads 0x0 while it
+            // is hidden or detached. Skip until it has a real size again; the
+            // observer fires once more when it does.
+            if (state.sigma && canvas.offsetWidth > 0 && canvas.offsetHeight > 0) {
                 state.sigma.resize();
                 state.sigma.refresh();
             }
@@ -732,6 +784,7 @@
         state.resizeObserver.observe(canvas);
     }
 
+    /** Resolves true when the server refused the focal (HTTP 403 / 404), else false. */
     async function loadFocal(mount, type, id, name, pushTrail) {
         state.focal = { type: type, id: id };
         state.expanded = {};
@@ -763,6 +816,7 @@
             // since both call loadFocal().
             setSelection(mount, null);
             renderConnections(mount);
+            return false;
         } catch (err) {
             // Context: which focal (type/id) the failed fetch was for --
             // without this, a caught error here is indistinguishable from
@@ -771,6 +825,7 @@
             if (window.toastr) {
                 window.toastr.error(L('CouldNotLoadGraph', 'Could not load the connectivity graph.'));
             }
+            return /^HTTP 40[34]$/.test(String(err && err.message));
         }
     }
 
@@ -976,7 +1031,12 @@
             fa2.assign(graph, { iterations: 120 });
         }
 
-        state.sigma = new Sigma(graph, canvas);
+        // Node/edge sizes above are pixel-scale while the layout coordinates are
+        // unit-scale. Sigma 4 defaults itemSizesReference to "positions" (sizes
+        // in layout units), which would render these nodes enormous; "screen"
+        // keeps the sigma 3 behavior of sizes in pixels. (Sigma 4's third
+        // argument is an options object; settings nest under `settings`.)
+        state.sigma = new Sigma(graph, canvas, { settings: { itemSizesReference: 'screen' } });
 
         state.sigma.on('clickNode', function (payload) {
             const attrs = graph.getNodeAttributes(payload.node);
@@ -990,10 +1050,10 @@
         });
 
         // Clicking empty canvas background -- Sigma's own "missed every
-        // node/edge" event (verified against sigma@3.0.3's source,
+        // node/edge" event (verified against sigma@4.0.3's source,
         // sigma.esm.js: createInteractionListener() emits "<type>Stage"
-        // exactly when getNodeAtPosition()/getEdgeAtPoint() both come back
-        // empty) -- is the expected gesture to deselect: same teardown as
+        // exactly when resolveEventHit() finds neither a node nor an edge
+        // under the pointer) -- is the expected gesture to deselect: same teardown as
         // Escape, restoring the full-width canvas.
         state.sigma.on('clickStage', function () {
             setSelection(mount, null);

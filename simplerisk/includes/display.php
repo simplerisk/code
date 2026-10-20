@@ -511,6 +511,9 @@ function add_risk_details($template_group_id = "") {
     
     global $lang, $escaper;
 
+    // Template group IDs are integer primary keys; casting keeps the value from reaching the markup below as a string
+    $template_group_id = (int)$template_group_id;
+
     echo "
         <form name='submit_risk' method='post' action='' enctype='multipart/form-data' id='risk-submit-form'>
     ";
@@ -4639,60 +4642,6 @@ function report_likelihood_impact() {
     create_chartjs_bubble_code("", $element_id, $datasets, $tooltip, $x_axis_title, $y_axis_title);
 }
 
-/*************************************************************
- * FUNCTION: GET AREA DATA FROM LIKELIHOOD AND IMPACT VALUES *
- *************************************************************/
-function get_area_series_from_likelihood_impact($likelihood, $impact)
-{
-    $likelihood = (int)$likelihood;
-    $impact = (int)$impact;
-    
-    $risk_score = calculate_risk($impact, $likelihood);
-    
-    $data = array(
-        [
-            "x" => $likelihood-1,
-            "y" => $impact-1,
-            "risk" => calculate_risk($impact-1, $likelihood-1),
-        ],
-        [
-            "x" => $likelihood-1,
-            "y" => $impact,
-            "risk" => calculate_risk($impact, $likelihood-1),
-        ],
-        [
-            "x" => $likelihood,
-            "y" => $impact,
-            "risk" => calculate_risk($impact, $likelihood),
-        ],
-        [
-            "x" => $likelihood,
-            "y" => $impact-1,
-            "risk" => calculate_risk($impact-1, $likelihood),
-        ],
-        [
-            "x" => $likelihood-1,
-            "y" => $impact-1,
-        ],
-    );
-    $color = get_risk_color($risk_score);
-    
-    $area_series = array(
-        'type'=> 'area',
-        'color' => hex2rgba(convert_color_code($color)), 
-        'data' => $data,
-        'enableMouseTracking' => false,
-        'states' => [
-            'hover' => [
-                'enabled' => false
-            ]
-        ],
-        'stickyTracking' => false,
-    );
-    
-    return $area_series;
-}
-
 /************************************
  * FUNCTION: GET DATA OF RISK LEVEL *
  ************************************/
@@ -7095,6 +7044,46 @@ function display_side_navigation($active)
 
 function get_label_by_risk_field_name($field){
     global $lang, $escaper;
+
+    // The label map only depends on the active language, so build it once per language instead
+    // of once per call (it holds ~100 escaped labels and this is called per column per page).
+    // The fingerprint reads a few strings that differ between languages, so a change of
+    // $lang (a different user's locale, or a test swapping it) rebuilds the map.
+    static $cached_map = null;
+    static $cached_fingerprint = null;
+    $fingerprint = implode("\0", [$lang['ID'] ?? '', $lang['Status'] ?? '', $lang['Subject'] ?? '', $lang['Owner'] ?? '', $lang['Description'] ?? '', $lang['ContributingRisk'] ?? '', $lang['Team'] ?? '']);
+    if ($cached_map === null || $cached_fingerprint !== $fingerprint)
+    {
+        $cached_map = get_risk_field_label_map();
+        $cached_fingerprint = $fingerprint;
+    }
+
+    if (isset($cached_map[$field]))
+    {
+        return $cached_map[$field];
+    }
+
+    // Contributing impact columns depend on rows in the database, so they are resolved on demand
+    if (is_string($field) && strpos($field, "Contributing_Impact_") === 0)
+    {
+        foreach (get_contributing_risks() as $contributing_risk)
+        {
+            if ("Contributing_Impact_" . $contributing_risk['id'] === $field)
+            {
+                return js_string_escape($lang['ContributingRisk'].": ".$lang['Impact']." - ".$contributing_risk['subject']);
+            }
+        }
+    }
+
+    return null;
+}
+
+/*************************************************
+ * FUNCTION: GET RISK FIELD LABEL MAP            *
+ * Escaped label for every static risk column.   *
+ *************************************************/
+function get_risk_field_label_map(){
+    global $lang;
 	// Names list of Risk columns
 	$columns = array(
 		'id' => js_string_escape($lang['ID']),
@@ -7204,12 +7193,7 @@ function get_label_by_risk_field_name($field){
         'risk_mapping_description' => js_string_escape($lang['Description']),
         'risk_mapping_function' => js_string_escape($lang['Function']),
 	);
-    $contributing_risks = get_contributing_risks();
-    foreach($contributing_risks as $contributing_risk){
-        $columns["Contributing_Impact_".$contributing_risk['id']] = js_string_escape($lang['ContributingRisk'].": ".$lang['Impact']." - ".$contributing_risk['subject']);
-    }
-	return $columns[$field];
-
+	return $columns;
 }
 
 /***********************************
@@ -9922,11 +9906,11 @@ function display_document_to_controls()
                     var title = $(this).text();
                     var data_name = $(this).attr('data-name');
                     if(data_name == 'selected') {
-                        $(this).html( '<select name=\"selected\" class= \"form-control\"><option value=\"\">--</option><option value=\"" . $escaper->escapeHtml($lang['Yes']) . "\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"" . $escaper->escapeHtml($lang['No']) . "\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
+                        $(this).html( '<select name=\"selected\" class= \"form-control\"><option value=\"\">--</option><option value=\"1\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"0\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
                     } else if(data_name == 'tfidf_match') {
-                        $(this).html( '<select name=\"tfidf_match\" class= \"form-control\"><option value=\"\">--</option><option value=\"" . $escaper->escapeHtml($lang['Yes']) . "\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"" . $escaper->escapeHtml($lang['No']) . "\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
+                        $(this).html( '<select name=\"tfidf_match\" class= \"form-control\"><option value=\"\">--</option><option value=\"1\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"0\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
                     } else if(data_name == 'ai_match') {
-                        $(this).html( '<select name=\"ai_match\" class= \"form-control\"><option value=\"\">--</option><option value=\"" . $escaper->escapeHtml($lang['Yes']) . "\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"" . $escaper->escapeHtml($lang['No']) . "\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
+                        $(this).html( '<select name=\"ai_match\" class= \"form-control\"><option value=\"\">--</option><option value=\"1\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"0\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
                     } else if(data_name == 'matching') {
                         $(this).html( '<select name=\"recommendation\" class= \"form-control\"><option value=\"\">--</option><option value=\"DefiniteMatch\">" . $escaper->escapeHtml($lang['DefiniteMatch']) . "</option><option value=\"LikelyMatch\">" . $escaper->escapeHtml($lang['LikelyMatch']) . "</option><option value=\"PossibleMatch\">" . $escaper->escapeHtml($lang['PossibleMatch']) . "</option><option value=\"UnlikelyMatch\">" . $escaper->escapeHtml($lang['UnlikelyMatch']) . "</option><option value=\"NotAMatch\">" . $escaper->escapeHtml($lang['NotAMatch']) . "</option></select>' );
                     } else if(data_name == 'recommendation') {
@@ -10635,6 +10619,171 @@ function display_custom_queue_monitor_columns($custom_setting_field = "custom_qu
 {
     // For now, we can return an empty container or allow future custom columns
     echo "<p>Currently no custom columns available.</p>";
+}
+
+/******************************************************
+ * FUNCTION: ADVANCED SEARCH LOCKED TYPE KEYS          *
+ ******************************************************/
+/**
+ * The entity types Advanced Search covers regardless of other Extras, as
+ * plural lang keys. Shared by the locked topbar popover and the locked Search
+ * page so the promise is stated once.
+ *
+ * @return list<string>
+ */
+function advanced_search_locked_type_keys(): array
+{
+    return ['Risks', 'Frameworks', 'Controls', 'Documents', 'Exceptions', 'Tests', 'Audits', 'Assets', 'AssetGroups'];
+}
+
+/******************************************************
+ * FUNCTION: DISPLAY LOCKED TOPBAR SEARCH              *
+ ******************************************************/
+/**
+ * The topbar search when the Advanced Search Extra is not active: present,
+ * legible, plainly not actionable, with one popover saying what it unlocks.
+ * Shares the .sr-locked treatment (scss/modules/_locked-affordance.scss).
+ *
+ * It is a <button>, not an <input>: nothing can be typed or submitted, so
+ * there is no search behavior to misfire. The popover body is rendered here as
+ * a hidden panel of server-escaped text; js/simplerisk/theme/topbar-search-
+ * locked.js turns it into a Bootstrap popover. Nothing is built from user input.
+ *
+ * @param array $locked advanced_search_acquisition_state()'s return shape
+ *
+ * @return void
+ */
+function display_locked_topbar_search(array $locked): void
+{
+    global $lang, $escaper;
+
+    // The entity types Advanced Search covers regardless of other Extras.
+    // Conditional ones (incidents, assessments, vulnerabilities) depend on
+    // Extras this customer may not have, so they are not promised here.
+    $type_keys = advanced_search_locked_type_keys();
+
+    $note      = $locked['note_key'] !== null ? ($lang[$locked['note_key']] ?? '') : '';
+    $link_text = $locked['link_key'] !== null ? ($lang[$locked['link_key']] ?? '') : '';
+    $href      = $locked['unlock_href'] ?? null;
+?>
+			<li class="nav-item nav-item-search sr-locked-search-item">
+				<div class="nav-link">
+					<div class="search-box sr-locked sr-locked-search" data-sr-locked-state="<?= $escaper->escapeHtmlAttr($locked['state']) ?>">
+						<button type="button" class="sr-locked-search__trigger" aria-haspopup="dialog" aria-expanded="false" aria-label="<?= $escaper->escapeHtmlAttr($lang['AdvancedSearchLockedAria']) ?>">
+							<i class="fas fa-search align-middle" aria-hidden="true"></i>
+							<span class="sr-locked-search__placeholder"><?= $escaper->escapeHtml($lang['AdvancedSearchLockedPlaceholder']) ?></span>
+							<span class="sr-locked-badge"><i class="fa fa-lock" aria-hidden="true"></i> <?= $escaper->escapeHtml($lang['LockedAffordanceBadge']) ?></span>
+						</button>
+					</div>
+				</div>
+				<div class="sr-locked-search__panel" hidden data-sr-popover-title="<?= $escaper->escapeHtmlAttr($lang['AdvancedSearchExtra']) ?>">
+					<p class="sr-locked-search__pitch"><?= $escaper->escapeHtml($lang['AdvancedSearchLockedPitch']) ?></p>
+					<div class="sr-locked-search__unlocks">
+						<span class="sr-locked-search__unlocks-label"><?= $escaper->escapeHtml($lang['AdvancedSearchUnlocksLabel']) ?></span>
+						<ul class="sr-locked-search__types">
+<?php foreach ($type_keys as $type_key) { ?>
+							<li class="sr-chip"><?= $escaper->escapeHtml($lang[$type_key]) ?></li>
+<?php } ?>
+						</ul>
+					</div>
+<?php if ($note !== '') { ?>
+					<span class="sr-locked-note"><?= $escaper->escapeHtml($note) ?></span>
+<?php } ?>
+<?php if ($link_text !== '' && $href) { ?>
+					<a class="sr-locked-link" href="<?= $escaper->escapeHtmlAttr($href) ?>"<?= !empty($locked['external']) ? ' target="_blank" rel="noopener"' : '' ?>><?= $escaper->escapeHtml($link_text) ?></a>
+<?php } ?>
+				</div>
+			</li>
+<?php
+}
+
+/******************************************************
+ * FUNCTION: DISPLAY LOCKED SEARCH PAGE                *
+ ******************************************************/
+/**
+ * The Search page body when the Advanced Search Extra is not active (spec
+ * §5.4): the same pitch, type chips, note and unlock link as the topbar
+ * popover, as one card. No input, no form: there is no search behaviour.
+ *
+ * @param array $locked advanced_search_acquisition_state()'s return shape
+ *
+ * @return void
+ */
+function display_locked_search_page(array $locked): void
+{
+    global $lang, $escaper;
+
+    $note      = $locked['note_key'] !== null ? ($lang[$locked['note_key']] ?? '') : '';
+    $link_text = $locked['link_key'] !== null ? ($lang[$locked['link_key']] ?? '') : '';
+    $href      = $locked['unlock_href'] ?? null;
+?>
+<section class="sr-table-card sr-locked-search-page sr-locked" data-sr-locked-state="<?= $escaper->escapeHtmlAttr($locked['state']) ?>">
+    <div class="sr-table-toolbar">
+        <span class="sr-table-title"><?= $escaper->escapeHtml($lang['AdvancedSearchExtra']) ?></span>
+        <span class="sr-locked-badge"><i class="fa fa-lock" aria-hidden="true"></i> <?= $escaper->escapeHtml($lang['LockedAffordanceBadge']) ?></span>
+    </div>
+    <div class="sr-locked-search-page__body">
+        <p class="sr-locked-search__pitch"><?= $escaper->escapeHtml($lang['AdvancedSearchLockedPitch']) ?></p>
+        <span class="sr-locked-search__unlocks-label"><?= $escaper->escapeHtml($lang['AdvancedSearchUnlocksLabel']) ?></span>
+        <ul class="sr-locked-search__types">
+<?php foreach (advanced_search_locked_type_keys() as $type_key) { ?>
+            <li class="sr-chip"><?= $escaper->escapeHtml($lang[$type_key]) ?></li>
+<?php } ?>
+        </ul>
+<?php if ($note !== '') { ?>
+        <span class="sr-locked-note"><?= $escaper->escapeHtml($note) ?></span>
+<?php } ?>
+<?php if ($link_text !== '' && $href) { ?>
+        <a class="sr-locked-link" href="<?= $escaper->escapeHtmlAttr($href) ?>"<?= !empty($locked['external']) ? ' target="_blank" rel="noopener"' : '' ?>><?= $escaper->escapeHtml($link_text) ?></a>
+<?php } ?>
+    </div>
+</section>
+<?php
+}
+
+/******************************************************
+ * FUNCTION: DISPLAY SEARCH PAGE BODY                  *
+ ******************************************************/
+/**
+ * search/index.php's body. Extras ship separately from Core, so an active
+ * Advanced Search Extra older than this Core has no page renderer: that case
+ * gets an "update the Extra" card instead of a fatal, the way header.php
+ * guards its Extra calls with function_exists().
+ *
+ * @param bool        $extra_active advanced_search_extra()
+ * @param array|null  $locked       advanced_search_acquisition_state()'s shape; used when the Extra is not active
+ * @param string      $renderer     the Extra's page renderer (injected by tests)
+ *
+ * @return void
+ */
+function display_search_page_body(bool $extra_active, ?array $locked, string $renderer = 'render_advanced_search_page'): void
+{
+    global $lang, $escaper;
+
+    if (!$extra_active) {
+        if ($locked !== null) {
+            display_locked_search_page($locked);
+        }
+        return;
+    }
+
+    if (function_exists($renderer)) {
+        $renderer();
+        return;
+    }
+
+    // No log here: write_debug_log() reads settings from the database and
+    // this render is pinned by a DB-free test; search/index.php logs it.
+?>
+<section class="sr-table-card sr-locked-search-page" data-sr-search-unavailable="extra_outdated">
+    <div class="sr-table-toolbar">
+        <span class="sr-table-title"><?= $escaper->escapeHtml($lang['AdvancedSearchExtra']) ?></span>
+    </div>
+    <div class="sr-locked-search-page__body">
+        <span class="sr-locked-note"><?= $escaper->escapeHtml(_lang_raw('UpdateInstalledExtrasOutOfDate', ['extrasToUpdate' => $lang['AdvancedSearch']])) ?></span>
+    </div>
+</section>
+<?php
 }
 
 ?>

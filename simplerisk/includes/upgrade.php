@@ -146,6 +146,7 @@ $releases = [
     "20260909-001",
     "20260917-001",
     "20261003-001",
+    "20261020-001",
 ];
 
 /*************************
@@ -11376,6 +11377,39 @@ function upgrade_from_20260917001($db) {
 
     // Asset Scoring: the three FIPS 199 impact selections on assets.
     upgrade_add_asset_scoring_columns($db);
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/*****************************************
+ * FUNCTION: UPGRADE FROM 20261003-001   *
+ *****************************************/
+function upgrade_from_20261003001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20261003-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20261020-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // SD-884: remember which due-window of an automated test had its audit deleted, so the
+    // hourly auto-initiate cron does not immediately recreate (and re-notify) it. It holds the
+    // test's next_date at the moment of deletion; the cron skips the test only while that still
+    // equals the test's current next_date, so it expires on its own when the window moves.
+    if (!field_exists_in_table('auto_initiate_suppressed_for', 'framework_control_tests')) {
+        echo "Adding an auto_initiate_suppressed_for field to the framework_control_tests table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_control_tests` ADD COLUMN `auto_initiate_suppressed_for` DATE NULL DEFAULT NULL");
+        $stmt->execute();
+    }
+
+    // SR-2040: reword the inaccurate comment_risk_management permission
+    // description on existing installs. Fresh installs reach it through this
+    // chain as well. Idempotent.
+    echo "Correcting the comment_risk_management permission description.<br />\n";
+    upgrade_reword_comment_risk_management_description($db);
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);

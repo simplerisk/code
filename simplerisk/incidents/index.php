@@ -127,7 +127,7 @@
 		newincident: "<?php echo $lang['NewIncident']; ?>"
 	}
 	
-	var max_upload_size = "<?php echo $escaper->escapeJs(get_setting('max_upload_size', 0)); ?>";
+	var max_upload_size = "<?php echo $escaper->escapeJs(max_upload_size_effective()); ?>";
 	var fileTooBigMessage = "<?php echo $escaper->escapeJs($lang['FileIsTooBigToUpload']); ?>"; 
 	var fileSizeLabel = "<?php echo $escaper->escapeJs($lang['FileSize']);?>"; 
 

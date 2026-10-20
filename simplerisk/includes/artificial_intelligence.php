@@ -392,6 +392,21 @@ function ai_test_connection_key_decision($saved_api_url, $saved_api_key, $posted
     return ['key' => '', 'block' => false];
 }
 
+// Local providers (ollama/custom) run without an API key; every hosted provider needs one
+function ai_provider_is_keyless($provider) {
+    return in_array($provider, ['ollama', 'custom'], true);
+}
+
+/*****************************************************************************
+ * FUNCTION: AI SHOULD RUN CONNECTION TEST                                    *
+ * SR-1810: a hosted provider with no API key can never authenticate, so the   *
+ * live test() call is pure outbound noise (and trips "no AI traffic" firewall *
+ * policies). Skip it unless the provider is local or a key is present.        *
+ *****************************************************************************/
+function ai_should_run_connection_test($provider, $effective_key) {
+    return ai_provider_is_keyless($provider) || $effective_key !== '';
+}
+
 /**
  * Normalize an Anthropic `/v1/messages` success body to the single-text-block
  * shape every AIClient caller reads: `['content'][0]['text']`.
@@ -1378,12 +1393,14 @@ function display_ai_provider_configuration()
             else
             {
                 $effective_key = $key_decision['key'];
-                $is_local      = in_array($provider, ['ollama', 'custom'], true);
+                $is_local      = ai_provider_is_keyless($provider);
 
                 // Test, then persist. Provider/URL/model always save; the API key is
                 // only overwritten when re-entered (a blank field keeps the saved key).
                 $client      = new AIClient($provider, $api_url, $effective_key, $model);
-                $connected   = $client->test();
+                // SR-1810: no outbound call when a hosted provider has no key;
+                // the "API key required" message below covers that case.
+                $connected   = ai_should_run_connection_test($provider, $effective_key) ? $client->test() : false;
 
                 update_setting('ai_provider', $provider);
                 update_setting('ai_api_url',  $api_url);

@@ -313,7 +313,11 @@
     // scale.
     .sr-row-actions-wrap.is-open { z-index: 21; }
 }
-.sr-fw-child { padding-left: 1.9rem; }
+// Indent grows one step per nesting level (--sr-fw-depth is set by railRow()
+// from the API's `depth`), capped at 3 so a deep tree cannot starve the name
+// column. Depth 1 keeps its original 1.9rem; levels past the cap stay flush
+// with the cap level. .sr-fw-child stays as the "is nested" hook.
+.sr-fw-child { padding-left: calc(1.9rem + (min(var(--sr-fw-depth, 1), 3) - 1) * 1rem); }
 .sr-fw-zero  { color: $gray-500; }
 
 // The grid's first item: the name, plus the SCF chip flowing inline after it.

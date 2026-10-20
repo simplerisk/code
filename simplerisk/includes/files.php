@@ -57,9 +57,15 @@ function upload_tmp_spreadsheet($file, $first_line, $unique_name = null)
         }
 
         // You should also check filesize here.
-        $max_upload_size = get_setting("max_upload_size");
+        $max_upload_size = max_upload_size_effective();
         if ($file['size'] > $max_upload_size) {
             throw new RuntimeException($lang['FileUploadExceededFileSize']);
+        }
+
+        // The file is stored in the database along with its parsed form, so one too big for MySQL
+        // cannot be staged. The parsed form can be larger still; that part is not measured here.
+        if (upload_exceeds_database_limit($file['size'])) {
+            throw new RuntimeException($lang['UploadFileTooBigForDatabase']);
         }
 
         // DO NOT TRUST $file['mime'] VALUE !!
@@ -333,6 +339,13 @@ function upload_tmp_import_file($file, $unique_name = null) {
     // If a file was submitted and the name isn't blank
     if (isset($file) && $file['name'] != "") {
 
+        // PHP leaves tmp_name empty for a file it refused, which finfo cannot inspect
+        if (upload_error_text($file['error'] ?? UPLOAD_ERR_NO_FILE) !== null) {
+
+            set_alert(true, "bad", $escaper->escapeHtml($lang['ImportingFileError']));
+            return 0;
+        }
+
         $finfo = new finfo(FILEINFO_MIME_TYPE);
 
         $file_type_name = $finfo->file($file['tmp_name']);
@@ -345,7 +358,7 @@ function upload_tmp_import_file($file, $unique_name = null) {
         if ($file_type_extension_mapping_exists) {
 
             // Get the maximum upload file size
-            $max_upload_size = get_setting("max_upload_size");
+            $max_upload_size = max_upload_size_effective();
             
             // If the file size is less than the maximum
             if ($file['size'] < $max_upload_size)

@@ -122,6 +122,35 @@ use Mcp\Types\Meta;
      private ?string $ipcPath = null;
 
      /**
+      * Bytes read from the IPC pipe that do not yet form a complete frame.
+      * A frame is a 4-byte big-endian length followed by a serialized
+      * payload (see {@see writeIpcFrame()}).
+      */
+     private string $ipcBuffer = '';
+
+     /**
+      * Set once the background process has been reaped. The pipe is drained
+      * one last time after that so frames written just before the child
+      * terminated (e.g. the decline report) are not lost.
+      */
+     private bool $backgroundExited = false;
+
+     /**
+      * Key that marks an IPC frame as a status report from the background
+      * process rather than a JsonRpcMessage.
+      */
+     private const IPC_STATUS_KEY = 'sseStatus';
+
+     /**
+      * SAPIs under which forking a helper process is safe. Only a SAPI that
+      * owns no in-flight client connection qualifies: a forked copy of a
+      * PHP-FPM, mod_php, or built-in-server worker inherits the request's
+      * socket, and PHP's request shutdown in that copy would end the
+      * response the parent is still writing (issue #65).
+      */
+     private const FORK_SAFE_SAPIS = ['cli', 'phpdbg'];
+
+     /**
       * Extra HTTP headers to include on the SSE GET request (e.g.
       * Mcp-Session-Id, MCP-Protocol-Version). Merged *after* the default
       * header bag so callers can override Accept or other defaults if
@@ -230,13 +259,69 @@ use Mcp\Types\Meta;
       */
      public function start(): void {
          $this->logger->info("Starting SSE connection to {$this->config->getEndpoint()}");
-         
-         // Check if we can use a background process
-         if (function_exists('pcntl_fork') && function_exists('posix_setsid')) {
+
+         $this->resetStreamState();
+
+         if ($this->canUseBackgroundProcess()) {
              $this->startBackgroundConnection();
          } else {
              $this->startForegroundConnection();
          }
+     }
+
+     /**
+      * Clear every per-attempt flag so a stop()/start() cycle on the same
+      * instance behaves like a fresh connection. Without this, a reaped
+      * helper (backgroundExited) or an earlier decline (serverDeclinedStream)
+      * would mark the restarted stream inactive on its first poll.
+      */
+     private function resetStreamState(): void
+     {
+         $this->backgroundExited = false;
+         $this->ipcBuffer = '';
+         $this->buffer = '';
+         $this->messageQueue = [];
+         $this->serverDeclinedStream = false;
+         $this->responseStatus = null;
+         $this->responseContentType = null;
+     }
+
+     /**
+      * Is forking a helper process safe under the given SAPI?
+      *
+      * Only `cli` and `phpdbg` qualify. Every web SAPI (`fpm-fcgi`,
+      * `apache2handler`, `cgi-fcgi`, `cli-server`, `litespeed`, ...) owns
+      * the client connection for the current request; a forked child would
+      * share it and could finish the parent's response on shutdown.
+      *
+      * @internal Exposed for tests; not part of the public API.
+      */
+     public static function isForkSafeSapi(string $sapi): bool
+     {
+         return in_array($sapi, self::FORK_SAFE_SAPIS, true);
+     }
+
+     /**
+      * Decide between the forked background helper and the in-process
+      * non-blocking stream. Requires ext-pcntl + ext-posix *and* a SAPI
+      * where forking cannot interfere with an in-flight HTTP response.
+      */
+     private function canUseBackgroundProcess(): bool
+     {
+         if (!function_exists('pcntl_fork') || !function_exists('posix_setsid')) {
+             $this->logger->debug('SSE background process unavailable: ext-pcntl/ext-posix not loaded');
+             return false;
+         }
+
+         if (!self::isForkSafeSapi(PHP_SAPI)) {
+             $this->logger->info(
+                 "SSE background process disabled under the '" . PHP_SAPI
+                 . "' SAPI; using the in-process stream instead"
+             );
+             return false;
+         }
+
+         return true;
      }
      
      /**
@@ -266,31 +351,30 @@ use Mcp\Types\Meta;
          }
          
          if ($pid === 0) {
-             // Child process
+             // Child process. Every path below must end in
+             // terminateChildProcess(): the child is a copy of the parent
+             // (output buffers, shutdown functions, destructors and any
+             // inherited sockets included), so a normal exit() would run
+             // PHP's request shutdown a second time on the parent's behalf.
+             $pipe = false;
              try {
                  // Detach from parent
                  posix_setsid();
-                 
+
                  // Open the IPC pipe for writing
                  $pipe = fopen($this->ipcPath, 'w');
                  if ($pipe === false) {
-                     exit(1);
+                     $this->terminateChildProcess(1, null);
                  }
-                 
-                 // Establish SSE connection
+
+                 // Establish SSE connection (blocks until the stream ends)
                  $this->establishSseConnection($pipe);
-                 
-                 // Close pipe
-                 fclose($pipe);
-             } catch (\Exception $e) {
-                 // Log error and exit
+             } catch (\Throwable $e) {
                  error_log("SSE connection error: {$e->getMessage()}");
-                 exit(1);
+                 $this->terminateChildProcess(1, $pipe);
              }
-             
-             // Clean up and exit
-             @unlink($this->ipcPath);
-             exit(0);
+
+             $this->terminateChildProcess(0, $pipe);
          } else {
              // Parent process
              $this->logger->info("Started SSE connection in background process (PID: {$pid})");
@@ -309,6 +393,40 @@ use Mcp\Types\Meta;
          }
      }
      
+     /**
+      * Terminate the forked SSE helper without running PHP's request
+      * shutdown.
+      *
+      * The child is a fork of the caller's process. A plain exit() would
+      * flush the output buffers it inherited, run the application's shutdown
+      * functions and destructors a second time (closing sockets the parent
+      * still uses, e.g. a database connection), and under a web SAPI finish
+      * the FastCGI/HTTP request the parent is still writing — the parent's
+      * remaining output is then silently discarded (issue #65). SIGKILL to
+      * self skips all of that; anything already fflush()ed into the FIFO
+      * stays readable for the parent.
+      *
+      * @param resource|false|null $pipe The IPC pipe, if it was opened
+      */
+     private function terminateChildProcess(int $exitCode, $pipe): never
+     {
+         if (is_resource($pipe)) {
+             @fflush($pipe);
+             @fclose($pipe);
+         }
+
+         if ($this->ipcPath !== null) {
+             @unlink($this->ipcPath);
+         }
+
+         if (function_exists('posix_kill') && function_exists('posix_getpid')) {
+             posix_kill(posix_getpid(), SIGKILL);
+         }
+
+         // Only reached when the hard kill is unavailable or failed.
+         exit($exitCode);
+     }
+
      /**
       * Starts an SSE connection in the foreground (same process).
       * 
@@ -466,29 +584,130 @@ use Mcp\Types\Meta;
       */
      private function establishSseConnection($pipe): void {
          $ch = $this->createCurlHandle();
-         
+
          // Configure cURL for blocking operation in the child process
          curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($ch, $data) use ($pipe) {
+             // Mirror the foreground path: a non-2xx / non-event-stream
+             // response (most commonly 405 Method Not Allowed) is not a
+             // stream. Short-write so curl aborts instead of feeding an HTML
+             // body to the SSE parser; the decline is reported below.
+             if (!$this->responseStatusIndicatesLiveStream()) {
+                 return 0;
+             }
+
              $processed = $this->processSseData($data, true);
-             
+
              // Send any complete messages back to the parent process
              while (!empty($this->messageQueue)) {
                  $message = array_shift($this->messageQueue);
-                 // Serialize and send through the pipe
-                 $serialized = serialize($message);
-                 $header = pack('N', strlen($serialized));
-                 fwrite($pipe, $header . $serialized);
-                 fflush($pipe);
+                 $this->writeIpcFrame($pipe, $message);
              }
-             
+
              return $processed;
          });
-         
+
          // Execute the request (this will block until completion or error)
          curl_exec($ch);
-         
+
+         // Report a declined stream to the parent so wasDeclinedByServer() /
+         // getResponseStatus() behave as they do in foreground mode. This
+         // runs after curl_exec so a body-less 405 (Content-Length: 0, where
+         // the WRITEFUNCTION never fires) is reported too.
+         if ($this->responseStatus !== null && !$this->responseStatusIndicatesLiveStream()) {
+             $this->writeIpcFrame($pipe, [
+                 self::IPC_STATUS_KEY => $this->responseStatus,
+                 'contentType' => $this->responseContentType,
+                 'declined' => true,
+             ]);
+         }
+
          // Clean up
          curl_close($ch);
+     }
+
+     /**
+      * Write one length-prefixed frame to the IPC pipe (child side).
+      *
+      * @param resource $pipe
+      * @param JsonRpcMessage|array<string, mixed> $payload
+      */
+     private function writeIpcFrame($pipe, JsonRpcMessage|array $payload): void
+     {
+         $serialized = serialize($payload);
+         fwrite($pipe, pack('N', strlen($serialized)) . $serialized);
+         fflush($pipe);
+     }
+
+     /**
+      * Read one complete frame from the IPC pipe (parent side), buffering
+      * partial reads across calls. Returns null when no complete frame is
+      * available yet.
+      */
+     private function readIpcFrame(): ?string
+     {
+         if ($this->ipcHandle === null) {
+             return null;
+         }
+
+         $chunk = fread($this->ipcHandle, 65536);
+         if (is_string($chunk) && $chunk !== '') {
+             $this->ipcBuffer .= $chunk;
+         }
+
+         if (strlen($this->ipcBuffer) < 4) {
+             return null;
+         }
+
+         $size = unpack('N', $this->ipcBuffer)[1];
+         if (strlen($this->ipcBuffer) < 4 + $size) {
+             return null;
+         }
+
+         $frame = substr($this->ipcBuffer, 4, $size);
+         $this->ipcBuffer = substr($this->ipcBuffer, 4 + $size);
+
+         return $frame;
+     }
+
+     /**
+      * Decode a frame received from the background process. Returns the
+      * JsonRpcMessage it carried, or null for a status report (which is
+      * applied to this connection's state) or an unrecognised payload.
+      */
+     private function handleIpcFrame(string $serialized): ?JsonRpcMessage
+     {
+         try {
+             $payload = @unserialize($serialized);
+         } catch (\Throwable $e) {
+             $this->logger->warning("Failed to unserialize message from IPC pipe: {$e->getMessage()}");
+             return null;
+         }
+
+         if ($payload instanceof JsonRpcMessage) {
+             return $payload;
+         }
+
+         if (is_array($payload) && array_key_exists(self::IPC_STATUS_KEY, $payload)) {
+             $status = $payload[self::IPC_STATUS_KEY];
+             $this->responseStatus = is_int($status) ? $status : null;
+             $contentType = $payload['contentType'] ?? null;
+             $this->responseContentType = is_string($contentType) ? $contentType : null;
+
+             if (($payload['declined'] ?? false) === true) {
+                 $this->serverDeclinedStream = true;
+                 $this->active = false;
+                 $this->logger->info(
+                     'SSE stream declined by server (status='
+                     . ($this->responseStatus ?? 'unknown') . ')'
+                 );
+             }
+
+             return null;
+         }
+
+         $this->logger->warning('Unrecognized payload received from SSE background process');
+
+         return null;
      }
      
      /**
@@ -940,46 +1159,45 @@ use Mcp\Types\Meta;
          if ($this->ipcHandle === null) {
              return null;
          }
-         
+
+         // Drain the pipe before checking whether the child is still alive:
+         // the helper writes its final frames (e.g. the decline report)
+         // immediately before terminating, and a FIFO keeps written bytes
+         // readable after the writer is gone.
+         $frame = $this->readIpcFrame();
+         if ($frame !== null) {
+             return $this->handleIpcFrame($frame);
+         }
+
          // Check if the background process is still running
          if ($this->backgroundPid !== null) {
              $result = pcntl_waitpid($this->backgroundPid, $status, WNOHANG);
              if ($result === $this->backgroundPid) {
-                 // Process has exited
-                 $this->logger->warning("SSE background process exited with status: " . pcntl_wexitstatus($status));
-                 $this->active = false;
-                 return null;
+                 if (pcntl_wifsignaled($status)) {
+                     // The helper ends itself with SIGKILL (see
+                     // terminateChildProcess()); this is the normal outcome.
+                     $this->logger->debug('SSE background process ended (signal ' . pcntl_wtermsig($status) . ')');
+                 } elseif (pcntl_wexitstatus($status) !== 0) {
+                     $this->logger->warning('SSE background process exited with status: ' . pcntl_wexitstatus($status));
+                 } else {
+                     $this->logger->debug('SSE background process exited normally');
+                 }
+                 // Reaped: never signal this pid again (it may be recycled).
+                 $this->backgroundPid = null;
+                 $this->backgroundExited = true;
              }
          }
-         
-         // Try to read a message size header (4 bytes)
-         $header = fread($this->ipcHandle, 4);
-         if ($header === false || strlen($header) < 4) {
-             // No data available
-             return null;
-         }
-         
-         // Unpack the message size
-         $size = unpack('N', $header)[1];
-         
-         // Read the serialized message
-         $serialized = fread($this->ipcHandle, $size);
-         if ($serialized === false || strlen($serialized) < $size) {
-             // Incomplete read - this shouldn't happen with a properly functioning named pipe
-             $this->logger->warning("Incomplete message read from IPC pipe");
-             return null;
-         }
-         
-         try {
-             // Unserialize the message
-             $message = unserialize($serialized);
-             if ($message instanceof JsonRpcMessage) {
-                 return $message;
+
+         if ($this->backgroundExited) {
+             // One last drain for frames written between the read above and
+             // the reap, then mark the stream ended.
+             $frame = $this->readIpcFrame();
+             if ($frame !== null) {
+                 return $this->handleIpcFrame($frame);
              }
-         } catch (\Exception $e) {
-             $this->logger->warning("Failed to unserialize message from IPC pipe: {$e->getMessage()}");
+             $this->active = false;
          }
-         
+
          return null;
      }
      

@@ -126,6 +126,46 @@ function promise_chain_exists(PDO $db, int $queue_task_id, string $promise_type)
 }
 
 /***********************************************************************
+ * FUNCTION: QUEUE TASK CHAIN FINISHED                                  *
+ * True when a task's CURRENT promise chain ran to completion: nothing  *
+ * is still live and the most recently created promise (the final       *
+ * stage — stages are inserted in order) completed.                     *
+ *                                                                      *
+ * Deliberately ignores terminal promises from earlier, superseded      *
+ * chains. A task re-chained by stuck-task recovery accumulates one     *
+ * chain per recovery, and a single failed promise from any old chain   *
+ * used to keep "every promise completed" false forever — so the task   *
+ * never finalized, recovery flipped it back to 'pending' every ~30     *
+ * minutes, and each recovery re-chained (and, for AI jobs, re-billed   *
+ * the provider) indefinitely.                                          *
+ ***********************************************************************/
+function queue_task_chain_finished(PDO $db, int $queue_task_id): bool
+{
+    $stmt = $db->prepare("
+        SELECT status, state FROM promises
+        WHERE queue_task_id = :task_id
+        ORDER BY id DESC
+    ");
+    $stmt->execute([':task_id' => $queue_task_id]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (empty($rows)) {
+        return false;
+    }
+
+    $terminal = ['completed', 'fulfilled', 'failed', 'canceled'];
+    foreach ($rows as $row) {
+        // A live promise anywhere means work is still in flight.
+        if (!in_array($row['state'], $terminal, true) && !in_array($row['status'], $terminal, true)) {
+            return false;
+        }
+    }
+
+    // $rows[0] is the highest id: the final stage of the latest chain.
+    return $rows[0]['status'] === 'completed';
+}
+
+/***********************************************************************
  * FUNCTION: PURGE TERMINAL PROMISES                                   *
  * Deletes terminal-state promise rows older than the retention        *
  * window, in a single bounded batch. The promises table is otherwise  *
@@ -424,18 +464,10 @@ function check_and_finalize_task(PDO $db, array $completed_promise, array $job_d
     }
 
     try {
-        // Check if all promises for this task are completed
-        $stmt = $db->prepare("
-            SELECT COUNT(*) as total,
-                   SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
-            FROM promises
-            WHERE queue_task_id = :task_id
-        ");
-        $stmt->execute([':task_id' => $queue_task_id]);
-        $counts = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // If all promises are completed, finalize the task
-        if ($counts['total'] > 0 && $counts['total'] == $counts['completed']) {
+        // Finalize once the task's current chain has fully completed. Failed
+        // promises from earlier, superseded chains must not block this — see
+        // queue_task_chain_finished().
+        if (queue_task_chain_finished($db, (int)$queue_task_id)) {
             write_debug_log("All promises completed for task #{$queue_task_id}, finalizing...", "info");
 
             // Mark queue task as completed

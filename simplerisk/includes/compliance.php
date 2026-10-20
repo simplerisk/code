@@ -16,6 +16,10 @@ require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
 require_once(realpath(__DIR__ . '/audit_schedule.php'));
+// check_permission() / check_permission_exception() / is_admin() are handed to the
+// fail-closed download gates below as first-class callables; declare the require
+// directly so a broken include chain surfaces here, not inside a security decision.
+require_once(realpath(__DIR__ . '/permissions.php'));
 // notify_audit_awaiting_approval() (Phase 3b Task 5) calls
 // create_notification_for_user_ids() -- declare the require directly here
 // rather than relying on a caller (save_test_result()'s pending branch) to
@@ -4535,7 +4539,7 @@ function save_test_comment($test_audit_id, $comment): bool {
     $user    =  $_SESSION['uid'];
 
     // Make sure the user has permission to comment
-    if($_SESSION["comment_compliance"] == 1) {
+    if(($_SESSION["comment_compliance"] ?? 0) == 1) {
 
         // Open the database connection
         $db = db_open();
@@ -4784,7 +4788,7 @@ function display_testing() {
                             <div class='file-uploader'>
                                 <label for='audit-file-upload' class='btn btn-primary'>{$escaper->escapeHtml($lang['ChooseFile'])}</label>
                                 <span class='file-count-html'> <span class='file-count'>" . count(get_compliance_files($test_audit_id, "test_audit")) . "</span> {$escaper->escapeHtml($lang['FileAdded'])}</span>
-                                <p><font size='2'><strong>Max " . round(get_setting('max_upload_size')/1024/1024) . " Mb</strong></font></p>
+                                <p><font size='2'><strong>Max " . max_upload_size_label() . " Mb</strong></font></p>
                                 <ul class='exist-files'>
     ";
                                     display_compliance_files($test_audit_id, "test_audit");
@@ -4797,6 +4801,7 @@ function display_testing() {
                         <div class='form-group'>
                             <label>{$escaper->escapeHtml($lang['AdditionalStakeholders'])} :</label>
                             {$escaper->escapeHtml($test_audit['additional_stakeholders'] ? get_stakeholder_names($test_audit['additional_stakeholders']) : "--")}
+                            <div class='form-text'>{$escaper->escapeHtml(_lang_raw('AuditAdditionalStakeholdersSetOnTest', array('page' => $lang['DefineTests'])))}</div>
                         </div>
                         <div class='form-group'>
                             <label>{$escaper->escapeHtml($lang['ControlOwner'])} :</label>
@@ -5458,6 +5463,55 @@ function delete_compliance_file($file_id){
     db_close($db);
 }
 
+/*****************************************************
+ * FUNCTION: APPLY TEST RESULT RISK ASSOCIATIONS     *
+ * SR-2101/SR-2358: the risk-association part of a   *
+ * test-result submission (associate existing/new    *
+ * risks, remove_associated_risk) requires the       *
+ * riskmanagement permission. A tester without it    *
+ * still saves the result, but every association is  *
+ * left exactly as it was, whatever the request      *
+ * carries. $post and $permission_checker are        *
+ * injected so the decision is testable.             *
+ *****************************************************/
+function apply_test_result_risk_associations($result_id, $test_result, array $post, callable $permission_checker)
+{
+    if (!$permission_checker('riskmanagement'))
+    {
+        return false;
+    }
+
+    // remove_associated_risk is a client-supplied flag. The close_risks
+    // permission is checked here as well as at the sink so a caller who
+    // lacks it falls through to the normal association-update path
+    // instead of silently no-op'ing the risk removal and dropping the
+    // associations. (!empty() rather than a bare index: the field is
+    // absent on submissions from pages that never render it.)
+    if(!empty($post['remove_associated_risk']) && !close_risks_by_test_result_denied($permission_checker)) {
+        close_risks_by_test_result_id($result_id, $test_result);
+        delete_test_result_to_risk_by_result_id($result_id);
+    } else {
+        // add existing risks
+        $associate_exist_risk_ids = isset($post['associate_exist_risk_ids']) ? $post['associate_exist_risk_ids'] : "";
+        delete_test_result_to_risk_by_result_id($result_id);
+        if($associate_exist_risk_ids) {
+            $risk_ids = explode(",", $associate_exist_risk_ids);
+            foreach($risk_ids as $risk_id) {
+                save_test_result_to_risk($result_id, $risk_id);
+            }
+        }
+
+        // add new risk
+        $associate_new_risk_id = isset($post['associate_new_risk_id']) ? $post['associate_new_risk_id'] : "";
+        if($associate_new_risk_id) {
+            $new_risk_id = (int)$associate_new_risk_id - 1000;
+            save_test_result_to_risk($result_id, $new_risk_id);
+        }
+    }
+
+    return true;
+}
+
 /********************************
  * FUNCTION: SUBMIT TEST RESULT *
  ********************************/
@@ -5525,35 +5579,8 @@ function submit_test_result()
             $result_id = $test_audit["result_id"];
 
 
-            // remove_associated_risk is a client-supplied flag, and the
-            // only gate on this submission is modify_audits. The close_risks
-            // permission is checked here as well as at the sink so a caller who
-            // lacks it falls through to the normal association-update path
-            // instead of silently no-op'ing the risk removal and dropping the
-            // associations. (!empty() rather than a bare index: the field is
-            // absent on submissions from pages that never render it.)
-            if(!empty($_POST['remove_associated_risk']) && !close_risks_by_test_result_denied('check_permission')) {
-                close_risks_by_test_result_id($result_id, $test_result);
-                delete_test_result_to_risk_by_result_id($result_id);
-            } else {
-                // add existing risks
-                $associate_exist_risk_ids = isset($_POST['associate_exist_risk_ids']) ? $_POST['associate_exist_risk_ids'] : "";
-                delete_test_result_to_risk_by_result_id($result_id);
-                if($associate_exist_risk_ids) {
-                    $risk_ids = explode(",", $associate_exist_risk_ids);
-                    foreach($risk_ids as $risk_id) {
-                        save_test_result_to_risk($result_id, $risk_id);
-                    }
-                }
-
-                // add new risk
-                $associate_new_risk_id = isset($_POST['associate_new_risk_id']) ? $_POST['associate_new_risk_id'] : "";
-                if($associate_new_risk_id) {
-                    $new_risk_id = (int)$associate_new_risk_id - 1000;
-                    save_test_result_to_risk($result_id, $new_risk_id);
-                }
-            }
-
+            // SR-2358: risk associations are only touched by users who hold riskmanagement
+            apply_test_result_risk_associations($result_id, $test_result, $_POST, check_permission(...));
              
           set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
             return true;
@@ -5697,7 +5724,7 @@ function download_compliance_file($unique_name)
         // (includes/functions.php) so the combination is unit-testable with
         // an injected is_admin checker; compliance_file_download_denied()
         // itself stays a pure, session-free decision function.
-        if (compliance_file_download_denied_for_download($array['ref_type'], 'is_admin', 'check_permission_exception', 'check_permission'))
+        if (compliance_file_download_denied_for_download($array['ref_type'], is_admin(...), check_permission_exception(...), check_permission(...)))
         {
             // Logs (warning) + sets the alert + redirects + exits.
             redirect_permission_denied('DownloadFilePermissionMessage', "compliance_files ref_type={$array['ref_type']} unique_name={$unique_name}");
@@ -5885,6 +5912,50 @@ function display_detail_test() {
     ";
 }
 
+/*****************************************************
+ * FUNCTION: SUPPRESS AUTO INITIATE FOR DELETED AUDIT *
+ *****************************************************/
+/**
+ * Stop the auto-initiate cron recreating the due-window of an audit that is about to be deleted.
+ *
+ * Only an audit whose own window (the next_date snapshotted at initiation) is still the test's
+ * CURRENT next_date matters: the cron's dedupe is "an audit exists for this test and next_date",
+ * so deleting that audit makes the window look never-audited. An older audit (a closed one, whose
+ * close already advanced the test's next_date) is history and leaves the schedule alone. The mark
+ * stores the window, not a flag, so it lapses on its own when next_date moves; a manual
+ * "initiate" is never blocked by it.
+ *
+ * Does nothing if the column is missing (upgrade not yet run).
+ *
+ * @param PDO $db            Open connection
+ * @param int $test_audit_id The audit about to be deleted
+ * @param int $test_id       Its parent test
+ * @return bool true if the window was marked
+ */
+function suppress_auto_initiate_for_deleted_audit($db, int $test_audit_id, int $test_id): bool
+{
+    if (!field_exists_in_table('auto_initiate_suppressed_for', 'framework_control_tests')) {
+        return false;
+    }
+
+    // Only the audit's own snapshotted window counts, matching the cron's dedupe key
+    $stmt = $db->prepare("
+        UPDATE `framework_control_tests` t
+            INNER JOIN `framework_control_test_audits` a ON a.test_id = t.id AND a.next_date = t.next_date
+        SET t.`auto_initiate_suppressed_for` = t.`next_date`
+        WHERE a.`id` = :test_audit_id
+            AND t.`id` = :test_id
+            AND t.`schedule_type` IN ('interval','calendar')
+            AND t.`next_date` IS NOT NULL
+            AND t.`next_date` <> '0000-00-00'
+    ");
+    $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
+    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->rowCount() > 0;
+}
+
 /*******************************
  * FUNCTION: DELETE TEST AUDIT *
  *******************************/
@@ -5898,6 +5969,12 @@ function delete_test_audit($test_audit_id) {
 
     // Open the database connection
     $db = db_open();
+
+    // SD-884: if this audit is the one occupying its test's current due-window, record that the
+    // window was deliberately discarded so the auto-initiate cron doesn't recreate it.
+    if (!empty($test_audit_before_delete['test_id'])) {
+        suppress_auto_initiate_for_deleted_audit($db, (int)$test_audit_id, (int)$test_audit_before_delete['test_id']);
+    }
 
     // Delete test audit
     $stmt = $db->prepare("DELETE FROM `framework_control_test_audits` WHERE `id`=:test_audit_id;");
@@ -6923,7 +7000,7 @@ function close_risks_by_test_result_id($result_id, $test_result) {
     // driven by the client-supplied remove_associated_risk flag — the close_risks
     // gate exists only in the page JavaScript. Checking here rather than only at
     // the caller covers submit_test_result() and any future caller automatically.
-    if (close_risks_by_test_result_denied('check_permission'))
+    if (close_risks_by_test_result_denied(check_permission(...)))
     {
         write_debug_log("The currently authenticated session attempted to close the risks associated with test result ID \"{$result_id}\" without the 'close_risks' permission. No risks were closed.", "warning");
         return false;
@@ -7024,6 +7101,15 @@ function get_tests_to_auto_initiate() {
     // Dedupe is keyed on the window itself (ta.next_date = t1.next_date) so ANY existing
     // audit for that window -- whether auto-initiated or manually created -- blocks a
     // duplicate, regardless of when that audit was created.
+    //
+    // A window whose audit was deliberately deleted (delete_test_audit() records it in
+    // auto_initiate_suppressed_for) is skipped: with the audit row gone the dedupe above can no
+    // longer see it, so without this the next hourly run would recreate the audit and notify
+    // everyone again. It lapses by itself once the test's next_date moves on. The column arrives
+    // with the upgrade, so tolerate code that is deployed ahead of it.
+    $suppression_clause = field_exists_in_table('auto_initiate_suppressed_for', 'framework_control_tests')
+        ? "AND (t1.auto_initiate_suppressed_for IS NULL OR t1.auto_initiate_suppressed_for <> t1.next_date)"
+        : "";
     $sql = "
         SELECT t1.*
         FROM
@@ -7039,7 +7125,8 @@ function get_tests_to_auto_initiate() {
                 WHERE
                     ta.test_id = t1.id
                     AND ta.next_date = t1.next_date
-            );
+            )
+            {$suppression_clause};
     ";
 
     $stmt = $db->prepare($sql);

@@ -267,6 +267,22 @@
     }
 }
 
+// .sr-qform's shared 72px padding-bottom (_questionnaire.scss) reserves
+// scroll room for the sticky .sr-qactions bar to float above the form's last
+// card on a full-page form (Submit Risk). Inside a risk-view tab the bar is
+// the last thing in the tab pane and the Artificial Intelligence accordion
+// follows directly below, so that reserved space just reads as a large dead
+// gap between the Save bar and the next section. Overridden here, scoped to
+// the three tab form containers (Details/Mitigation/Review all share the
+// same engine and the same gap), rather than in the shared component.
+.risk-details {
+    #risk-view-details-form-container,
+    #risk-view-mitigation-form-container,
+    #risk-view-review-form-container {
+        padding-bottom: 0;
+    }
+}
+
 // The record-header card above (.sr-risk-record-header, scss/modules/
 // _riskmanagement.scss) already supplies its own 16px margin-bottom -- the
 // same "between things" rhythm .sr-qcards-stack uses elsewhere -- so this

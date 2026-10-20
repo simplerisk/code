@@ -1417,6 +1417,15 @@ $(function(){
 
         let form = new FormData($(this)[0]);
 
+        // In-flight guard, same shape as the Add handler above. The modal is
+        // hidden, not destroyed, so the button must be released when the
+        // request finishes or every later edit in this page load is dead.
+        let $submitBtn = $('#update_test');
+        if ($submitBtn.prop('disabled')) {
+            return;
+        }
+        $submitBtn.prop('disabled', true).addClass('is-busy');
+
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/v2/compliance/update_test",
@@ -1426,6 +1435,8 @@ $(function(){
             contentType: false,
             processData: false,
             success: function(result){
+                $submitBtn.prop('disabled', false).removeClass('is-busy');
+
                 if(result.status_message){
                     showAlertsFromArray(result.status_message);
                 }
@@ -1451,6 +1462,8 @@ $(function(){
             }
         })
         .fail(function(xhr, textStatus) {
+            $submitBtn.prop('disabled', false).removeClass('is-busy');
+
             if (!retryCSRF(xhr, this)) {
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
                     showAlertsFromArray(xhr.responseJSON.status_message);
@@ -1505,16 +1518,27 @@ $(function(){
                 // now carry the visible selection -- the button says only "Add
                 // or remove…") have to be re-rendered explicitly here. Without
                 // this an edited test opens showing none of its own values.
+                // (Approvers are rendered further down, after they are selected.)
                 renderSelectionChips($('#additional_stakeholders', modal));
                 renderSelectionChips($("[name='team[]']", modal));
-                renderSelectionChips($('#approvers', modal));
 
                 $('[name=test_frequency]', modal).val(data['test_frequency']);
 
                 $('[name=last_date]', modal).val(data['last_date']);
                 $('[name=last_date]', modal).initAsDatePicker({maxDate: moment().format(default_date_format)});
 
-                let scheduleType = data['schedule_type'] || 'calendar';
+                // A test created outside this modal (e.g. the Control Tests
+                // importer) never gets a schedule_type set, so it's stored as
+                // SQL NULL. Every other part of the app -- the Define Tests
+                // grid (scheduleModeMeta(), compliance-define-tests.js), and
+                // the server itself ($type = $test['schedule_type'] ?? 'manual',
+                // includes/compliance.php) -- treats that NULL as 'manual'.
+                // Defaulting it to 'calendar' here instead opened this modal
+                // in Calendar mode with a required, empty Anchor Date for
+                // every imported test, blocking an unrelated edit (e.g. the
+                // Approver) until the Anchor Date was filled in or the mode
+                // switched back to Manual by hand.
+                let scheduleType = data['schedule_type'] || 'manual';
 
                 if (scheduleType === 'calendar') {
 
@@ -1578,6 +1602,8 @@ $(function(){
                 $('[name=required_evidence]', modal).val(data['required_evidence']);
                 $('#approvers', modal).multiselect('deselectAll', false);
                 $('#approvers', modal).multiselect('select', data['approvers']);
+                // Render only after the selection above -- rendering earlier shows the previous test's chips.
+                renderSelectionChips($('#approvers', modal));
 
                 $.each(data['tags'], function (i, item) {
                     $('[name=\'tags[]\']', modal).append($('<option>', { 

@@ -35,6 +35,8 @@ class HybridBridge
                 $annotation instanceof OA\Components => $this->convertComponents($annotation, $specification),
                 $annotation instanceof OA\Operation && !$annotation->_context->is('nested') => $specification->operations[] = $this->convertOperation($annotation, $this->val($annotation->path), $this->methodFromAnnotation($annotation)),
                 $annotation instanceof OA\Schema && !$this->isNestedSchemaType($annotation) && $annotation->_context->reflector instanceof \ReflectionClass && !$annotation->_context->is('nested') => $classSchemas[$annotation->_context->reflector->getName()][] = $annotation,
+                // on a method, a schema is a component only where it names itself, as in classic
+                $annotation instanceof OA\Schema && !$this->isNestedSchemaType($annotation) && $annotation->_context->reflector instanceof \ReflectionMethod && !$annotation->_context->is('nested') && !Undefined::isDefault($annotation->schema) => $specification->schemas[] = $this->convertSchema($annotation),
                 $annotation instanceof OA\Property && $this->isClassMember($annotation) => $memberProperties[] = $annotation,
                 $annotation instanceof OA\Response && !$annotation->_context->is('nested') && !Undefined::isDefault($annotation->response) => $specification->responses[] = $this->convertResponse($annotation),
                 $annotation instanceof OA\RequestBody && !$annotation->_context->is('nested') && ($annotation->_context->reflector instanceof \ReflectionClass || !Undefined::isDefault($annotation->request)) => $specification->requestBodies[] = $this->convertRequestBody($annotation),
@@ -182,7 +184,7 @@ class HybridBridge
         );
 
         if (!Undefined::isDefault($openApi->security)) {
-            $spec->openapi->security = $this->convertSecurityRequirements($openApi->security);
+            $spec->openapi->security = $this->convertSecurityRequirements($openApi->security, $openApi);
         }
 
         if (!Undefined::isDefault($openApi->externalDocs)) {
@@ -389,7 +391,7 @@ class HybridBridge
 
         $security = null;
         if (!Undefined::isDefault($op->security)) {
-            $security = $this->convertSecurityRequirements($op->security);
+            $security = $this->convertSecurityRequirements($op->security, $op);
         }
 
         $result = new Spec\Operation(
@@ -421,7 +423,6 @@ class HybridBridge
     protected function convertParameter(OA\Parameter $param): Spec\Parameter
     {
         $result = new Spec\Parameter(
-            parameter: $this->val($param->parameter),
             name: $this->val($param->name),
             in: $this->val($param->in),
             description: Undefined::isDefault($param->description) ? Undefined::UNDEFINED : $param->description,
@@ -438,6 +439,7 @@ class HybridBridge
                 ? null
                 : array_values(array_map($this->convertExample(...), $param->examples)),
             content: $this->resolveContent($param),
+            component: $this->val($param->parameter),
             x: $this->extensions($param),
         );
         $this->copyReflector($param, $result);
@@ -480,11 +482,11 @@ class HybridBridge
     protected function convertRequestBody(OA\RequestBody $body): Spec\RequestBody
     {
         $result = new Spec\RequestBody(
-            request: $this->val($body->request),
             description: $this->val($body->description),
             required: $this->val($body->required),
             ref: $this->val($body->ref),
             content: $this->resolveContent($body),
+            component: $this->val($body->request),
             x: $this->extensions($body),
         );
         $this->copyReflector($body, $result);
@@ -655,7 +657,6 @@ class HybridBridge
         }
 
         $result = new Spec\Schema(
-            schema: $this->val($schema->schema),
             title: $this->val($schema->title),
             description: Undefined::isDefault($schema->description) ? Undefined::UNDEFINED : $schema->description,
             ref: $this->val($schema->ref) ?? $this->typeAsRef($schema->type),
@@ -720,6 +721,7 @@ class HybridBridge
                 ? null
                 : $this->convertExternalDocs($schema->externalDocs),
             xml: Undefined::isDefault($schema->xml) ? null : $this->convertXml($schema->xml),
+            component: $this->val($schema->schema),
             x: $this->extensions($schema),
         );
         $this->copyReflector($schema, $result);
@@ -818,7 +820,6 @@ class HybridBridge
         }
 
         $result = new Spec\Security\Scheme(
-            securityScheme: $this->val($scheme->securityScheme),
             type: $this->val($scheme->type),
             description: $this->val($scheme->description),
             name: $this->val($scheme->name),
@@ -828,6 +829,7 @@ class HybridBridge
             openIdConnectUrl: $this->val($scheme->openIdConnectUrl),
             flows: $flows,
             ref: $this->val($scheme->ref),
+            component: $this->val($scheme->securityScheme),
             x: $this->extensions($scheme),
         );
         $this->copyReflector($scheme, $result);
@@ -866,16 +868,21 @@ class HybridBridge
     }
 
     /**
-     * @param array<mixed> $security classic security blocks: each entry is a scheme => scopes map
+     * @param array<mixed> $security classic security blocks: each entry is a scheme => scopes map,
+     *                               or a bare scheme name, which classic reads as that scheme with no scopes
      *
      * @return list<Spec\Security\Requirement>
      */
-    protected function convertSecurityRequirements(array $security): array
+    protected function convertSecurityRequirements(array $security, OA\AbstractAnnotation $owner): array
     {
         $requirements = [];
         foreach ($security as $item) {
             if (is_array($item)) {
                 $requirements[] = new Spec\Security\Requirement(schemes: $item);
+            } elseif (is_string($item)) {
+                // kept, as in classic, and reported, since spec drops it
+                $owner->_context->logger?->warning(sprintf('Security requirement "%s" is a bare scheme name, use [\'%s\' => []] in %s', $item, $item, $owner->_context));
+                $requirements[] = new Spec\Security\Requirement(scheme: $item);
             }
         }
 

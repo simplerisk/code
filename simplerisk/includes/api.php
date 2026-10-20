@@ -3476,6 +3476,13 @@ function acceptMitigationForm($id = null)
             json_response(403, get_alert(true), NULL);
         }
 
+        // Checked after the access check so a caller without access cannot tell a missing risk from a forbidden one
+        if (!risk_exists($id))
+        {
+            set_alert(true, "bad", $escaper->escapeHtml($lang['RiskIdDoesNotExist']));
+            json_response(404, get_alert(true), NULL);
+        }
+
         $accept = (int)$_POST['accept'];
 
         // Check if user has a permission for accept mitigation
@@ -5816,12 +5823,12 @@ function getMitigationControlsDatatable(){
                                                     <div class='file-uploader'>
                                                         <div class='file_name' data-file='artifact-file-" . $control['id'] . "'></div>
                                                         <script>
-                                                            var max_upload_size = " . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ";
+                                                            var max_upload_size = " . $escaper->escapeJs(max_upload_size_effective()) . ";
                                                             var fileTooBigMessage = '" . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . "';
                                                         </script>
                                                         <label for='artifact-file-upload-" . $control['id'] . "' class='btn btn-primary active-textfield'>" . $escaper->escapeHtml($lang['ChooseFile']) . "</label> 
                                                         <span class='file-count-html'><span class='file-count'>" . count($files) . "</span> " . $escaper->escapeHtml($lang['FileAdded']) . "</span>
-                                                        <p><font size='2'><strong>Max " . $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)) . " Mb</strong></font></p>
+                                                        <p><font size='2'><strong>Max " . $escaper->escapeHtml(max_upload_size_label()) . " Mb</strong></font></p>
                                                         <ul class='exist-files'>" . $exist_files . "</ul>
                                                         <ul class='file-list'></ul>
                                                         <input type='file' name='artifact-file-" . $control['id'] . "[]' id='artifact-file-upload-" . $control['id'] . "' class='hidden-file-upload active d-none' />
@@ -6149,13 +6156,14 @@ function updateControlResponse()
             // not "this request said nothing about types". Same reasoning
             // delete_control_to_frameworks_except() is deliberately not called
             // from update_framework_control() -- see its docblock in
-            // includes/governance.php.
+            // includes/governance.php. This handler prunes itself below, gated
+            // on the map_frameworks_submitted marker.
             'control_type' => isset($_POST['control_type']) ? (array)$_POST['control_type'] : [],
             'control_status' => isset($_POST['control_status']) ? (int)$_POST['control_status'] : 2,
             'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
             'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
         );
-        $map_framework_ids = isset($_POST['map_framework_id'])?$_POST['map_framework_id']:array();
+        $map_framework_ids = (isset($_POST['map_framework_id']) && is_array($_POST['map_framework_id'])) ? $_POST['map_framework_id'] : array();
         $reference_names = isset($_POST['reference_name'])?$_POST['reference_name']:array();
         $reference_texts = isset($_POST['reference_text'])?$_POST['reference_text']:array();
         $map_frameworks = array();
@@ -6196,7 +6204,18 @@ function updateControlResponse()
 
             // Update the control
             update_framework_control($control_id, $control);
-    
+
+            // The Edit Control modal's trash icon only removes the row from the
+            // DOM, and save_control_to_frameworks() can only add. When the form
+            // carries the map_frameworks_submitted marker the submission is the
+            // COMPLETE set, so prune what it no longer lists. Without the marker
+            // (API clients) mappings are left untouched, as before.
+            if (control_mappings_submission_is_complete($_POST)) {
+                // active_only: the modal's dropdown lists only active frameworks,
+                // so mappings to deactivated ones cannot be submitted and are kept.
+                delete_control_to_frameworks_except($control_id, $map_frameworks, true);
+            }
+
             // Display an alert
             set_alert(true, "good", "An existing control was updated successfully.");
     
@@ -8964,7 +8983,7 @@ function getReviewRiskDatatableResponse()
     $active_review_risk_columns = build_active_review_risk_columns();
 
     $user = get_user_by_id($_SESSION['uid']);
-    $settings = json_decode($user["custom_review_risk_display_settings"] ?? '', true);
+    $settings = custom_review_risk_sanitize_display_settings(json_decode($user["custom_review_risk_display_settings"] ?? '', true));
     $columns_setting = $settings["columns"] ?? [];
     $columns = [];
     foreach ($columns_setting as $column) {
@@ -10179,7 +10198,7 @@ function getReviewRiskFilterOptions()
     $statuses = get_options_from_table('status');
 
     $user = get_user_by_id($_SESSION['uid']);
-    $column_settings = json_decode($user['custom_review_risk_display_settings'] ?? '', true);
+    $column_settings = custom_review_risk_sanitize_display_settings(json_decode($user['custom_review_risk_display_settings'] ?? '', true));
 
     // Unlike getReviewRiskDatatableResponse() above (whose caller is
     // DataTables, which always forces `dataType: 'json'` on its own ajax
@@ -13381,7 +13400,7 @@ function one_click_upgrade() {
                 list($status, $result) = call_extra_api_functionality('upgrade', 'upgrade', 'app');
                 if ($status !== 200) {
                     if (is_array($result) && !empty($result['status_message'])) { stream_write_error($result['status_message']); }
-                    stream_write_error($lang['BackupFailed'] ?? 'Upgrade Extra update failed.');
+                    stream_write_error(_lang('UpdateExtrasUpdateExtraFailed', array('extra' => 'upgrade')));
                 } elseif (is_array($result) && !empty($result['status_message'])) {
                     stream_write($result['status_message']);
                 }
@@ -15131,8 +15150,15 @@ function saveCustomReviewRiskDisplaySettingsAPI(){
             json_response(400, get_alert(true), NULL);
             return;
         }
+        // The name half is checked above; the value half is validated here because it is stored and echoed back
+        $normalized_columns = custom_display_normalize_columns_for_save($_POST["columns"]);
+        if ($normalized_columns === null) {
+            set_alert(true, "bad", $lang['NoDataAvailable']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
         $data = array(
-            "columns" => $_POST["columns"],
+            "columns" => $normalized_columns,
         );
         // ColReorder follow-up: `order` is an OPTIONAL sibling key -- a save
         // triggered purely by toggling a checkbox in the picker (no drag)
@@ -15145,7 +15171,7 @@ function saveCustomReviewRiskDisplaySettingsAPI(){
                 json_response(400, get_alert(true), NULL);
                 return;
             }
-            $data["order"] = $_POST["order"];
+            $data["order"] = array_values($_POST["order"]);
         }
         save_custom_risk_display_settings("custom_review_risk_display_settings", $data);
         set_alert(true, "good", $lang['SavedSuccess']);

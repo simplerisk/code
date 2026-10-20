@@ -10896,10 +10896,12 @@ function home_series_delta(array $series, $up_is_good = true)
 // deterministic under test.
 function kpi_build_day_axis($days = 30, $today = null)
 {
-    $end = ($today !== null) ? strtotime($today) : strtotime(date('Y-m-d'));
+    $end = date('Y-m-d', ($today !== null) ? strtotime($today) : time());
     $axis = [];
     for ($i = $days - 1; $i >= 0; $i--) {
-        $axis[] = date('Y-m-d', $end - $i * 86400);
+        // Calendar arithmetic: subtracting $i * 86400 seconds lands an hour off,
+        // so on a DST transition the axis would repeat or skip a date.
+        $axis[] = (new \DateTimeImmutable($end, new \DateTimeZone('UTC')))->modify("-{$i} days")->format('Y-m-d');
     }
     return $axis;
 }
@@ -11904,7 +11906,7 @@ function kpi_compute_review_risk_series(array $rows, array $reviews_by_risk, arr
                 }
                 if ($resolved < $d) {
                     $bucket = 'past_due';
-                } elseif (strtotime($resolved) <= strtotime($d) + $due_soon_days * 86400) {
+                } elseif ($resolved <= date('Y-m-d', strtotime($d . " +" . (int) $due_soon_days . " days"))) {
                     $bucket = 'due_soon';
                 } else {
                     $bucket = 'on_track';
@@ -12704,6 +12706,18 @@ function get_home_highest_risks_items($limit = 6)
     return $items;
 }
 
+/**
+ * Whole calendar days from today until a Y-m-d date: 0 on the day itself,
+ * negative once it has passed. The home-widget pills show this as "Nd".
+ * calendar_days_between() rather than floor(seconds / 86400) against the
+ * current time, which reads an item due tomorrow as 0 days and one due today
+ * as 1 day overdue, and is an hour out across a DST transition.
+ */
+function home_days_until(string $date, ?string $today = null): int
+{
+    return calendar_days_between($today ?? date('Y-m-d'), $date);
+}
+
 // Open risks whose latest management review is past its next-review date
 // (team-separation aware) → list items with a days-overdue danger pill.
 function get_home_pastdue_reviews_items($limit = 6)
@@ -12732,7 +12746,7 @@ function get_home_pastdue_reviews_items($limit = 6)
 
     $items = [];
     foreach ($rows as $r) {
-        $days = (int) floor((time() - strtotime($r['next_review'] . ' 00:00:00')) / 86400);
+        $days = -home_days_until($r['next_review']);
         $items[] = [
             'name' => try_decrypt($r['subject']),
             'href' => '../management/view.php?id=' . convert_to_risk_id($r['id']) . '&type=2&action=editreview#review',
@@ -12860,7 +12874,7 @@ function get_home_upcoming_tests_items($limit = 6, $framework_ids = null)
 
     $items = [];
     foreach ($rows as $r) {
-        $days = (int) floor((strtotime($r['next_date'] . ' 00:00:00') - time()) / 86400);
+        $days = home_days_until($r['next_date']);
         $item = [
             'name' => (string) ($r['name'] ?? ''),
             // The control the test belongs to, shown as a muted sub-label so the
@@ -13090,7 +13104,7 @@ function get_home_policies_review_items($limit = 6, $framework_ids = null)
 
     $items = [];
     foreach ($rows as $r) {
-        $days = (int) floor((strtotime($r['next_review_date'] . ' 00:00:00') - time()) / 86400);
+        $days = home_days_until($r['next_review_date']);
         $items[] = [
             'name' => $r['document_name'],
             'href' => '../governance/documentation.php?document_id=' . (int) $r['id'],
@@ -13144,7 +13158,7 @@ function get_home_expiring_exceptions_items($limit = 6, $framework_ids = null)
 
     $items = [];
     foreach ($rows as $r) {
-        $days = (int) floor((strtotime($r['next_review_date'] . ' 00:00:00') - time()) / 86400);
+        $days = home_days_until($r['next_review_date']);
         $items[] = [
             'name' => $r['name'],
             'href' => '../governance/document_exceptions.php?exception_id=' . (int) $r['value'],

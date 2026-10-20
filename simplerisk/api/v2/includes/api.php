@@ -368,16 +368,11 @@ function api_get_ui_risk_fields() {
  * fields response would, or the two API responses could disagree about what
  * fields exist for that risk's group.
  *
- * Unlike Details, Mitigation has no no-Extra fallback: every tab_index=2
- * custom_template row is seeded by the Customization Extra's own
- * set_default_main_fields() (extras/customization/upgrade.php) -- there is
- * no Core-native Mitigation field roster to synthesize the way
- * api_synthesize_no_extra_risk_fields() does for Details (see that
- * function's own tab_index!==1 early return, and
- * backfill_customization_mitigation_cards_layout()'s docblock, which states
- * this explicitly). A no-Extra or Extra-inactive install therefore gets an
- * empty Mitigation Cards roster here -- a known, accepted gap from Phase
- * 4b-i's design, not something this task re-opens.
+ * Without the Customization Extra, Mitigation and Review get Core-synthesized
+ * rosters (api_synthesize_no_extra_mitigation_fields() /
+ * api_synthesize_no_extra_review_fields()) built from the Core field maps in
+ * includes/functions.php, laid out like the Extra's own seeded defaults -- so
+ * every tab renders on an install that never bought Customization (SR-2357).
  */
 function api_resolve_ui_risk_fields_for_group(int $template_group_id, int $tab_index = 1): array {
     if (customization_extra() && table_exists('custom_template')) {
@@ -799,6 +794,113 @@ function api_trim_ui_field_options($options): array {
 }
 
 /**
+ * One synthesized core-field row, shaped exactly like the custom_template-backed
+ * rows get_active_fields() returns (see api_synthesize_no_extra_risk_fields()'s
+ * docblock for why 'type' is '' and 'id' is 0).
+ */
+function api_synthesize_no_extra_field_row(string $name, string $card_key, int $pos_x, int $pos_y, int $pos_w): array {
+    return [
+        'id' => 0,
+        'name' => $name,
+        'type' => '',
+        'is_basic' => 1,
+        'required' => 0,
+        'card_key' => $card_key,
+        'pos_x' => $pos_x,
+        'pos_y' => $pos_y,
+        'pos_w' => $pos_w,
+        'pos_h' => 2,
+        'active' => 1,
+    ];
+}
+
+/**
+ * No-Extra Mitigation roster (tab_index=2). Mirrors
+ * backfill_customization_mitigation_cards_layout() (extras/customization/
+ * upgrade.php): fields in get_risk_mitigation_core_field_default_order(),
+ * bucketed by get_risk_mitigation_core_field_card_map(), widgetless-last
+ * within a card, two per row, with forced-full-width fields closing out any
+ * half-filled row and taking one whole row each. Core-only helpers, for the
+ * reason api_synthesize_no_extra_risk_fields() spells out.
+ */
+function api_synthesize_no_extra_mitigation_fields(): array {
+    $map = get_risk_mitigation_core_field_card_map();
+    $field_width = customization_default_field_width();
+    $per_row = customization_fields_per_row();
+
+    $names_by_card = [];
+    foreach (get_risk_mitigation_core_field_default_order() as $name) {
+        if (isset($map[$name])) {
+            $names_by_card[$map[$name]][] = $name;
+        }
+    }
+
+    $fields = [];
+    foreach (customization_mitigation_cards_layout_card_keys() as $card_key) {
+        if (empty($names_by_card[$card_key])) {
+            continue;
+        }
+        $names = sort_risk_mitigation_fields_widgetless_last(
+            $names_by_card[$card_key],
+            static fn(string $name): string => $name
+        );
+
+        $cursor = ['y' => 0, 'slot' => 0];
+        foreach ($names as $name) {
+            $force_full_width = risk_details_field_forced_full_width($name);
+            if ($force_full_width && $cursor['slot'] !== 0) {
+                $cursor['slot'] = 0;
+                $cursor['y'] += 2;
+            }
+
+            $fields[] = api_synthesize_no_extra_field_row(
+                $name,
+                $card_key,
+                $force_full_width ? 0 : $cursor['slot'] * $field_width,
+                $cursor['y'],
+                $force_full_width ? customization_nested_grid_columns() : $field_width
+            );
+
+            if ($force_full_width) {
+                $cursor['slot'] = 0;
+                $cursor['y'] += 2;
+                continue;
+            }
+
+            $cursor['slot']++;
+            if ($cursor['slot'] >= $per_row) {
+                $cursor['slot'] = 0;
+                $cursor['y'] += 2;
+            }
+        }
+    }
+
+    return $fields;
+}
+
+/**
+ * No-Extra Review roster (tab_index=3). Mirrors
+ * backfill_customization_review_cards_layout(): every core Review field sits
+ * in the single 'review' card at the explicit asymmetric positions
+ * get_review_card_field_positions() defines.
+ */
+function api_synthesize_no_extra_review_fields(): array {
+    $map = get_risk_review_core_field_card_map();
+    $positions = get_review_card_field_positions();
+    $field_width = customization_default_field_width();
+
+    $fields = [];
+    foreach (get_risk_review_core_field_default_order() as $name) {
+        if (!isset($map[$name], $positions[$name])) {
+            continue;
+        }
+        $fields[] = api_synthesize_no_extra_field_row($name, $map[$name], $positions[$name]['x'], $positions[$name]['y'], $field_width);
+    }
+
+    return $fields;
+}
+
+/**
  * No-Extra fallback for api_get_ui_risk_fields(): the fixed core roster with
  * card_key/pos_* filled in from get_risk_details_core_field_card_map()
  * (includes/functions.php) instead of a custom_template row -- there are no
@@ -849,6 +951,12 @@ function api_trim_ui_field_options($options): array {
  * field, and the client's 'skip' widget drops it at render time.
  */
 function api_synthesize_no_extra_risk_fields(int $tab_index): array {
+    if ($tab_index === 2) {
+        return api_synthesize_no_extra_mitigation_fields();
+    }
+    if ($tab_index === 3) {
+        return api_synthesize_no_extra_review_fields();
+    }
     if ($tab_index !== 1) {
         return [];
     }
@@ -2416,6 +2524,49 @@ function api_get_risk_formula_config() {
 }
 
 /**
+ * No-Extra Mitigation card layout (tab_index=2): the curated cards (minus the
+ * Extra-only 'custom_fields') stacked at the heights
+ * backfill_customization_mitigation_cards_layout() seeds, derived from each
+ * card's field count in get_risk_mitigation_core_field_card_map().
+ */
+function api_synthesize_no_extra_mitigation_layout(): array {
+    $names_by_card = [];
+    foreach (get_risk_mitigation_core_field_card_map() as $name => $card_key) {
+        $names_by_card[$card_key][] = $name;
+    }
+
+    $cards = [];
+    $pos_y = 0;
+    foreach (array_diff(customization_mitigation_cards_layout_card_keys(), ['custom_fields']) as $card_key) {
+        $height = customization_card_height_for_field_count(
+            risk_details_drawn_field_count($names_by_card[$card_key] ?? []),
+            false
+        );
+        $cards[] = ['card_key' => $card_key, 'pos_x' => 0, 'pos_y' => $pos_y, 'pos_w' => 12, 'pos_h' => $height];
+        $pos_y += $height;
+    }
+
+    return $cards;
+}
+
+/**
+ * No-Extra Review card layout (tab_index=3): the single 'review' card, sized
+ * from get_review_card_field_positions() exactly as
+ * backfill_customization_review_cards_layout() does (the generic
+ * field-count formula assumes a symmetric pack the asymmetric review card
+ * does not use).
+ */
+function api_synthesize_no_extra_review_layout(): array {
+    $nested_rows = 0;
+    foreach (get_review_card_field_positions() as $position) {
+        $nested_rows = max($nested_rows, $position['y'] + 2);
+    }
+    $height = (int)ceil($nested_rows / 2) + 1;
+
+    return [['card_key' => 'review', 'pos_x' => 0, 'pos_y' => 0, 'pos_w' => 12, 'pos_h' => $height]];
+}
+
+/**
  * No-Extra fallback for api_get_ui_risk_layout(): the 4 curated cards that
  * exist without the Customization Extra (custom_fields is dropped entirely
  * -- there are no custom fields to catch-all without the Extra), at the
@@ -2438,6 +2589,12 @@ function api_get_risk_formula_config() {
  * docblock: the shipped bundle has no simplerisk/extras/ directory at all.
  */
 function api_synthesize_no_extra_risk_layout(int $tab_index): array {
+    if ($tab_index === 2) {
+        return api_synthesize_no_extra_mitigation_layout();
+    }
+    if ($tab_index === 3) {
+        return api_synthesize_no_extra_review_layout();
+    }
     if ($tab_index !== 1) {
         return [];
     }
@@ -3974,9 +4131,8 @@ function api_v2_reports_catalog()
     // in API response order, so a single label-sort here lands as alpha order
     // within every category. Favorites-first behavior is handled client-side
     // and is unaffected.
-    usort($reports, function ($a, $b) {
-        return strnatcasecmp($a['label'], $b['label']);
-    });
+    $by_label = locale_aware_label_comparator();
+    usort($reports, fn($a, $b) => $by_label($a['label'], $b['label']));
 
     api_v2_json_result(200, 'OK', ['reports' => $reports]);
 }
@@ -4058,7 +4214,8 @@ function api_v2_admin_settings_catalog()
     // Alphabetize by localized label — JS groups tiles by tag into sections
     // and renders within a section in API order, so a single label-sort
     // lands as alpha order within every category.
-    usort($tiles, fn($a, $b) => strnatcasecmp($a['label'], $b['label']));
+    $by_label = locale_aware_label_comparator();
+    usort($tiles, fn($a, $b) => $by_label($a['label'], $b['label']));
 
     // Piggyback the licensing enforcement_level on the catalog response so
     // settings-hub.js can gate Install/Upgrade buttons in the same fetch
@@ -4327,15 +4484,15 @@ function api_v2_admin_extras_install()
         }
     }
 
-    // download_extra() queues a toast on every code path via set_alert(),
-    // including success. The Configure Hub install flow is fully reactive
-    // (modal closes, catalog refetches) so nothing in this request consumes
-    // those toasts — left in the session, they'd surface on the user's next
-    // unrelated page load. We always capture-and-clear via get_alert(true, true)
-    // and either drop the message (success) or surface it as the response's
-    // status_message (failure), so the user sees the specific reason for the
-    // failure ("Not Purchased", "Invalid Instance or Key", etc.) instead of
-    // the generic InstallExtraError fallback.
+    // download_extra() itself does not call set_alert(), but a caught
+    // exception may have queued a toast. The Configure Hub install flow is
+    // fully reactive (modal closes, catalog refetches) so nothing in this
+    // request consumes toasts — left in the session, they'd surface on the
+    // user's next unrelated page load. We capture-and-clear via
+    // get_alert(true, true) and either drop the message (success) or surface
+    // the failure's specific reason ("Not Purchased", "Invalid Instance or
+    // Key", etc.) as the response's status_message instead of the generic
+    // InstallExtraError fallback.
     try {
         // $name was validated against available_extra_short_names() (a
         // hard-coded list of known Extra short names) via in_array(...,

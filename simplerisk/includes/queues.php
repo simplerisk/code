@@ -118,6 +118,13 @@ function load_all_jobs(): array
         $load_jobs_from_dir($scfDir, 'SCF Extra');
     }
 
+    // --- Load Import-Export Extra Jobs ---
+    $importExportDir = realpath(__DIR__ . '/../extras/import-export/jobs');
+    if (is_dir($importExportDir)) {
+        require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+        $load_jobs_from_dir($importExportDir, 'Import-Export Extra');
+    }
+
     // --- Load Encryption Extra Jobs ---
     $encryptionDir = realpath(__DIR__ . '/../extras/encryption/jobs');
     if (is_dir($encryptionDir)) {
@@ -367,6 +374,41 @@ function handle_queue_task_failure(PDO $db, array $task, string $errorMessage, i
     // that a job surfacing a failure to a user does so ONCE, after the retry
     // machinery has had its say — not on the first recoverable blip.
     return true;
+}
+
+/**************************************************************************
+ * FUNCTION: QUEUE PICK NEXT RUNNABLE TASK                                *
+ * Returns the highest-priority pending task that is runnable at $now, or *
+ * null. A pending task waiting out a retry back-off (payload             *
+ * next_retry_at in the future) is skipped, so one failing high-priority  *
+ * task cannot stall every task behind it. A bounded window of candidates *
+ * is fetched (FOR UPDATE, inside the caller's transaction) instead of    *
+ * LIMIT 1, and the first runnable row in priority order is returned.     *
+ * The window is bounded (default 100): if that many higher-priority    *
+ * pending tasks are all backing off at once, a runnable task behind them *
+ * can still be delayed until some of them come due.                      *
+ **************************************************************************/
+function queue_pick_next_runnable_task(PDO $db, int $now, int $window = 100): ?array
+{
+    $stmt = $db->prepare("
+        SELECT * FROM queue_tasks
+        WHERE status = 'pending'
+        ORDER BY priority DESC, created_at ASC
+        LIMIT :window
+        FOR UPDATE
+    ");
+    $stmt->bindValue(':window', max(1, $window), PDO::PARAM_INT);
+    $stmt->execute();
+
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $payload = json_decode($row['payload'] ?? '{}', true);
+        $nextRetryAt = isset($payload['next_retry_at']) ? strtotime($payload['next_retry_at']) : null;
+        if ($nextRetryAt === null || $nextRetryAt <= $now) {
+            return $row;
+        }
+    }
+
+    return null;
 }
 
 /**************************************************************************

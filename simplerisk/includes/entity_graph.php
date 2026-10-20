@@ -31,6 +31,7 @@ function graph_node_palette(): array
     return [
         'risk'                   => '#c0392b',
         'asset'                  => '#f7dc6f',
+        'asset_group'            => '#b7950b',
         'framework'              => '#4a235a',
         'control'                => '#154360',
         'test'                   => '#2e86c1',
@@ -246,11 +247,14 @@ function connectivity_visualizer_associations_risk($id)
     $risk_catalog_associations = [];
     $threat_catalog_associations = [];
     $vulnerability_associations = [];
+    $asset_group_associations = [];
 
     // If a value has been selected
     if (!is_null($id))
     {
         $asset_associations = get_asset_connectivity_for_risk($id);
+        // $id is the DISPLAY id; asset-group mappings key on the raw id.
+        $asset_group_associations = get_asset_group_connectivity_for_risk($id - 1000);
         $control_associations = get_control_connectivity_for_risk($id);
         // $id here is the DISPLAY id; the exception walker keys on the raw id.
         $exception_associations = get_exception_connectivity_for_risk($id - 1000);
@@ -295,6 +299,7 @@ function connectivity_visualizer_associations_risk($id)
         "risk_catalogs"   => $risk_catalog_associations,
         "threat_catalogs" => $threat_catalog_associations,
         "vulnerabilities" => $vulnerability_associations,
+        "asset_groups" => $asset_group_associations,
     ];
 
     // Return the associations
@@ -314,11 +319,13 @@ function connectivity_visualizer_associations_asset($id)
     $document_associations = [];
     $test_result_associations = [];
     $vulnerability_associations = [];
+    $asset_group_associations = [];
 
     // If a value has been selected
     if (!is_null($id))
     {
         $risk_associations = get_risk_connectivity_for_asset($id);
+        $asset_group_associations = get_asset_group_connectivity_for_asset($id);
 
         // Direct asset -> control scoping (no risk in between).
         $control_associations = array_merge(
@@ -362,6 +369,7 @@ function connectivity_visualizer_associations_asset($id)
         "documents" => $document_associations,
         "test_results" => $test_result_associations,
         "vulnerabilities" => $vulnerability_associations,
+        "asset_groups" => $asset_group_associations,
     ];
 
     // Return the associations
@@ -448,10 +456,12 @@ function connectivity_visualizer_associations_control($id)
     $self_assessment_result_associations = [];
     $exception_associations = [];
     $audit_associations = [];
+    $asset_group_associations = [];
 
     // If a value has been selected
     if (!is_null($id))
     {
+        $asset_group_associations = get_asset_group_connectivity_for_control($id);
         $framework_associations = get_framework_connectivity_for_control($id);
         $test_associations = get_test_connectivity_for_control($id);
         $document_associations = get_document_connectivity_for_control($id);
@@ -492,6 +502,7 @@ function connectivity_visualizer_associations_control($id)
         "self_assessment_results" => $self_assessment_result_associations,
         "exceptions" => $exception_associations,
         "audits" => $audit_associations,
+        "asset_groups" => $asset_group_associations,
     ];
 
     // Return the associations
@@ -1935,6 +1946,100 @@ function get_threat_catalog_connectivity_for_risk($risk_id)
     );
 }
 
+/**************************************************************
+ * FUNCTION: GET ASSET CONNECTIVITY FOR ASSET GROUP           *
+ **************************************************************/
+function get_asset_connectivity_for_asset_group($group_id)
+{
+    return graph_edge_rows(
+        "SELECT a.id, a.name
+         FROM assets_asset_groups aag
+         JOIN assets a ON a.id = aag.asset_id
+         WHERE aag.asset_group_id = ?",
+        [(int)$group_id], 'asset', 'asset_group', (int)$group_id,
+        'id', 'name', true
+    );
+}
+
+/**************************************************************
+ * FUNCTION: GET RISK CONNECTIVITY FOR ASSET GROUP            *
+ **************************************************************/
+function get_risk_connectivity_for_asset_group($group_id)
+{
+    return graph_risk_edge_rows(
+        "SELECT DISTINCT r.id, r.subject, rs.calculated_risk
+         FROM risks_to_asset_groups rtag
+         JOIN risks r ON r.id = rtag.risk_id
+         LEFT JOIN risk_scoring rs ON rs.id = r.id
+         WHERE rtag.asset_group_id = ?",
+        [(int)$group_id], 'asset_group', (int)$group_id
+    );
+}
+
+/**************************************************************
+ * FUNCTION: GET CONTROL CONNECTIVITY FOR ASSET GROUP         *
+ **************************************************************/
+function get_control_connectivity_for_asset_group($group_id)
+{
+    return graph_edge_rows(
+        "SELECT fc.id, fc.short_name
+         FROM control_to_asset_groups ctag
+         JOIN framework_controls fc ON fc.id = ctag.control_id
+         WHERE ctag.asset_group_id = ? AND fc.deleted = 0",
+        [(int)$group_id], 'control', 'asset_group', (int)$group_id,
+        'id', 'short_name'
+    );
+}
+
+/**************************************************************
+ * FUNCTION: GET ASSET GROUP CONNECTIVITY FOR ASSET           *
+ **************************************************************/
+function get_asset_group_connectivity_for_asset($asset_id)
+{
+    return graph_edge_rows(
+        "SELECT ag.id, ag.name
+         FROM assets_asset_groups aag
+         JOIN asset_groups ag ON ag.id = aag.asset_group_id
+         WHERE aag.asset_id = ?",
+        [(int)$asset_id], 'asset_group', 'asset', (int)$asset_id,
+        'id', 'name'
+    );
+}
+
+/**************************************************************
+ * FUNCTION: GET ASSET GROUP CONNECTIVITY FOR RISK            *
+ **************************************************************/
+/**
+ * $risk_id is the RAW db id (graph node ids use the raw id; the orchestrator
+ * subtracts the display offset before calling, as it does for catalogs).
+ */
+function get_asset_group_connectivity_for_risk($risk_id)
+{
+    return graph_edge_rows(
+        "SELECT ag.id, ag.name
+         FROM risks_to_asset_groups rtag
+         JOIN asset_groups ag ON ag.id = rtag.asset_group_id
+         WHERE rtag.risk_id = ?",
+        [(int)$risk_id], 'asset_group', 'risk', (int)$risk_id,
+        'id', 'name'
+    );
+}
+
+/**************************************************************
+ * FUNCTION: GET ASSET GROUP CONNECTIVITY FOR CONTROL         *
+ **************************************************************/
+function get_asset_group_connectivity_for_control($control_id)
+{
+    return graph_edge_rows(
+        "SELECT ag.id, ag.name
+         FROM control_to_asset_groups ctag
+         JOIN asset_groups ag ON ag.id = ctag.asset_group_id
+         WHERE ctag.control_id = ?",
+        [(int)$control_id], 'asset_group', 'control', (int)$control_id,
+        'id', 'name'
+    );
+}
+
 /**********************************************************
  * FUNCTION: GET RISK CONNECTIVITY FOR RISK CATALOG       *
  **********************************************************/
@@ -1998,6 +2103,36 @@ function connectivity_visualizer_associations_threat_catalog($id)
     }
 
     return ["risks" => $risk_associations];
+}
+
+/**************************************************************
+ * FUNCTION: CONNECTIVITY VISUALIZER ASSOCIATIONS ASSET GROUP *
+ **************************************************************/
+/**
+ * First-hop only: a group's members, and the risks and controls scoped to it.
+ * Further hops come from the bundle's depth-2 walk. Visibility of the
+ * returned assets and risks is enforced by the pipeline's L3/L4 passes (assets
+ * and risks are L4-scoped types); the group itself has no team column and is
+ * gated by the `asset` domain permission only.
+ */
+function connectivity_visualizer_associations_asset_group($id)
+{
+    $asset_associations = [];
+    $risk_associations = [];
+    $control_associations = [];
+
+    if (!is_null($id))
+    {
+        $asset_associations = get_asset_connectivity_for_asset_group($id);
+        $risk_associations = get_risk_connectivity_for_asset_group($id);
+        $control_associations = get_control_connectivity_for_asset_group($id);
+    }
+
+    return [
+        "assets" => $asset_associations,
+        "risks" => $risk_associations,
+        "controls" => $control_associations,
+    ];
 }
 
 /*****************************************************************

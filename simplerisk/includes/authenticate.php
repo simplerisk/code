@@ -1910,6 +1910,19 @@ function sess_gc($sess_maxlifetime)
     return true;
 }
 
+/**********************************
+ * FUNCTION: LOGOUT AUDIT MESSAGE *
+ **********************************/
+// The audit message for a logout, or null when nobody was signed in
+function logout_audit_message($username, $uid)
+{
+    if ((int)$uid <= 0) {
+        return null;
+    }
+
+    return "Username \"" . $username . "\" logged out successfully.";
+}
+
 /********************
  * FUNCTION: LOGOUT *
  ********************/
@@ -1919,9 +1932,11 @@ function logout()
     $username = $_SESSION['user'] ?? '';
     $uid = $_SESSION['uid'] ?? 0;
 
-    // Audit log
-    $message = "Username \"" . $username . "\" logged out successfully.";
-    write_log($uid + 1000, $uid, $message, "user");
+    // Audit log, but only for a signed-in user: logout.php can be requested by anything
+    $message = logout_audit_message($username, $uid);
+    if ($message !== null) {
+        write_log($uid + 1000, $uid, $message, "user");
+    }
 
     // Invalidate all server-side sessions for this user (other browsers,
     // devices, or stolen cookies) so that logout is a complete sign-out.

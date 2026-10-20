@@ -199,11 +199,24 @@ $junction_config = array(
             'mitigation_to_team' => 'mitigation_id'
         )
     ),
+    'contributing_risks' => array(
+        'id_field' => 'id',
+        'junctions' => array(
+            'contributing_risks_impact' => 'contributing_risks_id',
+            'risk_scoring_contributing_impacts' => 'contributing_risk_id',
+        )
+    ),
     'assessment_answers' => array(
         'id_field' => 'id',
         'junctions' => array(
             'assessment_answers_to_assets' => 'assessment_answer_id',
             'assessment_answers_to_asset_groups' => 'assessment_answer_id'
+        )
+    ),
+    'questionnaire_tracking' => array(
+        'id_field' => 'id',
+        'junctions' => array(
+            'questionnaire_files' => 'tracking_id',
         )
     ),
     'questionnaire_answers' => array(
@@ -8052,10 +8065,14 @@ function update_setting($name, $value, ?PDO $db = null): bool
         $close_db = true;
     }
 
-    // Quick check: if value hasn't changed, return early
-    $old_value = get_setting($name, db: $db);
+    // Quick check: if value hasn't changed, return early. Compare against the row itself, not the
+    // per-process cache: another process (web request, cron worker) may have changed the row since
+    // this process cached it, and a write matching the stale cache must not be dropped.
+    $old_value = get_setting($name, false, false, db: $db);
     if ($old_value == $value) {
         write_debug_log("Setting {$name} was not changed. Nothing to do.", "debug");
+        // Keep this process's cache in step with the row it was just compared against
+        $GLOBALS['setting_' . $name] = $value;
         return false;
     }
 
@@ -9642,6 +9659,16 @@ function is_user_locked_out($user_id) {
     return isset($lockout_status) && (int)$lockout_status === 1;
 }
 
+/**
+ * SR-2069: true when session_id()/session_start() can no longer run because a
+ * web response has already started (e.g. the upgrade page flushes progress).
+ * CLI is excluded: it has no headers to send, and PHPUnit's CLI reports
+ * headers_sent() as true after printing output.
+ */
+function other_sessions_unreachable(bool $headers_sent, string $sapi): bool {
+    return $headers_sent && $sapi !== 'cli';
+}
+
 /****************************************************************************
  * FUNCTION: RUN IN OTHER SESSIONS                                        *
  * Activates each session id in turn so $per_session_callback can read/   *
@@ -9660,6 +9687,15 @@ function is_user_locked_out($user_id) {
  ****************************************************************************/
 function run_in_other_sessions(string $sid, array $session_ids, callable $per_session_callback): void {
     if (empty($session_ids)) {
+        return;
+    }
+
+    // Output has already been flushed (e.g. mid-upgrade progress streaming),
+    // so sessions cannot be reopened. Permissions are only applied to a session
+    // at login or by this refresh, so those sessions stay stale until their
+    // users log in again.
+    if (other_sessions_unreachable(headers_sent(), PHP_SAPI)) {
+        write_debug_log("run_in_other_sessions(): skipped, headers already sent; other sessions were not refreshed.", "warning");
         return;
     }
 
@@ -9777,6 +9813,15 @@ function refresh_permissions_in_sessions_of_user($uid) {
     $stmt->bindValue(":uid", (int)$uid, PDO::PARAM_INT);
     $stmt->execute();
     $session_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // Past this point no session can be reopened (SR-2069), so a grant or
+    // revocation for this user is not applied to their live sessions until
+    // they log in again. Say so, with the uid, rather than skipping silently.
+    if (!empty($session_ids) && other_sessions_unreachable(headers_sent(), PHP_SAPI)) {
+        write_debug_log("refresh_permissions_in_sessions_of_user(): headers already sent; " . count($session_ids) . " open session(s) of uid $uid keep stale permissions until re-login.", 'warning');
+        db_close($db);
+        return;
+    }
 
     // Re-opening $sid below (when one was active on entry) re-reads its own
     // just-written data back into $_SESSION, so an in-memory permission
@@ -17538,6 +17583,21 @@ function next_review($risk_level, $id, $next_review, $html = true, $review_level
 }
 
 /**
+ * Whole calendar days from $from to $to (both Y-m-d), negative when $to is
+ * earlier. Uses DateTimeImmutable::diff() rather than dividing elapsed
+ * seconds by 86400, which is off by one hour -- and so, after floor(), by a
+ * day -- when the span crosses a DST transition in the configured timezone.
+ */
+function calendar_days_between(string $from, string $to): int
+{
+    // UTC: the inputs are calendar dates, and local midnight does not exist in
+    // zones whose DST jump is at midnight.
+    $utc = new \DateTimeZone('UTC');
+    $diff = (new \DateTimeImmutable($from, $utc))->diff(new \DateTimeImmutable($to, $utc));
+    return $diff->invert ? -(int)$diff->days : (int)$diff->days;
+}
+
+/**
  * Classify a risk's review urgency without producing display markup --
  * mirrors next_review()'s (functions.php:16709) date-resolution branches
  * (null -> unreviewed, "0000-00-00" -> cadence fallback via $review_levels,
@@ -17566,7 +17626,7 @@ function classify_review_urgency($next_review_raw, $review_level_index, $risk_id
         $resolved_date = (new \DateTime($next_review_raw))->format('Y-m-d');
     }
 
-    $days_until = (strtotime($resolved_date) - strtotime(date('Y-m-d'))) / 86400;
+    $days_until = calendar_days_between(date('Y-m-d'), $resolved_date);
 
     if ((strtotime($resolved_date) + 24 * 3600) <= time()) {
         $bucket = 'past_due';
@@ -19153,6 +19213,42 @@ function resolve_user_lang_preference(?string $stored_lang): string
     return $default_language ?: "en";
 }
 
+/*********************************************
+ * FUNCTION: LOCALE AWARE LABEL COMPARATOR   *
+ * Returns a comparator for sorting display  *
+ * labels the way the session language       *
+ * expects (ñ after n, ä with a), with       *
+ * natural number order (Report 2 < 10) and  *
+ * case ignored, like strnatcasecmp() gives  *
+ * English. Falls back to strnatcasecmp()    *
+ * when ext-intl is not loaded.              *
+ *********************************************/
+function locale_aware_label_comparator(?string $locale = null): callable
+{
+    $fallback = static fn($a, $b): int => strnatcasecmp((string)$a, (string)$b);
+
+    // ext-intl is not a declared composer requirement; degrade to byte-order natural sort.
+    if (!class_exists('Collator')) {
+        return $fallback;
+    }
+
+    $locale = ($locale === null || $locale === '') ? ($_SESSION['lang'] ?? 'en') : $locale;
+    $collator = \Collator::create(str_replace('-', '_', (string)$locale));
+    if ($collator === null) {
+        return $fallback;
+    }
+
+    // SECONDARY: ignore case but keep accents distinct, so the order is deterministic.
+    $collator->setStrength(\Collator::SECONDARY);
+    $collator->setAttribute(\Collator::NUMERIC_COLLATION, \Collator::ON);
+
+    return static function ($a, $b) use ($collator, $fallback): int {
+        $result = $collator->compare((string)$a, (string)$b);
+
+        return $result === false ? $fallback($a, $b) : $result;
+    };
+}
+
 /***************************
  * FUNCTION: LANGUAGE FILE *
  ***************************/
@@ -19795,6 +19891,12 @@ function upload_file($risk_id, $file, $view_type = 1) {
 
         }
 
+        // A file PHP or MySQL cannot take is refused before it is inspected or stored
+        $refusal = upload_precheck_refusal($file);
+        if ($refusal !== null) {
+            return $refusal;
+        }
+
         $finfo = new finfo(FILEINFO_MIME_TYPE);
 
         $file_type_name = $finfo->file($file['tmp_name']);
@@ -19807,7 +19909,7 @@ function upload_file($risk_id, $file, $view_type = 1) {
         if ($file_type_extension_mapping_exists) {
 
             // Get the maximum upload file size
-            $max_upload_size = get_setting("max_upload_size");
+            $max_upload_size = max_upload_size_effective();
 
             // If the file size is less than 5MB
             if ($file['size'] < $max_upload_size) {
@@ -20114,12 +20216,12 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
             echo "
                 <div class='file-uploader'>
                     <script>
-                        var max_upload_size = " . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ";
+                        var max_upload_size = " . $escaper->escapeJs(max_upload_size_effective()) . ";
                         var fileTooBigMessage = '" . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . "';
                     </script>
                     <label for='file-upload' class='btn btn-primary active-textfield'>" . $escaper->escapeHtml($lang['ChooseFile']) . "</label> 
                     <span class='file-count-html'><span class='file-count'>0</span> " . $escaper->escapeHtml($lang['FileAdded']) . "</span>
-                    <p><font size='2'><strong>Max ". $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)) . " Mb</strong></font></p>
+                    <p><font size='2'><strong>Max ". $escaper->escapeHtml(max_upload_size_label()) . " Mb</strong></font></p>
                     <ul class='file-list'>
                     </ul>
                     <input type='file' name='file[]' id='file-upload' class='hidden-file-upload active d-none' />
@@ -20154,7 +20256,7 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
             echo "
                 <div class='file-uploader'>
                 <script>
-                    var max_upload_size = " . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ";
+                    var max_upload_size = " . $escaper->escapeJs(max_upload_size_effective()) . ";
                     var fileTooBigMessage = '" . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . "'; 
                 </script>
                     <label for='file-upload' class='btn btn-primary active-textfield'>Choose File</label> 
@@ -22913,11 +23015,46 @@ function linux_delete_file($file)
  ********************************/
 function windows_delete_dir($dir)
 {
-    // Recursively delete directory and its contents
-    $success = exec("RMDIR /s \"" . $dir . "\"", $lines, $deleteError);
+    // Recursively delete the directory in PHP. Shelling out to RMDIR /s (without /q) waited
+    // on a confirmation prompt that never gets answered, and exec() returned the last output
+    // line rather than a boolean. PHP handles forward slashes on Windows, so no shell is needed.
+    // A symlink or junction is removed as a link and never descended into, like RMDIR /s did,
+    // so its target is left alone.
+    if (is_link($dir))
+    {
+        return @unlink($dir) || @rmdir($dir);
+    }
 
-    // Return the results
-    return $success;
+    if (!is_dir($dir))
+    {
+        return false;
+    }
+
+    $entries = scandir($dir);
+    if ($entries === false)
+    {
+        return false;
+    }
+
+    $success = true;
+    foreach (array_diff($entries, array('.', '..')) as $entry)
+    {
+        $path = $dir . '/' . $entry;
+        if (is_link($path))
+        {
+            $success = (@unlink($path) || @rmdir($path)) && $success;
+        }
+        elseif (is_dir($path))
+        {
+            $success = windows_delete_dir($path) && $success;
+        }
+        else
+        {
+            $success = @unlink($path) && $success;
+        }
+    }
+
+    return @rmdir($dir) && $success;
 }
 
 /*********************************
@@ -23024,6 +23161,84 @@ function csp_enabled()
     }
     // Otherwise, return false
     else return false;
+}
+
+const HSTS_DEFAULT_MAX_AGE = 31536000;
+const HSTS_MAX_AGE_LIMIT = 63072000;
+
+/*******************************************
+ * FUNCTION: NORMALIZE HSTS MAX AGE        *
+ *******************************************/
+// Returns the max age in seconds as an int, or null when the value isn't a whole
+// number between 0 and HSTS_MAX_AGE_LIMIT. Non-string input (such as a POSTed array) is invalid.
+function normalize_hsts_max_age($value)
+{
+    if (is_int($value))
+    {
+        $value = (string)$value;
+    }
+
+    if (!is_string($value))
+    {
+        return null;
+    }
+
+    $value = trim($value);
+
+    // The digit-count in the pattern only guards against overflow; HSTS_MAX_AGE_LIMIT is the real bound
+    if (!preg_match('/^\d{1,10}$/', $value) || (int)$value > HSTS_MAX_AGE_LIMIT)
+    {
+        return null;
+    }
+
+    return (int)$value;
+}
+
+/*******************************************
+ * FUNCTION: BUILD HSTS HEADER VALUE       *
+ *******************************************/
+function build_hsts_header_value($enabled, $max_age, $include_subdomains)
+{
+    if (!$enabled)
+    {
+        return null;
+    }
+
+    // A missing or invalid stored max age falls back to the default rather than sending a header the admin never chose
+    $value = "max-age=" . (normalize_hsts_max_age($max_age) ?? HSTS_DEFAULT_MAX_AGE);
+
+    if ($include_subdomains)
+    {
+        $value .= "; includeSubDomains";
+    }
+
+    return $value;
+}
+
+/*****************************************
+ * FUNCTION: HSTS SETTINGS FROM POST     *
+ *****************************************/
+// Decides what the Configure > Security form saves for HSTS. The checkboxes always
+// save; 'max_age' is null when the posted value is invalid, meaning keep the stored one.
+function hsts_settings_from_post(array $post)
+{
+    return [
+        'enabled' => isset($post['hsts_enabled']) ? 1 : 0,
+        'include_subdomains' => isset($post['hsts_include_subdomains']) ? 1 : 0,
+        'max_age' => normalize_hsts_max_age($post['hsts_max_age'] ?? (string)HSTS_DEFAULT_MAX_AGE),
+    ];
+}
+
+/*********************************
+ * FUNCTION: GET HSTS HEADER VALUE *
+ *********************************/
+function get_hsts_header_value()
+{
+    return build_hsts_header_value(
+        get_setting("hsts_enabled") == 1,
+        get_setting("hsts_max_age"),
+        get_setting("hsts_include_subdomains") == 1
+    );
 }
 
 /*****************************************
@@ -23424,6 +23639,30 @@ function get_responsibilites_by_role_id($role_id)
     return $array;
 }
 
+/***************************
+ * FUNCTION: RISK EXISTS   *
+ ***************************/
+// Takes a displayed risk id (stored id + 1000) and checks only the risks table; it applies no team separation
+function risk_exists($risk_id)
+{
+    // Risk ids are displayed with a 1000 offset
+    $id = (int)$risk_id - 1000;
+
+    if ($id < 1)
+    {
+        return false;
+    }
+
+    $db = db_open();
+    $stmt = $db->prepare("SELECT 1 FROM `risks` WHERE `id` = :id LIMIT 1;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $exists = (bool)$stmt->fetchColumn();
+    db_close($db);
+
+    return $exists;
+}
+
 /*****************************************
  * FUNCTION: ACCEPT OR REJECT MITIGATION *
  *****************************************/
@@ -23590,7 +23829,7 @@ function set_simplerisk_timezone()
 /**********************************
  * FUNCTION: ADD SECURITY HEADERS *
  **********************************/
-function add_security_headers($x_frame_options = true, $x_xss_protection = true, $x_content_type_options = true, $content_type = true, $content_security_policy = true, $referrer_policy = 'origin')
+function add_security_headers($x_frame_options = true, $x_xss_protection = true, $x_content_type_options = true, $content_type = true, $content_security_policy = true, $referrer_policy = 'origin', $hsts = true)
 {
 	// If we want to send a X-Frame-Options header
 	if ($x_frame_options)
@@ -23625,6 +23864,17 @@ function add_security_headers($x_frame_options = true, $x_xss_protection = true,
         }
         header("Referrer-Policy: " . $referrer_policy);
     }
+
+	// If we want to send a Strict-Transport-Security header (only when an admin has enabled HSTS)
+	if ($hsts)
+	{
+		$hsts_value = get_hsts_header_value();
+
+		if ($hsts_value !== null)
+		{
+			header("Strict-Transport-Security: " . $hsts_value);
+		}
+	}
 
 	// If we want to send a Content-Security-Policy header
 	if ($content_security_policy)
@@ -23738,11 +23988,266 @@ function mysql_max_allowed_values()
  ************************************/
 function php_max_allowed_values()
 {
-    // Get the smallest value between the upload_max_filesize, post_max_size, and memory_limit
-    $php_max_upload_size = min(convert_file_size_into_bytes(ini_get('upload_max_filesize')), convert_file_size_into_bytes(ini_get('post_max_size')), convert_file_size_into_bytes(ini_get('memory_limit')));
+    // Get the smallest value between the upload_max_filesize, post_max_size, and memory_limit.
+    // A setting that is unlimited (-1 or 0) or that cannot be read does not constrain anything.
+    $limits = array_filter([
+        ini_size_to_bytes(ini_get('upload_max_filesize')),
+        ini_size_to_bytes(ini_get('post_max_size')),
+        ini_size_to_bytes(ini_get('memory_limit')),
+    ], function ($limit) { return $limit !== null; });
 
     // Return the smallest value
-    return $php_max_upload_size;
+    return $limits ? min($limits) : PHP_INT_MAX;
+}
+
+/*********************************
+ * FUNCTION: INI SIZE TO BYTES   *
+ *********************************/
+function ini_size_to_bytes($value)
+{
+    // A php.ini size is a number with an optional k, m or g suffix; -1 (and 0 for the size
+    // limits) means unlimited. Returns the size in bytes, or null when there is no limit.
+    $value = trim((string)$value);
+
+    if ($value === '' || !preg_match('/^(-?\d+)\s*([kmg]?)/i', $value, $matches))
+    {
+        return null;
+    }
+
+    $bytes = (int)$matches[1];
+
+    if ($bytes <= 0)
+    {
+        return null;
+    }
+
+    switch (strtolower($matches[2]))
+    {
+        case 'g':
+            $bytes *= 1024;
+        case 'm':
+            $bytes *= 1024;
+        case 'k':
+            $bytes *= 1024;
+    }
+
+    return $bytes;
+}
+
+/*******************************
+ * FUNCTION: UPLOAD ERROR TEXT *
+ *******************************/
+function upload_error_text($error)
+{
+    global $lang;
+
+    // Returns the text for a PHP upload error code, or null when the upload itself succeeded
+    switch ((int)$error)
+    {
+        case UPLOAD_ERR_OK:
+            return null;
+        case UPLOAD_ERR_INI_SIZE:
+            return $lang['UploadErrorIniSize'];
+        case UPLOAD_ERR_FORM_SIZE:
+            return $lang['UploadErrorFormSize'];
+        case UPLOAD_ERR_PARTIAL:
+            return $lang['UploadErrorPartial'];
+        case UPLOAD_ERR_NO_FILE:
+            return $lang['UploadErrorNoFile'];
+        case UPLOAD_ERR_NO_TMP_DIR:
+            return $lang['UploadErrorNoTmpDir'];
+        case UPLOAD_ERR_CANT_WRITE:
+            return $lang['UploadErrorCantWrite'];
+        case UPLOAD_ERR_EXTENSION:
+            return $lang['UploadErrorExtension'];
+        default:
+            return $lang['ImportingFileError'];
+    }
+}
+
+/*******************************************
+ * FUNCTION: UPLOAD EXCEEDS DATABASE LIMIT *
+ *******************************************/
+function upload_exceeds_database_limit($size, $limit = null)
+{
+    // The limit is read once per request unless a test hands one in
+    if ($limit === null)
+    {
+        $limit = upload_database_limit();
+    }
+
+    // A limit that could not be read is not a reason to refuse every upload
+    if ($limit <= 0)
+    {
+        return false;
+    }
+
+    return ((int)$size + upload_database_headroom()) > $limit;
+}
+
+/************************************
+ * FUNCTION: UPLOAD DATABASE LIMIT  *
+ ************************************/
+function upload_database_limit()
+{
+    // What MySQL can store in one statement, read once per request
+    static $cached_limit = null;
+
+    if ($cached_limit === null)
+    {
+        $cached_limit = (int)mysql_max_allowed_values();
+    }
+
+    return $cached_limit;
+}
+
+/**************************************
+ * FUNCTION: UPLOAD DATABASE HEADROOM *
+ **************************************/
+function upload_database_headroom()
+{
+    // Room for the other columns and the statement around the file's bytes
+    return 65536;
+}
+
+/**************************************
+ * FUNCTION: MAX UPLOAD SIZE EFFECTIVE *
+ **************************************/
+function max_upload_size_effective($setting = null, $php_limit = null, $database_limit = null)
+{
+    // The largest file that will actually be accepted: the smallest of the SimpleRisk setting,
+    // what PHP allows and what MySQL can store. The setting alone can be higher than either, so
+    // anything that tells a user a limit, or checks one in the browser, must use this value.
+    $setting = $setting === null ? (int)get_setting('max_upload_size') : (int)$setting;
+    $php_limit = $php_limit === null ? php_max_allowed_values() : (int)$php_limit;
+    $database_limit = $database_limit === null ? upload_database_limit() : (int)$database_limit;
+
+    $limits = [$setting, $php_limit];
+
+    // A database limit that could not be read does not constrain anything
+    if ($database_limit > 0)
+    {
+        $limits[] = $database_limit - upload_database_headroom();
+    }
+
+    return max(0, min($limits));
+}
+
+/***********************************************
+ * FUNCTION: MAX UPLOAD SIZE SETTING REFUSAL   *
+ ***********************************************/
+function max_upload_size_setting_refusal($value, $php_limit = null, $database_limit = null)
+{
+    // Returns the language key explaining why a new "maximum upload file size" cannot be saved,
+    // or null when it can. A value above what PHP or MySQL can take is not a setting that could
+    // ever be honoured, so it is refused instead of stored with a warning.
+    if (!is_numeric($value) || (string)(int)$value !== (string)$value || (int)$value < 1)
+    {
+        return 'MaxUploadSizeNeedsInteger';
+    }
+
+    $exceeded = max_upload_size_exceeded_limits($value, $php_limit, $database_limit);
+
+    return $exceeded ? $exceeded[0] : null;
+}
+
+/***********************************************
+ * FUNCTION: MAX UPLOAD SIZE EXCEEDED LIMITS   *
+ ***********************************************/
+function max_upload_size_exceeded_limits($value, $php_limit = null, $database_limit = null)
+{
+    // The language keys of the limits a value is above, PHP first. The same decision drives the
+    // refusal on save and the warnings shown for a value that is already saved.
+    $php_limit = $php_limit === null ? php_max_allowed_values() : (int)$php_limit;
+    $database_limit = $database_limit === null ? upload_database_limit() : (int)$database_limit;
+
+    $exceeded = [];
+
+    if ((int)$value > $php_limit)
+    {
+        $exceeded[] = 'WarnPHPUploadSize';
+    }
+
+    if ($database_limit > 0 && (int)$value > $database_limit - upload_database_headroom())
+    {
+        $exceeded[] = 'WarnMySQLUploadSize';
+    }
+
+    return $exceeded;
+}
+
+/*********************************************
+ * FUNCTION: UPDATE MAX UPLOAD SIZE          *
+ *********************************************/
+function update_max_upload_size($value, $php_limit = null, $database_limit = null)
+{
+    // Saves a new "maximum upload file size" unless PHP or MySQL cannot take it. Returns the
+    // language key of the message to show, and whether the value was saved.
+    $refusal = max_upload_size_setting_refusal($value, $php_limit, $database_limit);
+
+    if ($refusal !== null)
+    {
+        return [false, $refusal];
+    }
+
+    update_setting('max_upload_size', (int)$value);
+
+    return [true, 'MaxUploadSizeUpdated'];
+}
+
+/************************************
+ * FUNCTION: MAX UPLOAD SIZE LABEL  *
+ ************************************/
+function max_upload_size_label($bytes = null)
+{
+    // The limit in megabytes for a "Max N Mb" label, rounded down so a user is never told to try a
+    // size that will be refused, with one decimal below 10 Mb (a 4.8 Mb limit must not read "5")
+    $bytes = $bytes === null ? max_upload_size_effective() : (int)$bytes;
+    $mb = $bytes / 1024 / 1024;
+
+    if ($mb >= 10)
+    {
+        return (string)floor($mb);
+    }
+
+    $tenths = floor($mb * 10) / 10;
+
+    return rtrim(rtrim(number_format($tenths, 1, '.', ''), '0'), '.') ?: '0';
+}
+
+/***************************************
+ * FUNCTION: UPLOAD PRECHECK REFUSAL   *
+ ***************************************/
+function upload_precheck_refusal($file, $database_limit = null)
+{
+    global $lang;
+
+    // Returns the reason an uploaded file must be refused before it is inspected or stored, or null.
+    //
+    // Two limits sit outside SimpleRisk's own "maximum upload file size" and neither is visible to
+    // the checks that follow:
+    //  - PHP refuses a file over upload_max_filesize or post_max_size itself. It reports an error
+    //    code and leaves tmp_name empty, so inspecting the file (finfo) throws a ValueError that the
+    //    callers' catch (Exception) does not catch.
+    //  - MySQL refuses a stored file over max_allowed_packet (or a tenth of innodb_log_file_size)
+    //    by closing the connection, which takes every later query in the request with it.
+    if (!is_array($file))
+    {
+        return null;
+    }
+
+    $text = upload_error_text($file['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($text !== null)
+    {
+        return $text;
+    }
+
+    if (upload_exceeds_database_limit($file['size'] ?? 0, $database_limit))
+    {
+        return $lang['UploadFileTooBigForDatabase'] ?? '';
+    }
+
+    return null;
 }
 
 /********************************************
@@ -24031,6 +24536,15 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1, 
         
         if (strlen($file['name']) <= 100) {
 
+            // A file PHP or MySQL cannot take is refused before it is inspected or stored
+            $refusal = upload_precheck_refusal($file);
+            if ($refusal !== null) {
+                if ((int)$file['error'] !== UPLOAD_ERR_NO_FILE) {
+                    $errors[] = $refusal;
+                }
+                continue;
+            }
+
             $finfo = new finfo(FILEINFO_MIME_TYPE);
 
             $file_type_name = $finfo->file($file['tmp_name']);
@@ -24043,7 +24557,7 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1, 
             if ($file_type_extension_mapping_exists) {
 
                 // Get the maximum upload file size
-                $max_upload_size = get_setting("max_upload_size");
+                $max_upload_size = max_upload_size_effective();
     
                 // If the file size is less than max size
                 if ($file['size'] < $max_upload_size)
@@ -24176,6 +24690,15 @@ function upload_exception_files($test_audit_id, $ref_type, $files, $version=1)
         
         if (strlen($file['name']) <= 100) {
         
+            // A file PHP or MySQL cannot take is refused before it is inspected or stored
+            $refusal = upload_precheck_refusal($file);
+            if ($refusal !== null) {
+                if ((int)$file['error'] !== UPLOAD_ERR_NO_FILE) {
+                    $errors[] = $refusal;
+                }
+                continue;
+            }
+
             $finfo = new finfo(FILEINFO_MIME_TYPE);
 
             $file_type_name = $finfo->file($file['tmp_name']);
@@ -24188,7 +24711,7 @@ function upload_exception_files($test_audit_id, $ref_type, $files, $version=1)
             if ($file_type_extension_mapping_exists) {
 
                 // Get the maximum upload file size
-                $max_upload_size = get_setting("max_upload_size");
+                $max_upload_size = max_upload_size_effective();
     
                 // If the file size is less than max size
                 if ($file['size'] < $max_upload_size)
@@ -25015,13 +25538,11 @@ function save_contributing_risks($subjects, $weights, $existing_subjects=[], $ex
     $stmt->bindParam(":existing_ids", $existing_ids_string, PDO::PARAM_STR);
     $stmt->execute();
 
-    // Delete contributing risks impact not inlcuding existing ids
-    $stmt = $db->prepare("DELETE FROM `contributing_risks_impact` WHERE FIND_IN_SET(contributing_risks_id, :existing_ids) = 0; ");
-    $existing_ids_string = implode(",", $existing_ids);
-    $stmt->bindParam(":existing_ids", $existing_ids_string, PDO::PARAM_STR);
-    $stmt->execute();
     // Close the database connection
     db_close($db);
+
+    // Remove what pointed at the deleted contributing risks: their impact levels and the impact each risk had selected
+    cleanup_after_delete("contributing_risks");
     
     // Create new contributing risks
     foreach($weights as $key => $weight){
@@ -28180,40 +28701,9 @@ function get_risk_status($risk_id){
  ***************************************/
 function file_upload_error_message($error)
 {
-	switch ($error)
-	{
-		// File exceeds the upload_max filesize directive
-		case 1:
-			$message = "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
-			break;
-		// File exceed the MAX_FILE_SIZE directive in the HTML form
-		case 2:
-			$message = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
-			break;
-		// File was only partially uploaded
-		case 3:
-			$message = "The uploaded file was only partially uploaded.";
-			break;
-		// No file was uploaded
-		case 4:
-			$message = "No file was uploaded.";
-			break;
-		// Temporary folder is missing
-		case 6:
-			$message = "Missing a temporary folder.";
-			break;
-		// Failed to write file to disk
-		case 7:
-			$message = "Failed to write file to disk.";
-			break;
-		// PHP extension stopped file upload
-		case 8:
-			$message = "A PHP extension stopped the file upload.";
-			break;
-		// Generic default error message
-		default:
-			$message = "There was an error with the file upload.";
-	}
+	global $lang;
+
+	$message = upload_error_text($error) ?? $lang['ImportingFileError'];
 
 	// Write a message to the debug log
 	write_debug_log($message, 'warning');
@@ -28337,8 +28827,7 @@ function plan_projects_due_status(?string $due_date, ?string $today = null, int 
     if ($due === false) {
         return 'none';
     }
-    $today_ts = strtotime(($today ?: date('Y-m-d')) . ' 00:00:00');
-    $days = (int)floor(($due - $today_ts) / 86400);
+    $days = calendar_days_between($today ?: date('Y-m-d'), substr((string)$due_date, 0, 10));
     if ($days < 0) {
         return 'overdue';
     }
@@ -28588,6 +29077,37 @@ function control_frameworks_sanitize_display_settings($decoded)
         if (!empty($valid_columns)) {
             $sanitized['columns'] = $valid_columns;
         }
+    }
+    return empty($sanitized) ? null : $sanitized;
+}
+
+/**
+ * Re-validates a decoded custom_review_risk_display_settings row on the way out, so a row
+ * saved before the save handler checked column values is never echoed back unvetted.
+ * Mirrors control_frameworks_sanitize_display_settings() and also keeps a valid `order`.
+ * Returns ['columns' => [...]] with an optional 'order', or null when nothing valid remains.
+ */
+function custom_review_risk_sanitize_display_settings($decoded)
+{
+    if (!is_array($decoded)) {
+        return null;
+    }
+    $sanitized = [];
+    if (isset($decoded['columns']) && is_array($decoded['columns'])) {
+        $valid_columns = [];
+        foreach ($decoded['columns'] as $pair) {
+            $name = is_array($pair) ? ($pair[0] ?? null) : null;
+            $value = is_array($pair) ? ($pair[1] ?? null) : null;
+            if (is_string($name) && preg_match('/^[A-Za-z0-9_]+$/', $name) && custom_display_column_value_is_valid($value)) {
+                $valid_columns[] = [$name, custom_display_normalize_column_flag($value)];
+            }
+        }
+        if (!empty($valid_columns)) {
+            $sanitized['columns'] = $valid_columns;
+        }
+    }
+    if (isset($decoded['order']) && custom_column_order_is_valid($decoded['order'])) {
+        $sanitized['order'] = array_values($decoded['order']);
     }
     return empty($sanitized) ? null : $sanitized;
 }
@@ -30005,6 +30525,12 @@ function upload_validation_file($mitigation_id, $control_id, $file)
         }
 
 
+        // A file PHP or MySQL cannot take is refused before it is inspected or stored
+        $refusal = upload_precheck_refusal($file);
+        if ($refusal !== null) {
+            return $refusal;
+        }
+
         $finfo = new finfo(FILEINFO_MIME_TYPE);
 
         $file_type_name = $finfo->file($file['tmp_name']);
@@ -30017,7 +30543,7 @@ function upload_validation_file($mitigation_id, $control_id, $file)
         if ($file_type_extension_mapping_exists) {
 
             // Get the maximum upload file size
-            $max_upload_size = get_setting("max_upload_size");
+            $max_upload_size = max_upload_size_effective();
 
             // If the file size is less than 5MB
             if ($file['size'] < $max_upload_size)
@@ -36355,6 +36881,7 @@ function get_localization_required_by_scripts(): array {
     // the Close Risk modal (buildCloseRiskModal()) -- all pre-existing keys
     // (used identically by the legacy close.php partial this modal
     // replaces), just newly registered for this script.
+    'CUSTOM:pages/user-import-progress.js' => ['UserImportQueued', 'UserImportProgressCount', 'UserImportComplete', 'UserImportFailed', 'UserImportSummary', 'UserImportRowInvalid', 'UserImportRowError', 'UserImportPasswordsOnce', 'UserImportPasswordsShownOnce', 'UserImportPasswordsUnavailable', 'RequestFailed'],
     'CUSTOM:pages/risk.js' => ['Cancel', 'Save', 'CloseRisk', 'Reason', 'CloseOutInformation', 'Submit', 'RequestFailed'],
     'EXTRA:JS:assessments:questionnaire_templates.js' => ['SelectedOnAnotherTab', 'ID', 'SelectedQuestions', 'SearchForQuestion', 'ConfirmDisableTabbedExperience', 'ConfirmDeleteTab', 'NewTab', 'Default', 'Actions', 'Required'],
     'CUSTOM:pages/plan-projects.js' => ['AreYouSureYouWantToDeleteThisProject', 'Risks', 'HighestRisk', 'OnHold', 'Active', 'Completed', 'Canceled', 'ALL', 'Priority', 'ProjectName', 'DueDate', 'Consultant', 'BusinessOwner', 'DataClassification', 'Status', 'Actions', 'Edit', 'Delete', 'ChangeStatus', 'View', 'AssignToProject', 'RemoveFromProject', 'AddRisksToThisProject', 'NoProjectsYet', 'NoProjectsYetHint', 'NoProjectsMatchFilters', 'NoRisksInThisProject', 'NoRisksWaitingForProject', 'NoRisksWaitingForProjectHint', 'NMoreRisks', 'ChangeStatusClosesRisks', 'ChangeStatusReopensRisks', 'ChangeStatusNoCloseRightsHint', 'DeleteProjectReturnsRisks', 'ReorderNeedsPrioritySort', 'CouldNotLoadProjects', 'OnTrack', 'DueSoon', 'Overdue', 'NoDueDate', 'MitigationNotPlanned', 'MitigationStatePlanned', 'Mitigated', 'InherentRisk', 'Subject', 'ID', 'Owner', 'Team', 'Reviewed', 'Mitigation', 'Search', 'NoMatchingOptions', 'Retry', 'ClearFilters', 'Yes', 'Cancel', 'Add', 'Update', 'Save', 'AddProject', 'SavedSuccess', 'RequestFailed', 'NoRisksMatchYourSearch', 'Select', 'Details', 'Close', 'SelectAll', 'Clear', 'ProcessingPleaseWait', 'AllUnassignedRisks', 'NoRisksSelectedYet', 'Remove', 'NoPermissionForRiskManagement', 'Show', 'MitigationPlanning', 'SelectAllN'],
@@ -37109,7 +37636,10 @@ function get_localization_required_by_scripts(): array {
         // Risk's variant of design-system.md §6c). 'Columns', 'Search' and
         // 'NoMatchingOptions' are existing lang.en.php keys not previously
         // needed by this script.
-        'Columns', 'Search', 'NoMatchingOptions', 'StandardFields', 'CustomFields'],
+        'Columns', 'Search', 'NoMatchingOptions', 'StandardFields', 'CustomFields',
+        // Advanced Search: the ?control_id= deep link's neutral notice when the
+        // control is missing or not visible to this user.
+        'ControlDeepLinkUnavailable'],
     // Task 17: the Statement of Applicability report
     // (reports/statement_of_applicability.php). The page is a thin shell and
     // EVERY visible string is built by this script, so the whole document's
@@ -37150,7 +37680,7 @@ function get_localization_required_by_scripts(): array {
     // Data Integrity review/repair page controller (data-integrity.js).
     'CUSTOM:pages/data-integrity.js' => ['DataIntegrityTotalCount', 'Repair', 'DataIntegrityRecordLocation', 'Selected', 'Open', 'RequestFailed', 'DataIntegrityShowingCapped'],
     'CUSTOM:dynamic.js' => ['Risk', 'Mitigation', 'Review', 'RiskScoring', 'Unassigned', 'RiskMapping', 'Remove', 'NoColumnsSelected'],
-    'CUSTOM:pages/connectivity-visualizer.js' => ['SearchEntities', 'SearchEntitiesPlaceholder', 'ShowTypes', 'Depth', 'Inspector', 'Connections', 'NoConnectionsFound', 'CouldNotLoadGraph', 'CouldNotSearchEntities', 'ShowingTopNOfM', 'RankedByMaturityGap', 'RankedByRiskScore', 'RankedByRecentFailure', 'RankedByReviewDate', 'RankedBySeverity', 'RankedByName', 'RiskCatalog', 'ThreatCatalog', 'Vulnerability', 'Audit', 'TestResult', 'NodeTypeSelfAssessmentResult', 'Relationship', 'CurrentMaturity', 'DesiredMaturity', 'ControlFamily', 'ApprovalState', 'ApprovalStatus', 'Manager', 'Approver', 'Tester', 'AssetValuation', 'Verified', 'Risk', 'Asset', 'Framework', 'Control', 'Test', 'Document', 'Exception', 'Name', 'Type', 'Status', 'Approved', 'Owner', 'RequestFailed', 'All', 'Close', 'RelationshipOfType', 'MitigationPercent', 'Objective', 'TestSteps', 'ExpectedResults', 'DesiredFrequency', 'LastDate', 'LastResult', 'LastResultDate', 'CalculatedRisk', 'Justification', 'NextReviewDate', 'PercentComplete', 'Response', 'AssessmentDate', 'FrameworkName', 'Score', 'Playbook', 'Severity', 'NextDate', 'ControlID', 'TestID', 'Number', 'Grouping', 'Description', 'Hidden', 'RiskId', 'FirstFound', 'LastFound', 'Patchable', 'Solution', 'Platform', 'Breadcrumb', 'SelectANodeToInspect', 'HiddenUnreachableNodes', 'BrowsableEntityTypes', 'CountFloor', 'NoBrowsableTypes', 'AllTypes', 'FilterEntitiesPlaceholder', 'NoMatchingEntities', 'LoadMore', 'Loading', 'CouldNotLoadEntityCounts', 'CouldNotLoadEntities', 'ClearGraph'],
+    'CUSTOM:pages/connectivity-visualizer.js' => ['SearchEntities', 'SearchEntitiesPlaceholder', 'ShowTypes', 'Depth', 'Inspector', 'Connections', 'NoConnectionsFound', 'CouldNotLoadGraph', 'CouldNotSearchEntities', 'ShowingTopNOfM', 'RankedByMaturityGap', 'RankedByRiskScore', 'RankedByRecentFailure', 'RankedByReviewDate', 'RankedBySeverity', 'RankedByName', 'RiskCatalog', 'ThreatCatalog', 'Vulnerability', 'Audit', 'TestResult', 'NodeTypeSelfAssessmentResult', 'Relationship', 'CurrentMaturity', 'DesiredMaturity', 'ControlFamily', 'ApprovalState', 'ApprovalStatus', 'Manager', 'Approver', 'Tester', 'AssetValuation', 'Verified', 'Risk', 'Asset', 'AssetGroup', 'Framework', 'Control', 'Test', 'Document', 'Exception', 'Name', 'Type', 'Status', 'Approved', 'Owner', 'RequestFailed', 'All', 'Close', 'RelationshipOfType', 'MitigationPercent', 'Objective', 'TestSteps', 'ExpectedResults', 'DesiredFrequency', 'LastDate', 'LastResult', 'LastResultDate', 'CalculatedRisk', 'Justification', 'NextReviewDate', 'PercentComplete', 'Response', 'AssessmentDate', 'FrameworkName', 'Score', 'Playbook', 'Severity', 'NextDate', 'ControlID', 'TestID', 'Number', 'Grouping', 'Description', 'Hidden', 'RiskId', 'FirstFound', 'LastFound', 'Patchable', 'Solution', 'Platform', 'Breadcrumb', 'SelectANodeToInspect', 'HiddenUnreachableNodes', 'BrowsableEntityTypes', 'CountFloor', 'NoBrowsableTypes', 'AllTypes', 'FilterEntitiesPlaceholder', 'NoMatchingEntities', 'LoadMore', 'Loading', 'CouldNotLoadEntityCounts', 'CouldNotLoadEntities', 'ClearGraph'],
     // My Profile redesign (js/simplerisk/pages/account-profile.js)
     'CUSTOM:pages/account-profile.js' => [
         'Administrator', 'AccountDetails', 'YourPermissions', 'RoleAndTeamsGrantAccess', 'AllGranted', 'PermissionsCountLabel',

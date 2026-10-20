@@ -5,7 +5,7 @@
 
 	// Render the header and sidebar
 	require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-	render_header_and_sidebar(['tabs:logic', 'multiselect'], ['check_admin' => true]);
+	render_header_and_sidebar(['tabs:logic', 'multiselect', 'CUSTOM:pages/user-import-progress.js'], ['check_admin' => true]);
 
 	checkUploadedFileSizeErrors();
 
@@ -259,7 +259,7 @@
 			
 		});
 		$("#import").submit(function(event) {
-			if ($("#import input[type='file']").length && <?= $escaper->escapeHtml(get_setting('max_upload_size')) ?><= $("#import input[type='file']")[0].files[0].size) {
+			if ($("#import input[type='file']").length && <?= $escaper->escapeHtml(max_upload_size_effective()) ?><= $("#import input[type='file']")[0].files[0].size) {
 				showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
 				event.preventDefault();
 			}

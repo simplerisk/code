@@ -57,7 +57,7 @@ self-assessment, see the above section for the latest assessment report.
 
 | SEP-1730 criterion          | Target (Tier 1)          | Current state                                                                                                                          |
 | --------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Conformance pass rate       | 100%                     | **100%** of stable-track scenarios — client and server baseline lists are empty. The `2026-07-28` draft track additionally runs in CI with a small, documented baseline. |
+| Conformance pass rate       | 100%                     | **100%** of stable-track scenarios — client and server baseline lists are empty. |
 | New protocol features       | Before spec release      | Met. `2026-07-28` supported on `main` ahead of the final spec, alongside `2024-11-05` … `2025-11-25` via built-in negotiation.        |
 | Issue triage                | 2 business days          | Currently met on all open issues.                                                                         |
 | Critical bug resolution     | 7 days                   | Currently met on all open issues.                                                          |
@@ -88,9 +88,7 @@ that ordered those workstreams (`docs/v2-development-plan.md`) was retired
 at release preparation and is preserved in the repository's git history as
 the v2 development record.
 
-We are currently watching upstream baselined issues in the draft conformance
-track, with the cause and status documented in the [draft baseline file](conformance/conformance-draft-baseline.yml).
-We also expect the stable and draft conformance tools to merge upstream,
+We expect the stable and draft conformance tools to merge upstream,
 and will reassess conformance testing in the SDK when that happens.
 
 ## Post-v2: embedding and web-integration batteries
@@ -121,6 +119,73 @@ Planned for the `v2.x` minor line, now that `v2.0.0` has shipped:
   `McpServer::handleHttpRequest(HttpMessage): HttpMessage` (or an
   equivalent `createHttpRunner()`) closes that gap for every framework at
   once.
+- **PSR-7 conversion at the HTTP boundary.** The entry point above (and
+  `HttpServerRunner::handleRequest()` beneath it) speaks `HttpMessage`,
+  but framework developers think in PSR-7 (or HttpFoundation). The
+  framework-embedding guide below documents the conversion by hand; a
+  packaged converter turns "read the recipe and write glue" into one
+  line — the difference between a guide being read and a package being
+  adopted. One candidate shape is a converter in the core, guarded by
+  `interface_exists(ServerRequestInterface::class)` so no dependency is
+  required and building PSR-7 responses through caller-supplied PSR-17
+  factories; the other is the PSR-7/PSR-17 bridge package sketched under
+  framework bridges below, which could depend on the PSR interfaces
+  properly and also host a generic PSR-15 middleware. Neither is
+  decided. The conversion is not quite a small one — PSR-7 allows
+  repeated header values where `HttpMessage` stores one string per
+  header; PSR-7 bodies are streams, potentially non-seekable, where
+  `HttpMessage` buffers strings; PSR-7 messages are immutable where
+  `HttpMessage` is mutable; `StreamedHttpMessage` means the body may
+  already have been emitted outside the response object; and PSR-17
+  requires several factories and introduces interoperability choices —
+  so the API shape and the core-versus-bridge placement are settled in a
+  research pass at implementation time, weighing how much complexity the
+  in-core shape would add. If the bridge wins, this item leaves the
+  `v2.x` list and becomes that section's first demand-driven package.
+  Either way the dependency policy survives intact: the core still
+  requires nothing.
+- **Attribute- and docblock-driven tool schema generation.** The single
+  biggest remaining ergonomic gap when this SDK is evaluated side by side
+  with the reference SDKs: `buildSchemaFromCallback()` reflects bare
+  `string`/`number`/`boolean` parameter types with placeholder
+  descriptions. Fixing it is purely additive and dependency-free — PHP
+  8.1 attributes are native language surface — so a
+  `#[McpTool]` / `#[Param(description:, enum:, format:)]` layer plus
+  docblock-`@param` inference, feeding the existing `ToolInputSchema`
+  type, closes most of that distance in one minor release. The current
+  reflection path stays as the unchanged fallback for un-annotated
+  callables.
+- **Tool argument validation against `ToolInputSchema`.** An explicitly
+  supplied `inputSchema` can already advertise constraints such as `enum`
+  and `format`, and the schema layer above will generate them, but
+  dispatch does not validate tool arguments against the `ToolInputSchema`
+  it publishes — it performs reflection-driven parameter matching and
+  lets PHP's type system catch some mismatches — so a server could
+  advertise constraints it does not enforce. The outcome we want: tool
+  arguments are validated against the published schema before the
+  callback is invoked, whether that schema was generated or explicitly
+  supplied as `inputSchema`; failures are reported on the tool-execution
+  error channel — a `CallToolResult` with `isError: true` — which is
+  where the `2025-11-25` and `2026-07-28` tool specifications place
+  input validation errors (so the model can see the message and
+  self-correct) and is the channel the SDK's dispatch already uses for
+  missing-parameter and type failures today, while protocol and server
+  errors continue to surface as JSON-RPC errors. The constraints: per
+  guiding principle #5 the core adds no dependency, so whatever
+  ships in-box is a bounded validator for the subset the generator
+  emits, while explicitly supplied schemas may use the full,
+  dialect-aware JSON Schema vocabulary and complete validation of those
+  remains the project direction. The starting sketch is a
+  `ToolArgumentValidatorInterface` alongside schema generation, with a
+  full JSON Schema validator pluggable behind it — possibly from an
+  optional bridge package — but the extension mechanism, the handling
+  of keywords the bounded validator does not understand, and the
+  rollout behavior on the `v2.x` line — including whether enforcement
+  starts opt-in, since validation can reject arguments that today's
+  dispatch passes through to the callback (guiding principle #4) — are
+  all decided in a research-and-planning pass at implementation time. Sequenced with the
+  schema-generation item above, since both live beside the extracted
+  callback binder.
 - **`PdoSessionStore`** — a database-backed `SessionStoreInterface`
   implementation on bare PDO (bundled with PHP; no new dependency). Web
   deployments that serve legacy-era (`2024-11-05` … `2025-11-25`) clients
@@ -195,6 +260,22 @@ Planned for the `v2.x` minor line, now that `v2.0.0` has shipped:
   matching untouched. Composes with the request-scoped context above:
   context injects *information* into the call, the interceptor enables
   *decoration* around it.
+- **Optional PSR-11 container resolution for handler references.**
+  Registration accepts callables today; letting it also accept
+  `[ClassName::class, 'method']` handler references, resolved through an
+  *optional* PSR-11 container supplied by the consumer, is what makes
+  framework DI users feel at home — and it is the seam a future Laravel
+  or Symfony bridge would want anyway. With no container configured,
+  nothing changes, and the core gains no required dependency. One design
+  constraint recorded up front: the registration methods type-hint
+  `callable` (which an unresolved instance-method reference is not), and
+  since they are overridable, widening those signatures would break
+  existing subclass overrides — so the wire-in needs a shape that leaves
+  them untouched: a parallel entry point, or a resolver that wraps the
+  reference in an invokable (itself a valid `callable`) before it
+  reaches the existing methods. That is one reason this item is
+  sequenced after the callback-binder extraction in the refactoring
+  section below.
 - **A framework-embedding guide in `docs/`** — concrete recipes for hosting
   the SDK inside a framework: converting the framework's request/response
   objects to and from `HttpMessage`, the `McpServer` HTTP entry point above
@@ -228,6 +309,79 @@ Carried forward from the v2 cycle, in no committed order:
   [SUPPORT.md](SUPPORT.md) once enough trusted contributors are on board to
   sustain them. See [GOVERNANCE.md](GOVERNANCE.md) for the path to becoming
   one.
+
+## Ongoing: gradual internal refactoring
+
+Alongside — never ahead of — the spec-tracking priority in guiding
+principle #1, we are committing to a gradual refactoring of the SDK's
+largest files, aimed at code quality and maintainability rather than new
+behavior. The work proceeds in chunks sized to fit around whatever
+higher-priority roadmap items are in flight; each chunk is planned and
+tested on its own and gated the same way as feature work (`composer
+check`, plus a regression-free conformance run for anything touching
+protocol handling, transports, sessions, or `McpServer`), so that it
+introduces no unexpected or preventable breaking changes.
+
+The shape of the work: the SDK's large "god class" files are mostly
+*wide facades over cohesive clusters* — the boundaries already exist,
+they just live in one file. The two main targets:
+
+- **`HttpServerTransport.php`** (~2,500 lines), whose methods fall into
+  six nearly non-overlapping clusters: HTTP routing and validation,
+  JSON-RPC wire-message factories, SSE emission/streaming,
+  resume/event-log logic, session lifecycle, and auth. This
+  decomposition is already visibly in progress — `Transport/Http/Sse/`
+  (`SseEmitter`, `SseFormatter`, `StreamEventLog`, `StreamRegistry`,
+  `SseSessionState`) was extracted during the v2 cycle — so the refactor
+  is finishing a migration, not setting a new architectural direction.
+  The wire-message factories are pure functions of their input and make
+  the lowest-risk first chunk.
+- **`McpServer.php`** (~2,500 lines), where three self-contained
+  collaborators are waiting to be extracted without touching a single
+  public signature: the UI/Apps builders (`buildUiCsp`,
+  `buildUiPermissions`, `validateUiHints`), the Tasks orchestration
+  (`runToolAsTask`, `runTaskRound`, `applyTaskInputResponses`), and the
+  reflection/callback binding (`buildSchemaFromCallback`,
+  `matchNamedParameters`, the `callbackNeeds*` probes).
+
+Rules of engagement:
+
+- **The `protected` methods are API.** `McpServer` alone exposes roughly
+  a dozen protected extension points, and because the class is
+  non-final, existing subclasses may override or call any of them — so
+  moving logic into collaborators is a BC-sensitive change even when the
+  public surface is untouched. Every existing protected member therefore
+  survives each extraction as a thin delegating shim. What we decide
+  explicitly, per extraction, is which of those members are *supported*
+  extension points (documented and kept) and which were incidental —
+  and an incidental shim is only ever retired through the normal
+  deprecation-then-minor-version path of guiding principle #4, never by
+  reclassification alone.
+- **Ratchet static analysis as we go.** The codebase passes PHPStan
+  level 6 across the board; every *newly extracted* class must
+  additionally pass level 8–9. PHPStan applies one level per analysis
+  run, so the mechanism is a second, stricter configuration scoped to
+  the extracted paths and wired into `composer check` alongside the
+  repository-wide run — an automated gate, not a convention. That gives
+  a monotonically improving codebase without a big-bang analysis
+  cleanup, and prevents extracted classes from inheriting the old
+  file's looseness.
+- **The synchronous blocking model is architecture, not debt.** It is
+  the SDK's design center (see
+  [docs/compatibility.md](docs/compatibility.md)) and explicitly out of
+  scope for this refactor. The correct posture toward async remains the
+  one stated under enterprise operability below: keep the seams clean
+  enough that a gateway can plug in without forking.
+
+Because the refactor and the embedding batteries touch the same files,
+they are sequenced together: extract the JSON-RPC wire factories and the
+SSE/streaming cluster from `HttpServerTransport` *before* building
+`McpServer::handleHttpRequest()`, so the new entry point lands on the
+decomposed transport rather than adding another caller to the monolith;
+then the `McpServer` Tasks and callback-binding extractions; then the
+attribute-driven schema layer, which naturally lives beside the
+extracted binder; then PSR-7 conversion (wherever the core-versus-bridge
+decision places it) and the framework-embedding guide. Each step is independently shippable and conformance-gated.
 
 ## Possible future: framework bridge packages
 

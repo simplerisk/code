@@ -779,6 +779,12 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
         }
     }
 
+    // SR-2310: a save that changes nothing writes no audit line and fires no
+    // asset.updated event. Only after every refusal above, so those still apply.
+    if (asset_update_is_noop((int)$asset_id, $ip, $name, $value, $location, $teams, $details, $tags, $verified, $mapped_controls, $associated_risks, $custom_field_values, $scoring)) {
+        return true;
+    }
+
     $encryption_extra = encryption_extra();
     $notification_extra = notification_extra();
 
@@ -934,6 +940,104 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
     ]);
 
     return true;
+}
+
+/**
+ * SR-2310: loads the stored asset and asks assets_update_has_changes() whether
+ * the update_asset() arguments differ from it. Arguments are as update_asset()
+ * holds them at that point (name already trimmed, location / teams as CSV,
+ * $custom_field_values already split and filtered). Any doubt answers "not a
+ * no-op".
+ *
+ * @param array<int,mixed>|null $custom_field_values
+ * @param array<string,?string> $scoring
+ */
+function asset_update_is_noop(int $asset_id, $ip, $name, $value, $location, $teams, $details, $tags, $verified, $mapped_controls, $associated_risks, ?array $custom_field_values, array $scoring): bool
+{
+    $row = get_asset_by_id($asset_id);
+    if (!$row) {
+        return false;
+    }
+
+    $stored = [
+        'ip'       => try_decrypt($row['ip']),
+        'name'     => try_decrypt($row['name']),
+        'details'  => try_decrypt($row['details']),
+        'value'    => $row['value'],
+        'location' => $row['location'],
+        'teams'    => $row['teams'],
+        'verified' => $row['verified'],
+        'tags'     => (array)getTagsOfTaggee($asset_id, 'asset'),
+        'controls' => get_existing_mapped_controls_for_asset($asset_id),
+        'risks'    => get_associated_risks_for_asset($asset_id),
+        'custom'   => [],
+        'scoring'  => [],
+    ];
+    $submitted = [
+        'ip' => $ip, 'name' => $name, 'details' => $details, 'value' => $value,
+        'location' => $location, 'teams' => $teams, 'verified' => $verified,
+        'tags' => $tags, 'controls' => $mapped_controls, 'risks' => $associated_risks,
+    ];
+
+    if ($scoring) {
+        foreach (array_keys($scoring) as $objective) {
+            $stored['scoring'][$objective] = $row[$objective] ?? null;
+        }
+        $submitted['scoring'] = $scoring;
+    }
+
+    if (!empty($custom_field_values)) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        $fields = [];
+        foreach (get_custom_fields('asset') as $field) {
+            $fields[(int)$field['id']] = $field;
+        }
+        $db = db_open();
+        $stmt = $db->prepare("SELECT `field_id`, `value` FROM `custom_asset_data` WHERE `asset_id` = :asset_id");
+        $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $stored_rows = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        db_close($db);
+
+        $submitted['custom'] = [];
+        foreach ($custom_field_values as $field_id => $custom_value) {
+            $field_id = (int)$field_id;
+            if (!isset($fields[$field_id])) {
+                return false;
+            }
+            $field = $fields[$field_id];
+            if (is_array($custom_value)) {
+                $custom_value = implode(",", $custom_value);
+            }
+            if ($field['type'] == "date") {
+                // Same conversion save_custom_field_values() applies
+                $custom_value = get_standard_date_from_default_format($custom_value);
+                if ($custom_value == "0000-00-00") {
+                    $custom_value = "";
+                }
+            } elseif ($field['required'] == 1) {
+                $custom_value = trim((string)$custom_value);
+            }
+            $submitted['custom'][$field_id] = $custom_value;
+            $stored['custom'][$field_id] = array_key_exists($field_id, $stored_rows)
+                ? decrypt_custom_value_for_compare($field, $stored_rows[$field_id])
+                : null;
+        }
+    }
+
+    return !assets_update_has_changes($stored, $submitted);
+}
+
+/**
+ * Stored custom value as plain text: only the Encryption Extra encrypts them.
+ */
+function decrypt_custom_value_for_compare(array $field, $stored_value)
+{
+    if (encryption_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+        return decrypt_custom_value($field, $stored_value);
+    }
+    return $stored_value;
 }
 
 /**

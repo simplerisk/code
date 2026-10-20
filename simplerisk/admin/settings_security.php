@@ -94,6 +94,18 @@
             update_setting("content_security_policy", $content_security_policy);
         }
 
+        // Update the HTTP Strict Transport Security (HSTS) settings
+        $hsts = hsts_settings_from_post($_POST);
+        update_setting("hsts_enabled", $hsts['enabled']);
+        update_setting("hsts_include_subdomains", $hsts['include_subdomains']);
+        // The checkboxes save on their own; an invalid max age keeps the stored value and shows an error
+        if ($hsts['max_age'] !== null) {
+            update_setting("hsts_max_age", (string)$hsts['max_age']);
+        } else {
+            $error = true;
+            set_alert(true, "bad", $lang['HSTSMaxAgeInvalid']);
+        }
+
         // Update the SSL certificate check for the SimpleRisk API
         $ssl_certificate_check = isset($_POST['ssl_certificate_check_simplerisk']) ? 1 : 0;
         $current_ssl_certificate_check = get_setting("ssl_certificate_check_simplerisk");
@@ -263,6 +275,30 @@
                                     <input <?php if($escaper->escapeHtml(get_setting('content_security_policy')) == 1){ echo "checked"; } ?> name="content_security_policy" size="2" value="90" id="content_security_policy" type="checkbox"  class="form-check-input">
                                     <label  for="content_security_policy" class="form-check-label mb-0 ms-2" ><?= $escaper->escapeHtml($lang['EnableCSP']); ?></label>
                                     <div class="text-muted small mt-1"><?= $escaper->escapeHtml($lang['EnableCSPHelp']); ?></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <div class="form-check mr-sm-4">
+                                    <input <?php if(get_setting('hsts_enabled') == 1){ echo "checked"; } ?> name="hsts_enabled" value="1" id="hsts_enabled" type="checkbox" class="form-check-input">
+                                    <label for="hsts_enabled" class="form-check-label mb-0 ms-2"><?= $escaper->escapeHtml($lang['EnableHSTS']); ?></label>
+                                    <div class="text-muted small mt-1"><?= $escaper->escapeHtml($lang['EnableHSTSHelp']); ?></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <label for="hsts_max_age" class="form-label"><?= $escaper->escapeHtml($lang['HSTSMaxAge']); ?></label>
+                                <input name="hsts_max_age" id="hsts_max_age" type="number" min="0" max="<?= (int)HSTS_MAX_AGE_LIMIT; ?>" step="1" value="<?= $escaper->escapeHtmlAttr(normalize_hsts_max_age(get_setting('hsts_max_age')) ?? HSTS_DEFAULT_MAX_AGE); ?>" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <div class="form-check mr-sm-4">
+                                    <input <?php if(get_setting('hsts_include_subdomains') == 1){ echo "checked"; } ?> name="hsts_include_subdomains" value="1" id="hsts_include_subdomains" type="checkbox" class="form-check-input">
+                                    <label for="hsts_include_subdomains" class="form-check-label mb-0 ms-2"><?= $escaper->escapeHtml($lang['HSTSIncludeSubdomains']); ?></label>
+                                    <div class="text-muted small mt-1"><?= $escaper->escapeHtml($lang['HSTSIncludeSubdomainsHelp']); ?></div>
                                 </div>
                             </div>
                         </div>

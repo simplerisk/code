@@ -546,3 +546,129 @@ function assets_custom_field_rejection(array $split, bool $customization_active)
     }
     return null;
 }
+
+/**
+ * SR-2310: would an update_asset() call change anything the stored asset holds?
+ * Pure: the caller loads the stored state and normalises both sides (text
+ * decrypted, custom values as they would be stored).
+ *
+ * $stored:    ip, name, details, value, location, teams, verified (scalars or
+ *             null), tags (string[]), controls (maturity id => control ids),
+ *             risks (ids), custom (field id => string), scoring (objective => ?string).
+ * $submitted: the same keys. A missing key or null means "the caller did not
+ *             name this field" and is never a change, matching update_asset().
+ *
+ * When unsure the answer is true: a false positive only keeps the old
+ * behaviour (write and audit), a false negative would lose a real edit.
+ *
+ * @param array<string,mixed> $stored
+ * @param array<string,mixed> $submitted
+ */
+function assets_update_has_changes(array $stored, array $submitted): bool
+{
+    $given = static fn(string $k): bool => array_key_exists($k, $submitted) && $submitted[$k] !== null;
+    $text = static fn($v): string => $v === null ? '' : (string)$v;
+
+    foreach (['ip', 'name', 'details', 'value'] as $k) {
+        if ($given($k) && $text($submitted[$k]) !== $text($stored[$k] ?? null)) {
+            return true;
+        }
+    }
+
+    // verified arrives as bool, 0/1 or '0'/'1'
+    if ($given('verified') && (int)$submitted['verified'] !== (int)($stored['verified'] ?? 0)) {
+        return true;
+    }
+
+    // CSV id lists: order is not a change
+    foreach (['location', 'teams'] as $k) {
+        if ($given($k)) {
+            $ta = array_filter(explode(',', $text($submitted[$k])), static fn($x) => trim($x) !== '');
+            $tb = array_filter(explode(',', $text($stored[$k] ?? null)), static fn($x) => trim($x) !== '');
+            foreach (array_merge($ta, $tb) as $token) {
+                if (!ctype_digit(trim($token))) {
+                    return true; // not an id list: never judge it a no-op
+                }
+            }
+            $a = array_unique(array_map('intval', $ta));
+            $b = array_unique(array_map('intval', $tb));
+            sort($a);
+            sort($b);
+            if ($a !== $b) {
+                return true;
+            }
+        }
+    }
+
+    // Tags: the way updateTagsOfType() reads them -- trimmed, blanks dropped,
+    // case-insensitive duplicates collapsed, then compared case-sensitively.
+    if ($given('tags')) {
+        if (!is_array($submitted['tags'])) {
+            return true;
+        }
+        $a = array_map('trim', array_map('strval', $submitted['tags']));
+        $a = array_filter($a, static fn($t) => $t !== '');
+        $a = array_intersect_key($a, array_unique(array_map('strtolower', $a)));
+        $b = array_map('strval', (array)($stored['tags'] ?? []));
+        $a = array_values($a);
+        sort($a);
+        sort($b);
+        if ($a !== $b) {
+            return true;
+        }
+    }
+
+    // Mapped controls: flatten to "maturity:control" pairs
+    if ($given('controls')) {
+        if (!is_array($submitted['controls'])) {
+            return true;
+        }
+        $flat = static function (array $m): array {
+            $out = [];
+            foreach ($m as $maturity => $ids) {
+                foreach ((array)$ids as $id) {
+                    $out[] = (int)$maturity . ':' . (int)$id;
+                }
+            }
+            $out = array_values(array_unique($out));
+            sort($out);
+            return $out;
+        };
+        if ($flat($submitted['controls']) !== $flat((array)($stored['controls'] ?? []))) {
+            return true;
+        }
+    }
+
+    if ($given('risks')) {
+        if (!is_array($submitted['risks'])) {
+            return true;
+        }
+        $a = array_values(array_unique(array_map('intval', $submitted['risks'])));
+        $b = array_values(array_unique(array_map('intval', (array)($stored['risks'] ?? []))));
+        sort($a);
+        sort($b);
+        if ($a !== $b) {
+            return true;
+        }
+    }
+
+    // Custom values: a field never saved reads as '' (writing '' stores nothing of substance)
+    if ($given('custom')) {
+        foreach ((array)$submitted['custom'] as $fieldId => $value) {
+            if ($text($value) !== $text(((array)($stored['custom'] ?? []))[$fieldId] ?? null)) {
+                return true;
+            }
+        }
+    }
+
+    // Scoring: only the objectives the caller names; strict, null = not set
+    if ($given('scoring')) {
+        foreach ((array)$submitted['scoring'] as $objective => $level) {
+            if ($level !== (((array)($stored['scoring'] ?? []))[$objective] ?? null)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}

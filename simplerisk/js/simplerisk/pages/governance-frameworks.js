@@ -691,6 +691,59 @@
         // ?framework=-1&applicability=... lands on the same "not offered"
         // answer syncApplicabilityFacet() gives the sheet.
         filters.applicability = scopedFramework() === null ? [] : readApplicabilityTokens(p.get('applicability'));
+
+        pendingControlDeepLink = readControlDeepLink(window.location.search);
+    }
+
+    // Advanced Search deep link (?control_id=<id>). Read once, then dropped
+    // from the URL so a reload or a shared link does not re-run it.
+    var pendingControlDeepLink = null;
+    var frameworkDeepLinkChecked = false;
+
+    // A control id is a positive integer in the database's INT range with no
+    // leading zero; anything else is no link. Pure.
+    function readControlDeepLink(search) {
+        var raw = new URLSearchParams(search).get('control_id');
+        var id = raw && /^[1-9]\d{0,9}$/.test(raw) ? parseInt(raw, 10) : null;
+        return id !== null && id <= 2147483647 ? id : null;
+    }
+
+    // A ?framework=<id> link to a framework the default Active rail does not
+    // list (an inactive one): widen the rail to All once. Pure.
+    function frameworkNeedsAllStatuses(frameworkId, rows, status) {
+        return frameworkId !== null && frameworkId > 0 && status === '1'
+            && !rows.some(function (r) { return String(r.value) === String(frameworkId); });
+    }
+
+    // Puts the control's number (else its short name) into the toolbar search
+    // so the table narrows to it, then marks and focuses its row. The control
+    // is fetched from the same endpoint the Edit action uses, which enforces
+    // the governance permission; a missing, deleted or refused control gets a neutral
+    // notice and leaves the table as it is. A failed table reload after that
+    // is the table's own "couldn't load" state, not this notice.
+    function resolveControlDeepLink(id) {
+        $.getJSON(BASE_URL + '/api/v2/governance/control', { control_id: id })
+            .then(function (res) {
+                var control = (res && res.data && res.data.control) || null;
+                // The endpoint still answers 200 for a soft-deleted control
+                // (get_framework_control() does not filter on `deleted`).
+                if (control && String(control.deleted) === '1') { control = null; }
+                var text = control ? String(control.control_number || control.short_name || '') : '';
+                return text ? text : $.Deferred().reject().promise();
+            })
+            .then(function (text) {
+                filters.text = text;
+                $('.sr-table-search').val(text);
+                reloadFirstPage().then(function () {
+                    var $row = $('#sr-ctl-tbody tr[data-sr-ctl="' + id + '"]');
+                    if (!$row.length) { return; }
+                    $row.addClass('sr-ctl-row--deeplinked').attr('tabindex', '-1');
+                    $row[0].scrollIntoView({ block: 'center' });
+                    $row[0].focus({ preventScroll: true });
+                });
+            }, function () {
+                if (window.toastr) { window.toastr.info(_lang['ControlDeepLinkUnavailable']); }
+            });
     }
 
     // The CSV -> validated, de-aliased, de-duplicated state token list.
@@ -730,6 +783,7 @@
         if (filters.applicability.length) { p.set('applicability', filters.applicability.join(',')); }
         else { p.delete('applicability'); }
 
+        p.delete('control_id');
         history.replaceState(null, '', window.location.pathname + (p.toString() ? '?' + p : ''));
     }
 
@@ -804,6 +858,17 @@
                     };
                 });
                 renderRail();
+                // D16: a ?framework= link to a framework the default Active
+                // rail does not list (an inactive one) widens the rail to All,
+                // once, on the first successful rail load only.
+                if (!frameworkDeepLinkChecked) {
+                    frameworkDeepLinkChecked = true;
+                    if (frameworkNeedsAllStatuses(state.framework, railFrameworks, state.status)) {
+                        state.status = '';
+                        $('#sr-fw-status').val('');
+                        loadFrameworks();
+                    }
+                }
             })
             .fail(function () {
                 if (isStaleSeq('frameworks', seq)) { return; }
@@ -1020,6 +1085,7 @@
         var $li = $('<li class="sr-fw-item" role="button" tabindex="0">')
             .attr('data-sr-fw', id === null ? '' : id)
             .toggleClass('sr-fw-child', depth > 0)
+            .css('--sr-fw-depth', depth)
             .toggleClass('sr-fw-zero', count === 0);
         // Name + SCF chip share the grid's first column, with the chip INLINE
         // after the name rather than stacked above the count in the right-hand
@@ -6472,6 +6538,13 @@
     $(function () {
         seedColumnVisibility();
         readUrl();
+        // ?control_id= is read once (readUrl()) and never kept: a valid id, a
+        // junk value and an empty one are all dropped from the address bar.
+        var startUrl = new URLSearchParams(window.location.search);
+        if (startUrl.has('control_id')) {
+            startUrl.delete('control_id');
+            history.replaceState(null, '', window.location.pathname + (startUrl.toString() ? '?' + startUrl : '') + window.location.hash);
+        }
         renderThead();
 
         // Re-decide the responsive tier whenever the room the pane has changes
@@ -7479,6 +7552,12 @@
         });
 
         $.when(loadFrameworks(), reloadTable());
+        // After the first table load is kicked off: its response is superseded
+        // by the deep link's own reload (isStaleSeq('controls', ...)).
+        if (pendingControlDeepLink !== null) {
+            resolveControlDeepLink(pendingControlDeepLink);
+            pendingControlDeepLink = null;
+        }
     });
 
     window.SRFrameworks = {

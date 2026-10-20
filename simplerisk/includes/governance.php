@@ -43,6 +43,21 @@ use SimpleRisk\DocumentHandlers\DocumentTextExtractor;
 use SimpleRisk\DocumentHandlers\UnsupportedDocumentException;
 use SimpleRisk\DocumentHandlers\DocumentTooLargeException;
 
+/**
+ * 'overdue' when the review date is before today, 'due_soon' when it falls
+ * within the next 7 calendar days, otherwise 'ok'. Counts calendar days
+ * (calendar_days_between()), not elapsed seconds / 86400, which is an hour out
+ * across a DST transition and so misplaces the 7-day boundary.
+ */
+function governance_next_review_status(string $next_review_date, ?string $today = null): string
+{
+    $days_until_review = calendar_days_between($today ?? date('Y-m-d'), date('Y-m-d', strtotime($next_review_date)));
+    if ($days_until_review < 0) {
+        return 'overdue';
+    }
+    return $days_until_review <= 7 ? 'due_soon' : 'ok';
+}
+
 /****************************
  * FUNCTION: GET FRAMEWORKS *
  * $status
@@ -4596,12 +4611,7 @@ function get_documents_as_treegrid($type){
         $document['approver_name'] = $document['approver'] ? get_name_by_value('user', (int)$document['approver']) : '';
         $document['next_review_status'] = 'ok';
         if (!empty($document['next_review_date']) && $document['next_review_date'] !== '0000-00-00') {
-            $days_until_review = (strtotime($document['next_review_date']) - strtotime(date('Y-m-d'))) / 86400;
-            if ($days_until_review < 0) {
-                $document['next_review_status'] = 'overdue';
-            } elseif ($days_until_review <= 7) {
-                $document['next_review_status'] = 'due_soon';
-            }
+            $document['next_review_status'] = governance_next_review_status($document['next_review_date']);
         }
         $filtered_documents[] = $document;
     }
@@ -4990,12 +5000,7 @@ function get_exceptions_as_treegrid($type){
 
         $row['next_review_status'] = 'ok';
         if (!empty($row['next_review_date']) && $row['next_review_date'] !== '0000-00-00') {
-            $days_until_review = (strtotime($row['next_review_date']) - strtotime(date('Y-m-d'))) / 86400;
-            if ($days_until_review < 0) {
-                $row['next_review_status'] = 'overdue';
-            } elseif ($days_until_review <= 7) {
-                $row['next_review_status'] = 'due_soon';
-            }
+            $row['next_review_status'] = governance_next_review_status($row['next_review_date']);
         }
 
         // Heavy WYSIWYG blobs the grid never renders -- only the single-record
@@ -6248,6 +6253,23 @@ function save_control_to_frameworks($control_id, $map_frameworks)
     db_close($db);  
 }
 
+/**
+ * Whether a legacy Edit Control POST carries the COMPLETE set of mapped
+ * frameworks, so that mappings it no longer lists may be pruned.
+ *
+ * True only when the form posted the map_frameworks_submitted marker AND
+ * map_framework_id is absent or an array. A scalar map_framework_id is
+ * malformed and must not look like "the user removed every mapping".
+ * API clients that omit the marker keep add/update-only behavior.
+ *
+ * @param array $post the request's POST parameters
+ */
+function control_mappings_submission_is_complete(array $post): bool
+{
+    return !empty($post['map_frameworks_submitted'])
+        && (!isset($post['map_framework_id']) || is_array($post['map_framework_id']));
+}
+
 /*****************************************************************************
  * FUNCTION: DELETE CONTROL-TO-FRAMEWORK MAPPINGS NOT IN THE SUBMITTED SET    *
  *                                                                            *
@@ -6264,38 +6286,66 @@ function save_control_to_frameworks($control_id, $map_frameworks)
  * updateControlById()'s omission guard exists to avoid. Only a caller that   *
  * can prove its submission is the COMPLETE set should call this.             *
  *                                                                            *
+ * updateControlResponse() (the legacy handler) calls this itself, but only    *
+ * when the request carries the map_frameworks_submitted marker, and with     *
+ * $active_only = true so mappings to deactivated frameworks (which the form  *
+ * cannot represent) are preserved.                                           *
+ *
  * An empty `$map_frameworks` is a legitimate instruction to remove them all, *
  * not a no-op -- that is the whole point of being told explicitly.           *
  *                                                                            *
  * @param int   $control_id                                                   *
  * @param array $map_frameworks rows as parse_control_map_frameworks_request()*
- *                              returns them: [framework_id, name, text]      *
+ *                              returns them: [framework_id, name, text]; a   *
+ *                              row is kept by (framework_id, name) pair.     *
  *****************************************************************************/
-function delete_control_to_frameworks_except($control_id, $map_frameworks)
+function delete_control_to_frameworks_except($control_id, $map_frameworks, bool $active_only = false)
 {
     $control_id = (int)$control_id;
 
-    // Cast every id: they are interpolated into the IN () list as integers
-    // because PDO cannot bind a variable-length list, and a framework id that
-    // arrived as a string from $_POST must not reach the SQL as one.
+    // The keep-set is (framework, reference_name) PAIRS, because that pair plus
+    // control_id is the table's unique key: pruning by framework alone could
+    // never remove one of two references on the same framework, nor the old
+    // row left behind when a reference_name is renamed (a rename is an INSERT).
+    // Every value is BOUND; the framework id is int-cast first. reference_name
+    // compares under the column's own collation, matching the unique key.
     $keep = [];
     foreach ((array)$map_frameworks as $row) {
         $framework_id = (int)(is_array($row) ? ($row[0] ?? 0) : $row);
         if ($framework_id > 0) {
-            $keep[$framework_id] = $framework_id;
+            $reference_name = is_array($row) ? (string)($row[1] ?? '') : '';
+            $keep[$framework_id . "\0" . $reference_name] = [$framework_id, $reference_name];
         }
     }
 
     $db = db_open();
 
+    $sql = "DELETE FROM `framework_control_mappings` WHERE `control_id` = :control_id";
+    // $active_only restricts the delete to mappings whose framework is active
+    // (status = 1). The Edit Control modal's framework dropdown lists only
+    // active frameworks, so a mapping to a deactivated one cannot be submitted
+    // and must not be treated as removed by the user.
+    if ($active_only) {
+        $sql .= " AND EXISTS (SELECT 1 FROM `frameworks` `fw` WHERE `fw`.`value` = `framework_control_mappings`.`framework` AND `fw`.`status` = 1)";
+    }
     if ($keep) {
-        $sql = "DELETE FROM `framework_control_mappings` WHERE `control_id` = :control_id AND `framework` NOT IN (" . implode(',', $keep) . ");";
-    } else {
-        $sql = "DELETE FROM `framework_control_mappings` WHERE `control_id` = :control_id;";
+        $pairs = [];
+        $i = 0;
+        foreach ($keep as $unused) {
+            $pairs[] = "(`framework` = :f{$i} AND `reference_name` = :r{$i})";
+            $i++;
+        }
+        $sql .= " AND NOT (" . implode(' OR ', $pairs) . ")";
     }
 
     $stmt = $db->prepare($sql);
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->bindValue(":control_id", $control_id, PDO::PARAM_INT);
+    $i = 0;
+    foreach ($keep as [$framework_id, $reference_name]) {
+        $stmt->bindValue(":f{$i}", $framework_id, PDO::PARAM_INT);
+        $stmt->bindValue(":r{$i}", $reference_name, PDO::PARAM_STR);
+        $i++;
+    }
     $stmt->execute();
 
     db_close($db);
@@ -9793,6 +9843,18 @@ function get_document_content_by_document_id($document_id)
     return $result;
 }
 
+/*****************************************************************
+ * FUNCTION: DOCUMENTS TO CONTROLS YES/NO FILTER VALUE           *
+ * The Yes/No column filters submit the language-neutral values  *
+ * "1" / "0"; the English words are still accepted for existing  *
+ * API consumers. Anything else is treated as "No".              *
+ *****************************************************************/
+function documents_to_controls_yes_no_filter_value($val): int
+{
+    $val = strtolower(trim((string)$val));
+    return ($val === '1' || $val === 'yes') ? 1 : 0;
+}
+
 /***************************************
  * FUNCTION: GET DOCUMENTS TO CONTROLS *
  ***************************************/
@@ -9870,6 +9932,26 @@ function get_documents_to_controls($sort_order = 0, $order_field = false, $order
 
             switch ($column_name)
             {
+                case "document_id":
+                case "control_id":
+                case "keyword_match":
+                    // Integer columns: exact match on a whole number, nothing matches otherwise
+                    if (ctype_digit(trim((string)$val)))
+                    {
+                        $where_query .= " AND `dtc`.`{$column_name}` = :{$param_name}";
+                        $filter_params[$param_name] = (int)trim((string)$val);
+                    }
+                    else
+                    {
+                        $where_query .= " AND 1 = 0";
+                    }
+                    break;
+                case "score":
+                case "tfidf_similarity":
+                    // FLOAT columns: substring match against the value as displayed
+                    $where_query .= " AND CAST(`dtc`.`{$column_name}` AS CHAR) LIKE :{$param_name}";
+                    $filter_params[$param_name] = "%" . trim((string)$val) . "%";
+                    break;
                 case "document":
                     $where_query .= " AND `d`.`document_name` LIKE :{$param_name}";
                     $filter_params[$param_name] = "%{$val}%";
@@ -9883,19 +9965,16 @@ function get_documents_to_controls($sort_order = 0, $order_field = false, $order
                     $filter_params[$param_name] = "%{$val}%";
                     break;
                 case "selected":
-                    $selected_val = (strtolower($val) == "yes") ? 1 : 0;
                     $where_query .= " AND `dtc`.`selected` = :{$param_name}";
-                    $filter_params[$param_name] = $selected_val;
+                    $filter_params[$param_name] = documents_to_controls_yes_no_filter_value($val);
                     break;
                 case "tfidf_match":
-                    $tfidf_match_val = (strtolower($val) == "yes") ? 1 : 0;
                     $where_query .= " AND `dtc`.`tfidf_match` = :{$param_name}";
-                    $filter_params[$param_name] = $tfidf_match_val;
+                    $filter_params[$param_name] = documents_to_controls_yes_no_filter_value($val);
                     break;
                 case "ai_match":
-                    $ai_match_val = (strtolower($val) == "yes") ? 1 : 0;
                     $where_query .= " AND `dtc`.`ai_match` = :{$param_name}";
-                    $filter_params[$param_name] = $ai_match_val;
+                    $filter_params[$param_name] = documents_to_controls_yes_no_filter_value($val);
                     break;
                 case "ai_confidence":
                     // Remove % sign if present for numeric comparison

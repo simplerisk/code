@@ -270,7 +270,7 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['AssessmentContacts']);?></span>
                             </a>
                         </li>
-                        <li class="sidebar-item">
+                        <li class="sidebar-item <?= ($active_sidebar_submenu =='QuestionnaireQuestions')?'active':''; ?>">
                             <a href="../assessments/questionnaire_questions.php" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['QuestionnaireQuestions']);?></span>
                             </a>
@@ -435,6 +435,13 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
                                     <li class="breadcrumb-item">
                                         <a href="<?= $escaper->escapeHtmlAttr('../admin/index.php?section=' . $hub_breadcrumb['sub_hub']['section_key']) ?>">
                                             <?= $escaper->escapeHtml($lang[$hub_breadcrumb['sub_hub']['heading_lang_key']] ?? $hub_breadcrumb['sub_hub']['heading_lang_key']) ?>
+                                        </a>
+                                    </li>
+    <?php           endif; ?>
+    <?php           if (isset($hub_breadcrumb['parent'])): ?>
+                                    <li class="breadcrumb-item">
+                                        <a href="<?= $escaper->escapeHtmlAttr('../' . $hub_breadcrumb['parent']['path']) ?>">
+                                            <?= $escaper->escapeHtml($lang[$hub_breadcrumb['parent']['label_key']] ?? $hub_breadcrumb['parent']['label_key']) ?>
                                         </a>
                                     </li>
     <?php           endif; ?>

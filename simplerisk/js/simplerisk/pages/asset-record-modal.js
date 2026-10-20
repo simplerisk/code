@@ -1099,7 +1099,11 @@
 
     function pushUrl(rec, extraState) {
         try {
-            history.pushState($.extend({}, history.state || {}, { assetRecord: $.extend({ id: String(rec.id), mode: rec.mode }, extraState || {}) }), '', urlFor(rec));
+            // depth: how many consecutive record entries end here, so closing
+            // can step back over all of them (clearUrl()).
+            var below = history.state && history.state.assetRecord;
+            var depth = (below && below.depth ? below.depth : (below ? 1 : 0)) + 1;
+            history.pushState($.extend({}, history.state || {}, { assetRecord: $.extend({ id: String(rec.id), mode: rec.mode, depth: depth }, extraState || {}) }), '', urlFor(rec));
         } catch (err) { void err; }
     }
 
@@ -1110,7 +1114,7 @@
                 // Rewriting the same Edit entry (a reload normalising its
                 // URL) keeps whether it was entered from View.
                 var prev = state.assetRecord;
-                state.assetRecord = { id: String(rec.id), mode: rec.mode };
+                state.assetRecord = { id: String(rec.id), mode: rec.mode, depth: (prev && prev.depth) || 1 };
                 if (rec.mode === 'edit' && prev && prev.fromView && prev.mode === 'edit' && String(prev.id) === String(rec.id)) {
                     state.assetRecord.fromView = true;
                 }
@@ -1121,10 +1125,35 @@
         } catch (err) { void err; }
     }
 
+    // Set while clearUrl() steps back over earlier record entries: the
+    // popstate that lands on the first of them must not reopen it.
+    var unwinding = false;
+    var unwindTimer = null;
+
+    // Removes the record from the URL. replaceState only rewrites the entry on
+    // top, so after View -> Edit (or any mode-switch push) the entries below
+    // would keep ?asset= and Back would reopen the record: step back over
+    // them instead, then clear the entry that is left.
+    // Known limitation: the history is then [list, list (cleared), Edit
+    // (forward)], so Forward reopens the Edit entry and one Back shows no
+    // visible change. Going to the entry BELOW the chain is unsafe: a deep
+    // link has no entry below it inside the app.
     function clearUrl() {
-        if (parseRecordParams(window.location.search)) {
-            replaceUrl(null);
+        if (unwinding || !parseRecordParams(window.location.search)) {
+            return; // nothing to clear, or a traversal is already pending
         }
+        var st = history.state && history.state.assetRecord;
+        var steps = st && st.depth > 1 ? st.depth - 1 : 0;
+        if (steps > 0) {
+            try {
+                unwinding = true;
+                history.go(-steps);
+                clearTimeout(unwindTimer);
+                unwindTimer = setTimeout(function () { unwinding = false; }, 1500);
+                return;
+            } catch (err) { unwinding = false; }
+        }
+        replaceUrl(null);
     }
 
     function urlRec() {
@@ -1676,6 +1705,13 @@
 
         // Back / Forward.
         $(window).on('popstate.assetrecord', function () {
+            if (unwinding) {
+                // Landed on the first record entry after a close: drop it.
+                unwinding = false;
+                clearTimeout(unwindTimer);
+                replaceUrl(null);
+                return;
+            }
             var rec = urlRec();
             if (rec && pendingFromCache) {
                 rec.fromCache = true;

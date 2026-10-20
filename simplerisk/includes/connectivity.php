@@ -121,6 +121,24 @@ function resolve_request_body($http_options, $parameters)
 }
 
 /**
+ * Seconds to wait before retrying an outbound request.
+ *
+ * Exponential backoff in the same shape the queue and promise retry paths use
+ * (base * 2^(attempt-1), capped), so a struggling remote service gets more room
+ * with each failure instead of a flat pause.
+ *
+ * @param int $failed_attempt 1-based number of the attempt that just failed
+ */
+function connectivity_retry_delay_seconds(int $failed_attempt, int $base_delay = 1, int $max_delay = 8): int
+{
+    $failed_attempt = max(1, $failed_attempt);
+    // Clamp the exponent so a large attempt count cannot overflow before min() caps it.
+    $exponent = min($failed_attempt - 1, 16);
+
+    return max(0, min($base_delay * (2 ** $exponent), $max_delay));
+}
+
+/**
  * Fold one raw response-header line into an accumulating name => value map.
  * Pure — no curl handle, no I/O — so the parsing is unit-testable while the
  * CURLOPT_HEADERFUNCTION closure that feeds it stays trivial.
@@ -261,7 +279,9 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
             write_debug_log("CONNECTIVITY: Attempt " . ($attempt+1) . " failed for URL: $url. Curl Error: " . curl_error($ch), "warning");
             $response = false;
             $attempt++;
-            sleep(1); // small delay before retry
+            if ($attempt < $max_retries) {
+                sleep(connectivity_retry_delay_seconds($attempt));
+            }
         } else {
             break;
         }
@@ -357,7 +377,9 @@ function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $param
         if ($response === false) {
             $attempt++;
             write_debug_log("CONNECTIVITY: Attempt {$attempt} failed for URL: $url", "warning");
-            sleep(1); // small delay before retry
+            if ($attempt < $max_retries) {
+                sleep(connectivity_retry_delay_seconds($attempt));
+            }
         }
     }
 

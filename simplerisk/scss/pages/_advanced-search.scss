@@ -1,0 +1,456 @@
+// Advanced Search: the Search page and the topbar typeahead
+// (design-system.md §6e). Composes shipped §6/§7/§10 components; everything
+// here is namespaced .sr-search-* so nothing leaks into other pages.
+// The only motion (the drawer chevron) is turned off under prefers-reduced-motion.
+
+.sr-search-page {
+    display: grid;
+    gap: 16px;
+    // The breakpoints below follow the page's own width (the mockup's
+    // container queries), not the viewport's: the sidebar takes a share.
+    container-type: inline-size;
+}
+
+.sr-search-query {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .sr-search-query__box {
+        display: flex;
+        flex: 1 1 320px;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        height: 42px;
+        padding: 0 14px;
+        background: $white;
+        border: 1px solid $gray-400;
+        border-radius: 6px;
+        color: $gray-600;
+
+        input { flex: 1 1 auto; min-width: 0; border: 0; outline: 0; background: transparent; color: $sr-primary; }
+        &:focus-within { border-color: $sr-primary; box-shadow: 0 0 0 1px $sr-primary; }
+    }
+
+    .sr-search-query__go { height: 42px; padding: 0 20px; border-radius: 6px; font-weight: 800; }
+}
+
+.sr-search-summary { margin: 0; color: $gray-600; font-size: 13px; }
+.sr-search-summary:empty { display: none; }
+
+.sr-search-grid {
+    display: grid;
+    grid-template-columns: 236px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+// The rail and the result cards sit in a grid that already spaces them.
+.sr-search-page .sr-table-card { margin-bottom: 0; }
+
+.sr-search-page .sr-search-rail-toggle { display: none; }
+
+.sr-search-rail__head {
+    margin: 0;
+    padding: 12px 16px;
+    background: $gray-100;
+    border-bottom: 1px solid $gray-300;
+    border-radius: 8px 8px 0 0;
+    color: $sr-primary;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.sr-search-rail__list { display: grid; padding: 6px; }
+
+.sr-search-rail__item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: $sr-primary;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-align: left;
+
+    &:hover { background: $gray-100; }
+    &[aria-current="true"] { background: $gray-100; font-weight: 800; box-shadow: inset 0 0 0 1px $gray-300; }
+    &:focus-visible { outline: 2px solid $sr-primary; outline-offset: 1px; }
+    // Muted but readable: $gray-700 is 7.5:1 on white and 7.1:1 on $gray-100 (the zero count chip still says why).
+    &.is-zero { color: $gray-700; font-weight: 400; }
+
+    .sr-search-rail__icon { width: 9px; color: $gray-600; font-size: 12px; }
+    .sr-search-rail__label { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+    .sr-search-count { margin-left: auto; font-variant-numeric: tabular-nums; }
+}
+
+// "From your Extras" (design-system §6e): the badge/eyebrow formula of modules/_home.scss's __eyebrow.
+// $gray-700 (7.5:1 on white), not $gray-500: the rail's muted text already settled on it (Plan 6 M5).
+.sr-search-rail__eyebrow {
+    margin: 10px 0 0;
+    padding: 6px 10px 4px;
+    color: $gray-700;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.sr-search-count:empty { display: none; }
+
+.sr-search-dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: $gray-500;
+}
+
+.sr-search-results { display: grid; gap: 16px; min-width: 0; }
+
+.sr-search-group .sr-table-toolbar.sr-search-group__head {
+    gap: 10px;
+    padding: 12px 16px;
+    background: $gray-100;
+    border-bottom: 1px solid $gray-300;
+
+    .sr-search-group__title { margin: 0; align-items: center; }
+    .sr-search-group__title:focus { outline: 0; }
+    .sr-search-group__title:focus-visible { outline: 2px solid $sr-primary; outline-offset: 2px; }
+    .sr-search-viewall { margin-left: auto; padding: 0; font-size: 12.5px; font-weight: 700; color: $sr-primary; text-underline-offset: 3px; }
+}
+
+// Two selects (Matched in, Sort): they stay one row at every width, unlike
+// the many-filter .sr-qf-selects rows that stack below 1100px.
+.sr-search-group .sr-search-tools.sr-qf-selects {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid $gray-300;
+
+    > * { width: auto; }
+    .sr-search-tools__spacer { flex: 1 1 auto; }
+    .sr-search-select { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; color: $gray-600; }
+}
+
+.sr-search-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 4px 12px;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid $gray-300;
+
+    .sr-search-row__id { margin-right: 6px; color: $gray-600; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .sr-search-row__link { font-weight: 800; color: $sr-primary; overflow-wrap: anywhere; }
+    a.sr-search-row__link { text-decoration: none; }
+    a.sr-search-row__link:hover { text-decoration: underline; }
+    .sr-search-row__sub { margin-top: 1px; color: $gray-600; font-size: 12px; overflow-wrap: anywhere; }
+    .sr-search-row__pill { min-width: 76px; text-align: center; }
+    .sr-search-row__actions { display: flex; gap: 4px; }
+    .sr-search-row__actions:empty { display: none; }
+    .sr-search-row__match { grid-column: 1 / -1; color: $gray-600; font-size: 12.5px; line-height: 1.45; overflow-wrap: anywhere; }
+    .sr-search-row__field { font-weight: 800; }
+}
+
+// The one-type list's all-caps column strip (§6e): the same three tracks as a row.
+.sr-search-colh {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 12px;
+    padding: 8px 16px;
+    background: $gray-100;
+    border-bottom: 1px solid $gray-300;
+    color: $gray-700;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+
+    .sr-search-colh__pill { min-width: 76px; text-align: center; }
+}
+
+// The header, the toolbar, the column strip and a note already draw the line above the first row.
+.sr-search-group__head + .sr-search-row,
+.sr-search-tools + .sr-search-row,
+.sr-search-colh + .sr-search-row,
+.sr-search-note + .sr-search-row { border-top: 0; }
+
+.sr-search-snippet mark,
+.sr-search-ta mark {
+    padding: 0 1px;
+    border-radius: 2px;
+    background: rgba($warning, .35);
+    // Not inherited: the match line's $gray-600 is only 3.9:1 on this tint; $gray-800 is 9.5:1.
+    color: $gray-800;
+}
+
+.sr-search-chip { white-space: nowrap; }
+
+.sr-search-note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 12px 14px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: rgba($warning, .18);
+    color: $gray-800;
+    font-size: 13px;
+
+    .fa { margin-top: 3px; }
+}
+
+.sr-search-results > .sr-search-note { margin: 0; }
+
+.sr-search-empty {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    padding: 56px 24px;
+    text-align: center;
+
+    &:focus { outline: 0; }
+
+    .sr-search-empty__tile {
+        display: grid;
+        place-items: center;
+        width: 52px;
+        height: 52px;
+        border: 1px solid $gray-300;
+        border-radius: 12px;
+        background: $gray-100;
+        color: $gray-600;
+        font-size: 22px;
+
+        &.is-bad { background: rgba($danger, .10); border-color: rgba($danger, .25); color: darken($danger, 20%); }
+    }
+
+    .sr-search-empty__title { margin: 6px 0 0; font-size: 17px; font-weight: 800; color: $sr-primary; overflow-wrap: anywhere; }
+    .sr-search-empty__body { max-width: 44ch; margin: 0; color: $gray-600; }
+    .sr-search-empty__action { margin-top: 8px; }
+}
+
+// Outside a card (the All view's messages) the state still sits on a card.
+.sr-search-results > .sr-search-empty {
+    background: $white;
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+}
+
+.sr-search-loading { padding: 24px; color: $gray-600; }
+
+.sr-search-group .sr-search-pager { justify-content: flex-end; gap: 8px; }
+.sr-search-group .sr-search-pager:empty { display: none; }
+
+@container (max-width: 860px) {
+    .sr-search-grid { grid-template-columns: minmax(0, 1fr); }
+    .sr-search-page .sr-search-rail-toggle { display: inline-flex; align-items: center; width: fit-content; margin-bottom: 8px; }
+    .sr-search-rail[data-open="false"] { display: none; }
+}
+
+@container (max-width: 640px) {
+    .sr-search-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .sr-search-row .sr-search-row__pill { grid-column: 1; grid-row: 2; justify-self: start; }
+    .sr-search-row .sr-search-row__actions { grid-column: 2; grid-row: 1; }
+    .sr-search-group .sr-search-tools.sr-qf-selects .sr-search-tools__spacer { display: none; }
+    .sr-search-colh { display: none; }
+    .sr-search-row .sr-search-row__pill { min-width: 0; }
+}
+
+// ---------- Row actions: the Related drawer toggle and the ⋯ menu ----------
+.sr-search-iconbtn {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: none;
+    color: $gray-700;
+
+    &:hover { background: $gray-100; border-color: $gray-300; color: $sr-primary; }
+    &:focus-visible { outline: 2px solid $sr-primary; outline-offset: 1px; }
+    &[aria-expanded="true"] { background: $gray-100; border-color: $gray-300; }
+}
+
+.sr-search-drawer-toggle i { transition: transform .15s; }
+.sr-search-drawer-toggle[aria-expanded="true"] i { transform: rotate(90deg); }
+
+// The in-row Related drawer (§6e): the .sr-expand-panel pattern on $gray-100, across the
+// row's full width. Out-specifies .sr-table-card .sr-expand-panel (white, table indent).
+.sr-search-row > .sr-search-drawer.sr-expand-panel {
+    display: grid;
+    grid-column: 1 / -1;
+    // minmax(0, 1fr) all the way down, so a long record name shortens (the chip's
+    // ellipsis) instead of widening the drawer past the card at phone width.
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin: 6px -16px -12px;
+    padding: 14px 16px 16px;
+    border-top: 1px solid $gray-300;
+    background: $gray-100;
+
+    &[hidden] { display: none; }
+    // $gray-700 for the small text: $gray-600 is under 4.5:1 on $gray-100.
+    .sr-search-drawer__label { color: $gray-700; font-size: 10.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+    .sr-search-drawer__body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .sr-search-drawer__empty,
+    .sr-search-drawer__loading { margin: 0; color: $gray-700; font-size: 13px; }
+    .sr-search-drawer__group { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .sr-search-drawer__type { display: flex; align-items: center; gap: 8px; color: $sr-primary; font-size: 13px; font-weight: 700; }
+    .sr-search-drawer__chips { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+    // inline-block, not .sr-chip's inline-flex: text-overflow: ellipsis applies only to
+    // a block container's own text, so a long name ends in "…" instead of a hard clip.
+    .sr-search-drawer__chip { display: inline-block; padding: 2px 8px; background: $white; text-decoration: none; }
+    a.sr-search-drawer__chip:hover { border-color: $sr-primary; text-decoration: underline; }
+    a.sr-search-drawer__chip:focus-visible { outline: 2px solid $sr-primary; outline-offset: 1px; }
+    .sr-search-drawer__more { align-self: center; color: $gray-700; font-size: 12px; }
+    .sr-search-drawer__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; color: $gray-700; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sr-search-drawer-toggle i { transition: none; }
+}
+
+// A Define Control Frameworks row reached from a search result
+// (governance/index.php?control_id=, governance-frameworks.js). Scoped and
+// tinted like the page's own checked-row rule, including the pinned actions
+// cell, so the row reads as one band.
+#sr-ctl-table tbody tr.sr-ctl-row--deeplinked,
+#sr-ctl-table tbody tr.sr-ctl-row--deeplinked:hover,
+#sr-ctl-table tbody tr.sr-ctl-row--deeplinked td.sr-actions-col-sticky { background: $sr-row-selected; }
+#sr-ctl-table tbody tr.sr-ctl-row--deeplinked:focus-visible { outline: 2px solid $sr-primary; outline-offset: -2px; }
+
+// ---- The topbar typeahead (render_advanced_search(), search-typeahead.js) ----
+// A white card under the topbar pill (the mockup's geometry). No page dimming
+// behind it (D23). Small text on the $gray-100 fills uses $gray-700: $gray-600
+// is under 4.5:1 there.
+.topbar .nav-item-search.sr-search-ta { position: relative; }
+
+.sr-search-ta__kbd {
+    flex: none;
+    padding: 0 5px;
+    border: 1px solid rgba($white, .35);
+    border-radius: 4px;
+    color: rgba($white, .7);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.sr-search-ta__panel {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 1050;
+    width: min(560px, 92vw);
+    overflow: hidden;
+    border-radius: 8px;
+    background: $white;
+    box-shadow: 0 8px 32px rgba($black, .28);
+    color: $sr-primary;
+    font-size: 13px;
+    line-height: 1.4;
+    &[hidden] { display: none; }
+}
+
+#sr-search-ta-list { max-height: min(60vh, 520px); overflow-y: auto; }
+
+.sr-search-ta__group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px 5px;
+    color: $gray-700;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    .sr-search-ta__count { margin-left: auto; font-variant-numeric: tabular-nums; }
+}
+
+.sr-search-ta__opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 14px;
+    cursor: pointer;
+    &[aria-selected="true"], &:hover { background: $gray-100; }
+    // The highlight is more than the 4% tint (which is ~1:1 against white and invisible in the
+    // $gray-100 top-hit card): a 3px $gray-600 bar, 4.4:1 on $gray-100 and 4.7:1 on white.
+    &[aria-selected="true"] { box-shadow: inset 3px 0 0 $gray-600; }
+    .sr-search-ta__text { flex: 1 1 auto; min-width: 0; }
+    .sr-search-ta__title { overflow: hidden; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .sr-search-ta__id { margin-right: 6px; color: $gray-700; font-size: 12px; font-variant-numeric: tabular-nums; }
+    .sr-search-ta__sub { display: block; overflow: hidden; color: $gray-700; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    &.sr-search-ta__all { border-top: 1px solid $gray-300; font-weight: 800; }
+}
+
+.sr-search-ta__top {
+    margin: 6px 8px 2px;
+    overflow: hidden;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    background: $gray-100;
+    .sr-search-ta__opt { flex-wrap: wrap; }
+    .sr-search-ta__tag { flex: 0 0 100%; color: $gray-700; font-size: 10.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+}
+
+.sr-search-ta__empty {
+    display: grid;
+    justify-items: start;
+    gap: 4px;
+    padding: 16px;
+    span { color: $gray-700; font-size: 12.5px; }
+    .sr-search-ta__retry { padding: 0; }
+}
+
+.sr-search-ta__note {
+    padding: 8px 14px;
+    background: rgba($warning, .18);
+    color: $gray-800;
+    font-size: 12.5px;
+    &[hidden] { display: none; }
+}
+
+.sr-search-ta__foot {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 14px;
+    border-top: 1px solid $gray-300;
+    background: $gray-100;
+    color: $gray-700;
+    font-size: 12px;
+    &:empty { display: none; }
+    .sr-search-ta__keys { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+    kbd { padding: 0 5px; border: 1px solid $gray-400; border-radius: 4px; background: $white; color: $sr-primary; font: inherit; font-size: 11px; font-weight: 700; }
+}
+
+@include media-breakpoint-down(sm) {
+    .sr-search-ta__kbd { display: none; }
+}
+
+// Below lg the search item sits centred in a narrower band, so a panel anchored at
+// its left edge would run off the right side: pin it to the viewport instead,
+// centred, at most 560px wide.
+@include media-breakpoint-down(lg) {
+    .sr-search-ta__panel {
+        position: fixed;
+        top: 62px;
+        right: 8px;
+        left: 8px;
+        width: auto;
+        max-width: 560px;
+        margin: 0 auto;
+    }
+}

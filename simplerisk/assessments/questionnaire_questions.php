@@ -15,18 +15,24 @@
     }
 
     // Set the breadcrumb title key to one of the keys for create/edit question or nothing if we're not on a sub-page
-    $breadcrumb_title_key = isset($_GET['action']) ? ['edit_question' => 'EditQuestionnaireQuestion', 'add_question' => 'NewQuestionnaireQuestion'][$_GET['action']] : '';
+    $breadcrumb_title_key = isset($_GET['action']) ? (['edit_question' => 'EditQuestionnaireQuestion', 'add_question' => 'NewQuestionnaireQuestion'][$_GET['action']] ?? '') : '';
+
+    // This page is the "Questionnaire Questions" entry of the Assessments menu. Without these the
+    // breadcrumb never renders on the add/edit pages, leaving no way back to the list.
+    $active_sidebar_menu = 'Assessments';
+    $active_sidebar_submenu = 'QuestionnaireQuestions';
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG:Assessments', 'multiselect', 'CUSTOM:common.js', 'cve_lookup', 'CUSTOM:pages/assessment.js'], ["check_assessments" => true], $breadcrumb_title_key);
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG:Assessments', 'multiselect', 'CUSTOM:common.js', 'cve_lookup', 'CUSTOM:pages/assessment.js'], ["check_assessments" => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/assessments.php'));
 
     // Process actions on questionnaire pages
     if (process_assessment_questionnaire_questions()) {
-        refresh();
+        // A saved add/edit returns to the question list; anything else reloads the current page
+        refresh(get_questionnaire_questions_post_save_url($_POST));
     }
 
 ?>

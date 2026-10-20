@@ -313,8 +313,10 @@ function display($display = "")
     // the governance dashboard's Expiring Exceptions list). Fully API-driven,
     // so it works regardless of what's currently loaded in the grid. The
     // endpoint enforces exception permission on its own. type is optional —
-    // when omitted (deep-link) it is derived from the fetched record.
-    function openExceptionForEdit(exception_id, type) {
+    // when omitted (deep-link) it is derived from the fetched record. onError
+    // is optional: the deep link passes one so a refused or missing exception
+    // gets a notice instead of nothing.
+    function openExceptionForEdit(exception_id, type, onError) {
         $("#exception-update-form [name='additional_stakeholders[]']").multiselect('deselectAll', false);
         $("#exception-update-form [name='associated_risks[]']").multiselect('deselectAll', false);
         // deselectAll(), like select(), fires no change event (design-system.md
@@ -398,20 +400,54 @@ function display($display = "")
                 applyExceptionTypeVisibility($('#exception--update'));
 
                 $("#exception--update").modal('show');
+            },
+            error: function () {
+                if (onError) { onError(); }
             }
         });
     }
 
-    // Deep-link: open a specific exception's edit modal on load — e.g. the
-    // governance dashboard's Expiring Exceptions list
-    // (governance/document_exceptions.php?exception_id=N). No-op when the modal
-    // is absent or the param is missing/non-numeric; the endpoint enforces
-    // access. The modal's WYSIWYG editors initialise asynchronously, so wait
-    // until they're live (bounded) before opening so setEditorContent() can run.
+    // Deep-link: open a specific exception on load — e.g. the governance
+    // dashboard's Expiring Exceptions list or an Advanced Search result
+    // (governance/document_exceptions.php?exception_id=N, the raw id). A viewer
+    // with the update modal gets it; one without gets the read-only view modal.
+    // No-op when the param is missing/non-numeric (a non-numeric one is dropped
+    // from the URL); the endpoints enforce access,
+    // and a refused or missing exception (e.g. a control exception whose policy
+    // document the viewer can't see) gets a neutral notice while the grid still
+    // renders. The update modal's WYSIWYG editors initialise asynchronously, so
+    // wait until they're live (bounded) before opening so setEditorContent() can run.
+    function exceptionDeepLinkUnavailable() {
+        toastr.info("<?= $escaper->escapeHtml($lang['ExceptionDeepLinkUnavailable']) ?>");
+    }
+
     $(function() {
-        if (!$('#exception--update').length) return;
-        var deepExceptionId = new URLSearchParams(window.location.search).get('exception_id');
-        if (!(deepExceptionId && /^\d+$/.test(deepExceptionId))) return;
+        var deepParams = new URLSearchParams(window.location.search);
+        var deepExceptionId = deepParams.get('exception_id');
+        if (!(deepExceptionId && /^\d+$/.test(deepExceptionId))) {
+            // A junk value is dropped from the address bar, nothing else changes.
+            if (deepParams.has('exception_id')) {
+                deepParams.delete('exception_id');
+                history.replaceState(null, '', window.location.pathname + (deepParams.toString() ? '?' + deepParams : '') + window.location.hash);
+            }
+            return;
+        }
+
+        if (!$('#exception--update').length) {
+            // Same type and approved state the grid's own .exception--view row
+            // action passes, derived from the record the way
+            // openExceptionForEdit() derives the type.
+            $.ajax({
+                url: BASE_URL + '/api/v2/exceptions/exception?id=' + deepExceptionId,
+                type: 'GET',
+                success: function (res) {
+                    var data = (res && res.data) || {};
+                    openExceptionForView(deepExceptionId, data.control_framework_id ? 'control' : 'policy', !!data.approved, exceptionDeepLinkUnavailable);
+                },
+                error: exceptionDeepLinkUnavailable
+            });
+            return;
+        }
 
         var tries = 0;
         (function waitAndOpen() {
@@ -420,7 +456,7 @@ function display($display = "")
                 try { return !!(ed && ed.getBody && ed.getBody()); } catch (e) { return false; }
             });
             if (ready || tries >= 50) {
-                openExceptionForEdit(deepExceptionId);
+                openExceptionForEdit(deepExceptionId, null, exceptionDeepLinkUnavailable);
             } else {
                 tries++;
                 setTimeout(waitAndOpen, 100);
@@ -453,6 +489,14 @@ function display($display = "")
         // unapprove actions).
         var approved = $(this).data('approved') === true || $(this).data('approved') === 'true';
 
+        openExceptionForView(exception_id, type, approved);
+    });
+
+    // Fetch an exception's display shape and open the read-only view modal.
+    // Shared by the row's view action and the ?exception_id= deep link for a
+    // viewer without the update modal. onError is optional (the deep link's
+    // notice).
+    function openExceptionForView(exception_id, type, approved, onError) {
         $.ajax({
             url: BASE_URL + '/api/v2/exceptions/info',
             data: { id: exception_id, type: type, approval: approved ? 1 : 0 },
@@ -489,9 +533,12 @@ function display($display = "")
                 $("#exception--view #file_download").html(data.file_download);
 
                 $("#exception--view").modal('show');
+            },
+            error: function () {
+                if (onError) { onError(); }
             }
         });
-    });
+    }
 
     //Refresh audit logs if the log section is not collapsed
     // if it is, mark it for refresh on the next time it's opened
@@ -567,7 +614,7 @@ function display($display = "")
     // lives in js/simplerisk/common.js (both pages already load it).
 
     function displayFileSize(label, size) {
-        if (<?= $escaper->escapeHtml(get_setting('max_upload_size')); ?> > size)
+        if (<?= $escaper->escapeHtml(max_upload_size_effective()); ?> > size)
             label.attr("class","text-success");
         else
             label.attr("class","text-danger");
@@ -813,7 +860,7 @@ function display($display = "")
 
         $("#add_exception").click(function(event) {
             event.preventDefault();
-            if ($('#file-upload')[0].files[0] && <?= $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload')[0].files[0].size) {
+            if ($('#file-upload')[0].files[0] && <?= $escaper->escapeHtml(max_upload_size_effective()); ?> <= $('#file-upload')[0].files[0].size) {
                 showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                 return false;
             }
@@ -831,12 +878,7 @@ function display($display = "")
                     }
 
                     $('#exception--add').modal('hide');
-                    $('#exception-new-form')[0].reset();
-                    $('#exception-new-form #file-size').text("");
-                    $("#exception-new-form [name='additional_stakeholders[]']").multiselect('select', []);
-                    $("#exception-new-form [name='associated_risks[]']").multiselect('select', []);
-                    renderMultiselectChips($("#exception-new-form [name='additional_stakeholders[]']"));
-                    renderMultiselectChips($("#exception-new-form [name='associated_risks[]']"));
+                    resetExceptionAddForm();
 
                     ExceptionsGrid.reload();
 
@@ -856,7 +898,7 @@ function display($display = "")
 
         $("#update_exception").click(function(event) {
             event.preventDefault();
-            if ($('#file-upload-update')[0].files[0] && <?= $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload-update')[0].files[0].size) {
+            if ($('#file-upload-update')[0].files[0] && <?= $escaper->escapeHtml(max_upload_size_effective()); ?> <= $('#file-upload-update')[0].files[0].size) {
                 showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                 return false;
             }
@@ -981,9 +1023,28 @@ function display($display = "")
         $("[name='creation_date']").initAsDatePicker({maxDate: new Date()});
         $("[name='next_review_date']").initAsDatePicker({minDate: new Date()});
 
+        // form.reset() does not touch the rich-text editors, multiselect widgets, control chip or
+        // type-dependent field groups, so each is cleared explicitly. Run on open (not on close)
+        // so every way of dismissing the modal discards the draft.
+        function resetExceptionAddForm() {
+            var $modal = $('#exception--add');
+            var $form = $('#exception-new-form');
+            $form[0].reset();
+            $form.find('#file-size').text("");
+            $form.find('.file-uploader input').val("");
+            setEditorContent('add_description', '');
+            setEditorContent('add_justification', '');
+            $form.find("[name='additional_stakeholders[]']").multiselect('deselectAll', false);
+            $form.find("[name='associated_risks[]']").multiselect('deselectAll', false);
+            renderMultiselectChips($form.find("[name='additional_stakeholders[]']"));
+            renderMultiselectChips($form.find("[name='associated_risks[]']"));
+            $form.find('#framework').val('0');
+            renderExceptionControlChip($form.find('#control'));
+            applyExceptionTypeVisibility($modal);
+        }
+
         $("#exception-add-btn").click(function () {
-            $("#exception--add .file-uploader input").val("");
-            $("#exception--add #file-size").text("");
+            resetExceptionAddForm();
             $('#exception--add').modal('show');
         });
 
@@ -1361,7 +1422,7 @@ function display($display = "")
                                         <div class="input-group">
                                             <input type="text" class="form-control readonly"/>
                                             <label for="file-upload" class="btn btn-submit m-r-10"><?= $escaper->escapeHtml($lang['ChooseFile']) ?></label>
-                                            <label class="text-dark align-self-center">Max <?= $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</label>
+                                            <label class="text-dark align-self-center">Max <?= $escaper->escapeHtml(max_upload_size_label()); ?> Mb</label>
                                         </div>
                                         <input type="file" id="file-upload" name="file[]" class="d-none" />
                                         <label id="file-size" for="" class="d-none"></label>
@@ -1541,7 +1602,7 @@ function display($display = "")
                                         <div class="input-group">
                                             <input type="text" class="form-control readonly"/>
                                             <label for="file-upload-update" class="btn btn-submit m-r-10"><?= $escaper->escapeHtml($lang['ChooseFile']) ?></label>
-                                            <label class="text-dark align-self-center">Max <?= $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</label>
+                                            <label class="text-dark align-self-center">Max <?= $escaper->escapeHtml(max_upload_size_label()); ?> Mb</label>
                                         </div>
                                         <input type="file" id="file-upload-update" name="file[]" class="d-none" />
                                         <label id="file-size" for="" class="d-none"></label>

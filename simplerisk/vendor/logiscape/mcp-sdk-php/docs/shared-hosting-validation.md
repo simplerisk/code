@@ -76,11 +76,13 @@ harness):
 | SSE-incapable clients get plain JSON responses (notifications dropped, never a broken stream) | `HttpModernStreamingTest::testJsonOnlyClientGetsPlainJsonAndNotificationsDropped`, `::testSseDisabledServerKeepsPlainJson` |
 | `connection_aborted` is honored through the I/O seam | `tests/Server/Transport/Http/BufferedIoTest.php` |
 
-`ext-pcntl` absence needs no degradation test on this profile: the HTTP
-server path never uses pcntl. The only use is the *client-side* SSE
-background process (`src/Client/Transport/SseConnection.php`), which is
-feature-detected via `function_exists('pcntl_fork')` and falls back to the
-foreground path.
+`ext-pcntl` needs no degradation test on this profile: the HTTP server
+path never uses pcntl. The only use is the *client-side* SSE background
+helper (`src/Client/Transport/SseConnection.php`), which is gated on both
+`function_exists('pcntl_fork')` and a CLI SAPI. The probe host has
+`ext-pcntl` loaded (see below) but runs `fpm-fcgi`, so the client takes
+the in-process foreground path there either way; forking a web worker
+would let the helper finish the parent's FastCGI response (issue #65).
 
 ## Probe checks and results
 
