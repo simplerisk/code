@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'جلسات عمل المستخدم',
     'SessionActivityTimeout' => 'مهله نشاط جلسة العمل',
     'Security' => 'أمن',
-    'EnableCSP' => 'تمكين نهج أمان المحتوي (هذا قد كسر كروم في الماضي)',
+    'EnableCSP' => 'تفعيل سياسة أمان المحتوى (موصى به)',
     'EnableDebugLogging' => 'تمكين تسجيل التصحيح',
     'seconds' => 'ثانيه',
     'FieldSample' => 'نموذج حقل',
@@ -1973,7 +1973,7 @@ $lang = array(
     'IncidentResponseNoteDeletePermissionMessage' => 'ليس لديك صلاحية حذف الملاحظات المتعلقة بالحادثة. يرجى الاتصال بالمسؤول إذا كنت تعتقد أنك تلقيت هذه الرسالة عن طريق الخطأ.',
     'IncidentAddLessonPermissionMessage' => 'ليس لديك صلاحية لإضافة دروس إلى حادثة. يرجى الاتصال بأحد المسؤولين إذا كنت تعتقد أنك تلقيت هذه الرسالة عن طريق الخطأ.',
     'IncidentRemoveLessonPermissionMessage' => 'ليس لديك صلاحية لحذف أي حادثة من قسم الدروس المستفادة. يرجى التواصل مع أحد المسؤولين إذا كنت تعتقد أنك تلقيت هذه الرسالة عن طريق الخطأ.',
-    'TemplateAssignment' => 'مهمة نموذجية',
+    'TemplateAssignment' => 'تعيين القالب',
     'PleaseSelectUser' => 'الرجاء تحديد المستخدم',
     'AboutThisPage' => 'حول هذه الصفحة',
     'ProjectStatus' => 'حالة المشروع',
@@ -2043,7 +2043,7 @@ $lang = array(
     'BackupSettingsUpdated' => 'تم تحديث إعدادات النسخ الاحتياطي بواسطة المستخدم "{$user_name}".',
     'BackupInitiatedByUser' => 'تم بدء عملية النسخ الاحتياطي بواسطة المستخدم "{$user_name}".',
     'BackupInitiated' => 'تم بدء عملية النسخ الاحتياطي. قد تستغرق هذه العملية عدة دقائق لإكمالها.',
-    'NoControlsAvailable' => 'لا توجد عناصر تحكم متاحة',
+    'NoControlsAvailable' => 'لا توجد ضوابط متاحة',
     'AdminCantDisableItself' => 'لا يمكن للمسؤول تعطيل نفسه.',
     'AdminCantDeleteItself' => 'لا يمكن للمسؤول حذف نفسه.',
     'NoFrameworksFromGithub' => 'لا توجد أطر عمل محددة مستوردة من GitHub',
@@ -2515,17 +2515,17 @@ $lang = array(
     'EnterAValuationLevelName' => 'أدخل اسم مستوى التقييم.',
     'TheNameFieldCannotBeEmptyOrContainOnlySpaces' => 'لا يمكن أن يكون حقل الاسم فارغًا أو يحتوي على مسافات فقط.',
     'EditAsset' => 'تحرير الأصول',
-    'TheSelectedControlsWereDeletedSuccessfully' => 'تم حذف عناصر التحكم المحددة بنجاح.',
+    'TheSelectedControlsWereDeletedSuccessfully' => 'تم حذف الضوابط المحددة بنجاح.',
     'NothingControlsForDeletingWereSelected' => 'لم يتم تحديد أي عناصر تحكم للحذف.',
     'PleaseSelectARoleBeforeDeleting' => 'يرجى تحديد الدور قبل الحذف.',
     'DocumentInstallation' => 'تثبيت المستندات',
-    'DocumentControlMapping' => 'مستند للتحكم في رسم الخرائط',
-    'DocumentControlMappingHelp'=>'يعرض هذا التقرير جميع المستندات للتحكم في التعيينات',
+    'DocumentControlMapping' => 'ربط المستند بالضوابط',
+    'DocumentControlMappingHelp'=>'يعرض هذا التقرير جميع عمليات ربط المستندات بالضوابط',
     'DocumentID' => 'معرف المستند',
     'Score' => 'نتيجة',
     'TFIDFSimilarity' => 'تشابه TF-IDF',
     'MatchingKeywords' => 'الكلمات الرئيسية المطابقة',
-    'AIMatch' => 'مباراة الذكاء الاصطناعي',
+    'AIMatch' => 'مطابقة الذكاء الاصطناعي',
     'AIConfidence' => 'ثقة الذكاء الاصطناعي',
     'AIReasoning' => 'التفكير بالذكاء الاصطناعي',
     'DocumentColumns' => 'أعمدة المستند',
@@ -2538,11 +2538,11 @@ $lang = array(
     'ConsiderAddingControl' => 'فكر في إضافة التحكم',
     'RemoveControlFromPolicy' => 'إزالة التحكم من السياسة',
     'NoActionRequired' => 'لا يتطلب أي إجراء',
-    'DefiniteMatch' => 'مباراة محددة',
-    'LikelyMatch' => 'مباراة محتملة',
-    'PossibleMatch' => 'مباراة محتملة',
-    'UnlikelyMatch' => 'مباراة غير محتملة',
-    'NotAMatch' => 'ليس مباراة',
+    'DefiniteMatch' => 'تطابق مؤكد',
+    'LikelyMatch' => 'تطابق محتمل',
+    'PossibleMatch' => 'تطابق محتمل',
+    'UnlikelyMatch' => 'تطابق غير محتمل',
+    'NotAMatch' => 'ليس تطابقًا',
     'ReviewManually' => 'المراجعة يدويًا',
     'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'ستؤدي الاستجابات للأسئلة التي تحتوي على عناصر تحكم مرتبطة إلى تحديث نوع عنصر التحكم إلى',
     'AuditLog_IncidentUpdated' => 'تم تحديث الحادثة "{$incident_summary}"(المعرف: {$incident_id}) بواسطة المستخدم "{$user_name}". التغييرات: {$changes}.',
@@ -2571,7 +2571,7 @@ $lang = array(
     'Tab' => 'علامة تبويب',
     'TabOrdering' => 'ترتيب علامات التبويب',
     'AutoInitiateAudit' => 'بدء التدقيق تلقائيًا',
-    'AuditInitiationOffset' => 'تعويض بدء التدقيق',
+    'AuditInitiationOffset' => 'إزاحة بدء التدقيق',
     'AuditInitiationOffset_explanation' => 'أيام من تاريخ الاستحقاق',
     'AuditInitiationOffsetMustBeANonNegativeValue' => 'يجب أن تكون قيمة إزاحة بدء التدقيق غير سلبية.',
     'AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency' => 'يجب أن يكون إزاحة بدء التدقيق أقل من أو يساوي تردد الاختبار.',
@@ -2599,15 +2599,15 @@ $lang = array(
     'EnableLoggingDebug' => 'DEBUG: معلومات تشخيصية مفصلة للمطورين.',
     'QueueMonitor' => 'مراقب قائمة الانتظار',
     'PleaseEnterAValidTimezone' => 'الرجاء إدخال المنطقة الزمنية الصحيحة.',
-    'TFIDFMatch' => 'مباراة TF-IDF',
+    'TFIDFMatch' => 'تطابق TF-IDF',
     'CompletionDate' => 'تاريخ الانتهاء',
     'AssetsAndControls' => 'الأصول والضوابط',
-    'AssetsByControl' => 'الأصول حسب السيطرة',
+    'AssetsByControl' => 'الأصول حسب الضابط',
     'ControlsByAsset' => 'الضوابط حسب الأصل',
     'NoIncidentDetectionDataAvailable' => 'لم يتم تسجيل أي حوادث في تاريخي البدء والاكتشاف.',
     'IncidentDashboard' => 'لوحة معلومات الحوادث',
-    'TimeToDetectByTeam' => 'حان وقت الكشف بواسطة الفريق',
-    'TimeToDetectBySource' => 'حان وقت الكشف حسب المصدر',
+    'TimeToDetectByTeam' => 'وقت الكشف حسب الفريق',
+    'TimeToDetectBySource' => 'الوقت اللازم للكشف حسب المصدر',
     'TimeToDetectByAttackVector' => 'الوقت اللازم للكشف عن طريق ناقل الهجوم',
     'AuditRemediationCycleTime' => 'مدة دورة معالجة التدقيق',
     'AuditRemediationCycleTimeDescription' => 'متوسط عدد الأيام من بدء عملية التدقيق إلى تقديم النتائج لعمليات التدقيق المغلقة، مصنفة حسب الإطار. تم استبعاد عمليات التدقيق التي لم يتم تسجيل نتائجها.',
@@ -2618,16 +2618,16 @@ $lang = array(
     'DragAndDropToReorder' => 'اسحب وأفلت لإعادة ترتيب الأعمدة.',
     'NoColumnsSelected' => 'لم يتم تحديد أي أعمدة. حدد الأعمدة في علامة التبويب الأولى.',
     'Remove' => 'يزيل',
-    'Apply' => 'يتقدم',
+    'Apply' => 'تطبيق',
     'RiskScoring' => 'تقييم المخاطر',
     'AreYouSureYouWantToDeleteThisUser' => 'هل أنت متأكد من رغبتك في حذف هذا المستخدم؟',
     'NoPermissionAddSavedRiskReports' => 'ليس لديك إذن لإضافة تقارير المخاطر المحفوظة.',
     'NoPermissionDeleteSavedRiskReports' => 'ليس لديك إذن لحذف تقارير المخاطر المحفوظة.',
     'LimitedPeriodTestmailMessage' => 'تم إرسال بريد إلكتروني تجريبي مؤخراً. يمكنك إرسال ما يصل إلى 5 رسائل بريد إلكتروني تجريبية في الساعة.',
     'ATestEmailHasBeenSentUsingTheCurrentSettings' => 'تم إرسال بريد إلكتروني تجريبي باستخدام الإعدادات الحالية.',
-    'ControlPassFailStatus' => 'حالة اجتياز/فشل التحكم',
+    'ControlPassFailStatus' => 'حالة اجتياز/فشل الضابط',
     'GovernanceDashboard' => 'لوحة معلومات الحوكمة',
-    'GovernanceDashboardDescription' => 'يعرض هذا الرسم البياني مستوى النضج الحالي لجميع عناصر التحكم.',
+    'GovernanceDashboardDescription' => 'يعرض هذا الرسم البياني مستوى النضج الحالي لجميع الضوابط.',
     'GovernanceControlsByFrameworkMaturityStacked' => 'الضوابط حسب الإطار ومستوى النضج الحالي',
     'Custom' => 'مخصص',
     'SimpleRiskCustomScheduledNotifications' => 'إشعارات SimpleRisk المجدولة المخصصة',
@@ -2663,7 +2663,7 @@ $lang = array(
     'Reports'                  => 'التقارير',
     'Dashboards'               => 'لوحات المعلومات',
     'RiskCharts'               => 'مخططات المخاطر',
-    'SearchReports'            => 'تقارير البحث...',
+    'SearchReports'            => 'البحث في التقارير...',
     'SearchConfigure'          => 'إعدادات البحث...',
     'Favorites'                => 'المفضلة',
     'AddToFavorites'           => 'أضف إلى المفضلة',
@@ -2776,7 +2776,7 @@ $lang = array(
     'ImportExportExtraDesc'               => 'تتيح ميزة الاستيراد والتصدير الإضافية إمكانية استيراد البيانات إلى SimpleRisk عن طريق ربط الحقول في ملف CSV بالحقول في قاعدة بيانات SimpleRisk. ويمكن استخدامها لاستيراد نتائج التدقيق من جداول بيانات خارجية، ونتائج فحص الثغرات الأمنية من أدوات أخرى، والأصول من قاعدة بيانات إدارة التكوين (CMDB)، وغير ذلك. كما تتيح هذه الميزة الإضافية إمكانية تصدير ملفات CSV من SimpleRisk تحتوي على المخاطر، وإجراءات التخفيف، والمراجعات، أو تقرير مُجمّع يجمع بين هذه العناصر الثلاثة.',
     'JiraExtraDesc'                       => 'تتيح إضافة Jira Integration Extra للمستخدمين إمكانية التكامل ثنائي الاتجاه مع نظام Jira. فهي تمكّن من ربط المخاطر بمشكلات Jira، بالإضافة إلى مزامنة بياناتها وحالتها وتعليقاتها.',
     'APIExtraDesc'                        => 'تتيح واجهة برمجة التطبيقات الإضافية للعملاء استخدام واجهة برمجة تطبيقات RESTful لإنشاء تفاعلات مكتوبة مع تطبيقات أخرى للحصول على أتمتة متقدمة والاستفادة من البنية التحتية الحالية.',
-    'AdvancedSearchExtraDesc'             => "تعمل ميزة البحث المتقدم الإضافية على توسيع وظائف مربع البحث في الشريط العلوي لتتمكن من العثور على المخاطر من خلال إجراء بحث نصي في بيانات المخاطر.",
+    'AdvancedSearchExtraDesc'             => "تُحوّل ميزة البحث المتقدم الإضافية مربع البحث في الشريط العلوي إلى بحث شامل يشمل المخاطر، والأطر، والضوابط، والوثائق، والاستثناءات، والاختبارات، وعمليات التدقيق، والأصول، ومجموعات الأصول، مع صفحة بحث كاملة لاستعراض النتائج. ولا تعرض هذه الميزة إلا السجلات التي يُسمح للمستخدم برؤيتها.",
     'AssessmentsExtraDesc'                => 'يوفر برنامج تقييم المخاطر الإضافي للمستخدمين القدرة على تحديد جهات الاتصال، وإنشاء الأسئلة (بما في ذلك المنطق)، وتجميع أسئلة متعددة باستخدام قالب استبيان، وإنشاء استبيانات وإرسالها إلى جهات الاتصال، وعرض نتائج الاستبيان، وإضافة المخاطر بناءً على تلك النتائج، ومقارنة النتائج بمرور الوقت، واستيراد وتصدير التقييمات المخصصة خارجيًا، ومراجعة سجل تدقيق تقييم المخاطر.',
     'ActiveAssessmentsDesc'               => 'عرض وإدارة التقييمات الجارية حاليًا.',
     'WorkflowsExtraDesc'                  => 'توفر إضافة Workflows Extra محرك سير عمل مرئيًا قائمًا على الأحداث، يعمل على أتمتة إجراءات إدارة المخاطر استجابةً للأحداث داخل SimpleRisk. يمكنك تصميم سير عمل يتم تفعيله عند حدوث تغييرات - مثل تقديم المخاطر أو تحديثها أو مراجعتها - لتوجيه الموافقات، وتوزيع المهام، والحفاظ على سير العملية بسلاسة دون تدخل يدوي.',
@@ -2796,7 +2796,7 @@ $lang = array(
     'TeamBasedSeparationExtra'            => 'ميزة إضافية للفصل على أساس الفريق',
     'CustomAuthenticationExtra'           => 'مصادقة مخصصة إضافية',
     'EncryptedDatabaseExtra'              => 'قاعدة بيانات مشفرة إضافية',
-    'APIExtra'                            => 'معلومات إضافية من واجهة برمجة التطبيقات',
+    'APIExtra'                            => 'إضافة API',
     'AssessmentsExtra'                    => 'تقييمات إضافية',
     'WorkflowsExtra'                      => 'سير العمل الإضافي',
     'UCFExtra'                            => 'إطار الامتثال الموحد (UCF) الإضافي',
@@ -2862,7 +2862,7 @@ $lang = array(
     'Promo'                                => 'عرض ترويجي',
     'Trash'                                => 'نفاية',
     'Unread'                               => 'غير مقروء',
-    'View'                                 => 'منظر',
+    'View'                                 => 'عرض',
 
     // Workflow "Send In-App Notification" action — audience picker hints.
     // 'NoneSelected' (line 1878) is reused as-is for the multi-select button.
@@ -2886,7 +2886,7 @@ $lang = array(
     'SpecificUsers' => 'مستخدمون محددون',
     'Help' => 'مساعدة',
     'Profile' => 'حساب تعريفي',
-    'Scoring' => 'التسجيل',
+    'Scoring' => 'احتساب الدرجات',
     'EncryptionMissingLockTablesPrivilege'   => 'لا يملك مستخدم قاعدة بيانات SimpleRisk صلاحية LOCK TABLES، وهي الصلاحية المطلوبة لتشفير قاعدة البيانات بشكل آمن. اطلب من مسؤول قاعدة البيانات تنفيذ أمر GRANT المُسترجع في الاستجابة، ثم حاول مرة أخرى.',
     'EncryptionMissingLockTablesPrivilegeUi' => 'لا يملك مستخدم قاعدة بيانات SimpleRisk صلاحية LOCK TABLES المطلوبة للتشفير. يجب على مسؤول قاعدة البيانات تشغيل الأمر التالي: GRANT LOCK TABLES ON {$db}.* TO {$user}; ثم إعادة المحاولة.',
     'EncryptionRequiredGrantLabel' => 'بيان منح الإذن المطلوب:',
@@ -2904,7 +2904,7 @@ $lang = array(
     'EncryptionStageStarting'               => 'بدء…',
     'EncryptionStageProgress'               => 'المرحلة {current} من {total}: {name}',
     'EncryptionStageAllDone'                => 'اكتملت جميع المراحل.',
-    'EncryptionStageEncryptTable'           => 'جدول التشفير: {table}',
+    'EncryptionStageEncryptTable'           => 'تشفير الجدول: {table}',
     'EncryptionStageDecryptTable'           => 'فك تشفير الجدول: {table}',
     'EncryptionActivationInProgress'        => 'جارٍ تشفير قاعدة بيانات SimpleRisk الخاصة بك. يُرجى عدم إغلاق هذه الصفحة.',
     'EncryptionActivationFailedTitle'       => 'فشل تفعيل التشفير',
@@ -2940,7 +2940,7 @@ $lang = array(
     'EncryptionModalWhyLabel'               => 'لماذا نستخدم هذا؟',
     'EncryptionModalWhatHappensLabel'       => 'ماذا سيحدث بعد ذلك؟',
     'EncryptionFieldsPanelHeading'          => 'حقول قاعدة البيانات المشفرة',
-    'EncryptionFieldsHelp'                  => 'يتم تخزين كل عمود مدرج هنا مشفرًا أثناء الراحة. ويعرض تلميح أيقونة القفل خوارزمية التشفير المستخدمة.',
+    'EncryptionFieldsHelp'                  => 'يتم تخزين كل عمود مدرج هنا مشفرًا في حالة السكون. ويعرض تلميح أيقونة القفل خوارزمية التشفير المستخدمة.',
     'EncryptionFieldsTableColumn'           => 'جدول قاعدة البيانات',
     'EncryptionFieldsFieldColumn'           => 'حقل قاعدة البيانات',
     'EncryptionFieldsEncryptedColumn'       => 'المشفره',
@@ -2972,16 +2972,16 @@ $lang = array(
     'ContextQuestions' => 'أسئلة السياق',
     'AIProviderNotConfiguredWarning' => 'لم يتم إعداد موفر الذكاء الاصطناعي. لن تتمكن من عرض النتائج المباشرة حتى تقوم بتعيين الموفر ومفتاح واجهة برمجة التطبيقات (API) في علامة تبويب "إعدادات الموفر".',
     'AutoProcessSCFUpdates' => 'معالجة إصدارات إطار عمل الضوابط الآمنة (SCF) الجديدة تلقائيًا',
-    'AddNewControls' => 'إضافة عناصر تحكم SCF جديدة',
-    'UpdateExistingControls' => 'تحديث عناصر تحكم SCF الحالية',
-    'DeleteRemovedControls' => 'حذف عناصر تحكم SCF التي تمت إزالتها',
+    'AddNewControls' => 'إضافة ضوابط SCF جديدة',
+    'UpdateExistingControls' => 'تحديث ضوابط SCF الحالية',
+    'DeleteRemovedControls' => 'حذف ضوابط SCF التي تمت إزالتها',
     'CreateEvidenceRequests' => 'إنشاء طلبات أدلة لضوابط SCF',
     'SelectSCFFrameworks' => 'اختر أطر عمل SCF',
     'SCFReleaseProcessing' => 'معالجة إصدار SCF',
     'NotFrameworkDescription' => 'تعرض الأداة أدناه جميع العناوين الموجودة في جدول بيانات إطار عمل الضوابط الآمنة (SCF). استخدمها لتحديد الأعمدة التي تحتوي على بيانات الإطار مقابل البيانات غير المتعلقة بالإطار.',
     'Note' => 'ملحوظة',
     'AISettingsNote' => 'سيؤدي تمكين المساعدة بالذكاء الاصطناعي إلى إرسال البيانات إلى Anthropic لتحليلها في LLM الخاص بهم، باستخدام مفتاح واجهة برمجة التطبيقات Anthropic الخاص بك، وذلك لتزويدك بنتائج مصممة خصيصًا لك.',
-    'EnableAIAssistanceForControlData' => 'تفعيل مساعدة الذكاء الاصطناعي لبيانات التحكم',
+    'EnableAIAssistanceForControlData' => 'تفعيل مساعدة الذكاء الاصطناعي لبيانات الضوابط',
     'ReferenceText' => 'نص مرجعي',
     'FrameworkSelection' => 'اختيار الإطار',
     'Show' => 'يعرض',
@@ -2997,7 +2997,7 @@ $lang = array(
     'PassingControls' => 'الضوابط المستوفاة',
     'FailingControls' => 'خلل في الضوابط',
     'ControlsByFramework' => 'عناصر التحكم حسب الإطار',
-    'NumberOfControls' => 'عدد عناصر التحكم',
+    'NumberOfControls' => 'عدد الضوابط',
     'PasswordResetTokenExpirationPeriod' => 'فترة انتهاء صلاحية رمز إعادة تعيين كلمة المرور',
     'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'يجب أن تكون فترة انتهاء صلاحية رمز إعادة تعيين كلمة المرور أكثر من 5 دقائق.',
     'MeanTimeToRemediate' => 'متوسط الوقت اللازم للمعالجة',
@@ -3006,7 +3006,7 @@ $lang = array(
     'ByRiskLevel' => 'حسب مستوى المخاطر',
     'MeanTimeToRemediateDescription' => 'متوسط عدد الأيام اللازمة لإغلاق المخاطر، مصنفة حسب الفريق والفئة ومستوى المخاطر. وتشمل هذه البيانات المخاطر المغلقة فقط.',
     'AverageDaysToClose' => 'متوسط أيام الإغلاق',
-    'ControlPassRateTrend' => 'التحكم في اتجاه معدل النجاح',
+    'ControlPassRateTrend' => 'اتجاه معدل نجاح الضوابط',
     'ControlPassRateTrendDescription' => 'نسبة النجاح الشهرية (%) لكل إطار عمل خلال الأشهر الـ 12 الماضية. يتم عرض أطر العمل التي حصلت على نتيجة اختبار واحدة على الأقل خلال هذه الفترة فقط.',
     'PassRatePercent' => 'نسبة النجاح (%)',
     'ExposureByTeam' => 'التعرض للمخاطر حسب الفريق',
@@ -3035,7 +3035,7 @@ $lang = array(
     'UpdateAvailable' => 'يتوفر تحديث',
     'RegistrationSuccessful' => 'تم التسجيل بنجاح.',
     'LocalRegistrationStateCleared' => 'تم مسح حالة التسجيل المحلي. أعد التسجيل في /admin/register.php للحصول على معرف مثيل جديد.',
-    'InstanceInformationUpdated' => 'تم تحديث معلومات الحالة.',
+    'InstanceInformationUpdated' => 'تم تحديث معلومات المثيل.',
     'UpgradeExtraDesc' => 'تُبقي ميزة الترقية الإضافية نسخة SimpleRisk الخاصة بك مُحدّثة من خلال تنزيل وتطبيق ترقيات التطبيقات وقواعد البيانات، بالإضافة إلى تثبيت وتحديث الإضافات الأخرى، كل ذلك من صفحة التسجيل والترقية. وهي مُضمّنة مع SimpleRisk مجانًا، مما يُتيح لك استخدام أحدث إصدار دون الحاجة إلى إدارة الملفات يدويًا.',
     'ExtraInstallDisabledByEnforcement' => 'التثبيت الإضافي معطل حاليًا بسبب حالة ترخيصك. تواصل مع مسؤول النظام أو فريق دعم SimpleRisk.',
     'LicenseStateUnknownRetryShortly' => 'معلومات الترخيص غير متوفرة حاليًا. يرجى المحاولة مرة أخرى بعد لحظات.',
@@ -3113,13 +3113,13 @@ $lang = array(
     // Home dashboard — KPI tile labels
     'NewSelfAssessment' => 'التقييم الذاتي الجديد',
     'SelfAssessmentPrereqIntro' => 'تتيح لك التقييمات الذاتية تقييم مؤسستك وفقًا لإطار عمل الضوابط الآمنة، وتُنشئ تلقائيًا المخاطر الناتجة عن الضوابط التي لا تُطبّق. يتطلب الأمر خطوتين إعداديتين أولًا:',
-    'RegisterYourInstance' => 'سجل حسابك',
+    'RegisterYourInstance' => 'سجّل نسختك',
     'RegisterYourInstanceHelp' => 'يربط التسجيل هذه النسخة بخدمة ترخيص SimpleRisk بحيث يمكن تنزيل الإضافات المجانية (بما في ذلك SCF).',
     'InstallTheSCF' => 'قم بتثبيت إطار عمل الضوابط الآمنة',
     'InstallTheSCFHelp' => 'تُعدّ أداة SCF إضافة مجانية توفر الأطر وأسئلة التحكم وخرائط المخاطر التي تقيّمها هذه الميزة. يتم التثبيت في الخلفية وقد يستغرق بضع دقائق.',
     'GoToRegistration' => 'انتقل إلى صفحة التسجيل',
     'GoToSCF' => 'انتقل إلى إطار عمل الضوابط الآمنة',
-    'SelfAssessmentEnableTip' => 'اختياري: ضمن قسم الحوكمة > الأطر، يمكنك تفعيل أطر عمل محددة من إطار عمل سلسلة التوريد (SCF) لعرض قائمة مختصرة ومنتقاة عند بدء التقييم. كما يمكنك إجراء التقييم باستخدام أي إطار عمل من كتالوج إطار عمل سلسلة التوريد (SCF) الكامل دون تفعيله.',
+    'SelfAssessmentEnableTip' => 'اختياري: ضمن قسم الحوكمة > الأطر، يمكنك تفعيل أطر SCF محددة لعرض قائمة مختصرة ومنتقاة عند بدء التقييم. كما يمكنك إجراء التقييم باستخدام أي إطار عمل من كتالوج SCF الكامل دون تفعيله.',
     'ChooseAFramework' => 'اختر إطار عمل للتقييم بناءً عليه',
     'EnabledFrameworks' => 'الأطر المُمكّنة',
     'AllScfFrameworks' => 'جميع أطر عمل SCF',
@@ -3128,14 +3128,14 @@ $lang = array(
     'ControlQuestion' => 'سؤال التحكم',
     'NotApplicable' => 'غير متوفر',
     'SaveProgress' => 'حفظ التقدم',
-    'MarkComplete' => 'علامة مكتملة',
+    'MarkComplete' => 'وضع علامة كمكتمل',
     'AnsweredOfTotal' => 'تمت الإجابة',
     'FailedSoFar' => 'فشلوا حتى الآن',
     'StartedBy' => 'بدأ بواسطة',
     'FailedControls' => 'الضوابط الفاشلة',
     'PushToRisk' => 'ادفع نحو المخاطرة',
     'ConfirmDeleteSelfAssessment' => 'هل تريد حذف هذا التقييم الذاتي؟ لا يمكن التراجع عن هذا الإجراء.',
-    'ConfirmCompleteSelfAssessment' => 'هل تم اعتبار هذا التقييم مكتملاً؟ ستنشأ المخاطر من فشل الضوابط.',
+    'ConfirmCompleteSelfAssessment' => 'هل تريد وضع علامة على هذا التقييم كمكتمل؟ ستنشأ المخاطر من الضوابط الفاشلة.',
     'NoSelfAssessmentsYet' => 'لا توجد تقييمات ذاتية حتى الآن. ابدأ بواحدة للبدء.',
     'RequestFailed' => 'لم يتم إكمال الطلب. يرجى المحاولة مرة أخرى.',
     'NoPendingRisks' => 'لا توجد مخاطر معلقة. أكمل التقييم لتحديد المخاطر الناجمة عن فشل الضوابط.',
@@ -3144,13 +3144,13 @@ $lang = array(
     'GeneratedFromSelfAssessment' => 'تم استخلاصها من التقييم الذاتي',
     'SelfAssessmentMitigationSolution' => 'قم بتطبيق الضوابط المرتبطة أدناه، والتي تم تحديدها على أنها فاشلة خلال هذا التقييم الذاتي، للتخفيف من هذا الخطر.',
     'NSelected' => '{n} تم الاختيار',
-    'FilterByControl' => 'التصفية حسب عنصر التحكم',
+    'FilterByControl' => 'التصفية حسب الضابط',
     'Pushing' => 'دفع…',
     'Deleting' => 'حذف…',
     'ConfirmPushSelectedPendingRisks' => 'هل تريد تحويل المخاطر المعلقة المحددة {n} إلى مخاطر؟',
     'ConfirmDeleteSelectedPendingRisks' => 'هل تريد حذف المخاطر المعلقة المحددة {n} ؟ لا يمكن التراجع عن هذا الإجراء.',
     'ConfirmDeleteSelectedSelfAssessments' => 'هل تريد حذف التقييم الذاتي المحدد (التقييمات الذاتية) {n} ؟ لا يمكن التراجع عن هذا الإجراء.',
-    'BulkPartialFailure' => 'نجحت عملية تحميل {n} عنصر من أصل {total} عنصر؛ أما الباقي فقد فشل. قم بتحديث الصفحة للاطلاع على الحالة الحالية.',
+    'BulkPartialFailure' => 'نجحت العملية لـ {n} عنصر من أصل {total} عنصر؛ أما الباقي فقد فشل. قم بتحديث الصفحة للاطلاع على الحالة الحالية.',
 
     // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
     'WorkflowsExtraDeactivateConfirm' => 'هل تريد تعطيل ميزة "سير العمل الإضافي"؟ سيتم حذف جميع تعريفات سير العمل، بما في ذلك سير العمل الافتراضي للنظام، نهائيًا. سيؤدي إعادة تفعيل الميزة الإضافية إلى إعادة إنشاء سير العمل الافتراضي للنظام، ولكن ستُفقد أي تخصيصات أُجريت عليه.',
@@ -3191,10 +3191,10 @@ $lang = array(
     'ListExpiringExceptions' => 'الاستثناءات المنتهية الصلاحية',
     'ImKpiOpenIncidents' => 'إجمالي مفتوح',
     'ImKpiOverdue' => 'متأخر',
-    'ImKpiMttr30' => 'متوسط الدقة',
-    'ImKpiMttrQuarter' => 'متوسط الدقة (90 يومًا)',
+    'ImKpiMttr30' => 'متوسط وقت الحل',
+    'ImKpiMttrQuarter' => 'متوسط وقت الحل (90 يومًا)',
     'ImKpiMttrYear' => 'متوسط مدة الحل (سنة واحدة)',
-    'ImKpiMttrAll' => 'متوسط الدقة (الكل)',
+    'ImKpiMttrAll' => 'متوسط وقت الحل (الكل)',
     'ImKpiResolved30' => 'تم حل المشكلة',
     'ImChartBySeverity' => 'حسب درجة الخطورة',
     'ImChartByStatus' => 'حسب الحالة',
@@ -3217,7 +3217,7 @@ $lang = array(
     'AddToDashboard' => 'أضف إلى لوحة التحكم',
     'AllWidgetsAdded' => 'جميع الأدوات المتاحة موجودة في لوحة التحكم هذه.',
     'AddText' => 'أضف نصًا',
-    'GettingStarted' => 'ابدء',
+    'GettingStarted' => 'البدء',
     'GettingStartedTitle' => 'أهلاً بكم في SimpleRisk',
     'GettingStartedSubtitle' => 'بعض الخطوات السريعة لتحقيق أقصى استفادة من SimpleRisk.',
     'GSProgressCount' => '{done} من {total} مكتمل',
@@ -3258,7 +3258,7 @@ $lang = array(
     'GSReviewDesc' => 'قم بمراجعة المخاطرة وحدد الخطوة التالية.',
     'GSReviewCta' => 'إجراء مراجعة',
     'GSDefineTestTitle' => 'حدد اختبار التحكم',
-    'GSDefineTestDesc' => 'حدد كيفية اختبار عنصر التحكم.',
+    'GSDefineTestDesc' => 'حدد كيفية اختبار الضابط.',
     'GSDefineTestCta' => 'تعريف الاختبار',
     'GSInitiateAuditTitle' => 'بدء عملية التدقيق',
     'GSInitiateAuditDesc' => 'ابدأ دورة اختبار أو تدقيق.',
@@ -3272,7 +3272,7 @@ $lang = array(
     'GSNextCards' => 'عرض الخطوات التالية',
     'WhatsNextInstallSCF' => 'قم بتثبيت إطار عمل الضوابط الآمنة',
     'GSActivateScfTitle' => 'تفعيل إطار عمل الضوابط الآمنة',
-    'GSActivateScfDesc' => 'قم بتشغيل SCF المثبت لتحميل عناصر التحكم الخاصة به في مكتبتك.',
+    'GSActivateScfDesc' => 'قم بتشغيل SCF المثبت لتحميل الضوابط الخاصة به في مكتبتك.',
     'GSActivateScfCta' => 'تفعيل SCF',
     'WhatsNextActivateSCF' => 'تفعيل إطار عمل الضوابط الآمنة',
     'GSEnableFrameworksTitle' => 'تفعيل الأطر المطبقة',
@@ -3285,10 +3285,10 @@ $lang = array(
     'WhatsNextTakeSelfAssessment' => 'قم بإجراء تقييم ذاتي',
     'WhatsNextConfigureAI' => 'تكوين الذكاء الاصطناعي',
     'ListUnreviewedRisks' => 'مخاطر غير مُراجعة',
-    'ControlsByDomain' => 'عناصر التحكم حسب المجال',
-    'ControlsByClass' => 'عناصر التحكم حسب الفئة',
-    'ControlsByPhase' => 'التحكم حسب المرحلة',
-    'ControlsByPriority' => 'التحكم حسب الأولوية',
+    'ControlsByDomain' => 'الضوابط حسب المجال',
+    'ControlsByClass' => 'الضوابط حسب الفئة',
+    'ControlsByPhase' => 'الضوابط حسب المرحلة',
+    'ControlsByPriority' => 'الضوابط حسب الأولوية',
     'ControlsByCurrentMaturity' => 'الضوابط حسب مستوى النضج الحالي',
     'ControlStatusOverTime' => 'حالة التحكم بمرور الوقت',
     'ComplianceTotalControls' => 'إجمالي الضوابط',
@@ -3333,7 +3333,7 @@ $lang = array(
     'ImportExportExportFailed' => 'تعذر إنشاء ملف PDF. يرجى المحاولة مرة أخرى.',
     'ImportExportGeneratedOn' => 'تم إنشاؤه',
     'ImportExportPage' => 'صفحة',
-    'ImportExportPageOf' => 'ل',
+    'ImportExportPageOf' => 'من',
     'ResolutionTargetsUpdated' => 'تم تحديث أهداف حل المشكلات لكل مستوى من مستويات الخطورة.',
     'SeverityColorsUpdated' => 'تم تحديث ألوان مستوى الخطورة.',
     // AI Capabilities Catalog + AI settings hub (unified AI settings)
@@ -3341,16 +3341,16 @@ $lang = array(
     'AICapGrcRecommendationsDesc' => 'توصيات إطار العمل المُولّدة بواسطة الذكاء الاصطناعي وملخص تنفيذي، مُصممة خصيصًا لسياق مؤسستك.',
     'AICapRiskRecommendations' => 'توصيات بشأن المخاطر',
     'AICapRiskRecommendationsDesc' => 'اقتراحات لكل خطر فيما يتعلق بتفاصيل المخاطر والتخفيف من حدتها، والتي تم توليدها من المخاطر والتخفيف من حدتها ومراجعتها.',
-    'AICapFairAnalysis' => 'التحليل الكمي العادل',
+    'AICapFairAnalysis' => 'التحليل الكمي FAIR',
     'AICapFairAnalysisDesc' => 'يقوم الذكاء الاصطناعي بتقدير معلمات خسارة بيتا-بيرت؛ ويقوم برنامج SimpleRisk بتشغيل مونت كارلو 10000 تكرار لتحديد المخاطر بالدولار.',
     'AICapDocumentCustomization' => 'تخصيص المستندات',
     'AICapDocumentCustomizationDesc' => 'يقوم بتعبئة العناصر النائبة وتنظيف نص السياسة في قوالب المستندات الخاصة بك بحيث تبدو السياسة الجاهزة وكأنها سياستك الخاصة.',
-    'AICapDocumentControlMatching' => 'مطابقة المستند ↔ عنصر التحكم',
-    'AICapDocumentControlMatchingDesc' => 'يقوم النظام تلقائيًا بربط عناصر التحكم بوثائق السياسة مع درجة ثقة وأسباب يمكنك مراجعتها.',
+    'AICapDocumentControlMatching' => 'مطابقة المستند ↔ الضوابط',
+    'AICapDocumentControlMatchingDesc' => 'يقوم النظام تلقائيًا بربط الضوابط بوثائق السياسة مع درجة ثقة وأسباب يمكنك مراجعتها.',
     'AICapDocumentTemplates' => 'مكتبة قوالب المستندات',
     'AICapDocumentTemplatesDesc' => 'قم بتثبيت قوالب السياسات والإرشادات والإجراءات المنسقة من مكتبة SimpleRisk.',
-    'AICapControlReferenceEnhancement' => 'تحسين مرجع التحكم',
-    'AICapControlReferenceEnhancementDesc' => 'يقوم بإجراء بحث حرفي عن النصوص المرجعية عبر البحث على الإنترنت لإثراء مراجعك المرجعية.',
+    'AICapControlReferenceEnhancement' => 'تحسين مرجع الضوابط',
+    'AICapControlReferenceEnhancementDesc' => 'يبحث عن نصوص الضوابط حرفيًا عبر البحث على الإنترنت لإثراء مراجع الضوابط لديك.',
     'AICapAiChat' => 'مساعد الدردشة',
     'AICapAiChatDesc' => 'مساعد إدارة المخاطر والامتثال الذي يجيب على الأسئلة في سياقها في أي مكان في SimpleRisk.',
     'AICapSurfacedRecommendations' => 'الذكاء الاصطناعي',
@@ -3378,7 +3378,7 @@ $lang = array(
     'AIProviderConfigSubtitle' => 'قم بتوصيل SimpleRisk بمزود خدمة الذكاء الاصطناعي لتفعيل قدرات الذكاء الاصطناعي.',
     'AIHowToGetAPIKeyFor' => 'كيفية الحصول على مفتاح API لـ',
     'AIExtraNotActivated' => 'غير مفعل',
-    'AIExtraValueProp' => 'الذكاء الاصطناعي المحسن - تحديد كمية المخاطر وفقًا لمبادئ FAIR، والمساعدة في المستندات والتحكم، ومساعد الدردشة المدعوم بالذكاء الاصطناعي.',
+    'AIExtraValueProp' => 'الذكاء الاصطناعي المحسن - تحديد كمية المخاطر وفقًا لمبادئ FAIR، والمساعدة في المستندات والضوابط، ومساعد الدردشة المدعوم بالذكاء الاصطناعي.',
     'AICtxOrgName' => 'ما اسم مؤسستكم؟',
     'AICtxOrgSizeEmployees' => 'كم عدد الموظفين في مؤسستكم؟',
     'AICtxOrgSizeRevenue' => 'ما هو إجمالي الإيرادات السنوية لمنظمتكم؟',
@@ -3409,7 +3409,7 @@ $lang = array(
     'AICtxCardSubtitle' => '٢١ سؤالاً موزعة على أربعة مجالات. كلما زادت إجاباتك، كانت كل توصية أكثر دقة.',
     'AICtxAnswered' => 'تمت الإجابة على %1$d من أصل %2$d',
     'AICtxAllOptional' => 'اختياري',
-    'AIContextSaving' => 'جارٍ التوفير…',
+    'AIContextSaving' => 'جارٍ الحفظ…',
     'AIContextSaveFailed' => 'لم يتم حفظ التغييرات. يرجى المحاولة مرة أخرى.',
     'AISettingsSavedNotReachable' => 'تم حفظ إعدادات الذكاء الاصطناعي، ولكن تعذر الوصول إلى المزوّد. تأكد من تشغيله وأن عنوان URL صحيح.',
     'AISettingsSavedKeyRequired' => 'تم حفظ إعدادات الذكاء الاصطناعي، ولكن هذا المزود يتطلب مفتاح API قبل أن يتمكن من استخدام ميزاته.',
@@ -3459,7 +3459,7 @@ $lang = array(
     'LastResult' => 'النتيجة الأخيرة',
     'NextDue' => 'الموعد التالي',
     'DueSoon' => 'قريباً',
-    'Retired' => 'متقاعد',
+    'Retired' => 'خارج الخدمة',
     'MyTests' => 'اختباراتي',
     'Failing' => 'الفشل',
     'Untested' => 'غير مختبر',
@@ -3467,7 +3467,7 @@ $lang = array(
     'Tests' => 'الاختبارات',
     'NoTestsForThisControl' => 'لم تُجرَ أي اختبارات لهذا العنصر الضابط حتى الآن.',
     'NoControlsDefinedYet' => 'لم يتم تحديد أي ضوابط بعد',
-    'NoControlsDefinedYetBody' => 'حدد عناصر التحكم في الحوكمة قبل إضافة الاختبارات.',
+    'NoControlsDefinedYetBody' => 'حدد الضوابط في الحوكمة قبل إضافة الاختبارات.',
     'NoTestsMatchFilters' => 'لا توجد اختبارات مطابقة لمرشحاتك',
     'NoTestsMatchFiltersBody' => 'حاول تعديل بحثك أو فلاتر البحث.',
     'CouldNotLoadTests' => 'تعذر تحميل الاختبارات',
@@ -3475,7 +3475,7 @@ $lang = array(
     'ShowingXToYOfZ' => 'عرض {$start}–{$end} من {$total}',
     // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
     'Reference' => 'مرجع',
-    'NoFrameworksMapped' => 'لا توجد أطر عمل مرتبطة بهذا العنصر.',
+    'NoFrameworksMapped' => 'لا توجد أطر عمل مرتبطة بهذا الضابط.',
     // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
     'Retire' => 'إيقاف',
     'ReassignTester' => 'إعادة تعيين المختبر',
@@ -3485,14 +3485,14 @@ $lang = array(
     // Define Tests grid -- Coverage toolbar select (Issue 4)
     'Coverage' => 'التغطية',
     'CoverageWithTests' => 'الضوابط مع الاختبارات',
-    'CoverageAllControls' => 'جميع عناصر التحكم',
+    'CoverageAllControls' => 'جميع الضوابط',
     'CoverageGaps' => 'الفجوات',
     // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
     // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
     // chips above (identical text) rather than duplicated here.
     'DtTotalTests' => 'إجمالي الاختبارات',
     'DtCoverageGaps' => 'ثغرات التغطية',
-    'DtAcrossNControls' => 'عبر عناصر التحكم {$n}',
+    'DtAcrossNControls' => 'عبر {$n} من الضوابط',
     'DtControlsWithNoTest' => 'الضوابط بدون اختبار',
     'DtNeedInitiationNow' => 'أحتاج إلى بدء الآن',
     'DtWithinLeadInWindow' => 'خلال فترة التمهيد',
@@ -3509,7 +3509,7 @@ $lang = array(
     'RequiredEvidence' => 'الأدلة المطلوبة',
     'Approvers' => 'الموافقون',
     'AuditLog_TestAuditApproved' => 'تمت الموافقة على التدقيق "{$test_audit_name}"(ID: {$test_audit_id}) من قبل المستخدم "{$user_name}".',
-    'AuditLog_TestAuditRejected' => 'تم رفض التدقيق "{$test_audit_name}"(ID: {$test_audit_id})" بواسطة المستخدم "{$user_name}" مع التعليق "{$comment}".',
+    'AuditLog_TestAuditRejected' => 'تم رفض التدقيق "{$test_audit_name}" (ID: {$test_audit_id}) بواسطة المستخدم "{$user_name}" مع التعليق "{$comment}".',
     'AuditLog_TestAuditAwaitingApproval' => 'تم تقديم طلب التدقيق "{$test_audit_name}" (المعرف: {$test_audit_id}) للإغلاق من قِبل المستخدم "{$user_name}" وهو بانتظار الموافقة. التغييرات: {$changes}.',
     'AuditApproved' => 'تمت الموافقة على التدقيق بنجاح.',
     'AuditRejected' => 'تم رفض التدقيق بنجاح.',
@@ -3529,12 +3529,12 @@ $lang = array(
     'AreYouSureYouWantToApproveThisAudit' => 'هل أنت متأكد من رغبتك في الموافقة على هذه المراجعة؟',
     'AtLeastOneControlRequired' => 'يلزم وجود عنصر تحكم واحد على الأقل.',
     'DtNCommonAcrossNControls' => '{$common} عام · {$n} عناصر التحكم',
-    'DtUntestedControls' => 'أدوات تحكم غير مختبرة',
+    'DtUntestedControls' => 'ضوابط غير مختبرة',
     'DtControlsInScopeNoCoverage' => 'لا يوجد تغطية',
     'Passing' => 'ناجح',
     'DtLastResultPassed' => 'تم اجتياز آخر نتيجة',
     'AllFamilies' => 'جميع العائلات',
-    'SearchTestsPlaceholder' => 'اختبارات البحث، وضوابطها، وأطر عملها',
+    'SearchTestsPlaceholder' => 'البحث في الاختبارات والضوابط والأطر',
     'AnySchedule' => 'أي جدول زمني',
     'AnyTag' => 'أي علامة',
     'AuditAutoClosedTestRetired' => 'تم إغلاق الاختبار تلقائياً لعدم حسمه بسبب إيقاف الاختبار.',
@@ -3545,17 +3545,17 @@ $lang = array(
     'AddTheFirstTest' => 'أضف الاختبار الأول',
     'ApplyCommonTestHint' => 'قم بتطبيق اختبار واحد أو أكثر من الاختبارات الموجودة على عنصر التحكم هذا. يحتفظ كل اختبار بعناصر التحكم الحالية الخاصة به ويصبح اختبارًا مشتركًا يغطي هذا العنصر أيضًا.',
     'CommonTestApplied' => 'تم تطبيق الاختبار على هذا العنصر الضابط.',
-    'CouldNotApplyCommonTest' => 'تعذر تطبيق الاختبار على عنصر التحكم هذا.',
+    'CouldNotApplyCommonTest' => 'تعذر تطبيق الاختبار على هذا الضابط.',
     'SelectOneOrMoreTests' => 'اختر اختبارًا واحدًا أو أكثر',
-    'CommonTestsApplied' => '{n} تم تطبيق الاختبارات على عنصر التحكم هذا.',
+    'CommonTestsApplied' => 'تم تطبيق {n} اختبارات على هذا الضابط.',
     'ApplyCommonTests' => 'تطبيق الاختبارات الشائعة…',
-    'History' => 'تاريخ',
+    'History' => 'السجل',
     'Result' => 'نتيجة',
     'Approval' => 'موافقة',
     'ThisTestHasNotBeenRunYet' => 'لم يتم إجراء هذا الاختبار بعد.',
     'CouldNotLoadTestHistory' => 'تعذر تحميل سجل هذا الاختبار.',
     'Identity' => 'هوية',
-    'IdentitySectionHint' => 'الاسم، والمختبِر، وعناصر التحكم التي يتحقق منها',
+    'IdentitySectionHint' => 'الاسم، والمختبِر، والضوابط التي يتحقق منها',
     'WhenTheAuditInitiates' => 'عندما تبدأ عملية التدقيق',
     'ProcedureAndEvidence' => 'الإجراءات والأدلة',
     'CommonTestControlsHint' => 'يمكن لاختبار واحد التحقق من صحة العديد من عناصر التحكم - وهو اختبار شائع. يؤدي فتح هذا الاختبار من خلال "+ إضافة اختبار" الخاص بعنصر التحكم إلى تحديده مسبقًا هنا.',
@@ -3568,8 +3568,8 @@ $lang = array(
     'Archived' => 'مؤرشف',
     'ShowAllTests' => 'جميع الاختبارات',
     'ShowActiveTests' => 'الاختبارات النشطة',
-    'ShowRetiredTests' => 'الاختبارات المتقاعدة',
-    'UntestedControls' => 'عناصر تحكم غير مختبرة',
+    'ShowRetiredTests' => 'الاختبارات المتوقفة عن الاستخدام',
+    'UntestedControls' => 'ضوابط غير مختبرة',
     'OverdueByXDays' => 'متأخر · {n} أيام',
     'OverdueByOneDay' => 'متأخر · يوم واحد',
     'DueInXDays' => 'يُستحق خلال {n} يومًا',
@@ -3589,33 +3589,33 @@ $lang = array(
     'RemoveTestFromControlStays' => 'يبقى الاختبار على عناصر التحكم الأخرى {n} . لا يتم حذف أي شيء.',
     'RemoveTestFromControlStaysOne' => 'يبقى الاختبار على عنصر التحكم الآخر الخاص به. لا يتم حذف أي شيء.',
     'CannotRemoveTestsOnlyControl' => 'يجب أن ينتمي الاختبار إلى عنصر تحكم واحد على الأقل. بدلاً من ذلك، قم بإلغاء الاختبار أو حذفه.',
-    'TestRemovedFromControl' => 'تم استبعاد الاختبار من المجموعة الضابطة.',
-    'CouldNotRemoveTestFromControl' => 'لم يكن من الممكن إزالة الاختبار من المجموعة الضابطة.',
+    'TestRemovedFromControl' => 'تمت إزالة الاختبار من الضابط.',
+    'CouldNotRemoveTestFromControl' => 'تعذرت إزالة الاختبار من الضابط.',
     'TestRemovedFromControlAuditLogMessage' => 'تمت إزالة الاختبار "{$test_name}"(ID: {$test_id}) من عنصر التحكم (ID: {$control_id}) بواسطة المستخدم "{$user}".',
-    'DeleteTestUsedByNControls' => 'يتم استخدامه بواسطة عناصر التحكم {n} وسيتم إزالته من جميعها.',
+    'DeleteTestUsedByNControls' => 'يتم استخدامه بواسطة {n} من الضوابط وسيتم إزالته من جميعها.',
     'BulkDeleteSharedTestsNote' => 'يتم استخدام {n} من هذه العناصر بواسطة عناصر تحكم أخرى وسيتم إزالتها من تلك العناصر أيضًا.',
     'BulkRetireSharedTestsNote' => 'يتم استخدام {n} من هذه العناصر بواسطة عناصر تحكم أخرى وسيتم إيقافها هناك أيضًا.',
     'BulkDeleteOneSharedTestNote' => 'يتم استخدام أحد هذه العناصر بواسطة عناصر تحكم أخرى وسيتم إزالته منها أيضًا.',
-    'BulkRetireOneSharedTestNote' => 'يتم استخدام أحد هذه العناصر بواسطة عناصر تحكم أخرى وسيتم إيقاف تشغيله هناك أيضًا.',
+    'BulkRetireOneSharedTestNote' => 'يتم استخدام أحد هذه العناصر بواسطة ضوابط أخرى وسيتم إيقافه هناك أيضًا.',
     'CouldNotLoadTest' => 'تعذر تحميل هذا الاختبار.',
     'Expand' => 'توسيع',
-    'SearchMappings' => 'أطر البحث والمراجع',
+    'SearchMappings' => 'البحث في الأطر والمراجع',
     'NoMatchingMappings' => 'لا توجد نتائج مطابقة لهذا البحث.',
     'Insights' => 'رؤى',
     'ShowInsights' => 'عرض مربعات المعلومات',
     'HideInsights' => 'قم بطي مربعات المعلومات إلى سطر ملخص',
-    'ChooseControls' => 'اختر عناصر التحكم',
+    'ChooseControls' => 'اختر الضوابط',
     'UseTheseControls' => 'استخدم عناصر التحكم هذه',
     'SearchControlsPlaceholder' => 'ابحث بالرقم أو الاسم',
     'PickerKeyboardHint' => 'لأعلى/لأسفل للتحريك، اضغط على مفتاح الإدخال للاختيار، اضغط على مفتاح الهروب للإلغاء',
     'NoControlsMatchFilters' => 'لا توجد نتائج مطابقة هنا. قم بتوسيع الخطوة إلى اليسار، أو امسح البحث.',
     'NoControlsSelectedYet' => 'لم يتم اختيار أي شيء بعد.',
-    'AllControls' => 'جميع عناصر التحكم',
+    'AllControls' => 'جميع الضوابط',
     'AddOrRemoveControls' => 'إضافة أو إزالة عناصر التحكم…',
     'LastTested' => 'آخر اختبار',
-    'LastTestDateAnchorHint' => 'جدولة فترات التثبيت (هذا التاريخ بالإضافة إلى التكرار). بمجرد تسجيل نتائج الاختبار، يعرض الجدول تاريخ أحدث نتيجة بدلاً من ذلك.',
+    'LastTestDateAnchorHint' => 'يحدد نقطة ارتكاز جدولة الفترات (هذا التاريخ بالإضافة إلى التكرار). بمجرد تسجيل نتائج الاختبار، يعرض الجدول تاريخ أحدث نتيجة بدلاً من ذلك.',
     'Filters' => 'الفلاتر',
-    'ShowFilters' => 'يعرض الفلاتر',
+    'ShowFilters' => 'إظهار الفلاتر',
     'HideFilters' => 'إخفاء الفلاتر',
 
     // App shell — collapsing sidebar / new base design (SR app-shell redesign)
@@ -3650,21 +3650,21 @@ $lang = array(
     'AICtxAuthoritative' => 'مرجع موثوق',
     'AICtxAppetiteNotSet' => 'غير محدد',
     'AICtxAppetiteManageLink' => 'إدارة تكوين المخاطر',
-    'AICapControlTestGeneration' => 'توليد اختبار التحكم',
+    'AICapControlTestGeneration' => 'إنشاء اختبار الضوابط',
     'AICapControlTestGenerationDesc' => 'يقوم بإعداد مسودات لاختبارات التحكم للمراجعة، باستخدام مخطط إطار التحكم والاختبارات الحالية ونتائج التقييم الذاتي - لا يتم إنشاء أي شيء حتى توافق عليه.',
     'AICapSurfacedControlTestGeneration' => 'الامتثال - تحديد الاختبارات',
     'AIControlTestGenUnavailable' => 'الخدمة غير متوفرة: يجب على المسؤول تفعيل هذه الوظيفة في إعدادات الذكاء الاصطناعي.',
     'AIControlTestGenInvalidId' => 'طلب غير صالح: يلزم وجود معرّف تحكم إيجابي.',
-    'AIControlTestGenNotFound' => 'غير موجود: تعذر العثور على عنصر التحكم المحدد.',
+    'AIControlTestGenNotFound' => 'غير موجود: تعذر العثور على الضابط المحدد.',
     'AIControlTestGenConflict' => 'تعارض: تم بالفعل وضع عملية التوليد في قائمة الانتظار لهذا التحكم.',
-    'AIControlTestGenQueued' => 'تم القبول: تم وضع عملية إنشاء اختبار التحكم في قائمة الانتظار.',
+    'AIControlTestGenQueued' => 'تم القبول: تم وضع عملية إنشاء اختبار الضابط في قائمة الانتظار.',
     'AIControlTestGenFailed' => 'خطأ في الخادم الداخلي: فشل في وضع عملية إنشاء اختبار التحكم في قائمة الانتظار.',
     'AIControlTestGenCheckFailed' => 'خطأ: تعذر التحقق من عنصر التحكم قبل وضعه في قائمة الانتظار.',
     'GenerateTestsWithAI' => 'إنشاء اختبارات باستخدام الذكاء الاصطناعي',
     'ShowAiSuggestedTests' => 'اقترح الذكاء الاصطناعي اختبارات',
     'AiSuggested' => 'اقترح الذكاء الاصطناعي',
     'ReviewAndEdit' => 'مراجعة وتحرير',
-    'CreateSelected' => 'إنشاء',
+    'CreateSelected' => 'إنشاء المحدد',
     'TestCreatedFromSuggestion' => 'تم إنشاء الاختبار بناءً على الاقتراح.',
     'SuggestionDismissed' => 'تم رفض الاقتراح.',
     'TestGenerationQueued' => 'تم وضع اختبار التوليد في قائمة الانتظار.',
@@ -3680,9 +3680,9 @@ $lang = array(
     'AICtxAppetiteAggressive' => 'عدواني',
     'TestGenerationComplete' => 'أصبحت اختبارات التحكم التي صاغها الذكاء الاصطناعي جاهزة للمراجعة.',
     'TestGenerationStillRunning' => 'لا يزال إنشاء الاختبارات جارياً؛ ستظهر المسودات قريباً.',
-    'TestGenerationNoNew' => 'انتهى الجيل - لا توجد اختبارات جديدة مقترحة لهذا التحكم.',
-    'SearchEntities' => 'كيانات البحث',
-    'SearchEntitiesPlaceholder' => 'مخاطر البحث، والضوابط، والسياسات، والاستثناءات…',
+    'TestGenerationNoNew' => 'اكتمل التوليد — لا توجد اختبارات جديدة مقترحة لهذا الضابط.',
+    'SearchEntities' => 'ابحث عن الكيانات',
+    'SearchEntitiesPlaceholder' => 'ابحث في المخاطر والضوابط والسياسات والاستثناءات…',
     'ShowTypes' => 'عرض الأنواع',
     'Depth' => 'عمق',
     'Inspector' => 'مفتش',
@@ -3715,7 +3715,7 @@ $lang = array(
     'Grouping' => 'التجميع',
     'Hidden' => 'مخفي',
     'FirstFound' => 'تم العثور عليه لأول مرة',
-    'LastFound' => 'آخر مكان تم العثور عليه',
+    'LastFound' => 'آخر اكتشاف',
     'Patchable' => 'قابل للتصحيح',
     'Solution' => 'حل',
     'Breadcrumb' => 'فتات الخبز',
@@ -3734,7 +3734,7 @@ $lang = array(
     'Loading' => 'جارٍ التحميل…',
     'CouldNotLoadEntityCounts' => 'تعذر تحميل عدد الكيانات.',
     'CouldNotLoadEntities' => 'تعذر تحميل الكيانات.',
-    'ClearGraph' => 'رسم بياني واضح',
+    'ClearGraph' => 'مسح الرسم البياني',
     // Connectivity Explorer node-type chip label for the 'audit' type. Not
     // reused from 'TeamType_audit' (same English text, "Audit") -- that key
     // is scoped to the Team Separation team-type picker, a different feature
@@ -3867,14 +3867,14 @@ $lang = array(
     // reader to guess unfavourably.
     'SoaLegendTitle' => 'كيفية قراءة هذا البيان',
     'SoaLegendYes' => 'اجتازت جميع الاختبارات المحددة لهذا العنصر التحكمي عند تشغيله آخر مرة.',
-    'SoaLegendPartial' => 'تختلف نتائج اختبارات المجموعة الضابطة: فقد نجح اختبار واحد على الأقل، وفشل اختبار واحد على الأقل أو لم يصدر أي حكم.',
+    'SoaLegendPartial' => 'تختلف نتائج اختبارات الضابط: فقد نجح اختبار واحد على الأقل، وفشل اختبار واحد على الأقل أو لم يصدر أي حكم.',
     'SoaLegendNo' => 'لم ينجح أي اختبار لهذا العنصر عند تشغيله آخر مرة، وفشل واحد على الأقل.',
     // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
     // and the labels alone do not quite carry that -- so the legend spells it
     // out. This is the distinction the whole six-state set exists for.
     'SoaLegendNoTestDefined' => 'لم يُحدد اختبارٌ لهذا الإجراء الضابط، لذا لم يتم التحقق من عمله مطلقًا. هذا لا يعني أن الإجراء الضابط مفقود أو أنه معطل، بل يعني فقط أن هذا البيان لا يُثبت ذلك. ثغرةٌ في الحوكمة: لم يُحدد أحدٌ كيفية التحقق من هذا الإجراء الضابط.',
     'SoaLegendNeverRun' => 'توجد اختبارات لهذا العنصر الضابط، لكن لم يُجرَ أي منها، لذا لم يُوضَّح تشغيله هنا. هذا لا يعني أن العنصر الضابط مفقود أو أنه معطل، بل هو مجرد ثغرة تشغيلية: فقد تقرر إجراء الفحوصات ولم تُنفَّذ.',
-    'SoaLegendNotApplicable' => 'تم استبعاد عنصر التحكم من نطاق هذا الإطار، لذلك ليس له حالة تنفيذ.',
+    'SoaLegendNotApplicable' => 'تم استبعاد الضابط من نطاق هذا الإطار، لذلك ليس له حالة تنفيذ.',
     // The one most in need of explaining: with nothing to define it, this reads
     // as an admission about the control rather than as what it is.
     'SoaLegendUnknown' => 'لم يتمكن برنامج SimpleRisk من تصنيف الحالة المسجلة، لذا لم يتم توضيح كيفية التنفيذ هنا. هذا عيب في البرنامج ولا يدل على أي شيء بخصوص آلية التحكم - لا أنها تعمل ولا أنها لا تعمل.',
@@ -3984,7 +3984,7 @@ $lang = array(
     'UnlockNeedsAdministrator' => 'يمكن للمسؤول إعداد ذلك.',
     // API date parsing. {$field} is the request field name (next_date, last_date,
     // test_date); {$format} is this instance's configured display date format.
-    'InvalidSubmittedDate' => 'القيمة {$field} ليست تاريخاً صالحاً. يرجى إرسالها بصيغة YYYY-MM-DD أو بصيغة التاريخ المستخدمة في هذه الحالة ({$format}).',
+    'InvalidSubmittedDate' => 'القيمة {$field} ليست تاريخاً صالحاً. يرجى إرسالها بصيغة YYYY-MM-DD أو بصيغة التاريخ المستخدمة في هذا المثيل ({$format}).',
     // Companion to InvalidSubmittedDate, for a value that matches the expected
     // shape but names a day that does not exist (February 31st, month 13).
     // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
@@ -4025,19 +4025,19 @@ $lang = array(
     // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
     // in the Implementation Status column. This one is the DECISION to exclude;
     // that one is the consequence for the status.
-    'SoaLegendApplicabilityNotApplicable' => 'تم استبعاد عنصر التحكم من نطاق هذا الإطار. ويسجل عمود التبرير السبب والجهة التي اتخذت القرار.',
+    'SoaLegendApplicabilityNotApplicable' => 'تم استبعاد الضابط من نطاق هذا الإطار. ويسجل عمود التبرير السبب والجهة التي اتخذت القرار.',
     'SoaLegendInherited' => 'يقع التحكم ضمن نطاق التطبيق، ولكنه يُدار من قِبل طرف ثالث - مزود خدمة سحابية، أو مؤسسة أم، أو وظيفة خارجية - وليس من قِبل هذه المؤسسة. وقد ذُكر اسم المزود بجانب التبرير.',
     // The Evidence column's four bullet glyphs. Load-bearing since the visible
     // result word was dropped from pass and fail bullets, and until now defined
     // nowhere at all.
     'SoaLegendEvidencePass' => 'أظهر اختبار هذا العنصر التحكمي نجاحاً في آخر مرة تم تشغيله فيها. التاريخ المجاور له هو تاريخ التشغيل.',
-    'SoaLegendEvidenceFail' => 'أظهر اختبار هذا النظام فشلاً في آخر مرة تم تشغيله فيها. يحتوي الملحق (ر) على خطة العلاج، إن وجدت.',
+    'SoaLegendEvidenceFail' => 'سجّل اختبار هذا الضابط فشلاً في آخر مرة تم تشغيله فيها. يحتوي الملحق R على خطة المعالجة، إن وجدت.',
     'SoaLegendEvidenceInconclusive' => 'أُجري اختبار لهذا العنصر الرقابي ولم يُسفر عن نتيجة. تُستخدم العلامة نفسها لنتيجة لا يعترف بها هذا المستند، وفي هذه الحالة تُطبع النتيجة نفسها بجانبها.',
     // The TERM beside the § glyph. Not a document type -- the four types
     // (Policy, Standard, Procedure, Guideline) are printed per item; this names
     // the CATEGORY of evidence a document is.
     'SoaEvidenceDesignDocument' => 'وثيقة التصميم',
-    'SoaLegendEvidenceDocument' => 'تم تأكيد وثيقة حوكمة كدليل على هذا التحكم - تصميمه وليس تشغيله. الوثيقة لا تحمل حكماً، ولهذا السبب لا يتم وضع علامة صح عليها.',
+    'SoaLegendEvidenceDocument' => 'وثيقة حوكمة تم تأكيدها كدليل على هذا الضابط - تصميمه وليس تشغيله. الوثيقة لا تحمل حكماً، ولهذا السبب لا يتم وضع علامة صح عليها.',
     // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
     // headings that already exist ('How to read this statement', 'Statement of
     // Applicability', and the two appendix headings); the cover had no name of its
@@ -4046,7 +4046,7 @@ $lang = array(
     // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
     // soa_export_sheet_name() truncates rather than failing the export, so a long
     // translation loses its tail on the tab.
-    'SoaSheetCover' => 'غطاء',
+    'SoaSheetCover' => 'الغلاف',
 
     'SearchFrameworks' => 'البحث في أطر العمل',
     'SearchControls' => 'البحث في الضوابط',
@@ -4054,7 +4054,7 @@ $lang = array(
     'Applicability' => 'قابلية التطبيق',
     'AnyFamily' => 'أي عائلة',
     'AnyOwner' => 'أي مالك',
-    'AnyClass' => 'أي فصل',
+    'AnyClass' => 'أي فئة',
     'AnyPhase' => 'أي مرحلة',
     'AnyPriority' => 'أي أولوية',
     'AnyType' => 'أي نوع',
@@ -4063,23 +4063,23 @@ $lang = array(
     'Classification' => 'تصنيف',
     'Placement' => 'موضع الضابط',
     'OwnershipAndMaturity' => 'الملكية والنضج',
-    'MappingsAndGuidance' => 'الخرائط والإرشادات',
+    'MappingsAndGuidance' => 'عمليات الربط والإرشادات',
     'DeleteFrameworkTitle' => 'حذف إطار العمل \'{$name}\'؟',
-    'DeleteControlTitle' => 'حذف عنصر التحكم \'{$name}\'؟',
-    'DeleteControlsTitle' => 'حذف عناصر التحكم {$n}؟',
+    'DeleteControlTitle' => 'حذف الضابط \'{$name}\'؟',
+    'DeleteControlsTitle' => 'هل تريد حذف {$n} من الضوابط؟',
     'DeleteCannotBeUndone' => 'لا يمكن التراجع عن هذا.',
     'DeleteFrameworkConsequence' => 'يؤدي هذا إلى إزالة الإطار وجميع عمليات تعيين التحكم الخاصة به.',
     'DeleteControlConsequence' => 'يؤدي هذا إلى إزالة التحكم من كل إطار عمل يتم ربطه به.',
-    'DeleteControlsConsequence' => 'يؤدي هذا إلى إزالة كل عنصر تحكم محدد من كل إطار عمل مرتبط به.',
+    'DeleteControlsConsequence' => 'يؤدي هذا إلى إزالة كل ضابط محدد من كل إطار عمل مرتبط به.',
     // Task 9: empty states (design-system.md §10) -- the four intents on
     // Define Control Frameworks. Reuses existing keys where the copy already
     // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
     // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
     // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
     // with no existing match are added below.
-    'NoControlsMatch' => 'لا توجد عناصر تحكم مطابقة لمرشحاتك',
-    'CouldNotLoadControls' => 'تعذر تحميل عناصر التحكم',
-    'ControlsYouAddWillAppearHere' => 'ستظهر عناصر التحكم التي تضيفها هنا.',
+    'NoControlsMatch' => 'لا توجد ضوابط مطابقة لمرشحاتك',
+    'CouldNotLoadControls' => 'تعذر تحميل الضوابط',
+    'ControlsYouAddWillAppearHere' => 'ستظهر الضوابط التي تضيفها هنا.',
     'NoFrameworksYet' => 'لا توجد أطر عمل حتى الآن',
     'FrameworksYouAddWillAppearHere' => 'ستظهر هنا الأطر التي تضيفها أو تستوردها.',
     'CouldNotLoadFrameworks' => 'تعذر تحميل الأطر',
@@ -4181,7 +4181,7 @@ $lang = array(
     // field and keeps it from being reused for an unrelated one.
     'StatementOfApplicability' => 'بيان قابلية التطبيق',
     'IsmsScopeStatement' => 'بيان النطاق',
-    'IsmsScopeStatementHint' => 'نطاق اعتماد هذا الإطار. يظهر على صفحة غلاف وثيقة الخدمات الموجهة.',
+    'IsmsScopeStatementHint' => 'نطاق اعتماد هذا الإطار. يظهر على صفحة غلاف بيان قابلية التطبيق (SoA).',
     'DefaultInclusionJustification' => 'مبررات الإدراج الافتراضية',
     'DefaultInclusionJustificationHint' => 'يُستخدم هذا الإجراء للضوابط المناسبة التي لا ترتبط بها مخاطر. حدد العامل الرئيسي، وليس الإطار.',
     // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
@@ -4211,7 +4211,7 @@ $lang = array(
     // The action's own label and the modal's one section. 'Applicability',
     // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
     // and are reused; only the strings with no existing home are added here.
-    'SetApplicability' => 'نطاق التطبيق',
+    'SetApplicability' => 'تعيين قابلية التطبيق',
     'ApplicabilityDecision' => 'قرار',
     // The amber scope note, in two sentences the page assembles separately
     // because they answer two different questions: WHICH framework the decision
@@ -4222,7 +4222,7 @@ $lang = array(
     // let the user write 1,535 decisions believing they had written 25.
     'ApplicabilityScopeNote' => 'ينطبق هذا القرار فقط ضمن "{$framework}". ويمكن أن يظل التحكم نفسه ساريًا في إطار عمل آخر.',
     'ApplicabilityAppliesToSelected' => 'سيتم تسجيل ذلك مقابل عنصر التحكم {$n} المحدد في هذه الصفحة.',
-    'ApplicabilityAppliesToAllFiltered' => 'سيتم تسجيل ذلك مقابل جميع عناصر التحكم {$n} التي تطابق عوامل التصفية الحالية، بما في ذلك تلك الموجودة في الصفحات الأخرى.',
+    'ApplicabilityAppliesToAllFiltered' => 'سيتم تسجيل ذلك مقابل جميع الضوابط {$n} التي تطابق عوامل التصفية الحالية، بما في ذلك تلك الموجودة في الصفحات الأخرى.',
     // Per-state hints under the segmented control. The "applicable" one is the
     // load-bearing sentence of the whole modal, and the SoA audit-readiness work
     // rewrote it: an applicable control MAY now carry its own reasons and
@@ -4233,7 +4233,7 @@ $lang = array(
     // is now false in both halves.
     'ApplicabilityApplicableHint' => 'ضمن نطاق هذا الإطار. يُعدّ كل من السبب والتبرير اختياريين؛ وتركهما فارغين يؤدي إلى استخدام تبرير الإدراج الافتراضي للإطار.',
     'ApplicabilityNotApplicableHint' => 'استبعاد عنصر تحكم من نطاق هذا الإطار. يلزم تقديم سبب وتبرير كتابي.',
-    'ApplicabilityInheritedHint' => 'يقوم شخص آخر بهذا التحكم نيابةً عنك. اذكر اسمه، واشرح ما يفعله.',
+    'ApplicabilityInheritedHint' => 'يقوم شخص آخر بتنفيذ هذا الضابط نيابةً عنك. اذكر اسمه، واشرح ما يفعله.',
     'ApplicabilityNarrativeHint' => 'يظهر في بيان نطاق التطبيق. اكتب ما يحتاجه المدقق لقبول القرار.',
     'ApplicabilityProviderHint' => 'المنظمة التي تقوم بالرقابة: مزود خدمة سحابية، خدمة مُدارة، شركة أم.',
     'ChooseAReason' => 'اختر سببًا',
@@ -4259,10 +4259,10 @@ $lang = array(
     // text is ever interpolated, which matters because toastr renders HTML.
     'DeleteControlsPreviewChecking' => 'جارٍ التحقق مما سيتم حذفه...',
     'DeleteControlsPreviewSplit' => 'سيتم حذف عنصر التحكم {$n} . لا يمكن التراجع عن هذا الإجراء. سيتم الاحتفاظ بنتائج اختبار {$m} منها لأغراض التدقيق.',
-    'DeleteControlsPreviewKeptOnly' => 'سيتم حذف جميع عناصر التحكم {$n} . لا يمكن التراجع عن هذا الإجراء. يتم الاحتفاظ بنتائج الاختبار لأغراض التدقيق.',
+    'DeleteControlsPreviewKeptOnly' => 'سيتم حذف جميع الضوابط ({$n}). لا يمكن التراجع عن هذا الإجراء. يتم الاحتفاظ بنتائج الاختبار لأغراض التدقيق.',
     'DeleteControlsPreviewRemovedOnly' => 'سيتم حذف عنصر التحكم {$n} . لا يمكن التراجع عن هذا الإجراء.',
     'DeleteControlsPreviewNone' => 'لا يوجد شيء لحذفه: لم تعد عناصر التحكم المحددة موجودة.',
-    'ControlsDeletedResult' => 'تم حذف عنصر التحكم {$n}.',
+    'ControlsDeletedResult' => 'تم حذف {$n} من الضوابط.',
 
     // The Add/Edit framework modal's Status field. The label reuses the existing
     // 'Status' key -- the same word the rail's Active/Inactive/All filter already
@@ -4271,7 +4271,7 @@ $lang = array(
     // to retire a framework (unlike Delete, which cannot be undone), and that the
     // change cascades through the hierarchy, which is what update_framework_status()
     // has always done and is genuinely surprising when a parent is deactivated.
-    'FrameworkStatusHint' => 'تحتفظ الأطر غير النشطة بجميع عناصر التحكم والتعيينات الخاصة بها، ولكنها تُخفى من قائمة الأطر الافتراضية وتُستبعد من لوحة تحكم الحوكمة. يؤدي تعطيل إطار عمل إلى تعطيل جميع الأطر التابعة له؛ بينما يؤدي تنشيط إطار عمل إلى تنشيط الأطر الرئيسية التابعة له.',
+    'FrameworkStatusHint' => 'تحتفظ الأطر غير النشطة بجميع الضوابط والتعيينات الخاصة بها، ولكنها تُخفى من قائمة الأطر الافتراضية وتُستبعد من لوحة تحكم الحوكمة. يؤدي تعطيل إطار عمل إلى تعطيل جميع الأطر التابعة له؛ بينما يؤدي تنشيط إطار عمل إلى تنشيط الأطر الرئيسية التابعة له.',
 
     // Task 60: the same #applicability--set modal, opened from ONE control's row
     // action instead of the selection bulk bar. The button's own label reuses
@@ -4307,7 +4307,7 @@ $lang = array(
     // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
     // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
     // existing home are added here.
-    'StatementOfApplicabilityDesc' => 'بالنسبة لإطار عمل واحد: كل عنصر تحكم، سواء كان قابلاً للتطبيق، ولماذا تم تضمينه أو استبعاده، وما إذا كان قد تم تنفيذه.',
+    'StatementOfApplicabilityDesc' => 'بالنسبة لإطار عمل واحد: كل ضابط، سواء كان قابلاً للتطبيق، ولماذا تم تضمينه أو استبعاده، وما إذا كان قد تم تنفيذه.',
     // The header button on Define Control Frameworks. The verb is "generate"
     // rather than "view" because the document is assembled at the moment it is
     // asked for -- there is no stored SoA that could be out of date.
@@ -4351,7 +4351,7 @@ $lang = array(
     // identical rows of boilerplate is entitled to ask whose risk assessment it
     // refers to.
     'SoaMissingFieldsTitle' => 'هذا البيان يفتقر إلى تفاصيل الغلاف',
-    'SoaMissingScopeStatement' => 'لم يتم تسجيل أي بيان نطاق لهذا الإطار. يجب أن يحدد بيان نطاق العمل النطاق الذي تم إعداده من أجله.',
+    'SoaMissingScopeStatement' => 'لم يتم تسجيل أي بيان نطاق لهذا الإطار. يجب أن يحدد بيان قابلية التطبيق (SoA) النطاق الذي تم إعداده من أجله.',
     'SoaMissingInclusionJustification' => 'لم يتم تسجيل أي مبرر افتراضي للإدراج. ستعتمد الضوابط المطبقة التي لا ترتبط بمخاطر على بيان عام بدلاً من بيانك الخاص.',
     'SoaEditFrameworkToAdd' => 'أضفها إلى الإطار',
 
@@ -4384,7 +4384,7 @@ $lang = array(
     // A framework with no controls mapped into it. Not an error -- it is a real
     // and recoverable state, and saying so beats an empty table.
     'SoaNoControls' => 'لا يحتوي هذا الإطار على أي ضوابط',
-    'SoaNoControlsHint' => 'قم بربط عناصر التحكم بالإطار، وسيقوم بيان قابلية تطبيقه بإدراجها.',
+    'SoaNoControlsHint' => 'قم بربط الضوابط بالإطار، وسيقوم بيان قابلية تطبيقه بإدراجها.',
 
     // The second half of the statement-of-applicability launcher's affordance
     // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
@@ -4403,7 +4403,7 @@ $lang = array(
     // Placeholder/help text under that field, and the reason it is worth
     // filling in: without it the Statement of Applicability has nothing to
     // print but the source catalogue's name for its own control.
-    'ReferenceSubjectHint' => "العنوان الخاص بهذا العنصر في إطار العمل.",
+    'ReferenceSubjectHint' => "عنوان إطار العمل نفسه لهذا الضابط.",
 
     // Task 63: the row-scoped population sentence in the Set applicability
     // modal, in the one situation where the plain
@@ -4428,7 +4428,7 @@ $lang = array(
     // "SoA" is safe to abbreviate HERE and only here: the button appears solely
     // when a single framework is scoped, beside an Applicability column, and it
     // expands on hover.
-    'GenerateSoa' => 'إنشاء بنية الخدمات الموجهة (SoA)',
+    'GenerateSoa' => 'إنشاء بيان قابلية التطبيق (SoA)',
 
     // ===== Clone framework (Task 64) =======================================
     // The framework half of Clone control's framing (CloneOfControlTitle /
@@ -4470,14 +4470,14 @@ $lang = array(
     // someone who cannot take it.
     'HowDoYouWantToAddAFramework' => 'كيف تريد إضافة إطار عمل؟',
     'CreateFrameworkManually' => 'قم بإنشاء واحد يدويًا',
-    'CreateFrameworkManuallyHint' => 'قم بتسمية الإطار بنفسك، ثم أضف أو قم بتعيين عناصر التحكم الخاصة به.',
+    'CreateFrameworkManuallyHint' => 'قم بتسمية الإطار بنفسك، ثم أضف أو قم بتعيين الضوابط الخاصة به.',
     // Named for the framework rather than for its vendor. The hint was reworded
     // at the same time: it used to end "...load its Secure Controls Framework
     // controls", which read as a stutter once the label carried those words.
     'GetFrameworkFromScf' => 'احصل على واحد من إطار عمل الضوابط الآمنة',
     'GetFrameworkFromScfHint' => 'اختر إطار عمل منشورًا وقم بتحميل عناصر التحكم الخاصة به في خطوة واحدة.',
     'ImportFrameworkFromCatalog' => 'استورد واحدة',
-    'ImportFrameworkFromCatalogHint' => 'قم بتثبيت إطار العمل وعناصر التحكم الخاصة به من كتالوج محتوى SimpleRisk.',
+    'ImportFrameworkFromCatalogHint' => 'قم بتثبيت إطار العمل وضوابطه من كتالوج محتوى SimpleRisk.',
 
     // The framework acquisition chooser's third route, which now offers the
     // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
@@ -4495,7 +4495,7 @@ $lang = array(
     // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
     // is left in place and unreferenced by that page: other surfaces still use
     // it, and every locale carries it.
-    'UnassignedControls' => 'عناصر تحكم غير مُخصصة',
+    'UnassignedControls' => 'ضوابط غير مُخصصة',
     // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
     // returns the exception's message as the API status message and the page
     // renders it in a toast, so a hardcoded English literal here would be
@@ -4508,7 +4508,7 @@ $lang = array(
     'ApplicabilityErrUnknownState' => 'حالة التطبيق غير معروفة. المتوقع أحد الخيارات التالية: {$states}.',
     'ApplicabilityErrNarrativeRequired' => 'يلزم وجود سرد لـ \'{$state}\'.',
     'ApplicabilityErrNarrativeTooLong' => 'يبلغ طول السرد أكثر من {$bytes} بايت.',
-    'ApplicabilityErrReasonRequired' => 'يلزم ذكر سبب الاستبعاد لتحديد عنصر تحكم غير قابل للتطبيق.',
+    'ApplicabilityErrReasonRequired' => 'يلزم ذكر سبب الاستبعاد لتحديد ضابط على أنه غير قابل للتطبيق.',
     'ApplicabilityErrProviderRequired' => 'يُطلب من المزوّد وضع علامة على عنصر تحكم موروث.',
     'ApplicabilityErrProviderTooLong' => 'اسم الموفر أطول من {$bytes} بايت.',
     'ApplicabilityErrReasonsNotFound' => 'لا توجد أسباب التطبيق هذه: {$ids}.',
@@ -4543,7 +4543,7 @@ $lang = array(
     'UpgradeStepNotNeeded' => 'غير مطلوب',
     // Recovering an Upgrade Extra whose files are damaged
     'UpgradeExtraDamagedReinstalling' => 'ملف الترقية الإضافي المثبت تالف. جارٍ تنزيل نسخة جديدة.',
-    'UpgradeExtraDamagedRepaired' => 'تم استبدال النسخة الإضافية للترقية بنسخة عاملة.',
+    'UpgradeExtraDamagedRepaired' => 'تم استبدال Upgrade Extra بنسخة عاملة.',
     'UpgradeExtraDamagedFailed' => 'برنامج الترقية الإضافي تالف ولا يمكن استبداله تلقائيًا. أعد تثبيته من صفحة الإضافات، أو استعد النسخة الاحتياطية من simplerisk/extras/upgrade/، ثم حاول مرة أخرى.',
     'UpgradeAlreadyCurrent' => 'هذه النسخة موجودة بالفعل على الإصدار {version}، وهو أحدث إصدار. لم تكن هناك حاجة إلى أي ترقية.',
     'UpgradeShowWhatItDid' => 'أظهر ما فعله',
@@ -4851,7 +4851,7 @@ $lang = array(
     'ReassignRiskOwner' => 'إعادة تعيين مالك المخاطر',
     'ReassignMitigationOwner' => 'إعادة تعيين مالك التخفيف',
     'NoActionItemsTitle' => 'لا توجد مخاطر تتطابق مع فلترك',
-    'NoActionItemsBody' => 'لا يوجد ما يستدعي تخفيفًا أو مراجعةً إلا إذا كنتَ مخولًا شخصيًا باتخاذ إجراء بشأنه. جرّب إلغاء تحديد خيار "عرض بنود العمل الخاصة بي" للاطلاع على قائمة مهام الفريق كاملةً.',
+    'NoActionItemsBody' => 'لا يوجد ما يستدعي تخفيفًا أو مراجعةً مما لديك إذن شخصي باتخاذ إجراء بشأنه. جرّب إلغاء تحديد خيار "عرض بنود العمل الخاصة بي" للاطلاع على قائمة مهام الفريق كاملةً.',
     'BulkChangeStatusTitle' => 'تغيير حالة %s المخاطر المحددة',
     'BulkReassignRiskOwnerTitle' => 'إعادة تعيين مالك المخاطر لـ %s المخاطر المحددة',
     'BulkReassignMitigationOwnerTitle' => 'إعادة تعيين مسؤول التخفيف للمخاطر المحددة %s',
@@ -4967,6 +4967,669 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'ليس لديك إذن بإغلاق المخاطر.',
     'QuestionnaireRequiredQuestionUnanswered' => 'يرجى الإجابة على جميع الأسئلة المطلوبة قبل إكمال التقييم.',
+    'AuditLog_ControlStatusAutoSynced' => 'تم تحديث حالة الضابط "{$short_name}" تلقائيًا إلى "{$status_text}" بناءً على أحدث نتائج الاختبار الخاصة به.',
+    'EnableCSPHelp' => 'تُقيّد سياسة أمان المحتوى (CSP) المتصفحَ بتحميل البرامج النصية والأنماط والصور والخطوط من SimpleRisk فقط، وتمنع تضمين الصفحات وإرسال النماذج من مصادر مختلفة. وهي أقوى حماية مُدمجة ضد هجمات البرمجة النصية عبر المواقع. اتركها مُفعّلة ما لم تتعارض مع خادم وكيل أو إضافة متصفح أو تكامل مع جهة خارجية في بيئتك.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'الحقول القياسية',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'المسؤول',
+    'AccountDetails' => 'تفاصيل الحساب',
+    'YourPermissions' => 'أذوناتك',
+    'RoleAndTeamsGrantAccess' => 'ما يتيحه لك دورك وفرقك من إمكانية الوصول',
+    'AllGranted' => 'تم منح الجميع',
+    'PermissionsCountLabel' => '$count الأذونات',
+    'ManagedByYourAdministrator' => 'تُدار هذه التفاصيل من قِبل مشرفك. تواصل معهم إذا كان أي شيء هنا يحتاج إلى تغيير.',
+    'MultiFactorAuthenticationHint' => 'أضف خطوة ثانية إلى عملية تسجيل الدخول الخاصة بك للحفاظ على أمان حسابك.',
+    'ChangingPasswordSignsOutEverywhere' => 'تغيير كلمة المرور الخاصة بك يؤدي إلى تسجيل خروجك من جميع المواقع الأخرى.',
+    'APIKeyHint' => 'تُستخدم للمصادقة على البرامج النصية وعمليات التكامل الخاصة بك مقابل واجهة برمجة تطبيقات SimpleRisk.',
+    'ResetDisplaySettingsHint' => 'يعيد ضبط اختيارات الأعمدة المخصصة إلى الوضع الافتراضي.',
+    'CardGeneral' => 'العامة',
+    'CardClassification' => 'تصنيف',
+    'CardScoring' => 'التقييم',
+    'CardAdditionalInformation' => 'معلومات إضافية',
+    'CardCustomFields' => 'الحقول المخصصة',
+    'CardCustomFieldsHint' => 'يجب فرز هذه الحقول في بطاقة',
+    'LayoutEditorHint' => 'اسحب حقلاً إلى بطاقة مختلفة لإعادة تعيينه، واسحب داخل بطاقة لإعادة ترتيبها أو تغيير حجمها، واسحب أو غيّر حجم بطاقة لتغيير موضعها على الصفحة.',
+    'ScoringNotYetAvailableInThisView' => 'إعدادات التقييم غير متاحة بعد في هذه الشاشة.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'اسحب لتغيير الحجم',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'حقل/حقول {n} لا تتناسب مع هذه البطاقة. قم بتغيير حجم البطاقة لإظهارها.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'استراتيجية التخفيف',
+    'CardMitigationSolution' => 'حل التخفيف',
+    'CardMitigationControls' => 'ضوابط التخفيف',
+    'CardReview' => 'استعراض',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'إعادة تعيين النموذج',
+    'SaveAndNew' => 'حفظ وجديد',
+    'SaveAndView' => 'حفظ وعرض',
+    'ResetFormConfirmTitle' => 'هل تريد تجاهل تقديم هذه المخاطر؟',
+    'ResetFormConfirmBody' => 'سيُفقد أي معلومات قمت بإدخالها.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'استعادة التخطيط الافتراضي?',
+    'RestoreTemplateConfirmBodyRisk' => 'يؤدي هذا إلى إعادة ضبط جميع الحقول في علامات التبويب "التفاصيل" و"التخفيف" و"المراجعة" إلى قيمها الافتراضية لمجموعة القوالب هذه. ولا تتأثر مجموعات القوالب الأخرى.',
+    'RestoreTemplateConfirmBody' => 'يؤدي هذا إلى إعادة ضبط جميع الحقول في هذا القالب إلى قيمها الافتراضية لمجموعة القوالب هذه. ولا تتأثر مجموعات القوالب الأخرى.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'المقاييس المتقدمة',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'مقاييس قابلية الاستغلال للدرجة الأساسية',
+    'BaseScoreImpactMetrics' => 'مقاييس تأثير النتيجة الأساسية',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "كيفية استغلال الثغرة الأمنية.\n• محلي: يتطلب الوصول المحلي، مثل وحدة تحكم أو واجهة سطر أوامر.\n• شبكة مجاورة: يجب أن يكون المهاجم على نفس جزء الشبكة المادي أو المنطقي.\n• شبكة: يمكن استغلالها عن بُعد عبر الشبكة، دون الحاجة إلى الوصول المحلي أو الوصول إلى الشبكة المجاورة.",
+    "AttackComplexityHelp" => "مدى تعقيد الهجوم بمجرد حصول المهاجم على إمكانية الوصول إلى الهدف.\n• عالي: يتطلب شروطًا خاصة يصعب تحقيقها.\n• متوسط: يجب استيفاء بعض الشروط، ولكن الاستغلال ليس صعبًا بمجرد استيفائها.\n• منخفض: لا حاجة لشروط خاصة.",
+    "AuthenticationHelp" => "عدد مرات مصادقة المهاجم للهدف لاستغلاله.\n• متعدد: المصادقة مطلوبة مرتين أو أكثر، حتى مع نفس بيانات الاعتماد.\n• فردي: المصادقة مطلوبة مرة واحدة.\n• لا شيء: لا حاجة للمصادقة.",
+    "ConfidentialityImpactHelp" => "تأثير استغلال الثغرة على سرية البيانات التي يعالجها النظام.\n• لا يوجد تأثير: لا يوجد تأثير.\n• جزئي: كشف بعض المعلومات، لكن المهاجم لا يتحكم في نوعها، أو أن الخسارة محدودة.\n• كامل: كشف جميع المعلومات الموجودة على النظام.",
+    "IntegrityImpactHelp" => "تأثير الاستغلال على سلامة النظام.\n• لا يوجد تأثير: لا يوجد تأثير.\n• جزئي: يمكن تعديل بعض البيانات، لكن المهاجم لا يتحكم في البيانات المُعدّلة، أو أن نطاق التعديل محدود.\n• كامل: اختراق كامل لسلامة النظام؛ يمكن للمهاجم تعديل أي ملفات.",
+    "AvailabilityImpactHelp" => "تأثير الاستغلال على توافر النظام.\n• لا يوجد: لا يوجد تأثير.\n• جزئي: انخفاض في الأداء أو انقطاعات في التوافر.\n• كامل: إيقاف تشغيل كامل للمورد المتأثر.",
+    "RemediationLevelHelp" => "مستوى المعالجة المتاحة للثغرة الأمنية.\n• حل رسمي: يتوفر حل كامل من الشركة المصنعة.\n• حل مؤقت: يتوفر حل رسمي ولكنه مؤقت.\n• حل بديل: يوجد حل بديل غير رسمي وغير تابع للشركة المصنعة.\n• غير متوفر: لا يوجد حل متاح، أو لا يمكن تطبيق أي حل.",
+    "ReportConfidenceHelp" => "درجة الثقة في وجود الثغرة الأمنية ومصداقية تفاصيلها التقنية.\n• غير مؤكد: تقرير من مصدر واحد غير مؤكد؛ المشكلة الأساسية غير مؤكدة.\n• غير مدعوم: مصادر مستقلة متعددة تُبلغ عن نفس السلوك، ولكن السبب الجذري غير مؤكد.\n• مؤكد: أقرّ المورّد بالمشكلة، أو تم تأكيدها من خلال تحليل شفرة المصدر أو تحليل الاستغلال.",
+    "CollateralDamagePotentialHelp" => "احتمالية وقوع خسائر في الأرواح أو الممتلكات المادية أو الخسائر المالية في حال استغلال الثغرة الأمنية.\n• لا يوجد: من غير المرجح حدوث مثل هذه الخسائر.\n• منخفض إلى متوسط: من المحتمل حدوث خسارة متوسطة.\n• مرتفع: تأثير كارثي على أصول المنظمة أو إيراداتها أو سلامتها.",
+    "TargetDistributionHelp" => "نسبة الأنظمة المعرضة للخطر في بيئتك.\n• لا يوجد: لا توجد أنظمة مستهدفة.\n• منخفض: 1-25% من الأنظمة معرضة للخطر.\n• متوسط: 26-75% من الأنظمة معرضة للخطر.\n• مرتفع: 76-100% من الأنظمة معرضة للخطر.",
+    "ConfidentialityRequirementHelp" => "مدى أهمية سرية الأصل المتأثر لمؤسستك.\n• منخفض: فقدان السرية له تأثير محدود.\n• متوسط: له تأثير خطير.\n• مرتفع: له تأثير كارثي.",
+    "IntegrityRequirementHelp" => "مدى أهمية سلامة الأصل المتضرر لمؤسستك.\n• منخفض: فقدان السلامة له تأثير محدود.\n• متوسط: له تأثير خطير.\n• مرتفع: له تأثير كارثي.",
+    "AvailabilityRequirementHelp" => "مدى أهمية توافر الأصل المتأثر لمؤسستك.\n• منخفض: تأثير فقدان التوافر محدود.\n• متوسط: تأثيره خطير.\n• مرتفع: تأثيره كارثي.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'كيف سيحتاج المهاجم للوصول إلى هذه الثغرة الأمنية واستغلالها: أين يجب أن يكون، ومدى تعقيد الهجوم، وما إذا كان بحاجة إلى المصادقة أولاً.',
+    'BaseScoreImpactMetricsDescription' => 'ماذا يحدث إذا تم استغلال الثغرة الأمنية بنجاح: التأثير على سرية وسلامة وتوافر النظام المتأثر.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'كيف يتغير التهديد الواقعي لهذه الثغرة الأمنية بمرور الوقت: الحالة الحالية لرمز الاستغلال، وما هي الحلول المتاحة، ومدى ثقة التقارير في وجودها.',
+    'EnvironmentalScoreMetricsDescription' => 'كيف يعتمد خطر هذه الثغرة الأمنية على بيئتك: احتمالية حدوث ضرر في العالم الحقيقي، وعدد الأنظمة التي تتأثر فعلياً.',
+    'ImpactSubscoreModifiersDescription' => 'قم بترجيح تأثير النتيجة الأساسية بناءً على مدى أهمية السرية والنزاهة والتوافر بالنسبة لهذا الأصل المحدد.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'في حال حدوث استغلال للتهديدات، ما مقدار الضرر الذي سيحدث؟' . "\n" . '0 = لا شيء' . "\n" . '5 = تم اختراق بيانات المستخدم الفردية أو تأثرها.' . "\n" . '10 = تدمير النظام أو البيانات بالكامل',
+    'ReproducibilityHelp' => 'ما مدى سهولة إعادة إنتاج ثغرة استغلال التهديد؟' . "\n" . '0 = صعب للغاية أو مستحيل، حتى بالنسبة لمسؤولي التطبيق.' . "\n" . '5 = يلزم خطوة أو خطوتين، وقد يتطلب الأمر أن تكون مستخدمًا مصرحًا له.' . "\n" . '10 = يكفي متصفح الويب وشريط العناوين فقط، دون الحاجة إلى مصادقة.',
+    'ExploitabilityHelp' => 'ما الذي يلزم لاستغلال هذا التهديد؟' . "\n" . '0 = معرفة متقدمة في البرمجة والشبكات، مع أدوات هجوم مخصصة أو متقدمة.' . "\n" . '5 = البرامج الضارة موجودة على الإنترنت، أو يمكن تنفيذ عملية استغلال بسهولة باستخدام أدوات الهجوم المتاحة.' . "\n" . '10 = مجرد متصفح ويب',
+    'AffectedUsersHelp' => 'كم عدد المستخدمين الذين سيتأثرون؟' . "\n" . '0 = لا شيء' . "\n" . '5 = بعض المستخدمين، وليس جميعهم' . "\n" . '10 = جميع المستخدمين',
+    'DiscoverabilityHelp' => 'ما مدى سهولة اكتشاف هذا التهديد؟' . "\n" . '0 = صعب للغاية إلى مستحيل؛ يتطلب الوصول إلى شفرة المصدر أو صلاحيات إدارية.' . "\n" . '5 = يمكن معرفة ذلك عن طريق التخمين أو عن طريق مراقبة آثار الشبكة.' . "\n" . '9 = تفاصيل مثل هذه الأعطال موجودة بالفعل في المجال العام ويمكن اكتشافها بسهولة باستخدام محرك بحث.' . "\n" . '10 = تظهر المعلومات في شريط عنوان متصفح الويب أو في نموذج.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'درجة DREAD',
+    'DreadMetrics' => 'مقاييس DREAD',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'ما مدى مهارة هذه المجموعة من عملاء التهديد من الناحية التقنية؟' . "\n" . '1 = لا توجد مهارات تقنية' . "\n" . '3 = بعض المهارات التقنية' . "\n" . '5 = مستخدم حاسوب متقدم' . "\n" . '6 = مهارات الشبكات والبرمجة' . "\n" . '9 = مهارات اختراق الأمن',
+    'MotiveHelp' => 'ما مدى دافع هذه المجموعة من الجهات الخبيثة للعثور على هذه الثغرة الأمنية واستغلالها؟' . "\n" . '1 = مكافأة منخفضة أو معدومة' . "\n" . '4 = مكافأة محتملة' . "\n" . '9 = مكافأة عالية',
+    'OpportunityHelp' => 'ما هي الموارد والفرص المطلوبة لهذه المجموعة من الجهات الفاعلة في مجال التهديدات للعثور على هذه الثغرة الأمنية واستغلالها؟' . "\n" . '0 = الوصول الكامل أو الموارد المكلفة مطلوبة' . "\n" . '4 = يتطلب وصولاً خاصاً أو موارد خاصة' . "\n" . '7 = بعض الوصول أو الموارد المطلوبة' . "\n" . '9 = لا يتطلب الوصول أو الموارد',
+    'SizeHelp' => 'ما هو حجم هذه المجموعة من الجهات الفاعلة التي تشكل تهديداً؟' . "\n" . '2 = المطورون' . "\n" . '2 = مسؤولو النظام' . "\n" . '4 = مستخدمو الشبكة الداخلية' . "\n" . '5 = شركاء' . "\n" . '6 = المستخدمون المصادق عليهم' . "\n" . '9 = مستخدمو الإنترنت المجهولون',
+    'EaseOfDiscoveryHelp' => 'ما مدى سهولة اكتشاف هذه الثغرة الأمنية من قبل هذه المجموعة من الجهات الخبيثة؟' . "\n" . '1 = مستحيل عملياً' . "\n" . '3 = صعب' . "\n" . '7 = سهل' . "\n" . '9 = الأدوات الآلية المتاحة',
+    'EaseOfExploitHelp' => 'ما مدى سهولة استغلال هذه الثغرة الأمنية من قبل هذه المجموعة من الجهات الخبيثة؟' . "\n" . '1 = نظري' . "\n" . '3 = صعب' . "\n" . '5 = سهل' . "\n" . '9 = الأدوات الآلية المتاحة',
+    'AwarenessHelp' => 'ما مدى معرفة هذه المجموعة من الجهات الفاعلة في مجال التهديدات بهذه الثغرة الأمنية؟' . "\n" . '1 = غير معروف' . "\n" . '4 = مخفي' . "\n" . '6 = واضح' . "\n" . '9 = المعرفة العامة',
+    'IntrusionDetectionHelp' => 'ما مدى احتمالية اكتشاف الثغرة الأمنية؟' . "\n" . '1 = الكشف النشط في التطبيق' . "\n" . '3 = تم التسجيل والمراجعة' . "\n" . '8 = تم التسجيل بدون مراجعة' . "\n" . '9 = غير مسجل',
+    'LossOfConfidentialityHelp' => 'ما مقدار البيانات التي يمكن الكشف عنها، وما مدى حساسيتها؟' . "\n" . '2 = الحد الأدنى من البيانات غير الحساسة التي تم الكشف عنها' . "\n" . '6 = الحد الأدنى من البيانات الحرجة التي تم الكشف عنها' . "\n" . '6 = تم الكشف عن بيانات غير حساسة واسعة النطاق' . "\n" . '7 = تم الكشف عن بيانات حساسة واسعة النطاق' . "\n" . '9 = تم الكشف عن جميع البيانات',
+    'LossOfIntegrityHelp' => 'ما مقدار البيانات التي يمكن أن تتعرض للتلف، وما مدى الضرر الذي لحق بها؟' . "\n" . '1 = بيانات تالفة بشكل طفيف' . "\n" . '3 = الحد الأدنى من البيانات التالفة بشكل خطير' . "\n" . '5 = بيانات تالفة بشكل طفيف وواسعة النطاق' . "\n" . '7 = بيانات تالفة بشكل خطير وواسع النطاق' . "\n" . '9 = جميع البيانات تالفة تمامًا',
+    'LossOfAvailabilityHelp' => 'ما مقدار الخدمة التي يمكن أن تُفقد، وما مدى أهميتها؟' . "\n" . '1 = الحد الأدنى من انقطاع الخدمات الثانوية' . "\n" . '5 = الحد الأدنى من انقطاع الخدمات الأساسية' . "\n" . '5 = انقطاع واسع النطاق للخدمات الثانوية' . "\n" . '7 = انقطاع واسع النطاق للخدمات الأساسية' . "\n" . '9 = فقدان جميع الخدمات بالكامل',
+    'LossOfAccountabilityHelp' => 'هل يمكن تتبع أفعال الجهات الفاعلة في التهديد إلى فرد معين؟' . "\n" . '1 = قابل للتتبع بالكامل' . "\n" . '7 = قابل للتتبع على الأرجح' . "\n" . '9 = مجهول الهوية تمامًا',
+    'FinancialDamageHelp' => 'ما حجم الضرر المالي الذي سينتج عن استغلال ثغرة أمنية؟' . "\n" . '1 = أقل من تكلفة إصلاح الثغرة الأمنية' . "\n" . '3 = تأثير طفيف على الربح السنوي' . "\n" . '7 = تأثير كبير على الربح السنوي' . "\n" . '9 = الإفلاس',
+    'ReputationDamageHelp' => 'هل يمكن أن يؤدي استغلال ثغرة أمنية إلى الإضرار بسمعة الشركة؟' . "\n" . '1 = الحد الأدنى من الضرر' . "\n" . '4 = خسارة حسابات رئيسية' . "\n" . '5 = فقدان السمعة التجارية' . "\n" . '9 = تلف العلامة التجارية',
+    'NonComplianceHelp' => 'ما مدى المخاطر التي يسببها عدم الامتثال؟' . "\n" . '2 = مخالفة بسيطة' . "\n" . '5 = انتهاك واضح' . "\n" . '7 = انتهاك بارز',
+    'PrivacyViolationHelp' => 'ما مقدار المعلومات الشخصية التي يمكن الكشف عنها؟' . "\n" . '3 = فرد واحد' . "\n" . '5 = مئات الأشخاص' . "\n" . '7 = آلاف الأشخاص' . "\n" . '9 = ملايين الأشخاص',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'تقييم OWASP',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'يقدر احتمالية نجاح هجوم من قبل هذه المجموعة من الجهات الفاعلة المهددة.',
+    'VulnerabilityFactorsDescription' => 'يقدر احتمالية اكتشاف هذه الثغرة الأمنية واستغلالها.',
+    'TechnicalImpactDescription' => 'يحلل التأثير من خلال السرية والنزاهة والتوافر والمساءلة.',
+    'BusinessImpactDescription' => 'يعكس ما يهم العمل، بما يتجاوز التأثير التقني الخام.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "الوضع الحالي لتقنيات الاستغلال أو توفر الشيفرة.\n• غير مُثبت: لا تتوفر شيفرة استغلال، أو أن الاستغلال نظري.\n• إثبات المفهوم: شيفرة الاستغلال موجودة ولكنها غير عملية لمعظم المهاجمين.\n• فعال: شيفرة الاستغلال فعالة وتعمل في معظم الحالات.\n• عالي: الاستغلال موثوق، إما مؤتمت (مثل دودة) أو لا يتطلب شيفرة استغلال على الإطلاق.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'النتيجة الكلاسيكية',
+    'ClassicLikelihoodDescription' => 'ما مدى احتمالية حدوث هذا الخطر؟',
+    'ClassicImpactDescription' => 'ما مدى خطورة العواقب في حال حدوث هذا الخطر؟',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'نتيجة مخصصة',
+    'CustomValueDescription' => 'يمكن أن تكون القيمة المخصصة قيمة عشرية بين 0 و 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'ما مدى احتمالية حدوث هذا الخطر؟',
+    'ContributingRiskDescription' => 'يتم ترجيح كل عامل من العوامل أدناه حسب أهميته النسبية - حدد مدى تأثر هذا الخطر بكل عامل.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'يمكن الاطلاع على التفاصيل الكاملة لمنهجية تصنيف مخاطر OWASP',
+    'Here' => 'هنا',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= مجموع (الوزن × التأثير × 5 / الحد الأقصى)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'تنزيل كصورة',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'يمكن الاطلاع على التفاصيل الكاملة لنظام تسجيل نقاط CVSS الإصدار 2.0',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'معرّف الضابط غير صالح.',
+    'ValidationOwner' => 'مالك التحقق',
+    'ValidationStatus' => 'حالة التحقق',
+    'NotStarted' => 'لم يبدأ بعد',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'قد يكون الخطر الذي تبحث عنه قد تم حذفه، أو قد يكون الرابط غير صحيح.',
+    'MitigationControlsRequiresGovernance' => 'يتطلب الأمر إذنًا من قسم الحوكمة للاطلاع عليه.',
+    'ViewControlValidation' => 'عرض التحقق من صحة الضابط',
+    'EditControlValidation' => 'تعديل التحقق من صحة الضابط',
+    'SupportingDocumentationRequiresSubmitRisk' => 'يتطلب الأمر الحصول على إذن "إرسال المخاطر" لتحميل الملفات.',
+    'SupportingDocumentationRequiresModifyRisks' => 'يتطلب إذن تعديل المخاطر لإدارة الملفات.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'يتطلب الأمر إذنًا من قسم "خطط التخفيف" لإدارة الملفات.',
+    'MitigationSubmittedBy' => 'التخفيف المقدم من',
+    'UseADifferentDate' => 'استخدم تاريخًا مختلفًا',
+    'AssetGroup' => 'مجموعة الأصول',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'مجموعة إطار غير صالحة.',
+    'CustomizationCardsLayoutApiScopeError' => 'تتوفر واجهة برمجة تطبيقات تخطيط بطاقات التخصيص فقط لـ fgroup=risk، tab_index=1، tab_index=2، أو tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'اكتشف الأصول',
+    'DiscoveryRuns' => 'عمليات الاكتشاف',
+    'DiscoveryRangeHint' => 'عنوان واحد، أو نطاق بداية-نهاية، أو IPv4 CIDR',
+    'DiscoveryResolveNames' => 'ابحث عن أسماء المضيفين',
+    'DiscoveryAddAs' => 'أضف أصولًا جديدة كـ',
+    'DiscoveryStart' => 'ابدأ الاكتشاف',
+    'DiscoveryBackgroundNote' => 'يعمل في الخلفية. يتم تخطي العناوين الموجودة مسبقاً.',
+    'DiscoveryRangeInvalid' => 'أدخل عنوان IPv4 صالحًا، أو نطاقًا، أو كتلة CIDR.',
+    'DiscoveryRangeTooLarge' => 'هذا النطاق واسع جدًا. الحد الأقصى هو {$max} عنوانًا.',
+    'DiscoveryRunQueued' => 'بدأ الاكتشاف.',
+    'DiscoveryRunCompleted' => 'تم الانتهاء من عملية الاكتشاف: {$new} أصول جديدة.',
+    'AssetBulkSelectAll' => 'حدد جميع الأصول {$count}',
+    'AssetBulkAssignTeams' => 'تعيين الفرق…',
+    'AssetBulkAddToGroup' => 'أضف إلى المجموعة…',
+    'AssetBulkDeleteConfirmTitle' => 'حذف الأصول {$count}؟',
+    'AbleToEditAssets' => 'القدرة على تعديل الأصول',
+    'AbleToDeleteAssets' => 'القدرة على حذف الأصول',
+    'AbleToVerifyAssets' => 'القدرة على التحقق من الأصول',
+    'AbleToRunAssetDiscovery' => 'القدرة على تشغيل عملية اكتشاف الأصول',
+    'AbleToCreateAssetGroups' => 'القدرة على إنشاء مجموعات الأصول',
+    'AbleToEditAssetGroups' => 'القدرة على تعديل مجموعات الأصول',
+    'AbleToDeleteAssetGroups' => 'إمكانية حذف مجموعات الأصول',
+    'ViewAsset' => 'عرض الأصل',
+    'AssetUnverifiedByEditLog' => 'تمت إعادة الأصل "{$name}" إلى حالة غير موثقة لأن المستخدم "{$user}" قام بتغيير اسمه أو عنوان IP الخاص به دون الحصول على إذن للتحقق من الأصول.',
+    'AssetTeamsAssignedLog' => 'تم تعيين الأصل "{$name}" للفريق (الفرق) "{$teams}" بواسطة المستخدم "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'إضافة أصل',
+    'SearchAssetsPlaceholder' => 'ابحث بالاسم أو عنوان IP',
+    'AllLocations' => 'جميع المواقع',
+    'AllTags' => 'جميع العلامات',
+    'AllAssetGroups' => 'جميع مجموعات الأصول',
+    'AssetFields' => 'حقول الأصول',
+    'AssetBulkAllSelected' => 'تم تحديد جميع الأصول المطابقة {$count}',
+    'AssetDeleteConfirmTitle' => 'حذف الأصل "{$name}"؟',
+    'DeleteAsset' => 'حذف الأصل',
+    'DeleteAssets' => 'حذف الأصول',
+    'AssetBulkAssignTeamsTitle' => 'قم بتعيين الفرق للأصول {$count}',
+    'AssetAssignTeamsHint' => 'تتم إضافة الفرق المختارة. أما الفرق الموجودة بالفعل على نفس الأصل فتبقى.',
+    'AssetAddToGroupTitle' => 'أضف {$count} أصلاً إلى مجموعة',
+    'AssetChooseTeams' => 'اختر الفرق',
+    'AssetChooseGroup' => 'اختر مجموعة',
+    'Assign' => 'تعيين',
+    'AssetBulkVerifiedSummary' => 'تم التحقق من {$ok} ، تم تخطي {$failed}',
+    'AssetBulkDeletedSummary' => 'تم حذف {$ok} ، وتم تخطي {$failed}',
+    'AssetBulkTeamsSummary' => 'تم تعيين الفرق للأصول {$ok} ، وتم تخطي {$failed}',
+    'AssetBulkGroupSummary' => 'تمت إضافة {$ok} إلى المجموعة، وتم تخطي {$failed}',
+    'AssetBulkSkippedList' => 'تم التخطي: {$list}',
+    'AssetBulkReasonNotFound' => 'غير موجود',
+    'NoAssetsYet' => 'لا توجد أصول حتى الآن',
+    'NoAssetsYetHint' => 'تظهر الأصول التي تضيفها أو تكتشفها هنا.',
+    'NoAssetsMatchFilters' => 'لا توجد أصول مطابقة لمرشحاتك',
+    'CouldNotLoadAssets' => 'تعذر تحميل الأصول. بياناتك آمنة.',
+    'AllValuations' => 'جميع التقييمات',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'إضافة مجموعة',
+    'EditAssetGroup' => 'تحرير المجموعة',
+    'DeleteAssetGroup' => 'حذف المجموعة',
+    'ViewGroupMembers' => 'عرض الأعضاء',
+    'SearchAssetGroupsPlaceholder' => 'ابحث عن المجموعات بالاسم',
+    'HighestValuation' => 'أعلى قيمة',
+    'LinkedRisks' => 'المخاطر المرتبطة',
+    'RemoveFromGroup' => 'إزالة من المجموعة',
+    'AssetGroupMoreMembers' => '+ {$count} المزيد',
+    'ViewAllInAssetsTab' => 'عرض الكل في علامة تبويب الأصول',
+    'NoAssetsInGroup' => 'لا توجد أصول في هذه المجموعة.',
+    'CouldNotLoadGroupMembers' => 'تعذر تحميل أعضاء هذه المجموعة.',
+    'AssetGroupMembers' => 'أعضاء',
+    'AssetGroupMembersHint' => 'لا تظهر في القائمة إلا الأصول التي يمكنك رؤيتها. أما الأعضاء الذين لا يمكنك رؤيتهم فيبقون في المجموعة.',
+    'ChooseAssets' => 'اختر الأصول',
+    'AddOrRemoveAssets' => 'إضافة أو إزالة الأصول…',
+    'UseTheseAssets' => 'استخدم هذه الأصول',
+    'AllAssets' => 'جميع الأصول',
+    'Valuation' => 'تقييم',
+    'PickerShowingFirstN' => 'يتم عرض أول {$count} من {$total}. ابحث أو حدد نطاق البحث للعثور على الباقي.',
+    'AssetGroupDeleteConfirmTitle' => 'حذف المجموعة "{$name}"؟',
+    'AssetGroupDeleteKeepsAssets' => 'لا يتم حذف الأصول الموجودة في هذه المجموعة. يتم إزالة المجموعة فقط.',
+    'NoAssetGroupsYet' => 'لا توجد مجموعات أصول حتى الآن',
+    'NoAssetGroupsYetHint' => 'قم بتجميع الأصول حتى تتمكن من رسم خرائط لها وإعداد تقارير عنها معًا.',
+    'NoAssetGroupsMatchSearch' => 'لم يتم العثور على أي مجموعات أصول مطابقة لبحثك',
+    'CouldNotLoadAssetGroups' => 'تعذر تحميل مجموعات الأصول. بياناتك آمنة.',
+    'DiscoveryAssignTeams' => 'قم بتوزيعها على الفرق',
+    'DiscoveryAssignTeamsHint' => 'اختياري. تتم إضافة كل أصل جديد إلى هذه الفرق.',
+    'DiscoveryAddAsHint' => 'تم تعيين هذا الإجراء بناءً على إذنك للتحقق من الأصول.',
+    'DiscoveryTeamsInvalid' => 'اختر الفرق الموجودة والتي تنتمي إليها.',
+    'DiscoveryResolveNamesInvalid' => 'يجب تفعيل أو تعطيل البحث عن أسماء المضيفين.',
+    'DiscoveryTooManyActiveRuns' => 'لديك بالفعل {$max} عمليات استكشاف جارية. انتظر حتى تنتهي إحداها أو قم بإلغائها.',
+    'DiscoveryRunNotFound' => 'لم يتم العثور على عملية استكشاف.',
+    'DiscoveryRunAlreadyFinished' => 'انتهت هذه الجولة الاستكشافية بالفعل.',
+    'DiscoveryRunCancelled' => 'تم إلغاء عملية الاكتشاف.',
+    'DiscoveryRunFailedToast' => 'فشل اكتشاف {$range}.',
+    'DiscoveryStatusQueued' => 'تمت إضافته إلى قائمة الانتظار',
+    'DiscoveryProgress' => '{$scanned} من {$total}',
+    'DiscoveryLiveHosts' => 'المضيفون النشطون',
+    'DiscoveryNewAssets' => 'أصول جديدة',
+    'DiscoveryStartedAt' => 'بدأ',
+    'DiscoveryCancelRun' => 'إلغاء التشغيل',
+    'CouldNotLoadDiscoveryRuns' => 'تعذر تحميل عمليات الاكتشاف.',
+    'DiscoveryRangeReserved' => 'يشمل هذا النطاق العناوين المحجوزة (loopback، link-local، multicast أو 0.0.0.0/8) التي لا يمكن فحصها.',
+    'DiscoveryTooManyActiveRunsInstance' => 'هناك بالفعل {$max} عمليات استكشاف جارية. حاول مرة أخرى عند انتهاء إحداها.',
+    'DiscoveryErrorScan' => 'توقف الفحص بسبب خطأ. راجع سجلات النظام للاطلاع على التفاصيل.',
+    'DiscoveryErrorWorkerLost' => 'توقفت قائمة الانتظار الخلفية عن معالجة هذه العملية.',
+    'DiscoveryErrorRequesterInactive' => 'المستخدم الذي بدأ هذه العملية لم يعد نشطاً.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'أرسل الإجراء المجمع كنص JSON.',
+    'AssetBulkActionRequired' => 'اختر إجراءً جماعيًا.',
+    'AssetBulkUnknownAction' => 'هذا الإجراء الجماعي غير متاح.',
+    'AssetBulkSelectionRequired' => 'اختر الأصول إما عن طريق المعرف أو عن طريق الفلتر.',
+    'AssetBulkIdsRequired' => 'اختر أصلاً واحداً على الأقل.',
+    'AssetBulkIdsInvalid' => 'يجب أن تكون معرفات الأصول أعدادًا صحيحة.',
+    'AssetBulkTooManyAssets' => 'يمكنك التعامل مع عدد أقصى من الأصول في المرة الواحدة يبلغ {$max} . قلّص نطاق اختيارك وحاول مرة أخرى.',
+    'AssetBulkFilterInvalid' => 'الفلتر غير صالح. أعد تحميل الصفحة وحاول مرة أخرى.',
+    'AssetBulkFilterUnknownKey' => 'لم يتم التعرف على عامل التصفية "{$key}".',
+    'AssetBulkFilterBadValue' => 'يحتوي عامل التصفية "{$key}" على قيمة غير صالحة.',
+    'AssetBulkFilterTooManyValues' => 'يمكن للمرشح "{$key}" أن يسرد على الأكثر {$max} قيمة.',
+    'AssetBulkFilterAllAlone' => 'لا يمكن دمج تحديد جميع الأصول مع عوامل التصفية الأخرى.',
+    'AssetBulkFilterEmpty' => 'اختر فلترًا، أو حدد جميع الأصول، قبل تشغيل إجراء جماعي.',
+    'AssetBulkExpectedCountInvalid' => 'يجب أن يكون العدد المتوقع للأصول عددًا صحيحًا.',
+    'AssetBulkParamsInvalid' => 'خيارات هذا الإجراء الجماعي غير صالحة.',
+    'AssetBulkTeamsRequired' => 'اختر فريقًا واحدًا على الأقل.',
+    'AssetBulkTeamsNotFound' => 'لم يعد واحد أو أكثر من تلك الفرق موجوداً.',
+    'AssetBulkTeamsNotMember' => 'لا يمكنك تعيين سوى الفرق التي تنتمي إليها.',
+    'AssetBulkGroupNotFound' => 'لم تعد تلك المجموعة من الأصول موجودة.',
+    'AssetBulkNoMatch' => 'لا توجد أصول مطابقة لاختيارك.',
+    'AssetBulkCountMismatch' => 'تغيرت الأصول المطابقة من {$expected} إلى {$actual} منذ أن قمت بتحديدها. راجع القائمة وحاول مرة أخرى.',
+    'AssetColumnSettingsBodyInvalid' => 'أرسل إعدادات الأعمدة كنص JSON مع الأعمدة أو الترتيب.',
+    'AssetColumnSettingsSaveFailed' => 'تعذر حفظ أعمدتك. اطلب من أحد المسؤولين إكمال ترقية SimpleRisk.',
+    'DiscoveryRunQueueFailed' => 'تعذر بدء عملية الاكتشاف. حاول مرة أخرى.',
+    'DiscoveryRunStartedLog' => 'تم بدء تشغيل اكتشاف الأصول #{$id} لـ {$range} ({$count} عناوين) بواسطة المستخدم "{$user}".',
+    'DiscoveryRunCancelledLog' => 'تم إلغاء عملية اكتشاف الأصول #{$id} من {$range} بواسطة المستخدم "{$user}".',
+    'AssetBulkTooManyToDelete' => 'يمكنك حذف ما يصل إلى {$max} من الأصول في المرة الواحدة. قلّص نطاق اختيارك وحاول مرة أخرى.',
+    'AssetBulkFilterNotApplied' => 'لم يكن من الممكن تطبيق عامل التصفية "{$key}" كما تم إرساله، لذلك لم يتم تغيير أي شيء.',
+    'AssetBulkExpectedCountRequired' => 'يتطلب حذف الأصول بواسطة عامل التصفية تحديد عدد الأصول التي تتوقع حذفها.',
+    'AssetBulkReasonNotAttempted' => 'لم تتم المحاولة',
+    'MoreActions' => 'المزيد من الإجراءات',
+    'AssetCreateNewGroupOption' => 'أنشئ مجموعة جديدة…',
+    'AssetNewGroupName' => 'اسم المجموعة الجديد',
+    'AssetFilterByTeam' => 'تصفية حسب الفريق {$name}',
+    'AssetFilterByValuation' => 'تصفية حسب التقييم {$name}',
+    'AssetFilterByTag' => 'تصفية حسب الوسم {$name}',
+    'AssetFilterByLocation' => 'تصفية حسب الموقع/المكان {$name}',
+    'AssetFilteringByTeam' => 'تصفية حسب الفريق {$name}',
+    'AssetFilteringByValuation' => 'تصفية النتائج حسب التقييم {$name}',
+    'AssetFilteringByTag' => 'تصفية النتائج حسب الوسم {$name}',
+    'AssetFilteringByLocation' => 'تصفية حسب الموقع/المكان {$name}',
+    'AssetShowOnlyVerified' => 'عرض الأصول التي تم التحقق منها فقط',
+    'AssetShowOnlyUnverified' => 'عرض الأصول غير الموثقة فقط',
+    'AssetShowingVerified' => 'عرض الأصول التي تم التحقق منها',
+    'AssetShowingUnverified' => 'عرض الأصول غير الموثقة',
+    'CustomizationLayoutPayloadRejected' => 'لم يتم حفظ التصميم لاحتوائه على حقول أو بطاقات لا تنتمي إلى هذا القالب. لم يتم إجراء أي تغييرات.',
+    'CustomizationLayoutRejectedUnknownScope' => 'لا يمكن حفظ نطاق هذا القالب من محرر التخطيط. لم يتم تغيير أي شيء.',
+    'CustomizationLayoutRejectedEmptyFields' => 'لا يحتوي التصميم على حقول صالحة، لذلك لم يتم حفظه. لم يتم تغيير أي شيء.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'سيؤدي حفظ هذا التصميم إلى حذف جميع الحقول من القالب، لذا لم يتم حفظه. أعد تحميل الصفحة وحاول مرة أخرى.',
+    'CustomizationLayoutRejectedRequiredField' => 'لا يمكن إزالة حقل مطلوب من التصميم. لم يتم تغيير أي شيء.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'سيؤدي حفظ هذا التصميم إلى إزالة معظم حقول القالب دون أن تقوم أنت بإزالتها هنا. أعد تحميل الصفحة وحاول مرة أخرى. لم يتم تغيير أي شيء.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'مجموعة القوالب غير موجودة أو تنتمي إلى نوع سجل مختلف. لم يتم تغيير أي شيء.',
+    'CustomizationLayoutLegacySaveRefused' => 'يتم تعديل هذا القالب باستخدام محرر التخطيط ولا يمكن حفظه من خلال نقطة نهاية اللوحة القديمة.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'أدخل ما يصل إلى {$max} منافذ TCP بين 1 و 65535، مفصولة بفواصل.',
+    'DiscoveryErrorProbeUnavailable' => 'لم تعد طريقة التحقق التي بدأ بها هذا التشغيل متاحةً للعامل الذي يعمل في الخلفية. ابدأ تشغيلًا جديدًا.',
+    'DiscoveryProbeIcmpUnprivileged' => 'اختبار اتصال ICMP (مقبس غير مميز)',
+    'DiscoveryProbeIcmpRaw' => 'اختبار اتصال ICMP (مقبس خام)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (أمر ping)',
+    'DiscoveryProbeTcpConnect' => 'اتصال TCP',
+    'DiscoveryProbeMethod' => 'طريقة التحقق: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'تم اكتشاف ذلك بواسطة خادم الويب. قد يستخدم العامل الذي يعمل في الخلفية طريقة مختلفة.',
+    'DiscoveryTcpProbeWarning' => 'لا يتم العثور على الأجهزة المضيفة إلا إذا استجابت على أحد منافذ TCP الممسوحة ضوئيًا، لذا لن يتم العثور على الأجهزة المضيفة التي تحظر هذه المنافذ. للحصول على نتائج كاملة، اسمح للخادم بإرسال طلبات ICMP ping: اسمح بمنافذ ping غير المميزة أو بتفعيل خاصية NET_RAW، أو ثبّت برنامج ping.',
+    'DiscoveryTcpPortsForRun' => 'منافذ TCP لهذا التشغيل',
+    'DiscoveryTcpPortsHint' => 'يتم فصل المنافذ بفواصل، حتى {$max} . اترك هذا الحقل فارغًا لاستخدام القيمة الافتراضية: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'منافذ TCP لاكتشاف الأصول',
+    'DiscoveryDefaultTcpPortsHint' => 'يُستخدم هذا الخيار عندما يتعذر على العامل الذي يعمل في الخلفية إرسال طلبات ICMP ping. يتم فصل البيانات بفواصل، حتى {$max} منفذ.',
+    'DiscoveryErrorTcpUnreliable' => 'توقف الفحص لأن الشبكة تستجيب لاتصالات TCP لعناوين لا يمكن أن تكون مضيفات حقيقية (بسبب وجود خادم وكيل أو جدار حماية)، لذا سيبدو كل عنوان نشطًا. اطلب من مسؤول النظام السماح للخادم بإرسال طلبات ICMP ping.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'تمت إعادة ضبط منافذ TCP لاكتشاف الأصول إلى الوضع الافتراضي بواسطة المستخدم "{$user}".',
+    'DiscoveryNotConfigured' => 'لم يتم تكوين خاصية الاكتشاف. اطلب من مسؤول النظام لديك تحديد النطاقات المسموح بها في ملف config.php.',
+    'DiscoveryRangeNotAllowed' => 'يقع هذا النطاق خارج نطاقات المسح المسموح بها للاكتشاف.',
+    'DiscoveryAllowedRangesList' => 'النطاقات المسموح بها: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'هذا العنصر غير متاح. ربما تم حذفه، أو ربما لا يمكنك الوصول إليه.',
+    'AssetCustomFieldNotInTemplate' => 'لا ينتمي حقل مخصص واحد أو أكثر إلى قالب هذا الأصل. لم يتم تغيير أي شيء.',
+    'AssetMappedControlsInvalid' => 'تعذر حفظ عناصر التحكم المُرتبطة. يتطلب كل صف تحديد مستوى نضج وعنصر تحكم واحد على الأقل موجود مسبقًا. لم يتم إجراء أي تغييرات.',
+    'AssetMappedControlsTooMany' => 'يمكن ربط الأصل بحد أقصى {$max} من عناصر التحكم. لم يتم تغيير أي شيء.',
+    'AddControlsAtAnotherMaturity' => 'أضف ضوابط عند مستوى نضج آخر',
+    'ChoosingControlsNeedsGovernancePermission' => 'يتطلب اختيار الضوابط الحصول على إذن الحوكمة.',
+    'NControls' => '{n} عنصر تحكم(ات)',
+    'SavingKeepsTheCurrentControlMappings' => 'يؤدي الحفظ إلى الاحتفاظ بتعيينات التحكم الحالية.',
+    'LoadingControls' => 'جارٍ تحميل الضوابط…',
+    'ControlListCouldNotBeLoaded' => 'تعذر تحميل قائمة عناصر التحكم، لذا لا يمكن تغيير عناصر التحكم المعينة في الوقت الحالي.',
+    'RemoveControlsAtMaturity' => 'إزالة الضوابط عند النضج {maturity}',
+    'ControlIdUnavailable' => '#{id} (غير متوفر)',
+    'AssetRecordEdit' => 'تحرير الأصل',
+    'AssetRecordIdN' => 'الأصل #{$id}',
+    'AssetRecordCopyLink' => 'انسخ رابط هذا الأصل',
+    'AssetRecordLinkCopied' => 'تم نسخ الرابط.',
+    'AssetRecordLinkCopyFailed' => 'تعذر نسخ الرابط. انسخه من شريط العناوين بدلاً من ذلك.',
+    'AssetRecordMarkUnverified' => 'ضع علامة "غير موثق"',
+    'AssetRecordViewAuditTrail' => 'عرض سجل التدقيق',
+    'AssetRecordAuditTrailTitle' => 'سجل التدقيق',
+    'AssetRecordAuditTrailEmpty' => 'لم يتم تسجيل أي نشاط لهذا الأصل خلال هذه الفترة.',
+    'AssetRecordAuditTrailFailed' => 'تعذر تحميل سجل التدقيق.',
+    'AssetRecordBackToAsset' => 'العودة إلى الأصل',
+    'AssetRecordSave' => 'حفظ الأصول',
+    'AssetRecordProvenanceVerified' => 'تم التحقق · تمت الإضافة {$date}',
+    'AssetRecordProvenanceUnverified' => 'غير مُؤكَّد: لم يتم تأكيده بعد من قِبل شخصٍ مُخوَّلٍ بالتحقق من الأصول · تمت الإضافة {$date}',
+    'AssetRecordUnsavedHint' => 'يطلب منك إغلاق العملية مع وجود تغييرات غير محفوظة التأكيد أولاً.',
+    'AssetRecordDiscardQuestion' => 'هل تريد تجاهل التغييرات غير المحفوظة؟',
+    'AssetRecordKeepEditing' => 'استمر في التحرير',
+    'AssetRecordDiscardChanges' => 'تجاهل التغييرات',
+    'AssetRecordVerificationCard' => 'تَحَقّق',
+    'AssetRecordVerificationTag' => 'يتطلب إذن التحقق من الأصول',
+    'AssetRecordVerifiedHint' => 'قام شخص مسؤول بمراجعة هذا الأصل. تغيير اسمه أو عنوان IP الخاص به دون إذن التحقق من الأصول يعيده إلى حالة غير موثقة.',
+    'AssetRecordLoadFailed' => 'تعذر تحميل الأصل. يرجى المحاولة مرة أخرى.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'تتوفر واجهة برمجة تطبيقات تخطيط بطاقات التخصيص فقط لـ fgroup=risk (tab_index 1 أو 2 أو 3) و fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'لم يعد لدى المستخدم الذي بدأ هذه العملية إذن لتشغيل عملية اكتشاف الأصول.',
+    'AssetRecordEditField' => 'تعديل {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'السرية',
+    'Integrity' => 'نزاهة',
+    'Availability' => 'التوافر',
+    'AssetScoringLevelLow' => 'منخفض',
+    'AssetScoringLevelModerate' => 'معتدل',
+    'AssetScoringLevelHigh' => 'عالي',
+    'AssetScoringValueInvalid' => 'تقبل السرية والنزاهة والتوافر مستويات منخفضة أو متوسطة أو عالية (كما تقبل السرية أيضًا مستوى غير قابل للتطبيق).',
+    'AssetScoringChangedLog' => 'تم تغيير الأصل "{$name}" {$objective} من {$from} إلى {$to} بواسطة المستخدم "{$user}".',
+    'FIPSCategorization' => 'تصنيف FIPS',
+    'WeightedScore' => 'النتيجة المرجحة',
+    'WeightedBand' => 'النطاق المرجّح',
+    'AllCategorizations' => 'جميع التصنيفات',
+    'AllBands' => 'جميع النطاقات',
+    'AssetFilterByCategorization' => 'تصفية حسب تصنيف FIPS {$name}',
+    'AssetFilteringByCategorization' => 'التصفية حسب تصنيف FIPS {$name}',
+    'AssetFilterByBand' => 'تصفية حسب النطاق المرجح {$name}',
+    'AssetFilteringByBand' => 'التصفية حسب النطاق المرجح {$name}',
+    'AssetScoring' => 'تقييم الأصول',
+    'AssetScoringSettingsHint' => 'يُصنّف كل أصل على أنه منخفض أو متوسط أو مرتفع من حيث السرية والنزاهة والتوافر، وقد يُصنّف الأصل على أنه غير قابل للتطبيق من حيث السرية، مما يستبعده من كلا النتيجتين. ويُعدّ تصنيفه وفقًا لمعايير FIPS هو الأعلى بين التصنيفات الثلاثة. أما درجته المرجّحة فهي المتوسط المرجّح لقيم المستويات الثلاثة، وتُحوّل عتبات النطاق هذه الدرجة إلى نطاق منخفض أو متوسط أو مرتفع. ويؤدي تغيير هذه الإعدادات إلى إعادة تقييم كل أصل فورًا.',
+    'Weights' => 'الأوزان',
+    'AssetScoringWeightsHint' => 'نسبة كل هدف في النتيجة المرجحة: من 0 إلى 100، مع إمكانية تقريبها إلى منزلتين عشريتين. يؤدي وزن 0 إلى استبعاد ذلك الهدف. لا يمكن أن يكون كل من النزاهة والتوافر صفرًا، لأن السرية غير المطبقة تُستبعد دائمًا.',
+    'LevelValues' => 'قيم المستوى',
+    'AssetScoringLevelValuesHint' => 'يُحدد الرقم الذي يُساهم به كل تقييم في النتيجة المرجحة: أعلى من 0 وحتى 100، مع إمكانية الوصول إلى منزلتين عشريتين، ومنخفض أقل من متوسط أقل من مرتفع. القيم الافتراضية هي منخفض 1، متوسط 2، ومرتفع 3.',
+    'BandThresholds' => 'عتبات النطاق',
+    'AssetScoringBandThresholdsHint' => 'تُصنّف الدرجة المرجّحة التي تساوي أو تتجاوز عتبة معينة ضمن تلك الفئة، بينما تُصنّف الدرجة الأقل من عتبة "المتوسط" ضمن فئة "المنخفض". يجب أن تبدأ فئة "المتوسط" فوق قيمة "المنخفض"، ويجب أن تبدأ فئة "العالي" فوق قيمة "المتوسط" ولا تتجاوزها.',
+    'ModerateStartsAt' => 'يبدأ المستوى المعتدل عند',
+    'HighStartsAt' => 'يبدأ العالي عند',
+    'DefaultScoringForNewAssets' => 'التقييم الافتراضي للأصول الجديدة',
+    'AssetScoringDefaultsHint' => 'يُحدد هذا الخيار هذه التقييمات تلقائيًا عند إضافة أصل في نموذج الأصول. تبقى الأصول التي تم إنشاؤها عن طريق الاكتشاف أو الاستيراد أو واجهة برمجة التطبيقات بدون تقييم ما لم يتم توفير تقييماتها الخاصة. اترك الخيارات الثلاثة غير مُفعّلة لإيقاف تشغيل هذا الخيار.',
+    'AssetScoringWeightsInvalid' => 'يجب أن تكون أوزان تقييم الأصول أرقامًا من 0 إلى 100 مع منزلتين عشريتين على الأكثر، ولا يمكن أن تكون كل من السلامة والتوافر 0.',
+    'AssetScoringValuesInvalid' => 'يجب أن تكون قيم مستوى تقييم الأصول أرقامًا أعلى من 0 وحتى 100 مع منزلتين عشريتين على الأكثر، مع كون منخفض أقل من متوسط أقل من مرتفع.',
+    'AssetScoringThresholdsInvalid' => 'يجب ألا تتجاوز عتبات نطاق تقييم الأصول رقمين عشريين، حيث يبدأ المستوى المتوسط فوق القيمة المنخفضة، ويبدأ المستوى العالي فوق المستوى المتوسط، ولا يبدأ المستوى العالي أعلى من القيمة العالية.',
+    'AssetScoringDefaultsInvalid' => 'يجب أن يكون التقييم الافتراضي للأصول الجديدة مستوىً يقدمه كل هدف.',
+    'AssetScoringSettingsNotSaved' => 'لم يتم حفظ إعدادات تقييم الأصول. لم يتم تغيير أي شيء.',
+    'AssetScoringSettingsChangedLog' => 'تم تغيير إعدادات تقييم الأصول بواسطة المستخدم "{$user}".',
+    'AssetScoringNotSet' => 'غير محدد',
+    'NotScored' => 'لم يتم احتساب النقاط',
+    'AssetScoringNotScoredHint' => 'أجب عن جميع الأهداف الثلاثة لتقييم هذا الأصل.',
+    'ImportAssetScoringValueIgnored' => 'القيمة {$objective} "{$value}" للأصل "{$asset_name}" ليست تقييمًا صالحًا وتم تجاهلها.',
+    'AssetScoringSecurityObjectives' => 'الأهداف الأمنية',
+    'AssetScoringConfidentialityHelp' => 'ما هو الأثر المحتمل في حالة الكشف غير المصرح به عن المعلومات المتعلقة بهذا الأصل؟',
+    'AssetScoringIntegrityHelp' => 'ما هو الأثر المحتمل في حالة حدوث تعديل أو تدمير غير مصرح به للمعلومات الموجودة على هذا الأصل؟',
+    'AssetScoringAvailabilityHelp' => 'ما هو الأثر المحتمل في حال حدوث انقطاع في الوصول إلى هذا الأصل أو استخدامه؟',
+    'AssetScoringHelpHigh' => 'تأثير ضار شديد أو كارثي',
+    'AssetScoringHelpModerate' => 'تأثير ضار خطير',
+    'AssetScoringHelpLow' => 'تأثير ضار محدود أو معدوم',
+    'AssetScoringHelpNotApplicable' => 'لا تشكل السرية مصدر قلق بالنسبة لهذا الأصل (على سبيل المثال، المعلومات العامة).',
+    'AssetScoringHelpLabel' => 'إرشادات التقييم {$objective}',
+    'AssetScoringMeterValue' => '{$score}، نطاق {$band}',
+    'AssetScoringNoWeightedScore' => 'لا يوجد ترجيح للنتيجة',
+    'AssetScoringNoWeightedScoreNote' => 'لا توجد نقاط مرجحة: كل هدف مهم له وزن يساوي صفرًا.',
+    'AssetScoringUpgradePending' => 'لا يمكن حفظ تقييم الأصول إلا بعد تشغيل ترقية قاعدة بيانات SimpleRisk. لم يتم إجراء أي تغييرات.',
+    'AssetScoringResultHelpLabel' => 'شرح {$result}',
+    'AssetScoringScoreHelp' => 'تُدمج النتيجة المرجحة التقييمات الثلاثة في رقم واحد يتراوح بين {$low} و {$high}. يُصبح لكل تقييم قيمته المحددة، ويُضرب كل تقييم بوزن هدفه. تُجمع النتائج وتُقسم على مجموع الأوزان. يُستثنى خيار "السرية غير قابلة للتطبيق" مع وزنه. تُضبط القيم المحددة والأوزان في الإعدادات. يجب تقييم الأهداف الثلاثة جميعها قبل عرض النتيجة.',
+    'AssetScoringCategorizationHelp' => 'يُعدّ تصنيف FIPS 199 للأمن المعيار الأعلى: فهو أعلى تصنيف بين المعايير المطبقة. ويُصنّف الأصل بدرجة "عالية" بغض النظر عن التصنيفات الأخرى. أما تصنيف "غير قابل للتطبيق" فيُتجاهل.',
+    'AssetScoringBandHelp' => 'يضع النطاق الدرجة المرجّحة على مقياس منخفض أو معتدل أو مرتفع. تُعد الدرجة الأقل من {$moderate} منخفضة، ومن {$moderate} حتى {$highAt} معتدلة، و{$highAt} أو أكثر مرتفعة. تُضبط العتبات في التفضيلات.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'جميع تصنيفات السرية',
+    'AllIntegrityRatings' => 'جميع تقييمات النزاهة',
+    'AllAvailabilityRatings' => 'جميع تقييمات التوافر',
+    'AssetFilterByConfidentiality' => 'تصفية حسب السرية {$name}',
+    'AssetFilteringByConfidentiality' => 'تصفية النتائج حسب السرية {$name}',
+    'AssetFilterByIntegrity' => 'تصفية حسب النزاهة {$name}',
+    'AssetFilteringByIntegrity' => 'التصفية حسب النزاهة {$name}',
+    'AssetFilterByAvailability' => 'تصفية حسب التوافر {$name}',
+    'AssetFilteringByAvailability' => 'تصفية النتائج حسب التوافر {$name}',
+    'HighestFIPSCategorization' => 'أعلى تصنيف FIPS',
+    'HighestWeightedScore' => 'أعلى درجة مرجحة',
+    'HighestWeightedBand' => 'أعلى نطاق وزن',
+    'AssetGroupFields' => 'حقول مجموعة الأصول',
+    'NoAssetGroupsMatchFilters' => 'لا توجد مجموعات أصول مطابقة لمرشحاتك',
+    'AssetGroupFilterByHighestCategorization' => 'تصفية حسب أعلى تصنيف FIPS {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'تصفية النتائج حسب أعلى تصنيف FIPS {$name}',
+    'AssetGroupFilterByHighestBand' => 'تصفية حسب النطاق ذي الوزن الأعلى {$name}',
+    'AssetGroupFilteringByHighestBand' => 'التصفية حسب النطاق ذي الوزن الأعلى {$name}',
+    'AssetGroupBulkSelectionRequired' => 'حدد مجموعات الأصول إما عن طريق المعرف أو عن طريق الفلتر.',
+    'AssetGroupBulkIdsRequired' => 'اختر مجموعة أصول واحدة على الأقل.',
+    'AssetGroupBulkIdsInvalid' => 'يجب أن تكون معرفات مجموعات الأصول أعدادًا صحيحة.',
+    'AssetGroupBulkFilterAllAlone' => 'لا يمكن دمج تحديد جميع مجموعات الأصول مع عوامل التصفية الأخرى.',
+    'AssetGroupBulkFilterEmpty' => 'اختر فلترًا، أو حدد جميع مجموعات الأصول، قبل الحذف.',
+    'AssetGroupBulkExpectedCountInvalid' => 'يجب أن يكون العدد المتوقع لمجموعات الأصول عددًا صحيحًا.',
+    'AssetGroupBulkExpectedCountRequired' => 'يتطلب حذف مجموعات الأصول بواسطة عامل التصفية تحديد عدد المجموعات التي تتوقع حذفها.',
+    'AssetGroupBulkNoMatch' => 'لا توجد مجموعات أصول مطابقة لاختيارك.',
+    'AssetGroupBulkCountMismatch' => 'تغيرت مجموعات الأصول المطابقة من {$expected} إلى {$actual} منذ أن قمت بتحديدها. راجع القائمة وحاول مرة أخرى.',
+    'AssetGroupBulkTooManyToDelete' => 'يمكنك حذف ما يصل إلى {$max} مجموعة أصول في المرة الواحدة. قلّص نطاق اختيارك وحاول مرة أخرى.',
+    'AssetGroupBulkSelectAll' => 'حدد جميع مجموعات الأصول {$count}',
+    'AssetGroupBulkAllSelected' => 'تم تحديد جميع مجموعات الأصول المطابقة {$count}',
+    'AssetGroupBulkDeleteConfirmTitle' => 'حذف مجموعات الأصول {$count}؟',
+    'AssetGroupBulkDeleteKeepsAssets' => 'لا يتم حذف الأصول الموجودة في هذه المجموعات، بل يتم إزالة المجموعات فقط.',
+    'DeleteAssetGroups' => 'حذف المجموعات',
+    'AssetGroupBulkDeletedSummary' => 'تم حذف {$ok} مجموعة، وتم تخطي {$failed} مجموعة',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'يتطلب اختيار المخاطر المرتبطة الحصول على إذن من إدارة المخاطر.',
+    'NAssociatedRisks' => '{n} المخاطر المرتبطة',
+    'SavingKeepsTheCurrentRiskAssociations' => 'يحافظ الحفظ على المخاطر المرتبطة الحالية.',
+    'UpgradePhpPartialTarget' => 'الترقية إلى {$target}، أحدث إصدار تدعمه PHP {$php}. الإصدار {$blocked} وما بعده يتطلب PHP {$needed} أو أحدث.',
+    'UpgradeNoPhpCli' => 'يتطلب التحديث واجهة سطر أوامر PHP، مع إضافة pdo_mysql، لتحديث قاعدة البيانات، ولم يتم العثور عليها على هذا الخادم. لم يتم إجراء أي تغييرات. قم بتثبيتها (تحتاجها أيضًا مهام SimpleRisk المجدولة)، ثم أعد تشغيل التحديث.',
+    'UpgradeDatabaseStepFailed' => 'فشلت ترقية قاعدة البيانات. قاعدة البيانات تعمل بالإصدار {$reached}. راجع الرسائل أعلاه وسجل SimpleRisk، ثم أعد تشغيل الترقية.',
+    'UpgradeReplacingVendorDirectory' => 'استبدال دليل vendor.',
+    'AdvancedSearchLockedPlaceholder' => 'ابحث في برنامجك بالكامل',
+    'AdvancedSearchLockedAria' => 'ابحث في برنامجك بالكامل. مُقفل: يتطلب إضافة البحث المتقدم.',
+    'AdvancedSearchLockedPitch' => 'ابحث عن المخاطر أو الضوابط أو المستندات أو الأصول من مربع واحد، وانتقل إلى السجلات المرتبطة بها.',
+    'AdvancedSearchUnlocksLabel' => 'يتيح البحث في جميع أنحاء',
+    'RequiresAdvancedSearchExtra' => 'يتطلب إضافة البحث المتقدم.',
+    'UnlockAdvancedSearchLink' => 'انظر ماذا يضيف ذلك',
+    'UnlockActivateAdvancedSearchNote' => 'تم تثبيت ميزة البحث المتقدم الإضافية ولكنها غير مفعلة.',
+    'UnlockActivateAdvancedSearchLink' => 'قم بتشغيله',
+    'AdvancedSearchControlCount' => 'عناصر التحكم: {$count}',
+    'AdvancedSearchAssetCount' => 'الأصول: {$count}',
+    'AdvancedSearchValuationRange' => '{$min} إلى {$max}',
+    'AdvancedSearchTypes' => 'الأنواع',
+    'AdvancedSearchTypesToggle' => 'الأنواع · {$count}',
+    'AdvancedSearchViewAll' => 'عرض الكل',
+    'AdvancedSearchMatchedIn' => 'تمت المطابقة في {$field}:',
+    'AdvancedSearchMatchedInFilter' => 'متطابق في',
+    'AdvancedSearchAnyField' => 'أي حقل',
+    'AdvancedSearchSortBest' => 'أفضل تطابق',
+    'AdvancedSearchSummary' => 'النتائج: {$count}',
+    'AdvancedSearchSummaryTypes' => 'الأنواع التي تم البحث عنها: {$types}',
+    'AdvancedSearchNoResultsTitle' => 'لا توجد نتائج للبحث عن "{$q}"',
+    'AdvancedSearchNoResultsTip' => 'تحقق من الإملاء، أو جرب عددًا أقل من الكلمات.',
+    'AdvancedSearchFailedTitle' => 'تعذّر البحث الآن',
+    'AdvancedSearchFailedBody' => 'بياناتك آمنة. حاول مرة أخرى بعد قليل.',
+    'AdvancedSearchIncompleteTitle' => 'قد تكون النتائج غير مكتملة.',
+    'AdvancedSearchIncompleteDetail' => 'هذا النوع من البحث يقتصر على أحدث سجلاته فقط. حدّد نطاق بحثك لعرض المزيد.',
+    'AdvancedSearchTimeLimitNote' => 'توقف البحث مبكراً للحفاظ على سرعته، لذا لم يتم البحث في بعض الأنواع. قم بتضييق نطاق بحثك ليشملها.',
+    'AdvancedSearchNotSearched' => 'لم يتم البحث',
+    'AdvancedSearchMinChars' => 'اكتب ما لا يقل عن {$count} حرفًا للبحث.',
+    'AdvancedSearchEmptyPrompt' => 'ابحث عن المخاطر والضوابط والوثائق والأصول والمزيد.',
+    'AdvancedSearchFirstPage' => 'الصفحة الأولى',
+    'AdvancedSearchNoAccess' => 'لا يمكن لحسابك البحث في أي نوع من أنواع السجلات. اطلب من أحد المسؤولين منح صلاحية الوصول.',
+    'AdvancedSearchSort' => 'ترتيب',
+    'AdvancedSearchConnectedRecords' => 'السجلات المتصلة',
+    'AdvancedSearchConnectedRecordsNote' => 'يعرض فقط السجلات التي لديك صلاحية الوصول إليها.',
+    'AdvancedSearchNoConnections' => 'لا توجد سجلات متصلة يمكنك رؤيتها.',
+    'AdvancedSearchConnectionsFailed' => 'تعذر تحميل السجلات المتصلة.',
+    'AdvancedSearchShowConnections' => 'عرض السجلات المتصلة لـ {$title}',
+    'AdvancedSearchExploreConnections' => 'استكشف الروابط',
+    'AdvancedSearchCopyLink' => 'نسخ الوصلة',
+    'AdvancedSearchMoreCount' => '+{$count} المزيد',
+    'AdvancedSearchCopyLinkFailed' => 'تعذّر نسخ الرابط.',
+    'AdvancedSearchOpenRecord' => 'فتح',
+    'ControlDeepLinkUnavailable' => 'هذا العنصر غير متاح. ربما تم حذفه، أو ربما لا يمكنك الوصول إليه.',
+    'ExceptionDeepLinkUnavailable' => 'لا يمكن فتح هذا الاستثناء من هنا. قد لا يكون لديك حق الوصول إلى وثيقة السياسة الخاصة به.',
+    // Advanced Search: the topbar typeahead
+    'AdvancedSearchSeeAll' => 'اطلع على جميع نتائج البحث عن "{$q}"',
+    'AdvancedSearchTopHit' => 'أفضل نتيجة',
+    'AdvancedSearchKeyMove' => 'تنقّل',
+    'AdvancedSearchKeyEsc' => 'خروج',
+    'AdvancedSearchSuggestions' => 'اقتراحات البحث',
+    'AdvancedSearchAssessmentSubtitle' => '{$contact} · {$percent}% مكتمل',
+    'AdvancedSearchScannerId' => 'معرف الماسح الضوئي',
+    'AdvancedSearchVendor' => 'المورّد',
+    'AdvancedSearchProduct' => 'منتج',
+    'AdvancedSearchSeverityLevel' => 'الخطورة {$level}',
+    'AdvancedSearchFromYourExtras' => 'من إضافاتك',
+    'UpdateAnExistingUser' => 'تحديث مستخدم موجود',
+    'UserImportProgressTitle' => 'استيراد المستخدمين',
+    'UserImportQueued' => 'تمت إضافته إلى قائمة الانتظار. سيبدأ الاستيراد بعد لحظات…',
+    'UserImportProgressCount' => 'تمت معالجة {$processed} من أصل {$total} صف…',
+    'UserImportComplete' => 'اكتملت عملية الاستيراد.',
+    'UserImportFailed' => 'لم تكتمل عملية الاستيراد.',
+    'UserImportSummary' => 'تم إنشاء {$created} ، وتم تحديث {$updated} ، ولم يتم استيراد {$failed}.',
+    'UserImportRowInvalid' => 'الصف {$row}: غير مستورد. يلزم إدخال اسم مستخدم واسم كامل وعنوان بريد إلكتروني صالح.',
+    'UserImportRowError' => 'الصف {$row}: لم يتم استيراده بسبب خطأ غير متوقع.',
+    'UserImportRevealPasswords' => 'عرض كلمات المرور المؤقتة',
+    'UserImportPasswordsOnce' => 'تُعرض كلمات المرور المؤقتة للمستخدمين الجدد مرة واحدة ثم تُحذف. انسخها الآن وقدّمها لكل مستخدم بشكل آمن. يجب على كل مستخدم تغييرها عند تسجيل الدخول لأول مرة.',
+    'UserImportPasswordsShownOnce' => 'تم حذف كلمات المرور المؤقتة هذه من SimpleRisk ولا يمكن عرضها مرة أخرى. انسخها الآن. يجب على كل مستخدم تغيير كلمات المرور الخاصة به عند تسجيل الدخول لأول مرة.',
+    'UserImportPasswordsUnavailable' => 'لم يعد بالإمكان عرض كلمات المرور المؤقتة. تُعرض هذه الكلمات مرة واحدة فقط، للمسؤول الذي بدأ عملية الاستيراد، وفي علامة تبويب المتصفح التي بدأت العملية فقط، ولا يحتفظ SimpleRisk بأي معلومات قد تُتيح عرضها مرة أخرى. عيّن كلمة مرور جديدة لكل مستخدم جديد من خلال تعديل بيانات المستخدم.',
+    'UserImportBackgroundNote' => 'يتم تحديث هذه الصفحة تلقائيًا، ويستمر استيراد البيانات حتى بعد مغادرتك. افتح الصفحة مرة أخرى للاطلاع على النتيجة.',
+    'AuditAdditionalStakeholdersSetOnTest' => 'تم تحديد أصحاب المصلحة الإضافيين في الاختبار. لتغييرهم، عدّل الاختبار من خلال {$page}؛ سيتم تطبيق التغيير على هذه المراجعة فورًا.',
+    'QuestionnaireDraftSomeFilesNotSaved' => 'تم حفظ إجاباتك، ولكن لم يتم حفظ مرفق واحد أو أكثر. قد يكون حجم الملف كبيرًا جدًا أو من نوع غير مسموح به.',
+    'UploadFileTooBigForDatabase' => 'الملف المرفوع كبير جدًا بحيث لا يمكن لقاعدة البيانات تخزينه. يمكن لمسؤول SimpleRisk زيادة قيمتي max_allowed_packet و innodb_log_file_size في إعدادات MySQL.',
+    'UploadErrorIniSize' => 'يتجاوز حجم الملف المرفوع قيمة التوجيه upload_max_filesize في ملف php.ini.',
+    'UploadErrorFormSize' => 'يتجاوز حجم الملف المرفوع قيمة توجيه MAX_FILE_SIZE التي تم تحديدها في نموذج HTML.',
+    'UploadErrorPartial' => 'تم تحميل الملف جزئياً فقط.',
+    'UploadErrorNoFile' => 'لم يتم تحميل أي ملف.',
+    'UploadErrorNoTmpDir' => 'المجلد المؤقت مفقود.',
+    'UploadErrorCantWrite' => 'فشلت عملية كتابة الملف على القرص.',
+    'UploadErrorExtension' => 'أدى أحد ملحقات لغة PHP إلى إيقاف عملية تحميل الملف.',
+    'MaxUploadSizeNeedsInteger' => 'يجب أن يكون الحد الأقصى لحجم الملف المرفوع عددًا صحيحًا من البايتات أكبر من الصفر.',
+    'MaxUploadSizeUpdated' => 'تم تحديث الحد الأقصى لحجم الملف المرفوع بنجاح.',
+    'MaxUploadSizeCapped' => 'حجم الملف المحفوظ أكبر مما يسمح به هذا الخادم، لذا تُرفض الملفات الأكبر حجمًا حتى يتم رفع حدود PHP وMySQL أو خفض هذا الحجم. أكبر ملف مقبول حاليًا، بالبايت:',
+    'PleaseEnterAValidEmailAddress' => 'يرجى إدخال عنوان بريد إلكتروني صالح.',
+    'RiskImportedClosedWithoutCloseReason' => 'تم استيراد المخاطرة {$risk_id} ("{$subject}") بحالة "مغلقة" ولكن بدون سبب للإغلاق، لذا فإن معلومات إغلاقها غير مكتملة. أضف سببًا للإغلاق إلى الملف ثم استورده مرة أخرى، أو أكمل عملية الإغلاق من صفحة المخاطرة.',
+    // SR-115: HTTP Strict Transport Security (HSTS)
+    'EnableHSTS' => 'تفعيل بروتوكول أمان النقل الصارم (HSTS)',
+    'EnableHSTSHelp' => 'يُخبر هذا الخيار المتصفحات بالاتصال بـ SimpleRisk عبر HTTPS فقط خلال المدة القصوى المحددة أدناه. فعّل هذا الخيار فقط بعد التأكد من عمل HTTPS بشكل موثوق على هذا الموقع: المتصفحات التي اطلعت على ترويسة HTTP سترفض طلبات HTTP العادية، ولا يمكن تجاوز الشهادة المعطوبة إلا بعد انقضاء المدة القصوى. ابدأ بمدة قصوى قصيرة، مثل 300 ثانية، ثم ارفعها تدريجيًا بعد التحقق من HTTPS.',
+    'HSTSMaxAge' => 'الحد الأقصى لعمر HSTS (بالثواني)',
+    'HSTSMaxAgeInvalid' => 'يجب أن يكون الحد الأقصى لعمر HSTS عددًا صحيحًا من الثواني بين 0 و 63072000.',
+    'HSTSIncludeSubdomains' => 'قم بتطبيق بروتوكول HSTS على جميع النطاقات الفرعية',
+    'HSTSIncludeSubdomainsHelp' => 'يفرض هذا الخيار أيضًا استخدام بروتوكول HTTPS على جميع النطاقات الفرعية لهذا المضيف. تجاهل هذا الخيار إذا كان أي نطاق فرعي يُقدّم عبر بروتوكول HTTP العادي.',
     '' => '',
 );
 ?>

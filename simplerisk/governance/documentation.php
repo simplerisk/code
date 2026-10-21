@@ -98,7 +98,7 @@
             set_alert(true, "bad", $escaper->escapeHtml($lang['YouCantDownloadBecauseImportExportExtraDisabled']));
             refresh();
         }
-        elseif (compliance_file_download_denied_for_download('documents', 'is_admin', 'check_permission_exception', 'check_permission'))
+        elseif (compliance_file_download_denied_for_download('documents', is_admin(...), check_permission_exception(...), check_permission(...)))
         {
             redirect_permission_denied('DownloadFilePermissionMessage', 'bulk documents download');
         }
@@ -428,6 +428,16 @@ if (document_program_read_permitted()) {
         ?>
                     </div>
                 </div>
+                <!-- Narrow-width filter sheet (design-system.md §6b) -- same
+                     pattern as the Define Exceptions audit trail's own
+                     #exception-audit-trail-filters-toggle; wired generically
+                     in createAuditTrail() (js/simplerisk/sr-audit-trail.js)
+                     rather than per-page. -->
+                <button type="button" class="sr-qf-toggle" id="document-audit-trail-filters-toggle" aria-expanded="false" aria-controls="document-audit-trail-quickfilters">
+                    <i class="fa fa-filter" aria-hidden="true"></i>
+                    <span><?= $escaper->escapeHtml($lang['Filters']); ?></span>
+                    <span class="sr-qf-toggle-count" id="document-audit-trail-filters-count" hidden></span>
+                </button>
                 <div class="sr-table-quickfilters" id="document-audit-trail-quickfilters">
                     <div class="sr-qf-selects" id="document-audit-trail-filters">
                         <div class="audit-select-folder">
@@ -793,7 +803,7 @@ if (document_program_read_permitted()) {
                                         <div class="input-group">
                                             <input required type="text" class="form-control readonly" style="width: 50%; margin-bottom: 0px; cursor: default;"/>
                                             <label for="file-upload" class="btn btn-submit m-r-10"><?= $escaper->escapeHtml($lang['ChooseFile']) ?></label>
-                                            <label class="align-self-center">Max <?= $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</label>
+                                            <label class="align-self-center">Max <?= $escaper->escapeHtml(max_upload_size_label()); ?> Mb</label>
                                         </div>
                                         <input type="file" id="file-upload" name="file[]" class="d-none" />
                                         <label id="file-size" for="" class="d-none"></label>
@@ -964,7 +974,7 @@ if (document_program_read_permitted()) {
                                         <div class="input-group">
                                             <input type="text" class="form-control readonly" style="width: 50%; margin-bottom: 0px; cursor: default;"/>
                                             <label for="file-upload-update" class="btn btn-submit m-r-10"><?= $escaper->escapeHtml($lang['ChooseFile']) ?></label>
-                                            <label class="align-self-center" size="2">Max <?= $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</label>
+                                            <label class="align-self-center" size="2">Max <?= $escaper->escapeHtml(max_upload_size_label()); ?> Mb</label>
                                         </div>
                                         <input type="file" id="file-upload-update" name="file[]" class="d-none" />
                                         <label id="file-size" for="" class="d-none"></label>
@@ -1007,7 +1017,7 @@ if (document_program_read_permitted()) {
 <script>
     function displayFileSize(label, size) {
 
-        if (<?= $escaper->escapeHtml(get_setting('max_upload_size')); ?> > size) {
+        if (<?= $escaper->escapeHtml(max_upload_size_effective()); ?> > size) {
 
             label.attr("class","text-success");
 
@@ -1470,7 +1480,7 @@ if (document_program_read_permitted()) {
 
             $("#add-document-form").on('submit', function(event) { 
                 event.preventDefault();
-                if ($('#file-upload')[0].files[0] && <?= $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload')[0].files[0].size) {
+                if ($('#file-upload')[0].files[0] && <?= $escaper->escapeHtml(max_upload_size_effective()); ?> <= $('#file-upload')[0].files[0].size) {
                     showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                     return false;
                 }
@@ -1547,7 +1557,7 @@ if (document_program_read_permitted()) {
 
             $("#update_document").click(function(event) {
                 event.preventDefault();
-                if ($('#file-upload-update')[0].files[0] && <?= $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload-update')[0].files[0].size) {
+                if ($('#file-upload-update')[0].files[0] && <?= $escaper->escapeHtml(max_upload_size_effective()); ?> <= $('#file-upload-update')[0].files[0].size) {
                     showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                     return false;
                 }

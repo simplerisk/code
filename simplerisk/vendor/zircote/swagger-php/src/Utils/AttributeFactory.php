@@ -11,6 +11,8 @@ use OpenApi\Assembler\OptionalPropertyAttributeTranslator;
 use OpenApi\Contracts\AttributeInterface;
 use OpenApi\Contracts\AttributeTranslatorInterface;
 use OpenApi\OpenApiException;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
 /**
  * Creates spec attribute instances from PHP reflectors.
@@ -20,8 +22,10 @@ use OpenApi\OpenApiException;
  * collection) and augmenter pipes that need to manufacture spec objects
  * from reflection (e.g. Augmenter\Inheritance for non-schema ancestor members).
  */
-class AttributeFactory
+class AttributeFactory implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * @var TypedList<AttributeTranslatorInterface>
      */
@@ -88,6 +92,8 @@ class AttributeFactory
      *
      * For methods, also resolves parameter-level attributes into the method-level ones.
      *
+     * @param \ReflectionClass<object>|\ReflectionMethod|\ReflectionProperty|\ReflectionParameter|\ReflectionClassConstant $reflector
+     *
      * @return list<AttributeInterface>
      */
     public function fromReflector(\ReflectionClass|\ReflectionMethod|\ReflectionProperty|\ReflectionParameter|\ReflectionClassConstant $reflector): array
@@ -124,6 +130,8 @@ class AttributeFactory
      * Each member is fully resolved internally (merge + parameter absorption for methods),
      * then all results are returned for hierarchical absorption into class-level containers.
      *
+     * @param \ReflectionClass<object> $class
+     *
      * @return list<AttributeInterface>
      */
     public function membersOf(\ReflectionClass $class): array
@@ -147,6 +155,8 @@ class AttributeFactory
             foreach ($constructor->getParameters() as $parameter) {
                 array_push($inner, ...$this->resolveNesting($this->readAttributes($parameter)));
             }
+
+            $this->reportConstructorAttributes($class, $constructor);
         }
 
         foreach ($class->getReflectionConstants() as $constant) {
@@ -168,6 +178,8 @@ class AttributeFactory
 
     /**
      * Check whether a reflector has any `AttributeInterface` attributes.
+     *
+     * @param \ReflectionClass<object>|\ReflectionMethod|\ReflectionProperty|\ReflectionParameter|\ReflectionClassConstant $reflector
      */
     public function hasAttributes(\ReflectionClass|\ReflectionMethod|\ReflectionProperty|\ReflectionParameter|\ReflectionClassConstant $reflector): bool
     {
@@ -176,6 +188,8 @@ class AttributeFactory
 
     /**
      * Get methods directly implemented by a class (not inherited from parents).
+     *
+     * @param \ReflectionClass<object> $class
      *
      * @return list<\ReflectionMethod>
      */
@@ -201,7 +215,9 @@ class AttributeFactory
     /**
      * Get interfaces directly implemented by a class (not inherited from parents).
      *
-     * @return list<\ReflectionClass>
+     * @param \ReflectionClass<object> $class
+     *
+     * @return list<\ReflectionClass<object>>
      */
     public function getDirectInterfaces(\ReflectionClass $class): array
     {
@@ -228,19 +244,21 @@ class AttributeFactory
      * PHP's ReflectionClass::getTraits() flattens the entire trait tree, so we
      * must exclude traits that come from a parent class or from another trait's use.
      *
-     * @return list<\ReflectionClass>
+     * @param \ReflectionClass<object> $class
+     *
+     * @return list<\ReflectionClass<object>>
      */
     public function getDirectTraits(\ReflectionClass $class): array
     {
         $scannerDetails = $this->tokenScanner->detailsFor($class);
 
         if ($scannerDetails !== null) {
-            return array_filter(
+            return array_values(array_filter(
                 array_map(
                     fn (string $name): ?\ReflectionClass => class_exists($name) || trait_exists($name) ? new \ReflectionClass($name) : null,
                     $scannerDetails['traits'],
                 ),
-            );
+            ));
         }
 
         return [];
@@ -280,6 +298,36 @@ class AttributeFactory
         }
 
         return $outer;
+    }
+
+    /**
+     * The constructor is not a place to declare anything: only its parameters, as promoted
+     * properties, are read. What sits on it is ignored, and said so; the class takes the same
+     * attributes.
+     *
+     * @param \ReflectionClass<object> $class
+     */
+    protected function reportConstructorAttributes(\ReflectionClass $class, \ReflectionMethod $constructor): void
+    {
+        // inherited or brought in by a trait, it is reported where it is declared
+        $scannerDetails = $this->tokenScanner->detailsFor($class);
+        if ($constructor->getDeclaringClass()->getName() !== $class->getName()
+            || ($scannerDetails && !in_array($constructor->getName(), $scannerDetails['methods'], true))
+        ) {
+            return;
+        }
+
+        $attributes = $constructor->getAttributes(AttributeInterface::class, \ReflectionAttribute::IS_INSTANCEOF);
+        if ($attributes === []) {
+            return;
+        }
+
+        $this->logger?->warning(sprintf(
+            '%s ignored on a constructor, declare %s on the class in %s',
+            implode(', ', array_map(static fn (\ReflectionAttribute $attribute): string => $attribute->getName(), $attributes)),
+            count($attributes) === 1 ? 'it' : 'them',
+            SourceLocation::fromReflector($constructor),
+        ));
     }
 
     /**
@@ -384,7 +432,10 @@ class AttributeFactory
                 if ($candidate instanceof $targetClass) {
                     if ($matchingTarget instanceof AttributeInterface) {
                         throw OpenApiException::fromSource(
-                            sprintf('Ambiguous merge: %s matches multiple siblings on the same target', $attribute::class),
+                            sprintf(
+                                'Ambiguous merge: %s matches multiple siblings on the same target. Nest it explicitly in the one it belongs to, or give it a `component` and reference it from each.',
+                                $attribute::class
+                            ),
                             $attribute->getSourceLocation(),
                         );
                     }
@@ -434,6 +485,8 @@ class AttributeFactory
     }
 
     /**
+     * @param \ReflectionClass<object>|\ReflectionMethod|\ReflectionProperty|\ReflectionParameter|\ReflectionClassConstant $reflector
+     *
      * @return list<AttributeInterface>
      */
     protected function readAttributes(\ReflectionClass|\ReflectionMethod|\ReflectionProperty|\ReflectionParameter|\ReflectionClassConstant $reflector): array

@@ -1,0 +1,55 @@
+// Shared "icon box + title" visual treatment for a risk Details/Mitigation/
+// Review Cards header. Two consumers render the identical markup shape
+// (.sr-qcard-head > .sr-qcard-ico + .sr-qcard-htext > h2) and need to render
+// it identically: risk-details-form.js's edit-mode canvas
+// (.sr-qform .sr-qcard-head, modules/_questionnaire.scss) and
+// risk-details-view.js's read-mode card stack (.sr-qcards-stack
+// .sr-qcard-head, modules/_sr-modal.scss). Centralized here rather than
+// duplicated so the two can't drift the way .sr-qcard-head/.sr-qcard-title's
+// OLDER, unrelated bare rule (_sr-modal.scss, still used by ~10 other pages
+// -- Compliance, Governance, AI, Upgrade -- left untouched) already had from
+// this one before the two Cards renderers matched it instead of each other.
+@mixin sr-qcard-head-styled {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 18px;
+    background: $gray-100;
+    border-bottom: 1px solid $gray-300;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+
+    .sr-qcard-ico {
+        flex: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        display: grid;
+        place-items: center;
+        color: $sr-primary;
+
+        svg { width: 17px; height: 17px; }
+        i { font-size: 15px; }
+    }
+
+    .sr-qcard-htext {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        flex: 1;
+
+        h2 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 800;
+            color: $sr-primary;
+        }
+
+        .sr-qcard-hsub {
+            font-size: 12px;
+            color: $gray-600;
+        }
+    }
+}

@@ -1167,16 +1167,20 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      */
     public function withErasedUnionTypes(): Type
     {
-        return $this->memoize(__METHOD__, function (): ArrayShapeType {
-            $new_field_types = $this->field_types;
-            foreach ($this->field_types as $offset => $union_type) {
-                $new_field_types[$offset] = $union_type->eraseRealTypeSetRecursively();
-            }
-            if ($new_field_types === $this->field_types) {
-                return $this;
-            }
-            return self::fromFieldTypes($new_field_types, $this->is_nullable);
-        });
+        return $this->getMemoizedForCurrentState(__METHOD__)
+            ?? ($this->memoized_data[__METHOD__] = $this->computeWithErasedUnionTypes());
+    }
+
+    private function computeWithErasedUnionTypes(): ArrayShapeType
+    {
+        $new_field_types = $this->field_types;
+        foreach ($this->field_types as $offset => $union_type) {
+            $new_field_types[$offset] = $union_type->eraseRealTypeSetRecursively();
+        }
+        if ($new_field_types === $this->field_types) {
+            return $this;
+        }
+        return self::fromFieldTypes($new_field_types, $this->is_nullable);
     }
 
     public function asCallableType(CodeBase $code_base): ?Type
@@ -1225,6 +1229,29 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             }
         }
         return $this->genericArrayElementUnionType()->asListTypes();
+    }
+
+    /**
+     * @override
+     */
+    public function castToNonEmptyAssociativeArrayTypes(): UnionType
+    {
+        if ($this->canCastToList()) {
+            // Optional keys are independent, so array{0?:T,1?:U} permits [1 => $u], which is not a list.
+            // canCastToList() guarantees that optional keys are trailing, so every possible value
+            // is a list only when at most one key is optional (e.g. array{}, array{0:T,1?:U}, array{0?:T}).
+            $optional_count = 0;
+            foreach ($this->field_types as $field_type) {
+                if ($field_type->isPossiblyUndefined()) {
+                    $optional_count++;
+                }
+            }
+            if ($optional_count <= 1) {
+                return UnionType::empty();
+            }
+        }
+        // Keep the precise shape, e.g. array{key:T}, array{0?:T,1:U}, or array{0?:T,1?:U}
+        return $this->withIsNullable(false)->asPHPDocUnionType();
     }
 
     public function getTypesRecursively(): Generator

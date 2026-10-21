@@ -67,12 +67,12 @@ class MediaWikiSecurityCheckPlugin extends SecurityCheckPlugin {
 		// options. They are not escaped
 		$insertTaint = $insertTaint->withParamSinkTaint( 3, $sqlExecTaint, self::NO_OVERRIDE );
 
-		$insertQBRowTaint = FunctionTaintedness::emptySingleton();
-		$insertQBRowTaint = $insertQBRowTaint->withParamSinkTaint( 0, clone $sqlExecKeysTaint, self::NO_OVERRIDE );
+		$queryBuilderRowTaint = FunctionTaintedness::emptySingleton()
+			->withParamSinkTaint( 0, clone $sqlExecKeysTaint, self::NO_OVERRIDE );
 
-		$insertQBRowsTaint = FunctionTaintedness::emptySingleton();
 		$multiRowsTaint = Taintedness::newFromShape( [], clone $sqlExecKeysTaint );
-		$insertQBRowsTaint = $insertQBRowsTaint->withParamSinkTaint( 0, $multiRowsTaint, self::NO_OVERRIDE );
+		$queryBuilderRowsTaint = FunctionTaintedness::emptySingleton()
+			->withParamSinkTaint( 0, $multiRowsTaint, self::NO_OVERRIDE );
 
 		return [
 			// Note, at the moment, this checks where the function
@@ -81,8 +81,10 @@ class MediaWikiSecurityCheckPlugin extends SecurityCheckPlugin {
 			'\Wikimedia\Rdbms\IMaintainableDatabase::insert' => $insertTaint,
 			'\Wikimedia\Rdbms\Database::insert' => $insertTaint,
 			'\Wikimedia\Rdbms\DBConnRef::insert' => $insertTaint,
-			'\Wikimedia\Rdbms\InsertQueryBuilder::row' => $insertQBRowTaint,
-			'\Wikimedia\Rdbms\InsertQueryBuilder::rows' => $insertQBRowsTaint,
+			'\Wikimedia\Rdbms\InsertQueryBuilder::row' => $queryBuilderRowTaint,
+			'\Wikimedia\Rdbms\InsertQueryBuilder::rows' => $queryBuilderRowsTaint,
+			'\Wikimedia\Rdbms\ReplaceQueryBuilder::row' => $queryBuilderRowTaint,
+			'\Wikimedia\Rdbms\ReplaceQueryBuilder::rows' => $queryBuilderRowsTaint,
 			// FIXME Doesn't handle array args right.
 			'\wfShellExec' => [
 				self::SHELL_EXEC_TAINT | self::ARRAY_OK,
@@ -121,6 +123,10 @@ class MediaWikiSecurityCheckPlugin extends SecurityCheckPlugin {
 				self::NO_TAINT,
 				'overall' => self::NO_TAINT
 			],
+			'\Wikimedia\StatusValue\StatusValue::newGood' => [
+				self::NO_TAINT,
+				'overall' => self::NO_TAINT
+			],
 			'\MediaWiki\Status\Status::newGood' => [
 				self::NO_TAINT,
 				'overall' => self::NO_TAINT
@@ -128,10 +134,18 @@ class MediaWikiSecurityCheckPlugin extends SecurityCheckPlugin {
 			'\StatusValue::getValue' => [
 				'overall' => self::NO_TAINT
 			],
+			'\Wikimedia\StatusValue\StatusValue::getValue' => [
+				'overall' => self::NO_TAINT
+			],
 			'\MediaWiki\Status\Status::getValue' => [
 				'overall' => self::NO_TAINT
 			],
 			'\StatusValue::setResult' => [
+				self::NO_TAINT,
+				self::NO_TAINT,
+				'overall' => self::NO_TAINT
+			],
+			'\Wikimedia\StatusValue\StatusValue::setResult' => [
 				self::NO_TAINT,
 				self::NO_TAINT,
 				'overall' => self::NO_TAINT
@@ -267,7 +281,9 @@ class MediaWikiSecurityCheckPlugin extends SecurityCheckPlugin {
 				foreach ( $classes as $cl ) {
 					$classFQSEN = $cl->getFQSEN()->__toString();
 					// TODO: drop first check when the `\Message` alias is dropped from MW core.
-					if ( $classFQSEN === '\Message' || $classFQSEN === '\MediaWiki\Message\Message' ) {
+					if ( $classFQSEN === '\Message' || $classFQSEN === '\MediaWiki\Message\Message'
+						|| $classFQSEN === '\MediaWiki\Language\Message\Message'
+					) {
 						$argumentIsMaybeAMsg = true;
 						break;
 					}
@@ -287,7 +303,9 @@ class MediaWikiSecurityCheckPlugin extends SecurityCheckPlugin {
 				foreach ( $classesParam as $cl ) {
 					$classFQSEN = $cl->getFQSEN()->__toString();
 					// TODO: drop first check when the `\Message` alias is dropped from MW core.
-					if ( $classFQSEN === '\Message' || $classFQSEN === '\MediaWiki\Message\Message' ) {
+					if ( $classFQSEN === '\Message' || $classFQSEN === '\MediaWiki\Message\Message'
+						|| $classFQSEN === '\MediaWiki\Language\Message\Message'
+					) {
 						// So we are here. Input is a Message, and func expects either a Message or string
 						// (or something else). So disable double escape check.
 						return $curArgTaintedness->without( self::ESCAPED_TAINT );

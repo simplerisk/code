@@ -1178,17 +1178,22 @@ final class ArgumentType
         $alternate_parameter_type = null;  // TODO: Properly merge "possibly undefined" union types - without this, undefined is inferred instead of possibly undefined
 
         // Check ArrayObject and ArrayIterator
-        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-        $arrayObj = FullyQualifiedClassName::make('', 'ArrayObject');
-        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-        $arrayIter = FullyQualifiedClassName::make('', 'ArrayIterator');
-        $deprecatedParam = false;
-        if ($method->getFQSEN() === FullyQualifiedMethodName::make($arrayObj, '__construct')
-            || $method->getFQSEN() === FullyQualifiedMethodName::make($arrayIter, '__construct')
-        ) {
-            $deprecatedParam = true;
+        // (The FQSEN factories always return the same instances, so these are only created once)
+        static $array_object_constructor_fqsen = null;
+        static $array_iterator_constructor_fqsen = null;
+        if ($array_object_constructor_fqsen === null) {
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            $arrayObj = FullyQualifiedClassName::make('', 'ArrayObject');
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            $arrayIter = FullyQualifiedClassName::make('', 'ArrayIterator');
+            $array_object_constructor_fqsen = FullyQualifiedMethodName::make($arrayObj, '__construct');
+            $array_iterator_constructor_fqsen = FullyQualifiedMethodName::make($arrayIter, '__construct');
         }
+        $method_fqsen = $method->getFQSEN();
+        $deprecatedParam = $method_fqsen === $array_object_constructor_fqsen
+            || $method_fqsen === $array_iterator_constructor_fqsen;
 
+        $arg_count_info = null;
         foreach ($method->alternateGenerator($code_base) as $alternate_method) {
             // Get the parameter associated with this argument
             $candidate_alternate_parameter = $alternate_method->getParameterForCaller($i);
@@ -1199,11 +1204,21 @@ final class ArgumentType
                 // If another function was already checked which had the right number of alternate parameters, don't bother allowing checks with param
                 $arglist = $node->kind === ast\AST_ARG_LIST ? $node : ($node->children['args'] ?? null);
                 if ($arglist) {
-                    $argcount = \count($arglist->children);
+                    // This accounts for argument unpacking: f($a, ...['x', 'y']) passes exactly 3 arguments,
+                    // but the argument count is unknown when unpacking an array of unknown size.
+                    [$argcount, $has_unknown_argcount] = $arg_count_info ??= self::getArgCount($code_base, $context, $arglist->children);
 
-                    // Make sure we have enough arguments
-                    if ($argcount < $alternate_method->getNumberOfRequiredParameters() && !self::isUnpack($arglist->children)) {
-                        continue;
+                    if (!$has_unknown_argcount) {
+                        // Make sure we have enough arguments
+                        if ($argcount < $alternate_method->getNumberOfRequiredParameters()) {
+                            continue;
+                        }
+                        // Make sure this alternate can accept this many arguments.
+                        // Otherwise, an alternate with fewer parameters (e.g. array_udiff(array $array, callable $data_comp_func))
+                        // would accept a callable in a position where the alternates matching the argument count require an array.
+                        if ($argcount > $alternate_method->getNumberOfParameters() && \is_null($alternate_method->getParameterForCaller($argcount - 1))) {
+                            continue;
+                        }
                     }
                 }
             }
@@ -1895,7 +1910,8 @@ final class ArgumentType
                     foreach (UnionTypeVisitor::classListFromNodeAndContext(
                         $code_base,
                         $context,
-                        $class_node
+                        $class_node,
+                        $node_kind === ast\AST_STATIC_CALL
                     ) as $class) {
                         if (!$class->hasMethodWithName(
                             $code_base,
@@ -1992,6 +2008,8 @@ final class ArgumentType
      * For purely positional calls this returns the input unchanged (fast path).
      * Gaps for unspecified optional parameters are left absent — callers
      * should continue using `$args[$i] ?? null`.
+     * Unmatched named arguments, and an `...$unpack` that a named argument replaced,
+     * are appended after the matched positions.
      *
      * @param list<Node|int|string|float> $args Raw argument nodes from $node->children['args']->children
      * @param FunctionInterface $method The function/method being called
@@ -2023,7 +2041,15 @@ final class ArgumentType
             if ($arg instanceof Node && $arg->kind === ast\AST_NAMED_ARG) {
                 $name = $arg->children['name'];
                 if (isset($name_to_position[$name])) {
-                    $result[$name_to_position[$name]] = $arg->children['expr'];
+                    $position = $name_to_position[$name];
+                    $existing = $result[$position] ?? null;
+                    if ($existing instanceof Node && $existing->kind === ast\AST_UNPACK) {
+                        // `f(...$args, x: 1)`: any call that doesn't throw passes `1` for `x` (an `x` in the unpacked
+                        // array would be an error), but the unpack may still fill the later parameters.
+                        // Keep the unpack node (after the matched positions) so callers know that.
+                        $unmatched[] = $existing;
+                    }
+                    $result[$position] = $arg->children['expr'];
                 } else {
                     // Keep unmatched named args (e.g. forwarded via variadic) as-is
                     $unmatched[] = $arg;

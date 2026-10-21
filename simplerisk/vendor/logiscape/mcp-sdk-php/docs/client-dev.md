@@ -720,6 +720,8 @@ $session = $client->connect(
 
 Server -> client interleaving on the **POST** SSE response (used during a tool call that triggers elicitation, for example) still works whether or not `autoSse` is set -- it's a different mechanism.
 
+**Process model.** With `autoSse` on, the standalone stream is held open by a forked helper process only under the `cli` and `phpdbg` SAPIs, and only when `ext-pcntl` and `ext-posix` are loaded. Under every web SAPI -- PHP-FPM, mod_php, the built-in server -- the stream runs in-process as a non-blocking cURL transfer that is serviced while a request is in flight, exactly as it does on hosts without `ext-pcntl`. The SDK never forks a web worker: a forked copy would share the request's client connection and could finish the response the parent is still writing. Where the helper is used, it ends with a hard kill so it never runs the application's shutdown functions or destructors.
+
 ### Custom TLS Trust
 
 For self-signed or internal certificates, point the SDK at a custom CA bundle:
@@ -1759,7 +1761,7 @@ A few important rules:
 
 - **Snapshot after every operation.** The `nextRequestId` counter and the `Mcp-Session-Id` / last-event-ID inside `sessionManagerState` advance on every JSON-RPC round-trip.
 - **Use `detach()`, not `close()`, between requests.** `close()` sends a `DELETE` and drops the server session.
-- **`autoSse => false` is the right call.** A standalone GET stream cannot survive past the end of the PHP request anyway, and in some SAPIs PHP-FPM may try to fork it -- which inherits the session/log state in confusing ways.
+- **`autoSse => false` is the right call.** A standalone GET stream cannot survive past the end of the PHP request anyway, so opening it only costs an extra GET per request. (Leaving it on is harmless: under PHP-FPM and other web SAPIs the SDK holds the stream in-process and never forks the worker.)
 - **OAuth tokens persist separately.** They're stored in the `TokenStorageInterface` you configured (use `FileTokenStorage` keyed by PHP session ID for true per-user isolation). The session resume API only handles the MCP-level state.
 
 For a complete reference implementation -- including OAuth, elicitation capture, and a JavaScript front-end -- see `webclient/` in the repository.

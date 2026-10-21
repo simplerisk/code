@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Gebruikerssessies',
     'SessionActivityTimeout' => 'Time-out sessieactiviteit',
     'Security' => 'Beveiligings',
-    'EnableCSP' => 'Beveiligingsbeleid voor inhoud inschakelen (dit heeft Chrome in het verleden verbroken)',
+    'EnableCSP' => 'Inhoudsbeveiligingsbeleid inschakelen (aanbevolen)',
     'EnableDebugLogging' => 'Logboekregistratie voor foutopsporing inschakelen',
     'seconds' => 'seconden',
     'FieldSample' => 'Veld voorbeeld',
@@ -1973,7 +1973,7 @@ $lang = array(
     'IncidentResponseNoteDeletePermissionMessage' => 'U hebt geen toestemming om notities van een incident te verwijderen. Neem contact op met een beheerder als u denkt dat u dit bericht ten onrechte hebt ontvangen.',
     'IncidentAddLessonPermissionMessage' => 'U hebt geen toestemming om lessen toe te voegen aan een incident. Neem contact op met een beheerder als u denkt dat u dit bericht ten onrechte hebt ontvangen.',
     'IncidentRemoveLessonPermissionMessage' => 'U hebt geen toestemming om een incident te verwijderen uit \'Lessen geleerd\'. Neem contact op met een beheerder als u denkt dat u dit bericht ten onrechte hebt ontvangen.',
-    'TemplateAssignment' => 'Sjabloonopdracht',
+    'TemplateAssignment' => 'Sjabloontoewijzing',
     'PleaseSelectUser' => 'Selecteer een gebruiker',
     'AboutThisPage' => 'Over deze pagina',
     'ProjectStatus' => 'Projectstatus',
@@ -2043,7 +2043,7 @@ $lang = array(
     'BackupSettingsUpdated' => 'De back-upinstellingen zijn bijgewerkt door gebruiker "{$user_name}".',
     'BackupInitiatedByUser' => 'Back-up gestart door gebruiker "{$user_name}".',
     'BackupInitiated' => 'De back-up is gestart. Dit kan enkele minuten duren.',
-    'NoControlsAvailable' => 'Geen bedieningselementen beschikbaar',
+    'NoControlsAvailable' => 'Geen beheersmaatregelen beschikbaar',
     'AdminCantDisableItself' => 'Een beheerder kan zichzelf niet uitschakelen.',
     'AdminCantDeleteItself' => 'Een beheerder kan zichzelf niet verwijderen.',
     'NoFrameworksFromGithub' => 'Er zijn geen specifieke frameworks geïmporteerd vanuit GitHub.',
@@ -2340,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'Er lijken geen resultaten te zijn voor uw zoekopdracht.',
     'Advanced_Search_no_results_2' => 'Controleer uw zoekopdracht nogmaals op typefouten, spelfouten of probeer een andere zoekterm.',
     'IncidentsPerDay' => 'Incidenten per dag',
-    'CurrentVsDesiredMaturity' => 'Volwassenheid volgens het controlegezin',
+    'CurrentVsDesiredMaturity' => 'Volwassenheid per controlefamilie',
     'RiskDistribution' => 'Risicoverdeling',
     'RiskDistributionDescription'=>'De bovenstaande cirkeldiagrammen helpen de verdeling van de risico\'s over de verschillende risiconiveaus weer te geven, zowel voor het inherente als voor het resterende risico. We kunnen deze twee taarten gebruiken om de vooruitgang in onze risicobeperkingsinspanningen aan te tonen. Als de taart met restrisico\'s grote delen van zeer hoge of hoge risico\'s vertoont, kan dit een teken zijn dat uw organisatie te veel risico\'s op zich neemt en dat verdere inspanningen om de risico\'s te beperken nodig zijn.',
     'EnableTabs' => 'Schakel tabbladen in',
@@ -2515,12 +2515,12 @@ $lang = array(
     'EnterAValuationLevelName' => 'Voer een naam in voor het waarderingsniveau.',
     'TheNameFieldCannotBeEmptyOrContainOnlySpaces' => 'Het veld \'naam\' mag niet leeg zijn of alleen spaties bevatten.',
     'EditAsset' => 'Activa bewerken',
-    'TheSelectedControlsWereDeletedSuccessfully' => 'De geselecteerde besturingselementen zijn succesvol verwijderd.',
-    'NothingControlsForDeletingWereSelected' => 'Er zijn geen besturingselementen voor verwijderen geselecteerd.',
+    'TheSelectedControlsWereDeletedSuccessfully' => 'De geselecteerde beheersmaatregelen zijn succesvol verwijderd.',
+    'NothingControlsForDeletingWereSelected' => 'Er zijn geen beheersmaatregelen geselecteerd om te verwijderen.',
     'PleaseSelectARoleBeforeDeleting' => 'Selecteer een rol voordat u verwijdert.',
     'DocumentInstallation' => 'Documentinstallatie',
-    'DocumentControlMapping' => 'Document voor het beheren van mapping',
-    'DocumentControlMappingHelp'=>'Dit rapport toont alle documenten om toewijzingen te beheren',
+    'DocumentControlMapping' => 'Toewijzing van documenten aan beheersmaatregelen',
+    'DocumentControlMappingHelp'=>'Dit rapport toont alle toewijzingen van documenten aan beheersmaatregelen',
     'DocumentID' => 'Document-ID',
     'Score' => 'Score',
     'TFIDFSimilarity' => 'TF-IDF-gelijkenis',
@@ -2544,7 +2544,7 @@ $lang = array(
     'UnlikelyMatch' => 'Onwaarschijnlijke match',
     'NotAMatch' => 'Geen match',
     'ReviewManually' => 'Handmatig beoordelen',
-    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Antwoorden op vragen met gekoppelde besturingselementen zullen het besturingselementtype bijwerken naar',
+    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Antwoorden op vragen met gekoppelde beheersmaatregelen zullen het type beheersmaatregel bijwerken naar',
     'AuditLog_IncidentUpdated' => 'Incident "{$incident_summary}"(ID: {$incident_id}) is bijgewerkt door gebruiker "{$user_name}". Wijzigingen: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'Antwoorden op beoordelingen worden automatisch opgeslagen',
     'SecondsAssessmentsAreAutoSaved' => 'Secondenbeoordelingen worden automatisch opgeslagen',
@@ -2599,11 +2599,11 @@ $lang = array(
     'EnableLoggingDebug' => 'DEBUG: Gedetailleerde diagnostische informatie voor ontwikkelaars.',
     'QueueMonitor' => 'Wachtrijmonitor',
     'PleaseEnterAValidTimezone' => 'Voer een geldige tijdzone in.',
-    'TFIDFMatch' => 'TF-IDF-wedstrijd',
+    'TFIDFMatch' => 'TF-IDF-overeenkomst',
     'CompletionDate' => 'Voltooiingsdatum',
     'AssetsAndControls' => 'Activa en controles',
     'AssetsByControl' => 'Activa per beheer',
-    'ControlsByAsset' => 'Beheer per activa',
+    'ControlsByAsset' => 'Beheersmaatregelen per activum',
     'NoIncidentDetectionDataAvailable' => 'Er zijn geen incidenten geregistreerd waarbij zowel de begindatum als de detectiedatum een datum hadden.',
     'IncidentDashboard' => 'Incidentdashboard',
     'TimeToDetectByTeam' => 'Tijd nodig om te detecteren door het team',
@@ -2663,7 +2663,7 @@ $lang = array(
     'Reports'                  => 'Rapporten',
     'Dashboards'               => 'Dashboards',
     'RiskCharts'               => 'Risicografieken',
-    'SearchReports'            => 'Zoekrapporten...',
+    'SearchReports'            => 'Rapporten zoeken...',
     'SearchConfigure'          => 'Zoekinstellingen...',
     'Favorites'                => 'Favorieten',
     'AddToFavorites'           => 'Toevoegen aan favorieten',
@@ -2776,7 +2776,7 @@ $lang = array(
     'ImportExportExtraDesc'               => 'De Import-Export Extra biedt de mogelijkheid om gegevens in SimpleRisk te importeren door velden in een CSV-bestand te koppelen aan velden in de SimpleRisk-database. Het kan worden gebruikt om auditresultaten van een spreadsheet van een derde partij, resultaten van kwetsbaarheidsscans van een andere tool, assets uit uw CMDB en meer te importeren. De Extra biedt ook de mogelijkheid om CSV-bestanden vanuit SimpleRisk te exporteren met risico\'s, mitigatiemaatregelen, reviews of een gecombineerd rapport van alle drie.',
     'JiraExtraDesc'                       => 'De Jira Integration Extra biedt gebruikers de mogelijkheid om bidirectioneel te integreren met een Jira-instantie. Hiermee kunnen risico\'s worden gekoppeld aan Jira-issues en kunnen hun gegevens, status en opmerkingen worden gesynchroniseerd.',
     'APIExtraDesc'                        => 'Met API Extra kunnen klanten een RESTful API gebruiken om geautomatiseerde interacties met andere applicaties te creëren, waardoor ze geavanceerde automatisering kunnen realiseren en hun bestaande infrastructuur optimaal kunnen benutten.',
-    'AdvancedSearchExtraDesc'             => "De functie 'Geavanceerd zoeken' breidt de functionaliteit van het zoekvak in de bovenste balk uit, zodat u risico's kunt vinden door middel van tekstuele zoekopdrachten in risicogegevens.",
+    'AdvancedSearchExtraDesc'             => "De extra functie 'Geavanceerd zoeken' maakt van het zoekvak in de bovenste balk één zoekfunctie voor risico's, frameworks, controles, documenten, uitzonderingen, tests, audits, activa en activagroepen, met een volledige zoekpagina om de resultaten te bekijken. Alleen records die de gebruiker mag inzien, worden weergegeven.",
     'AssessmentsExtraDesc'                => 'Met Risk Assessment Extra kunnen gebruikers contactpersonen definiëren, vragen opstellen (inclusief logica), meerdere vragen samenstellen met behulp van een vragenlijstsjabloon, vragenlijsten maken en naar contactpersonen versturen, de resultaten van de vragenlijst bekijken, risico\'s toevoegen op basis van die resultaten, de resultaten in de loop van de tijd vergelijken, extern aangepaste beoordelingen importeren en exporteren en het auditspoor van de risicobeoordeling bekijken.',
     'ActiveAssessmentsDesc'               => 'Bekijk en beheer lopende assessments.',
     'WorkflowsExtraDesc'                  => 'De Workflows Extra biedt een visuele, gebeurtenisgestuurde workflow-engine die risicobeheeracties automatiseert als reactie op gebeurtenissen binnen SimpleRisk. U kunt workflows ontwerpen die worden geactiveerd bij wijzigingen, zoals het indienen, bijwerken of beoordelen van een risico, om goedkeuringen te routeren, taken toe te wijzen en uw proces gaande te houden zonder handmatige tussenkomst.',
@@ -2793,14 +2793,14 @@ $lang = array(
     // Configure Hub - Extra labels (only the ones not already defined elsewhere in this file)
     'ArtificialIntelligenceExtra'         => 'Kunstmatige intelligentie Extra',
     'NotificationExtra'                   => 'Melding Extra',
-    'TeamBasedSeparationExtra'            => 'Teamgebaseerde scheiding extra',
+    'TeamBasedSeparationExtra'            => 'Teamgebaseerde scheiding Extra',
     'CustomAuthenticationExtra'           => 'Aangepaste authenticatie Extra',
     'EncryptedDatabaseExtra'              => 'Versleutelde database extra',
     'APIExtra'                            => 'API Extra',
     'AssessmentsExtra'                    => 'Beoordelingen Extra',
     'WorkflowsExtra'                      => 'Werkstromen Extra',
     'UCFExtra'                            => 'Uniform nalevingskader (UCF) Extra',
-    'SCFExtra'                            => 'Beveiligingskader voor extra controles',
+    'SCFExtra'                            => 'Secure Controls Framework Extra',
     'DatabaseUpgrade'                     => 'Database-upgrade',
 
     // Configure Hub - Extra tile state badges
@@ -2972,8 +2972,8 @@ $lang = array(
     'ContextQuestions' => 'Contextuele vragen',
     'AIProviderNotConfiguredWarning' => 'De AI-provider is niet geconfigureerd. Er kunnen geen live resultaten worden weergegeven totdat u de provider en API-sleutel instelt op het tabblad \'Providerconfiguratie\'.',
     'AutoProcessSCFUpdates' => 'Nieuwe releases van het Secure Controls Framework (SCF) automatisch verwerken.',
-    'AddNewControls' => 'Voeg nieuwe SCF-besturingselementen toe',
-    'UpdateExistingControls' => 'Bestaande SCF-besturingselementen bijwerken',
+    'AddNewControls' => 'Voeg nieuwe SCF-beheersmaatregelen toe',
+    'UpdateExistingControls' => 'Bestaande SCF-beheersmaatregelen bijwerken',
     'DeleteRemovedControls' => 'Verwijderde SCF-besturingselementen verwijderen',
     'CreateEvidenceRequests' => 'Maak bewijsverzoeken aan voor SCF-controles.',
     'SelectSCFFrameworks' => 'Selecteer SCF-frameworks',
@@ -2981,10 +2981,10 @@ $lang = array(
     'NotFrameworkDescription' => 'De widget hieronder toont alle kolomkoppen uit het Secure Controls Framework (SCF)-spreadsheet. Gebruik deze widget om te selecteren welke kolommen framework- en welke niet-frameworkgegevens bevatten.',
     'Note' => 'Opmerking',
     'AISettingsNote' => 'Door AI-ondersteuning in te schakelen, worden gegevens naar Anthropic verzonden voor analyse in hun LLM-systeem, met behulp van uw Anthropic API-sleutel, om u resultaten op maat te leveren.',
-    'EnableAIAssistanceForControlData' => 'Schakel AI-ondersteuning in voor besturingsgegevens.',
+    'EnableAIAssistanceForControlData' => 'Schakel AI-ondersteuning in voor gegevens van beheersmaatregelen',
     'ReferenceText' => 'Referentietekst',
     'FrameworkSelection' => 'Kaderselectie',
-    'Show' => 'Show',
+    'Show' => 'Toon',
     'InProgress' => 'In behandeling',
     'Canceled' => 'Geannuleerd',
     'Failed' => 'Mislukt',
@@ -2997,7 +2997,7 @@ $lang = array(
     'PassingControls' => 'Geslaagde controles',
     'FailingControls' => 'Falende controles',
     'ControlsByFramework' => 'Beheersingen per framework',
-    'NumberOfControls' => 'Aantal bedieningselementen',
+    'NumberOfControls' => 'Aantal beheersmaatregelen',
     'PasswordResetTokenExpirationPeriod' => 'Vervaldatum van het wachtwoordhersteltoken',
     'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'De geldigheidsduur van een token voor het opnieuw instellen van een wachtwoord moet langer zijn dan 5 minuten.',
     'MeanTimeToRemediate' => 'Gemiddelde tijd tot herstel',
@@ -3037,7 +3037,7 @@ $lang = array(
     'LocalRegistrationStateCleared' => 'Lokale registratiestatus is gewist. Registreer opnieuw op /admin/register.php om een nieuwe instance_id te verkrijgen.',
     'InstanceInformationUpdated' => 'Instantiegegevens bijgewerkt.',
     'UpgradeExtraDesc' => 'De Upgrade Extra zorgt ervoor dat uw SimpleRisk-instantie altijd up-to-date is door applicatie- en database-upgrades te downloaden en toe te passen, en door uw andere Extra\'s te installeren en bij te werken, allemaal vanaf de pagina Registreren & Upgraden. Het is gratis bij SimpleRisk inbegrepen, zodat u altijd de nieuwste versie gebruikt zonder handmatig bestanden te hoeven beheren.',
-    'ExtraInstallDisabledByEnforcement' => 'Extra installatie is momenteel uitgeschakeld vanwege uw licentiestatus. Neem contact op met uw beheerder of de SimpleRisk-ondersteuning.',
+    'ExtraInstallDisabledByEnforcement' => 'De installatie van Extras is momenteel uitgeschakeld vanwege uw licentiestatus. Neem contact op met uw beheerder of de SimpleRisk-ondersteuning.',
     'LicenseStateUnknownRetryShortly' => 'Licentie-informatie is nog niet beschikbaar. Probeer het over een paar ogenblikken opnieuw.',
     'LicenseExpiringSoonTitle' => 'Licentie verloopt binnenkort: {$extra}',
     'LicenseExpiringSoonBody' => 'Uw {$extra} licentie verloopt op {$date} ({$days} dagen resterend). Verleng deze via Registreren & Upgraden om te voorkomen dat u de toegang verliest.',
@@ -3048,7 +3048,7 @@ $lang = array(
     'RefreshLicenses' => 'Licenties vernieuwen',
     'LoadingLicenseData' => 'Licentiegegevens laden...',
     'Licensed' => 'Gelicentieerd',
-    'Unlicensed' => 'Zonder vergunning',
+    'Unlicensed' => 'Niet gelicentieerd',
     'Expired' => 'Verlopen',
     'Free' => 'Vrij',
     'License' => 'Licentie',
@@ -3078,7 +3078,7 @@ $lang = array(
     'QuestionnaireTrackingNotFoundAfterUpdate' => 'Vragenlijst-tracking niet gevonden na de update.',
     'QuestionnaireResultAlreadyDecided' => 'Het resultaat van de vragenlijst is al bepaald (goedgekeurd, afgewezen of niet goedgekeurd). Gebruik eerst de actie \'Heropenen\'.',
     'QuestionnaireNoControlsForApproval' => 'Er zijn geen beheersmaatregelen gevonden voor deze vragenlijst.',
-    'QuestionnaireNoResponsesForApproval' => 'Er zijn geen antwoorden op de vragenlijst gevonden om de updates over de volwassenheid van het proces te verwerken.',
+    'QuestionnaireNoResponsesForApproval' => 'Er zijn geen antwoorden op de vragenlijst gevonden om de volwassenheidsupdates te verwerken.',
     'ResultMessageUnavailable' => 'Resultaatbericht niet beschikbaar.',
     'AIProviderURLNotAllowed' => 'Die API-URL is niet toegestaan. Gebruik een bekende AI-provider of een loopback-adres (127.0.0.1) dat u zelf host.',
     'AIReenterKeyForNewURL' => 'Voer de API-sleutel opnieuw in om een andere provider-URL te testen.',
@@ -3118,7 +3118,7 @@ $lang = array(
     'InstallTheSCF' => 'Installeer het Secure Controls Framework.',
     'InstallTheSCFHelp' => 'De SCF is een gratis extra die de kaders, controlevragen en risicokaarten levert waarop deze functie is gebaseerd. De installatie vindt op de achtergrond plaats en kan enkele minuten duren.',
     'GoToRegistration' => 'Ga naar Registratie',
-    'GoToSCF' => 'Ga naar het beveiligingsbeheerframework',
+    'GoToSCF' => 'Ga naar Secure Controls Framework',
     'SelfAssessmentEnableTip' => 'Optioneel: onder Governance > Frameworks kunt u specifieke SCF-frameworks inschakelen om een korte, samengestelde lijst te zien wanneer u een beoordeling start. U kunt ook een beoordeling uitvoeren met elk framework uit de volledige SCF-catalogus zonder het framework in te schakelen.',
     'ChooseAFramework' => 'Kies een kader om de beoordeling aan af te meten.',
     'EnabledFrameworks' => 'Ingeschakelde frameworks',
@@ -3144,7 +3144,7 @@ $lang = array(
     'GeneratedFromSelfAssessment' => 'Gegenereerd op basis van zelfevaluatie',
     'SelfAssessmentMitigationSolution' => 'Implementeer de onderstaande beheersmaatregelen, die tijdens deze zelfevaluatie als tekortkomingen zijn vastgesteld, om dit risico te beperken.',
     'NSelected' => '{n} geselecteerd',
-    'FilterByControl' => 'Filteren op bediening',
+    'FilterByControl' => 'Filteren op beheersmaatregel',
     'Pushing' => 'Duwen…',
     'Deleting' => 'Verwijderen…',
     'ConfirmPushSelectedPendingRisks' => 'De geselecteerde openstaande risico(\'s) {n} naar risico\'s verplaatsen?',
@@ -3160,7 +3160,7 @@ $lang = array(
     'HomeKpiClosedRisks' => 'Gesloten',
     'HomeKpiControlPassRate' => 'Controle slagingspercentage',
     'HomeKpiFailingControls' => 'Falende controles',
-    'HomeKpiOpenAudits' => 'Openbare audits',
+    'HomeKpiOpenAudits' => 'Openstaande audits',
     'HomeKpiTestsDueSoon' => 'Tests binnenkort in aantocht',
     'HomeKpiActiveFrameworks' => 'Actieve kaders',
     'HomeKpiTotalControls' => 'Totale controles',
@@ -3169,7 +3169,7 @@ $lang = array(
     'WhatsNextAllCaughtUp' => 'Je bent helemaal bij.',
     'WhatsNextRegisterInstance' => 'Registreer uw SimpleRisk-instantie',
     'WhatsNextSubmitFirstRisk' => 'Dien uw eerste risico in',
-    'WhatsNextLoadFramework' => 'Laad een besturingsframework',
+    'WhatsNextLoadFramework' => 'Laad een raamwerk met beheersmaatregelen',
     'WhatsNextUnreviewedRisks' => 'Risico\'s die beoordeeld moeten worden',
     'WhatsNextUnmitigatedRisks' => 'Te beperken risico\'s',
     'WhatsNextInitiateAudits' => 'Audits om te starten',
@@ -3189,7 +3189,7 @@ $lang = array(
     'ListRecentFailures' => 'Recente mislukkingen',
     'ListPoliciesReview' => 'Documenten die ter beoordeling worden voorgelegd',
     'ListExpiringExceptions' => 'Verlopen uitzonderingen',
-    'ImKpiOpenIncidents' => 'Volledig open',
+    'ImKpiOpenIncidents' => 'Totaal open',
     'ImKpiOverdue' => 'Verlopen',
     'ImKpiMttr30' => 'Gemiddelde resolutie',
     'ImKpiMttrQuarter' => 'Gemiddelde resolutie (90d)',
@@ -3224,7 +3224,7 @@ $lang = array(
     'GSNextUp' => 'Volgende',
     'GSArea_setup' => 'Installatie',
     'GSArea_risk' => 'Risico',
-    'GSArea_assessment' => 'Onderzoek',
+    'GSArea_assessment' => 'Beoordeling',
     'GSArea_compliance' => 'Compliance',
     'GSArea_assets' => 'Activa',
     'GSArea_ai' => 'Installatie',
@@ -3240,7 +3240,7 @@ $lang = array(
     'GSRegisterDesc' => 'Activeer ondersteuning en updates met uw licentiesleutel.',
     'GSRegisterCta' => 'Registreren',
     'GSScfTitle' => 'Installeer het Secure Controls Framework.',
-    'GSScfDesc' => 'Installeer de SCF — uw besturingsbibliotheek voor alle standaarden.',
+    'GSScfDesc' => 'Installeer de SCF — uw bibliotheek met beheersmaatregelen voor alle standaarden.',
     'GSScfCta' => 'Installeer SCF',
     'GSInviteTitle' => 'Nodig je team uit',
     'GSInviteDesc' => 'Voeg collega\'s toe zodat taken kunnen worden toegewezen en beoordeeld.',
@@ -3251,7 +3251,7 @@ $lang = array(
     'GSSubmitRiskTitle' => 'Dien uw eerste risico in',
     'GSSubmitRiskDesc' => 'Breng een risico in kaart waarmee uw organisatie te maken heeft.',
     'GSSubmitRiskCta' => 'Risico indienen',
-    'GSMitigateTitle' => 'Plan een oplossing.',
+    'GSMitigateTitle' => 'Plan een risicobeperking',
     'GSMitigateDesc' => 'Voeg een risicobeperkingsplan toe aan een openstaand risico.',
     'GSMitigateCta' => 'Plan voor risicobeperking',
     'GSReviewTitle' => 'Voer een risicobeoordeling uit.',
@@ -3272,7 +3272,7 @@ $lang = array(
     'GSNextCards' => 'Volgende stappen weergeven',
     'WhatsNextInstallSCF' => 'Installeer het Secure Controls Framework.',
     'GSActivateScfTitle' => 'Activeer het beveiligingsbeheerframework',
-    'GSActivateScfDesc' => 'Schakel de geïnstalleerde SCF in om de besturingselementen ervan in uw bibliotheek te laden.',
+    'GSActivateScfDesc' => 'Schakel de geïnstalleerde SCF in om de beheersmaatregelen ervan in uw bibliotheek te laden.',
     'GSActivateScfCta' => 'Activeer SCF',
     'WhatsNextActivateSCF' => 'Activeer het beveiligingsbeheerframework',
     'GSEnableFrameworksTitle' => 'Schakel de toepasselijke frameworks in.',
@@ -3285,14 +3285,14 @@ $lang = array(
     'WhatsNextTakeSelfAssessment' => 'Doe een zelfevaluatie.',
     'WhatsNextConfigureAI' => 'AI configureren',
     'ListUnreviewedRisks' => 'Niet-getoetste risico\'s',
-    'ControlsByDomain' => 'Beheer per domein',
+    'ControlsByDomain' => 'Beheersmaatregelen per domein',
     'ControlsByClass' => 'Besturingselementen per klasse',
-    'ControlsByPhase' => 'Bediening per fase',
-    'ControlsByPriority' => 'Bedieningselementen op basis van prioriteit',
-    'ControlsByCurrentMaturity' => 'Controles op basis van huidige looptijd',
+    'ControlsByPhase' => 'Beheersmaatregelen per fase',
+    'ControlsByPriority' => 'Beheersmaatregelen op basis van prioriteit',
+    'ControlsByCurrentMaturity' => 'Beheersmaatregelen per huidig volwassenheidsniveau',
     'ControlStatusOverTime' => 'Controlestatus over tijd',
     'ComplianceTotalControls' => 'Totale controles',
-    'HomeKpiOverdueTests' => 'Tests die te laat zijn ingeleverd',
+    'HomeKpiOverdueTests' => 'Achterstallige tests',
     'Total' => 'Totaal',
     'StartTheTest' => 'Start de test',
     'TestStartsAutomatically' => 'De test start automatisch.',
@@ -3311,23 +3311,23 @@ $lang = array(
     'Last30Days' => 'Afgelopen 30 dagen',
     'Last90Days' => 'Afgelopen 90 dagen',
     'YearToDate' => 'Tot nu toe dit jaar',
-    'CustomRange' => 'Aangepast assortiment',
+    'CustomRange' => 'Aangepast bereik',
     'Age' => 'Leeftijd',
     'ImOpenIncidents' => 'Openstaande incidenten',
     'ImClosedIncidents' => 'Afgesloten incidenten',
     'ImByAttackVector' => 'Openen via aanvalsvector',
-    'ImBySource' => 'Open source',
-    'AverageDaysToDetect' => 'Gemiddeld aantal dagen om de diagnose te stellen',
+    'ImBySource' => 'Open per bron',
+    'AverageDaysToDetect' => 'Gemiddeld aantal dagen tot detectie',
     'ImKpiAvgTtd' => 'Gemiddelde detectie',
     'Days' => 'Dagen',
     'ImKpiCriticalOpen' => 'Kritische Open',
     'ImKpiResolvedInSla' => 'Opgelost binnen SLA',
     'Events' => 'Evenementen',
-    'ImEventsIncidents' => 'Evenementen en incidenten',
+    'ImEventsIncidents' => 'Gebeurtenissen en incidenten',
     'ImSourceBreakdown' => 'Bron per categorie',
     'ImClosureSummary' => 'Samenvatting van de afsluiting',
     'ImSignalQuality' => 'Signaalkwaliteit',
-    'ImSignalLowSample' => 'Er zijn onvoldoende gerechtelijke sluitingen om een betrouwbare beoordeling te kunnen geven.',
+    'ImSignalLowSample' => 'Er zijn onvoldoende vastgestelde afsluitingen om een betrouwbare beoordeling te kunnen geven.',
     'ImportExportExportPdf' => 'PDF exporteren',
     'ImportExportExporting' => 'PDF voorbereiden…',
     'ImportExportExportFailed' => 'Het is niet gelukt om het PDF-bestand te genereren. Probeer het opnieuw.',
@@ -3335,7 +3335,7 @@ $lang = array(
     'ImportExportPage' => 'Pagina',
     'ImportExportPageOf' => 'van',
     'ResolutionTargetsUpdated' => 'De streefwaarden voor de oplossing per ernstgraad zijn bijgewerkt.',
-    'SeverityColorsUpdated' => 'De kleuren voor de ernst van de aandoening zijn bijgewerkt.',
+    'SeverityColorsUpdated' => 'De kleuren voor de ernstniveaus zijn bijgewerkt.',
     // AI Capabilities Catalog + AI settings hub (unified AI settings)
     'AICapGrcRecommendations' => 'GRC-raamwerk aanbevelingen',
     'AICapGrcRecommendationsDesc' => 'Door AI gegenereerde aanbevelingen voor een raamwerk en een samenvatting voor het management, afgestemd op de context van uw organisatie.',
@@ -3356,7 +3356,7 @@ $lang = array(
     'AICapSurfacedRecommendations' => 'Pagina over kunstmatige intelligentie',
     'AICapSurfacedRiskView' => 'Risicooverzicht — Details en risicobeperking',
     'AICapSurfacedFairTab' => 'Risico-overzicht — tabblad FAIR',
-    'AICapSurfacedDocuments' => 'Bestuur — Documenten',
+    'AICapSurfacedDocuments' => 'Governance — Documenten',
     'AICapSurfacedControls' => 'Naleving — Controles',
     'AICapSurfacedEveryPage' => 'Elke pagina — zwevende assistent',
     'AICapabilitiesCatalog' => 'Mogelijkheden',
@@ -3368,7 +3368,7 @@ $lang = array(
     'AICapStateLocked' => 'Vergrendeld',
     'AICapIncludedInExtra' => 'Inbegrepen in de AI Extra',
     'AICapPurchaseExtra' => 'Koop de AI Extra',
-    'AICapNeedsProvider' => 'Vereist configuratie door de provider.',
+    'AICapNeedsProvider' => 'Vereist configuratie van de provider',
     'AICapNoMatch' => 'Geen enkele mogelijkheid komt overeen.',
     'AICapNoMatchHint' => 'Probeer een ander domein, abonnementscategorie of zoekterm.',
     'AICapCountSingular' => 'capaciteit',
@@ -3413,7 +3413,7 @@ $lang = array(
     'AIContextSaveFailed' => 'Uw wijzigingen konden niet worden opgeslagen. Probeer het opnieuw.',
     'AISettingsSavedNotReachable' => 'AI-instellingen zijn opgeslagen, maar de provider kon niet worden bereikt. Zorg ervoor dat de applicatie actief is en dat de URL correct is.',
     'AISettingsSavedKeyRequired' => 'AI-instellingen zijn opgeslagen, maar deze provider vereist een API-sleutel voordat de functies kunnen worden gebruikt.',
-    'TestAndSave' => 'Test & Save',
+    'TestAndSave' => 'Testen & opslaan',
     'AICapEnableAll' => 'Alles inschakelen',
     'AICapDisableAll' => 'Alles uitschakelen',
     'AISettingsSavedConnected' => 'AI-instellingen opgeslagen — verbinding succesvol.',
@@ -3458,15 +3458,15 @@ $lang = array(
     // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
     'LastResult' => 'Laatste resultaat',
     'NextDue' => 'Volgende vervaldatum',
-    'DueSoon' => 'Binnenkort beschikbaar',
+    'DueSoon' => 'Deadline nadert',
     'Retired' => 'Gedeactiveerd',
     'MyTests' => 'Mijn tests',
     'Failing' => 'Mislukking',
     'Untested' => 'Niet getest',
     'ShowRetired' => 'Toon gedeactiveerd',
     'Tests' => 'Tests',
-    'NoTestsForThisControl' => 'Er zijn nog geen tests uitgevoerd voor deze controlegroep.',
-    'NoControlsDefinedYet' => 'Er zijn nog geen besturingselementen gedefinieerd.',
+    'NoTestsForThisControl' => 'Er zijn nog geen tests uitgevoerd voor deze beheersmaatregel.',
+    'NoControlsDefinedYet' => 'Er zijn nog geen beheersmaatregelen gedefinieerd.',
     'NoControlsDefinedYetBody' => 'Definieer beheermaatregelen in Governance voordat u tests toevoegt.',
     'NoTestsMatchFilters' => 'Er zijn geen tests die overeenkomen met uw filters.',
     'NoTestsMatchFiltersBody' => 'Probeer je zoekopdracht of filters aan te passen.',
@@ -3475,24 +3475,24 @@ $lang = array(
     'ShowingXToYOfZ' => 'Toont {$start}–{$end} van {$total}',
     // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
     'Reference' => 'Referentie',
-    'NoFrameworksMapped' => 'Er zijn geen frameworks aan dit besturingselement gekoppeld.',
+    'NoFrameworksMapped' => 'Er zijn geen frameworks aan deze beheersmaatregel gekoppeld.',
     // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
     'Retire' => 'Deactiveren',
     'ReassignTester' => 'Tester opnieuw toewijzen',
     'SetSchedule' => 'Stel een schema op',
     'ConfirmRetireSelectedTests' => 'De geselecteerde test(en) {n} verwijderen?',
-    'ConfirmDeleteSelectedTests' => 'Delete the {n} selected test(s)? This cannot be undone.',
+    'ConfirmDeleteSelectedTests' => 'De {n} geselecteerde test(s) verwijderen? Dit kan niet ongedaan worden gemaakt.',
     // Define Tests grid -- Coverage toolbar select (Issue 4)
     'Coverage' => 'Dekking',
     'CoverageWithTests' => 'Controles met tests',
-    'CoverageAllControls' => 'Alle bedieningselementen',
+    'CoverageAllControls' => 'Alle controles',
     'CoverageGaps' => 'Gaten',
     // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
     // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
     // chips above (identical text) rather than duplicated here.
     'DtTotalTests' => 'Totaal aantal tests',
     'DtCoverageGaps' => 'Dekkingshiaten',
-    'DtAcrossNControls' => 'Across {$n} controls',
+    'DtAcrossNControls' => 'Over {$n} beheersmaatregelen',
     'DtControlsWithNoTest' => 'Controles zonder test',
     'DtNeedInitiationNow' => 'Initiatie is nu nodig.',
     'DtWithinLeadInWindow' => 'Binnen het inloopvenster',
@@ -3511,12 +3511,12 @@ $lang = array(
     'AuditLog_TestAuditApproved' => 'Audit "{$test_audit_name}"(ID: {$test_audit_id}) is goedgekeurd door gebruiker "{$user_name}".',
     'AuditLog_TestAuditRejected' => 'Audit "{$test_audit_name}"(ID: {$test_audit_id}) werd afgewezen door gebruiker "{$user_name}" met opmerking "{$comment}".',
     'AuditLog_TestAuditAwaitingApproval' => 'Audit "{$test_audit_name}"(ID: {$test_audit_id}) is ter afsluiting ingediend door gebruiker "{$user_name}" en wacht op goedkeuring. Wijzigingen: {$changes}.',
-    'AuditApproved' => 'De audit is succesvol afgerond.',
+    'AuditApproved' => 'De audit is succesvol goedgekeurd.',
     'AuditRejected' => 'De audit is succesvol afgewezen.',
     'RejectCommentRequired' => 'Een toelichting is vereist om een audit af te wijzen.',
     'NotAnApproverOfThisAudit' => 'U bent geen geregistreerde goedkeurder voor deze audit.',
     'ApproverCannotBeTester' => 'De goedkeurder mag niet tevens de tester van deze audit zijn.',
-    'AuditNotAwaitingApproval' => 'Deze audit hoeft momenteel niet te worden goedgekeurd.',
+    'AuditNotAwaitingApproval' => 'Deze audit wacht momenteel niet op goedkeuring.',
     'NotificationAuditAwaitingApprovalTitle' => 'Audit in afwachting van uw goedkeuring.',
     'NotificationAuditAwaitingApprovalBody' => 'De audit "{$test_audit_name}" is ingediend voor afsluiting en wacht op uw goedkeuring.',
     'NotificationAuditRejectedTitle' => 'Audit afgewezen',
@@ -3528,26 +3528,26 @@ $lang = array(
     'RejectReason' => 'Reden voor afwijzing',
     'AreYouSureYouWantToApproveThisAudit' => 'Weet u zeker dat u deze controle wilt goedkeuren?',
     'AtLeastOneControlRequired' => 'Er is minimaal één controle nodig.',
-    'DtNCommonAcrossNControls' => '{$common} algemeen · {$n} besturingselementen',
+    'DtNCommonAcrossNControls' => '{$common} algemeen · {$n} beheersmaatregelen',
     'DtUntestedControls' => 'Niet-geteste controles',
     'DtControlsInScopeNoCoverage' => 'Geen dekking',
     'Passing' => 'Geslaagd',
     'DtLastResultPassed' => 'Laatste resultaat geslaagd',
     'AllFamilies' => 'Alle families',
-    'SearchTestsPlaceholder' => 'Zoektests, controles en frameworks',
+    'SearchTestsPlaceholder' => 'Zoek tests, beheersmaatregelen en frameworks',
     'AnySchedule' => 'Elk schema',
     'AnyTag' => 'Elk label',
     'AuditAutoClosedTestRetired' => 'Automatisch afgesloten als \'Onbesluitend\' omdat de test is stopgezet.',
     'Common' => 'Gewoon',
     'ValidatesAcrossMappedFrameworks' => 'Valideert over de gekoppelde frameworks heen.',
     'EditTest' => 'Test bewerken',
-    'ControlHasNoTestCoverage' => 'Deze besturingseenheid valt binnen het toepassingsgebied en heeft nog geen testdekking.',
+    'ControlHasNoTestCoverage' => 'Deze beheersmaatregel binnen het toepassingsgebied heeft nog geen testdekking.',
     'AddTheFirstTest' => 'Voeg de eerste test toe',
     'ApplyCommonTestHint' => 'Pas een of meer bestaande tests toe op deze controle. Elke test behoudt de huidige controles en wordt een gemeenschappelijke test die ook deze controle dekt.',
     'CommonTestApplied' => 'Test toegepast op deze controle.',
-    'CouldNotApplyCommonTest' => 'De test kon niet op deze controlegroep worden toegepast.',
+    'CouldNotApplyCommonTest' => 'De test kon niet op deze beheersmaatregel worden toegepast.',
     'SelectOneOrMoreTests' => 'Selecteer een of meer tests',
-    'CommonTestsApplied' => '{n} tests toegepast op dit besturingselement.',
+    'CommonTestsApplied' => '{n} tests toegepast op deze beheersmaatregel.',
     'ApplyCommonTests' => 'Algemene tests toepassen…',
     'History' => 'Geschiedenis',
     'Result' => 'Resultaat',
@@ -3555,10 +3555,10 @@ $lang = array(
     'ThisTestHasNotBeenRunYet' => 'Deze test is nog niet uitgevoerd.',
     'CouldNotLoadTestHistory' => 'De testgeschiedenis kon niet worden geladen.',
     'Identity' => 'Identiteit',
-    'IdentitySectionHint' => 'Naam, tester en de besturingselementen die worden gevalideerd',
+    'IdentitySectionHint' => 'Naam, tester en de beheersmaatregelen die worden gevalideerd',
     'WhenTheAuditInitiates' => 'Wanneer de audit van start gaat',
     'ProcedureAndEvidence' => 'Procedure en bewijsmateriaal',
-    'CommonTestControlsHint' => 'Eén test kan meerdere besturingselementen valideren — een veelgebruikte test. Als u deze test opent via "+ Test toevoegen" bij een besturingselement, wordt deze hier automatisch geselecteerd.',
+    'CommonTestControlsHint' => 'Eén test kan meerdere beheersmaatregelen valideren — een veelgebruikte test. Als u deze test opent via "+ Test toevoegen" bij een beheersmaatregel, wordt deze hier automatisch geselecteerd.',
     'SeparationOfDutiesNote' => 'Scheiding van taken — een goedkeurder kan niet tegelijkertijd ook de tester zijn.',
     'CommonTestEditScopeHint' => 'De wijzigingen gelden overal waar deze standaardtest wordt gebruikt.',
     'Mode' => 'Modus',
@@ -3580,23 +3580,23 @@ $lang = array(
     'AllStatuses' => 'Alle statussen',
     'OnTrack' => 'Op de goede weg',
     'NextTestDateDerivedHint' => 'Berekend op basis van de datum van de laatste test plus de testfrequentie. Stel een frequentie in om de test automatisch in te plannen, of laat het veld leeg om deze datum zelf te bepalen.',
-    'DueStatus' => 'Verschuldigde status',
+    'DueStatus' => 'Deadlinestatus',
     'AllResults' => 'Alle resultaten',
     // Remove a test from one control (Define Tests grid unlink row action)
     'RemoveFromThisControl' => 'Verwijderen uit deze controle',
     'RemoveTestFromControl' => 'Verwijder de test uit de controle',
     'RemoveTestFromControlConfirm' => 'Verwijder "{test_name}" uit {control_name}?',
-    'RemoveTestFromControlStays' => 'De test blijft op zijn {n} andere besturingselementen staan. Niets wordt verwijderd.',
-    'RemoveTestFromControlStaysOne' => 'De test blijft op de andere controlegroep staan. Er wordt niets verwijderd.',
-    'CannotRemoveTestsOnlyControl' => 'Een test moet aan ten minste één controlegroep gekoppeld zijn. Verwijder of annuleer de test in plaats daarvan.',
-    'TestRemovedFromControl' => 'De test werd uit de controlegroep verwijderd.',
-    'CouldNotRemoveTestFromControl' => 'De test kon niet uit de controlegroep worden verwijderd.',
+    'RemoveTestFromControlStays' => 'De test blijft op zijn {n} andere beheersmaatregelen staan. Niets wordt verwijderd.',
+    'RemoveTestFromControlStaysOne' => 'De test blijft op zijn 1 andere beheersmaatregel staan. Er wordt niets verwijderd.',
+    'CannotRemoveTestsOnlyControl' => 'Een test moet bij ten minste één beheersmaatregel horen. Zet de test in plaats daarvan buiten gebruik of verwijder deze.',
+    'TestRemovedFromControl' => 'De test werd uit de beheersmaatregel verwijderd.',
+    'CouldNotRemoveTestFromControl' => 'De test kon niet uit de beheersmaatregel worden verwijderd.',
     'TestRemovedFromControlAuditLogMessage' => 'Test "{$test_name}"(ID: {$test_id}) werd verwijderd uit controle (ID: {$control_id}) door gebruiker "{$user}".',
-    'DeleteTestUsedByNControls' => 'Het wordt gebruikt door {n} -besturingselementen en zal uit al deze besturingselementen worden verwijderd.',
-    'BulkDeleteSharedTestsNote' => '{n} hiervan worden door andere besturingselementen gebruikt en zullen daar ook uit worden verwijderd.',
-    'BulkRetireSharedTestsNote' => '{n} hiervan worden door andere besturingselementen gebruikt en zullen daar ook worden uitgefaseerd.',
-    'BulkDeleteOneSharedTestNote' => 'Een van deze opties wordt door andere besturingselementen gebruikt en zal daar ook worden verwijderd.',
-    'BulkRetireOneSharedTestNote' => 'Een daarvan wordt door andere besturingselementen gebruikt en zal daar ook worden uitgefaseerd.',
+    'DeleteTestUsedByNControls' => 'Het wordt gebruikt door {n} beheersmaatregelen en zal uit al deze beheersmaatregelen worden verwijderd.',
+    'BulkDeleteSharedTestsNote' => '{n} hiervan worden door andere controles gebruikt en worden daar ook uit verwijderd.',
+    'BulkRetireSharedTestsNote' => '{n} hiervan worden door andere beheersmaatregelen gebruikt en worden daar ook uitgefaseerd.',
+    'BulkDeleteOneSharedTestNote' => 'Een hiervan wordt door andere controles gebruikt en wordt daar ook uit verwijderd.',
+    'BulkRetireOneSharedTestNote' => 'Een daarvan wordt door andere controles gebruikt en wordt daar ook uitgefaseerd.',
     'CouldNotLoadTest' => 'Deze test kon niet worden geladen.',
     'Expand' => 'Uitbreiden',
     'SearchMappings' => 'Zoekkaders en referenties',
@@ -3604,16 +3604,16 @@ $lang = array(
     'Insights' => 'Inzichten',
     'ShowInsights' => 'Toon de inzichtentegels',
     'HideInsights' => 'Vouw de inzichtentegels samen tot een overzichtsregel.',
-    'ChooseControls' => 'Selecteer bedieningselementen',
-    'UseTheseControls' => 'Gebruik deze bedieningselementen',
+    'ChooseControls' => 'Selecteer beheersmaatregelen',
+    'UseTheseControls' => 'Gebruik deze beheersmaatregelen',
     'SearchControlsPlaceholder' => 'Zoeken op nummer of naam',
     'PickerKeyboardHint' => 'Omhoog/omlaag om te verplaatsen, Enter om te selecteren, Esc om te annuleren',
     'NoControlsMatchFilters' => 'Niets komt hier overeen. Zet een stap verder naar links, of wis de zoekopdracht.',
     'NoControlsSelectedYet' => 'Nog niets geselecteerd.',
-    'AllControls' => 'Alle bedieningselementen',
-    'AddOrRemoveControls' => 'Besturingselementen toevoegen of verwijderen…',
+    'AllControls' => 'Alle beheersmaatregelen',
+    'AddOrRemoveControls' => 'Beheersmaatregelen toevoegen of verwijderen…',
     'LastTested' => 'Laatst getest',
-    'LastTestDateAnchorHint' => 'Ankerpunten voor intervalplanning (deze datum plus de frequentie). Zodra de test resultaten heeft geregistreerd, toont het raster in plaats daarvan de datum van het meest recente resultaat.',
+    'LastTestDateAnchorHint' => 'Bepaalt het ankerpunt van de intervalplanning (deze datum plus de frequentie). Zodra de test resultaten heeft geregistreerd, toont het raster in plaats daarvan de datum van het meest recente resultaat.',
     'Filters' => 'Filters',
     'ShowFilters' => 'Filters weergeven',
     'HideFilters' => 'Filters verbergen',
@@ -3629,7 +3629,7 @@ $lang = array(
     'ClickToDisable' => 'Klik om uit te schakelen',
     'ClickToEnable' => 'Klik om in te schakelen',
     'ENABLED' => 'INGESCHAKELD',
-    'DISABLED' => 'GEHANDICAPT',
+    'DISABLED' => 'UITGESCHAKELD',
     'BackToWorkflows' => 'Terug naar workflows',
     'BackToHistory' => 'Terug naar de geschiedenis',
     'NewWorkflow' => 'Nieuwe workflow',
@@ -3655,13 +3655,13 @@ $lang = array(
     'AICapSurfacedControlTestGeneration' => 'Naleving — Tests definiëren',
     'AIControlTestGenUnavailable' => 'SERVICE NIET BESCHIKBAAR: Een beheerder moet deze functionaliteit inschakelen in de AI-instellingen.',
     'AIControlTestGenInvalidId' => 'ONJUIST VERZOEK: Een positieve controle-ID is vereist.',
-    'AIControlTestGenNotFound' => 'NIET GEVONDEN: Het opgegeven besturingselement kon niet worden gevonden.',
-    'AIControlTestGenConflict' => 'CONFLICT: De generatie voor dit besturingselement staat al in de wachtrij.',
+    'AIControlTestGenNotFound' => 'NIET GEVONDEN: De opgegeven beheersmaatregel kon niet worden gevonden.',
+    'AIControlTestGenConflict' => 'CONFLICT: De generatie voor deze beheersmaatregel staat al in de wachtrij.',
     'AIControlTestGenQueued' => 'GEACCEPTEERD: Generatie van besturingstests in de wachtrij geplaatst.',
-    'AIControlTestGenFailed' => 'INTERNE SERVERFOUT: Het genereren van de besturingstest is mislukt.',
+    'AIControlTestGenFailed' => 'INTERNE SERVERFOUT: Het in de wachtrij plaatsen van het genereren van de test voor beheersmaatregelen is mislukt.',
     'AIControlTestGenCheckFailed' => 'FOUT: Kan de controle niet verifiëren voordat het item in de wachtrij wordt geplaatst.',
     'GenerateTestsWithAI' => 'Genereer tests met AI',
-    'ShowAiSuggestedTests' => 'AI stelde tests voor',
+    'ShowAiSuggestedTests' => 'Door AI voorgestelde tests',
     'AiSuggested' => 'AI suggereerde',
     'ReviewAndEdit' => 'Beoordelen en bewerken',
     'CreateSelected' => 'Maak geselecteerde',
@@ -3669,7 +3669,7 @@ $lang = array(
     'SuggestionDismissed' => 'Suggestie afgewezen.',
     'TestGenerationQueued' => 'Testgeneratie in de wachtrij geplaatst.',
     'Generating' => 'Genereren…',
-    'SuggestionDismissFailed' => 'De test is aangemaakt, maar de suggestie van de AI kon niet worden afgewezen. Wijs de test handmatig af als deze blijft staan.',
+    'SuggestionDismissFailed' => 'De test is aangemaakt, maar de suggestie van de AI kon niet worden afgewezen. Wijs de suggestie handmatig af als deze blijft staan.',
     'AICtxAuditorBig4' => 'De Grote 4 (extern)',
     'AICtxAuditorBoutique' => 'Boutique / regionaal (extern)',
     'AICtxAuditorInternal' => 'Alleen interne audit',
@@ -3680,7 +3680,7 @@ $lang = array(
     'AICtxAppetiteAggressive' => 'Agressief',
     'TestGenerationComplete' => 'De door AI opgestelde controletests zijn klaar voor beoordeling.',
     'TestGenerationStillRunning' => 'Het testproces loopt nog; de concepten verschijnen binnenkort.',
-    'TestGenerationNoNew' => 'Generatie voltooid — er zijn geen nieuwe tests voor deze controlegroep om voor te stellen.',
+    'TestGenerationNoNew' => 'Generatie voltooid — er zijn geen nieuwe tests voor deze beheersmaatregel om voor te stellen.',
     'SearchEntities' => 'Zoek entiteiten',
     'SearchEntitiesPlaceholder' => 'Zoek naar risico\'s, controles, beleid en uitzonderingen…',
     'ShowTypes' => 'Toon typen',
@@ -3689,7 +3689,7 @@ $lang = array(
     'Connections' => 'Verbindingen',
     'NoConnectionsFound' => 'Er zijn geen verbindingen gevonden voor de geselecteerde entiteit.',
     'CouldNotLoadGraph' => 'De verbindingsgrafiek kon niet worden geladen.',
-    'CouldNotSearchEntities' => 'Entiteiten konden niet worden gevonden.',
+    'CouldNotSearchEntities' => 'Er kon niet naar entiteiten worden gezocht.',
     'ShowingTopNOfM' => 'Toont de bovenste {0} van {1}',
     'RankedByMaturityGap' => 'Gerangschikt op basis van de volwassenheidskloof.',
     'RankedByRiskScore' => 'Gerangschikt op risicoscore',
@@ -3718,7 +3718,7 @@ $lang = array(
     'LastFound' => 'Laatst gevonden',
     'Patchable' => 'Patchbaar',
     'Solution' => 'Oplossing',
-    'Breadcrumb' => 'Paneermeel',
+    'Breadcrumb' => 'Kruimelpad',
     'SelectANodeToInspect' => 'Selecteer een knooppunt om de details ervan te bekijken.',
     'HiddenUnreachableNodes' => '{0} verborgen knooppunt(en): niet langer verbonden zonder het verborgen type(n).',
     // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
@@ -3770,7 +3770,7 @@ $lang = array(
     'QuestionIdCannotAcceptFile' => 'ONJUIST VERZOEK: vraag_id {$question_id} kan geen bestand accepteren voor dit enquêteresultaat',
     'QuestionIdNotFoundInQuestionnaire' => 'ONJUIST VERZOEK: vraag_id {$question_id} is niet gevonden in deze vragenlijst',
     'QuestionIdInMultipleTemplates' => 'ONJUIST VERZOEK: vraag_id {$question_id} komt voor in meerdere sjablonen voor deze vragenlijst',
-    'QuestionIdDoesNotAcceptFileUploads' => 'ONJUIST VERZOEK: vraag_id {$question_id} accepteert geen bestandsuploads',
+    'QuestionIdDoesNotAcceptFileUploads' => 'ONJUIST VERZOEK: question_id {$question_id} accepteert geen bestandsuploads',
     // The Statement of Applicability's two UNVERIFIED implementation states.
     //
     // They exist because "we have not checked" is not "it does not work", and an
@@ -3867,7 +3867,7 @@ $lang = array(
     // reader to guess unfavourably.
     'SoaLegendTitle' => 'Hoe moet ik deze verklaring lezen?',
     'SoaLegendYes' => 'Alle tests die voor dit besturingselement zijn gedefinieerd, zijn geslaagd toen ze voor het laatst werden uitgevoerd.',
-    'SoaLegendPartial' => 'De tests van de controlegroep vertonen tegenstrijdige resultaten: minstens één test slaagde, en minstens één test faalde of leverde geen resultaat op.',
+    'SoaLegendPartial' => 'De tests van de beheersmaatregel vertonen tegenstrijdige resultaten: minstens één test slaagde, en minstens één test faalde of leverde geen resultaat op.',
     'SoaLegendNo' => 'Geen enkele test van deze controle slaagde bij de laatste uitvoering, en minstens één test mislukte.',
     // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
     // and the labels alone do not quite carry that -- so the legend spells it
@@ -3880,8 +3880,8 @@ $lang = array(
     'SoaLegendUnknown' => 'SimpleRisk kon de geregistreerde status niet labelen, dus de implementatie wordt hier niet gedemonstreerd. Dit is een fout in de software en zegt helemaal niets over de controle – noch of deze werkt, noch of deze niet werkt.',
     'SoaLegendOverdue' => 'Het getoonde resultaat blijft geldig, maar minstens één van de tests die eraan ten grondslag liggen, is inmiddels over de datum van de volgende test heen. Het bewijsmateriaal is verouderd.',
     'SoaLegendNoEvidence' => 'De controle valt binnen het toepassingsgebied, maar er is niets aan gekoppeld om deze te onderbouwen: geen bevestigd document en geen test die een resultaat heeft opgeleverd.',
-    'SoaLegendEvidenceNotExpected' => 'Er wordt geen bewijs verwacht, omdat de controlegroep buiten het toepassingsgebied valt.',
-    'SoaLegendUnplanned' => 'Een mislukte test die geen enkel risico met zich meebrengt, waardoor er geen behandelplan aan gekoppeld kan worden.',
+    'SoaLegendEvidenceNotExpected' => 'Er wordt geen bewijs verwacht, omdat de beheersmaatregel buiten het toepassingsgebied valt.',
+    'SoaLegendUnplanned' => 'Een mislukte test die aan geen enkel risico is gekoppeld, waardoor er geen behandelplan aan terug te leiden is.',
 
     // THE TWO VARIANTS, chosen on the launcher before the document is generated
     // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
@@ -3984,7 +3984,7 @@ $lang = array(
     'UnlockNeedsAdministrator' => 'Een beheerder kan dit instellen.',
     // API date parsing. {$field} is the request field name (next_date, last_date,
     // test_date); {$format} is this instance's configured display date format.
-    'InvalidSubmittedDate' => 'De waarde {$field} is geen geldige datum. Dien deze in als JJJJ-MM-DD of in het datumformaat van dit voorbeeld ({$format}).',
+    'InvalidSubmittedDate' => 'De waarde {$field} is geen geldige datum. Dien deze in als JJJJ-MM-DD of in het datumformaat van deze instantie ({$format}).',
     // Companion to InvalidSubmittedDate, for a value that matches the expected
     // shape but names a day that does not exist (February 31st, month 13).
     // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
@@ -4030,7 +4030,7 @@ $lang = array(
     // The Evidence column's four bullet glyphs. Load-bearing since the visible
     // result word was dropped from pass and fail bullets, and until now defined
     // nowhere at all.
-    'SoaLegendEvidencePass' => 'Een test van deze besturing heeft de laatste keer dat deze werd uitgevoerd een positief resultaat opgeleverd. De datum ernaast geeft aan wanneer deze test is uitgevoerd.',
+    'SoaLegendEvidencePass' => 'Een test van deze beheersmaatregel heeft bij de laatste uitvoering een positief resultaat opgeleverd. De datum ernaast geeft aan wanneer deze test is uitgevoerd.',
     'SoaLegendEvidenceFail' => 'Bij de laatste test van deze controle werd een foutmelding geregistreerd. Het behandelplan is opgenomen in bijlage R, indien aanwezig.',
     'SoaLegendEvidenceInconclusive' => 'Een test van deze controle werd uitgevoerd en leverde geen resultaat op. Hetzelfde merkteken wordt gebruikt voor een resultaat dat dit document niet herkent, en in dat geval wordt het resultaat zelf ernaast afgedrukt.',
     // The TERM beside the § glyph. Not a document type -- the four types
@@ -4048,7 +4048,7 @@ $lang = array(
     // translation loses its tail on the tab.
     'SoaSheetCover' => 'Omslag',
 
-    'SearchFrameworks' => 'Zoekraamwerken',
+    'SearchFrameworks' => 'Zoek frameworks',
     'SearchControls' => 'Zoek controles',
     'AddFramework' => 'Voeg framework toe',
     'Applicability' => 'Toepasbaarheid',
@@ -4063,13 +4063,13 @@ $lang = array(
     'Classification' => 'Classificatie',
     'Placement' => 'Plaatsing',
     'OwnershipAndMaturity' => 'Eigenaarschap en volwassenheid',
-    'MappingsAndGuidance' => 'Kaarten en routebeschrijvingen',
+    'MappingsAndGuidance' => 'Koppelingen en richtlijnen',
     'DeleteFrameworkTitle' => 'Framework \'{$name} \' verwijderen?',
-    'DeleteControlTitle' => 'Besturingselement \'{$name} \' verwijderen?',
-    'DeleteControlsTitle' => 'Verwijder de {$n} besturingselementen?',
+    'DeleteControlTitle' => 'Beheersmaatregel \'{$name}\' verwijderen?',
+    'DeleteControlsTitle' => '{$n} beheersmaatregelen verwijderen?',
     'DeleteCannotBeUndone' => 'Dit kan niet ongedaan gemaakt worden.',
-    'DeleteFrameworkConsequence' => 'Hierdoor wordt het framework en alle bijbehorende besturingsmappingen verwijderd.',
-    'DeleteControlConsequence' => 'Dit ontneemt de controle aan elk framework waaraan het is gekoppeld.',
+    'DeleteFrameworkConsequence' => 'Hierdoor worden het framework en alle bijbehorende koppelingen met beheersmaatregelen verwijderd.',
+    'DeleteControlConsequence' => 'Hierdoor wordt de controle verwijderd uit elk framework waaraan deze is gekoppeld.',
     'DeleteControlsConsequence' => 'Hierdoor wordt elk geselecteerd besturingselement verwijderd uit elk framework waaraan het is gekoppeld.',
     // Task 9: empty states (design-system.md §10) -- the four intents on
     // Define Control Frameworks. Reuses existing keys where the copy already
@@ -4077,9 +4077,9 @@ $lang = array(
     // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
     // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
     // with no existing match are added below.
-    'NoControlsMatch' => 'Geen bedieningselementen komen overeen met uw filters.',
-    'CouldNotLoadControls' => 'Kon de besturingselementen niet laden.',
-    'ControlsYouAddWillAppearHere' => 'De besturingselementen die u toevoegt, verschijnen hier.',
+    'NoControlsMatch' => 'Geen beheersmaatregelen komen overeen met uw filters.',
+    'CouldNotLoadControls' => 'Kon de controles niet laden.',
+    'ControlsYouAddWillAppearHere' => 'De controles die u toevoegt, verschijnen hier.',
     'NoFrameworksYet' => 'Nog geen frameworks',
     'FrameworksYouAddWillAppearHere' => 'De frameworks die u toevoegt of importeert, verschijnen hier.',
     'CouldNotLoadFrameworks' => 'Frameworks konden niet worden geladen.',
@@ -4099,7 +4099,7 @@ $lang = array(
     'FwLastTestPassed' => 'Laatste test geslaagd',
     'FwLastTestFailed' => 'Laatste test mislukt',
     'FwNoEvidence' => 'Van toepassing, geen bewijs',
-    'FwMaturityUnderDesired' => 'Rijping onder de gewenste omstandigheden',
+    'FwMaturityUnderDesired' => 'Volwassenheid onder het gewenste niveau',
     'FwScopeAFramework' => 'Een kader schetsen om te beslissen',
     'FwNotApplicableOrInherited' => 'Niet van toepassing of overgeërfd',
     // Task 22: framework rail search (governance/index.php's #sr-fw-search,
@@ -4221,8 +4221,8 @@ $lang = array(
     // genuinely differ once the table pages, and a note that blurred them would
     // let the user write 1,535 decisions believing they had written 25.
     'ApplicabilityScopeNote' => 'Deze beslissing geldt alleen binnen "{$framework}". Dezelfde controle kan ook in een ander framework van toepassing blijven.',
-    'ApplicabilityAppliesToSelected' => 'Het wordt geregistreerd bij de {$n} besturingselementen die op deze pagina zijn geselecteerd.',
-    'ApplicabilityAppliesToAllFiltered' => 'Het wordt geregistreerd voor alle {$n} besturingselementen die overeenkomen met de huidige filters, inclusief die op andere pagina\'s.',
+    'ApplicabilityAppliesToSelected' => 'Het wordt geregistreerd bij de {$n} beheersmaatregelen die op deze pagina zijn geselecteerd.',
+    'ApplicabilityAppliesToAllFiltered' => 'Het wordt geregistreerd voor alle {$n} beheersmaatregelen die overeenkomen met de huidige filters, inclusief die op andere pagina\'s.',
     // Per-state hints under the segmented control. The "applicable" one is the
     // load-bearing sentence of the whole modal, and the SoA audit-readiness work
     // rewrote it: an applicable control MAY now carry its own reasons and
@@ -4241,8 +4241,8 @@ $lang = array(
     // Result toasts. Both interpolate a COUNT taken from the API response and
     // nothing else -- no submitted text is ever reflected into a toast, which
     // toastr renders as HTML.
-    'ApplicabilitySetResult' => 'Toepasselijkheid bijgewerkt voor {$n} besturingselement(en).',
-    'ApplicabilityClearResult' => 'Toepasselijkheid opnieuw ingesteld op van toepassing voor {$n} besturingselement(en).',
+    'ApplicabilitySetResult' => 'Toepasselijkheid bijgewerkt voor {$n} beheersmaatregel(en).',
+    'ApplicabilityClearResult' => 'Toepasselijkheid opnieuw ingesteld op van toepassing voor {$n} beheersmaatregel(en).',
     // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
     // final either way the delete engine implements it: a control with test
     // history is soft-deleted (framework_controls.deleted = 1) to keep test
@@ -4258,11 +4258,11 @@ $lang = array(
     // stop reading. Every {$...} is a count from the API response; no user
     // text is ever interpolated, which matters because toastr renders HTML.
     'DeleteControlsPreviewChecking' => 'Controleren wat er verwijderd gaat worden...',
-    'DeleteControlsPreviewSplit' => '{$n} besturingselementen worden verwijderd. Dit kan niet ongedaan worden gemaakt. Testresultaten voor {$m} ervan worden bewaard voor de auditgeschiedenis.',
-    'DeleteControlsPreviewKeptOnly' => 'Alle {$n} besturingselementen worden verwijderd. Dit kan niet ongedaan worden gemaakt. Testresultaten worden bewaard voor de auditgeschiedenis.',
-    'DeleteControlsPreviewRemovedOnly' => '{$n} besturingselement(en) worden verwijderd. Dit kan niet ongedaan worden gemaakt.',
-    'DeleteControlsPreviewNone' => 'Niets te verwijderen: de geselecteerde besturingselementen bestaan niet meer.',
-    'ControlsDeletedResult' => '{$n} besturingselement(en) verwijderd.',
+    'DeleteControlsPreviewSplit' => '{$n} beheersmaatregelen worden verwijderd. Dit kan niet ongedaan worden gemaakt. Testresultaten voor {$m} ervan worden bewaard voor de auditgeschiedenis.',
+    'DeleteControlsPreviewKeptOnly' => 'Alle {$n} beheersmaatregelen worden verwijderd. Dit kan niet ongedaan worden gemaakt. Testresultaten worden bewaard voor de auditgeschiedenis.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} beheersmaatregelen worden verwijderd. Dit kan niet ongedaan worden gemaakt.',
+    'DeleteControlsPreviewNone' => 'Niets te verwijderen: de geselecteerde beheersmaatregelen bestaan niet meer.',
+    'ControlsDeletedResult' => '{$n} beheersmaatregel(en) verwijderd.',
 
     // The Add/Edit framework modal's Status field. The label reuses the existing
     // 'Status' key -- the same word the rail's Active/Inactive/All filter already
@@ -4271,7 +4271,7 @@ $lang = array(
     // to retire a framework (unlike Delete, which cannot be undone), and that the
     // change cascades through the hierarchy, which is what update_framework_status()
     // has always done and is genuinely surprising when a parent is deactivated.
-    'FrameworkStatusHint' => 'Inactieve frameworks behouden al hun besturingselementen en toewijzingen, maar worden verborgen in de standaardlijst met frameworks en ontbreken in het governance-dashboard. Het deactiveren van een framework deactiveert ook alle onderliggende frameworks; het activeren van een framework activeert ook de bovenliggende frameworks.',
+    'FrameworkStatusHint' => 'Inactieve frameworks behouden al hun beheersmaatregelen en toewijzingen, maar worden verborgen in de standaardlijst met frameworks en ontbreken in het governance-dashboard. Het deactiveren van een framework deactiveert ook alle onderliggende frameworks; het activeren van een framework activeert ook de bovenliggende frameworks.',
 
     // Task 60: the same #applicability--set modal, opened from ONE control's row
     // action instead of the selection bulk bar. The button's own label reuses
@@ -4307,7 +4307,7 @@ $lang = array(
     // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
     // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
     // existing home are added here.
-    'StatementOfApplicabilityDesc' => 'Voor één framework: elk besturingselement, of het van toepassing is, waarom het is opgenomen of uitgesloten, en of het is geïmplementeerd.',
+    'StatementOfApplicabilityDesc' => 'Voor één framework: elke beheersmaatregel, of deze van toepassing is, waarom deze is opgenomen of uitgesloten, en of deze is geïmplementeerd.',
     // The header button on Define Control Frameworks. The verb is "generate"
     // rather than "view" because the document is assembled at the moment it is
     // asked for -- there is no stored SoA that could be out of date.
@@ -4383,7 +4383,7 @@ $lang = array(
 
     // A framework with no controls mapped into it. Not an error -- it is a real
     // and recoverable state, and saying so beats an empty table.
-    'SoaNoControls' => 'Dit framework heeft geen besturingselementen.',
+    'SoaNoControls' => 'Dit framework heeft geen beheersmaatregelen',
     'SoaNoControlsHint' => 'Breng de besturingselementen in kaart binnen het framework; de toepassingsverklaring zal ze vervolgens opsommen.',
 
     // The second half of the statement-of-applicability launcher's affordance
@@ -4403,7 +4403,7 @@ $lang = array(
     // Placeholder/help text under that field, and the reason it is worth
     // filling in: without it the Statement of Applicability has nothing to
     // print but the source catalogue's name for its own control.
-    'ReferenceSubjectHint' => "De eigen titel van het framework voor dit besturingselement.",
+    'ReferenceSubjectHint' => "De eigen titel van het framework voor deze beheersmaatregel.",
 
     // Task 63: the row-scoped population sentence in the Set applicability
     // modal, in the one situation where the plain
@@ -4416,7 +4416,7 @@ $lang = array(
     // about to overwrite it, and {$n} is the count of the OTHER selected
     // controls -- the target is excluded, because it is very often ticked too
     // and a promise that included it would be false.
-    'ApplicabilityAppliesToControlNotSelection' => 'Het wordt alleen geregistreerd onder "{$name}" — de {$n} besturingselementen die u hebt geselecteerd, worden niet beïnvloed.',
+    'ApplicabilityAppliesToControlNotSelection' => 'Het wordt alleen geregistreerd onder "{$name}" — de {$n} beheersmaatregelen die u hebt geselecteerd, worden niet beïnvloed.',
 
     // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
     // sentence ('GenerateStatementOfApplicability' above) stays as the button's
@@ -4453,11 +4453,11 @@ $lang = array(
     // under two clause numbers, and the rail excludes deleted controls), and the
     // number to promise is the one the user is looking at when they click and
     // the one the clone's own rail row will show afterwards.
-    'ClonedFromFrameworkNotice' => 'Gekloond van "{$name}". De {$n} besturingselementen worden gekopieerd naar het nieuwe framework, waarbij ze allemaal vanaf het begin van toepassing zijn — geen van de toepassingsbeslissingen wordt overgenomen. De scopeverklaring is opzettelijk leeg: geef de scope aan die dit framework bestrijkt voordat de verklaring van toepasbaarheid wordt gegenereerd.',
+    'ClonedFromFrameworkNotice' => 'Gekloond van "{$name}". De {$n} beheersmaatregelen worden gekopieerd naar het nieuwe framework, waarbij ze allemaal vanaf het begin van toepassing zijn — geen van de toepassingsbeslissingen wordt overgenomen. De scopeverklaring is opzettelijk leeg: geef de scope aan die dit framework bestrijkt voordat de verklaring van toepasbaarheid wordt gegenereerd.',
     // Seeds the name field so the clone can be saved without a rename --
     // framework names are unique, so a verbatim copy is refused on save.
     'CloneOfFrameworkName' => '{$name} (Kloon)',
-    'CloneFramework' => 'Kloonframework',
+    'CloneFramework' => 'Framework klonen',
     // Extras version independently of Core, so an updated Import/Export Extra
     // can end up calling a Core function the installed Core does not have. The
     // export refuses with this rather than fataling -- see
@@ -4470,14 +4470,14 @@ $lang = array(
     // someone who cannot take it.
     'HowDoYouWantToAddAFramework' => 'Hoe wilt u een framework toevoegen?',
     'CreateFrameworkManually' => 'Maak er handmatig een aan',
-    'CreateFrameworkManuallyHint' => 'Geef het framework zelf een naam en voeg vervolgens de besturingselementen toe of koppel ze.',
+    'CreateFrameworkManuallyHint' => 'Geef het framework zelf een naam en voeg vervolgens de controles toe of koppel ze.',
     // Named for the framework rather than for its vendor. The hint was reworded
     // at the same time: it used to end "...load its Secure Controls Framework
     // controls", which read as a stutter once the label carried those words.
     'GetFrameworkFromScf' => 'Haal er een uit het Secure Controls Framework.',
-    'GetFrameworkFromScfHint' => 'Kies een gepubliceerd framework en laad de bijbehorende besturingselementen in één stap.',
+    'GetFrameworkFromScfHint' => 'Kies een gepubliceerd framework en laad de bijbehorende beheersmaatregelen in één stap.',
     'ImportFrameworkFromCatalog' => 'Importeer er een',
-    'ImportFrameworkFromCatalogHint' => 'Installeer een framework en de bijbehorende besturingselementen vanuit de SimpleRisk-contentcatalogus.',
+    'ImportFrameworkFromCatalogHint' => 'Installeer een framework en de bijbehorende beheersmaatregelen vanuit de SimpleRisk-contentcatalogus.',
 
     // The framework acquisition chooser's third route, which now offers the
     // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
@@ -4486,7 +4486,7 @@ $lang = array(
     // customer maintaining a custom lang.<locale>.php still reconciles by tail
     // diff.
     'ImportFrameworkFromSpreadsheet' => 'Importeer er een vanuit een spreadsheet',
-    'ImportFrameworkFromSpreadsheetHint' => 'Upload een spreadsheet met besturingselementen waarin het framework is benoemd, en beide worden aangemaakt.',
+    'ImportFrameworkFromSpreadsheetHint' => 'Upload een spreadsheet met beheersmaatregelen waarin het framework is benoemd, en beide worden aangemaakt.',
 
     // The Define Control Frameworks rail's second synthetic scope: the controls
     // mapped to no framework at all. Its first, "All controls", reuses the
@@ -4495,7 +4495,7 @@ $lang = array(
     // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
     // is left in place and unreferenced by that page: other surfaces still use
     // it, and every locale carries it.
-    'UnassignedControls' => 'Niet-toegewezen besturingselementen',
+    'UnassignedControls' => 'Niet-toegewezen beheersmaatregelen',
     // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
     // returns the exception's message as the API status message and the page
     // renders it in a toast, so a hardcoded English literal here would be
@@ -4509,19 +4509,19 @@ $lang = array(
     'ApplicabilityErrNarrativeRequired' => 'Voor \'{$state} \' is een beschrijving vereist.',
     'ApplicabilityErrNarrativeTooLong' => 'Het verhaal is langer dan {$bytes} bytes.',
     'ApplicabilityErrReasonRequired' => 'Een reden voor uitsluiting is vereist om een controle als niet van toepassing te markeren.',
-    'ApplicabilityErrProviderRequired' => 'Een provider is verplicht om een besturingselement als overgeërfd te markeren.',
+    'ApplicabilityErrProviderRequired' => 'Een provider is vereist om een beheersmaatregel als overgeërfd te markeren.',
     'ApplicabilityErrProviderTooLong' => 'De providernaam is langer dan {$bytes} bytes.',
     'ApplicabilityErrReasonsNotFound' => 'Deze toepassingsredenen bestaan niet: {$ids}.',
     'ApplicabilityErrReasonsNotOffered' => 'Deze toepassingsredenen worden niet aangeboden voor deze staat: {$ids}.',
     'ApplicabilityErrFrameworkNotFound' => 'Het framework {$framework} bestaat niet.',
-    'ApplicabilityErrControlsNotFound' => 'Deze besturings-ID\'s bestaan niet: {$ids}.',
+    'ApplicabilityErrControlsNotFound' => 'Deze beheersmaatregel-ID\'s bestaan niet: {$ids}.',
     // Controls/Risks import result messages (validation gate, individual bad-row
     // alerts, and the batched submitted/created/updated summaries)
     'ControlIdOrShortNameFieldRequired' => 'Ofwel het veld Control ID ofwel het veld Control Short Name moet worden toegewezen; een rij kan niet worden geïdentificeerd zonder een van beide.',
     'RiskImportSubjectNull' => 'Risico-ID {$risk_id}: Is niet bijgewerkt omdat het veld Onderwerp leeg of ontbreekt.',
     'RiskImportSummary' => 'Ingediende {$submitted} risico(\'s) en bijgewerkte {$updated} risico(\'s).',
-    'ControlImportSummary' => 'Er zijn besturingselementen {$created} aangemaakt en besturingselementen {$updated} bijgewerkt.',
-    'ImportAdditionalIssuesSuppressed' => '{$count} Er waren nog een of meer extra rijen met problemen die hier niet afzonderlijk worden weergegeven.',
+    'ControlImportSummary' => 'Er zijn {$created} beheersmaatregelen aangemaakt en {$updated} beheersmaatregelen bijgewerkt.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} extra rij(en) bevatten problemen die hier niet afzonderlijk worden weergegeven.',
     'EncryptionPipelineStalledTask' => 'Een versleutelingspipeline (taak #{$id}, {$type}) lijkt vastgelopen te zijn — deze bevindt zich al {$status} op een ongebruikelijk lange tijd zonder voortgang. Dit betekent meestal dat de achtergrondworker voor de wachtrij niet actief is; controleer of deze is ingepland en probeer het opnieuw zodra de vastgelopen taak is verwerkt.',
     'EncryptionPipelineStalledState' => 'Een versleutelingspipeline lijkt vastgelopen te zijn — deze staat al ongebruikelijk lang als \'in uitvoering\' gemarkeerd zonder dat er een bijbehorende achtergrondtaak is gevonden. Dit betekent meestal dat de wachtrijworker niet actief is, of dat een vorige pipeline is voltooid zonder dit correct bij te werken. Controleer het debuglogboek voordat u het opnieuw probeert.',
     // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
@@ -4572,7 +4572,7 @@ $lang = array(
     'UpgradeStateRunning' => 'Bezig',
     'UpgradeSessionExpired' => 'Je sessie is verlopen. Meld je opnieuw aan om de upgrade te bekijken.',
     'UpgradeLostContact' => 'Verbinding met de server verbroken. Vernieuw deze pagina om de upgrade te herstellen.',
-    'UpgradeDatabaseAlreadyCurrent' => 'De database is al aanwezig in de applicatieversie.',
+    'UpgradeDatabaseAlreadyCurrent' => 'De database heeft al de versie van de applicatie.',
     'UpgradeConversionsApplied' => 'Engine- en tekensetconversies toegepast.',
     'UpgradeStoppedShort' => 'De upgrade is gestopt bij {reached} zonder {app}te bereiken. Zie het serverlogboek.',
     'UpgradeStepBackingUp' => 'Back-up maken',
@@ -4693,12 +4693,12 @@ $lang = array(
     'BackupTargetChangedOrExists' => 'Het schrijven van de back-up naar "{$dir}" wordt geweigerd: het doel is onverwacht gewijzigd of bestaat al.',
     'BackupDirectoryUnsafe' => 'Het gebruik van de back-upmap "{$location}" wordt geweigerd: het is een symbolische link of is eigendom van een ander account.',
     'DocumentAuditLogApprove' => 'Document "{$document_name}" werd goedgekeurd door {$user}.',
-    'DocumentAuditLogUnapprove' => 'Document "{$document_name}" werd niet goedgekeurd door {$user}.',
+    'DocumentAuditLogUnapprove' => 'De goedkeuring van document "{$document_name}" is ingetrokken door {$user}.',
     'NoApproveDocumentationPermission' => 'U hebt geen toestemming om documenten goed te keuren.',
     'DocumentApproved' => 'Het document werd goedgekeurd.',
     'DocumentUnapproved' => 'Het document werd niet goedgekeurd.',
     'DocumentsApproved' => 'De documenten werden goedgekeurd.',
-    'ApproveSelected' => 'Goedkeuring van geselecteerde',
+    'ApproveSelected' => 'Geselecteerde goedkeuren',
     'SearchDocumentsPlaceholder' => 'Zoek documenten',
     'NoDocumentsYet' => 'Nog geen documenten beschikbaar',
     'NoDocumentsYetBody' => 'Documenten die aan deze categorie worden toegevoegd, worden hier weergegeven.',
@@ -4708,10 +4708,10 @@ $lang = array(
     'CouldNotLoadDocumentsBody' => 'Er is iets misgegaan tijdens het laden van het raster van het documentprogramma.',
     'ApproveDocumentQuestion' => 'Wilt u dit document goedkeuren?',
     'ApproveDocumentConfirmBody' => 'Dit stelt "{name}" in op Goedgekeurd en berekent de datum voor de volgende beoordeling.',
-    'UnapproveDocumentQuestion' => 'Wilt u dit document afwijzen?',
+    'UnapproveDocumentQuestion' => 'Goedkeuring van dit document intrekken?',
     'UnapproveDocumentConfirmBody' => 'Dit stuurt "{name}" terug naar In Review.',
-    'ApproveSelectedDocumentsQuestion' => 'Approve {n} selected documents?',
-    'ApproveSelectedDocumentsConfirmBody' => 'This approves {n} selected documents and calculates each one\'s next review date.',
+    'ApproveSelectedDocumentsQuestion' => '{n} geselecteerde documenten goedkeuren?',
+    'ApproveSelectedDocumentsConfirmBody' => 'Dit keurt {n} geselecteerde documenten goed en berekent voor elk document de volgende beoordelingsdatum.',
     'AddCategory' => 'Categorie toevoegen',
     'ExceptionsApproved' => 'De uitzonderingen werden goedgekeurd.',
     'FrameworkControl' => 'Kader / Controle',
@@ -4723,11 +4723,11 @@ $lang = array(
     'CouldNotLoadExceptionsBody' => 'Er is iets misgegaan tijdens het laden van het raster \'Uitzonderingen definiëren\'.',
     'ApproveExceptionQuestion' => 'Deze uitzondering goedkeuren?',
     'ApproveExceptionConfirmBody' => 'Dit stelt "{name}" in op Goedgekeurd.',
-    'UnapproveExceptionQuestion' => 'Deze uitzondering afwijzen?',
+    'UnapproveExceptionQuestion' => 'Goedkeuring van deze uitzondering intrekken?',
     'UnapproveExceptionConfirmBody' => 'Dit stuurt "{name}" terug naar de wachtstand.',
-    'ApproveSelectedExceptionsQuestion' => 'Goedkeuring van de geselecteerde uitzonderingen {n}?',
+    'ApproveSelectedExceptionsQuestion' => '{n} geselecteerde uitzonderingen goedkeuren?',
     'ApproveSelectedExceptionsConfirmBody' => 'Dit keurt {n} geselecteerde uitzonderingen goed.',
-    'SearchExceptionsPlaceholder' => 'Zoekuitzonderingen...',
+    'SearchExceptionsPlaceholder' => 'Zoek uitzonderingen...',
     'DeleteSelected' => 'Verwijder geselecteerde',
     'ExceptionsDeleted' => 'De geselecteerde uitzonderingen zijn verwijderd.',
     'GovernanceReviewDueEmailSubject' => 'Review deadline: {$name}',
@@ -4738,7 +4738,7 @@ $lang = array(
     'ReviewCadence' => 'Beoordelingsfrequentie',
     'ExceptionDetails' => 'Details van de uitzondering',
     'DescriptionJustification' => 'Beschrijving en onderbouwing',
-    'ChooseAControl' => 'Kies een bedieningselement',
+    'ChooseAControl' => 'Kies een beheersmaatregel',
     'CantDeleteDocumentCategoryInUse' => 'Dit documenttype kan niet worden verwijderd, omdat er momenteel documenten onder dit type zijn opgeslagen.',
     'ExceptionDoesNotExist' => 'Documentuitzondering bestaat niet',
     'DocumentAuditTrailReport' => 'Rapport over het controleren van het documentenverloop',
@@ -4773,7 +4773,7 @@ $lang = array(
     'By' => 'door',
     'UnknownUser' => 'Onbekende gebruiker',
     'AllActivities' => 'Alle activiteiten',
-    'DownloadSelected' => 'Geselecteerde download',
+    'DownloadSelected' => 'Geselecteerde items downloaden',
     'NoDocumentsSelectedForDownload' => 'Er zijn geen documenten geselecteerd om te downloaden.',
     'DocumentsDownloadTruncated' => 'Alleen de eerste {$limit} geselecteerde documenten zijn in de download opgenomen. Herhaal de actie om de rest te downloaden.',
     'NoDownloadableDocumentsSelected' => 'Geen van de geselecteerde documenten bevat een downloadbaar bestand.',
@@ -4787,7 +4787,7 @@ $lang = array(
     'DeletedVersion' => 'Versie verwijderd',
     'CouldNotLoadVersionHistory' => 'De versiegeschiedenis kon niet worden geladen.',
     'DocumentsOverdueForReview' => 'Documenten die te laat zijn voor beoordeling',
-    'DocumentsDueSoonForReview' => 'Documenten dienen binnenkort ter beoordeling te worden ingediend.',
+    'DocumentsDueSoonForReview' => 'Documenten die binnenkort beoordeeld moeten worden',
     'RequiresCustomizationExtra' => 'Vereist de extra aanpassingsoptie.',
     'UnlockCustomizationLink' => 'Kijk wat het toevoegt.',
     'UnlockActivateCustomizationNote' => 'De extra aanpassingsoptie is geïnstalleerd, maar niet ingeschakeld.',
@@ -4804,7 +4804,7 @@ $lang = array(
     'AutomatedNotificationOfRisksSent' => 'De geautomatiseerde melding van niet-beoordeelde en achterstallige risico\'s is verzonden.',
     'AutomatedNotificationOfAuditsSent' => 'De geautomatiseerde melding van de audits is verzonden.',
     'AutomatedNotificationOfMitigationsSent' => 'De geautomatiseerde melding van de genomen maatregelen is verzonden.',
-    'AutomatedNotificationOfUnmitigatedRisksSent' => 'De geautomatiseerde melding van niet-beheersbare risico\'s is verzonden.',
+    'AutomatedNotificationOfUnmitigatedRisksSent' => 'De geautomatiseerde melding van ongemitigeerde risico\'s is verzonden.',
     'AutomatedNotificationOfPolicyControlExceptionsSent' => 'De geautomatiseerde melding van niet-gecontroleerde en achterstallige uitzonderingen op het beleid en de controles is verzonden.',
     'AutomatedNotificationOfDocumentReviewsSent' => 'De automatische melding van de documentbeoordelingen is verzonden.',
     'NoWorkflowsDefinedYet' => 'Er zijn nog geen workflows gedefinieerd. Klik op Nieuwe workflow om er een te maken.',
@@ -4825,9 +4825,9 @@ $lang = array(
     'CloneTemplateGroup' => 'Kloon deze sjabloongroep',
     'RequiredFieldCheckboxLabel' => 'Maak dit aangepaste veld verplicht.',
     'AddField' => 'Voeg veld toe',
-    'CoreFields' => 'Kerngebieden',
+    'CoreFields' => 'Kernvelden',
     'SearchCoreFields' => 'Zoek in de kernvelden',
-    'SearchCustomFields' => 'Aangepaste zoekvelden',
+    'SearchCustomFields' => 'Aangepaste velden zoeken',
     'AllCoreFieldsAddedToTab' => 'Alle kernvelden staan op dit tabblad.',
     'AllCustomFieldsAddedToTemplate' => 'Alle aangepaste velden zijn in deze sjabloon opgenomen.',
     'NoFieldsMatchSearchTerm' => 'Geen velden komen overeen met "{term}".',
@@ -4878,7 +4878,7 @@ $lang = array(
     // user-facing string still needs to flow through a lookup per CLAUDE.md,
     // even one where the English and translated value would typically match.
     'CVSS' => 'CVSS',
-    'DREAD' => 'DRAAD',
+    'DREAD' => 'DREAD',
     'OWASP' => 'OWASP',
     'MyActionItems' => 'Mijn actiepunten',
     'AddRisk' => 'Voeg risico toe',
@@ -4924,8 +4924,8 @@ $lang = array(
     'NoRisksWaitingForProjectHint' => 'Risico\'s die zijn beoordeeld als "Overwegen voor project" worden hier weergegeven totdat ze zijn toegewezen.',
     'NMoreRisks' => '{n} meer risico\'s',
     'ChangeProjectStatus' => 'Projectstatus wijzigen',
-    'ChangeStatusClosesRisks' => 'Door dit project als voltooid te markeren, worden de openstaande risico\'s {n} afgesloten met de reden "Volledig beperkt".',
-    'ChangeStatusReopensRisks' => 'Door dit project als niet-afgerond te markeren, worden de risico\'s die bij de afronding ervan waren afgesloten, opnieuw aan de orde gesteld.',
+    'ChangeStatusClosesRisks' => 'Door dit project als voltooid te markeren, worden de {n} openstaande risico\'s afgesloten met de reden "Volledig beperkt".',
+    'ChangeStatusReopensRisks' => 'Door dit project als niet-afgerond te markeren, worden de risico\'s die bij de afronding ervan waren afgesloten, opnieuw geopend.',
     'ChangeStatusNoCloseRightsHint' => 'U hebt geen toestemming om risico\'s te sluiten of opnieuw te openen, dus alleen de projectstatus zal veranderen.',
     'DeleteProjectReturnsRisks' => 'De risico\'s {n} zullen terugkeren naar de wachtrij voor niet-toegewezen items.',
     'ReorderNeedsPrioritySort' => 'De optie \'Opnieuw ordenen\' is beschikbaar wanneer de lijst binnen één status op prioriteit is gesorteerd.',
@@ -4967,6 +4967,669 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'U hebt geen toestemming om risico\'s af te sluiten.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Beantwoord alle verplichte vragen voordat u de beoordeling afrondt.',
+    'AuditLog_ControlStatusAutoSynced' => 'De status van de beheersmaatregel "{$short_name}" is automatisch bijgewerkt naar "{$status_text}" op basis van de meest recente testresultaten.',
+    'EnableCSPHelp' => 'Content Security Policy (CSP) beperkt de browser tot het laden van scripts, stijlen, afbeeldingen en lettertypen uitsluitend afkomstig van SimpleRisk zelf, en blokkeert paginaframing en het verzenden van formulieren van andere oorsprong. Het is de sterkste ingebouwde verdediging tegen cross-site scripting. Laat CSP ingeschakeld, tenzij het conflicteert met een proxy, browserextensie of integratie van derden in uw omgeving.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Standaardvelden',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Beheerder',
+    'AccountDetails' => 'Accountgegevens',
+    'YourPermissions' => 'Uw machtigingen',
+    'RoleAndTeamsGrantAccess' => 'Waartoe u toegang krijgt op basis van uw rol en de teams waartoe u behoort',
+    'AllGranted' => 'Alles toegekend',
+    'PermissionsCountLabel' => '$count machtigingen',
+    'ManagedByYourAdministrator' => 'Deze gegevens worden beheerd door uw beheerder. Neem contact met hen op als er iets moet worden gewijzigd.',
+    'MultiFactorAuthenticationHint' => 'Voeg een tweede stap toe aan je aanmeldingsproces om je account veiliger te maken.',
+    'ChangingPasswordSignsOutEverywhere' => 'Het wijzigen van uw wachtwoord logt u overal elders uit.',
+    'APIKeyHint' => 'Wordt gebruikt om uw eigen scripts en integraties te authenticeren via de SimpleRisk API.',
+    'ResetDisplaySettingsHint' => 'Hiermee worden uw aangepaste kolomselecties teruggezet naar de standaardinstellingen.',
+    'CardGeneral' => 'Algemeen',
+    'CardClassification' => 'Classificatie',
+    'CardScoring' => 'Score',
+    'CardAdditionalInformation' => 'Aanvullende informatie',
+    'CardCustomFields' => 'Aangepaste velden',
+    'CardCustomFieldsHint' => 'Deze velden moeten in een kaart worden gesorteerd.',
+    'LayoutEditorHint' => 'Sleep een veld naar een andere kaart om het opnieuw toe te wijzen, sleep binnen een kaart om de volgorde of het formaat ervan te wijzigen, en sleep of wijzig het formaat van een kaart om de positie ervan op de pagina te veranderen.',
+    'ScoringNotYetAvailableInThisView' => 'De configuratie voor de puntentelling is in deze weergave nog niet beschikbaar.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Sleep om het formaat aan te passen.',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} veld(en) passen niet in deze kaart. Verklein de kaart om ze te tonen.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Mitigatiestrategie',
+    'CardMitigationSolution' => 'Oplossing ter beperking van de risico\'s',
+    'CardMitigationControls' => 'Mitigatie controles',
+    'CardReview' => 'Beoordeling',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Formulier opnieuw instellen',
+    'SaveAndNew' => 'Opslaan & Nieuw',
+    'SaveAndView' => 'Opslaan en bekijken',
+    'ResetFormConfirmTitle' => 'Deze risico-inzending afwijzen?',
+    'ResetFormConfirmBody' => 'Alle door u ingevoerde gegevens gaan verloren.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Standaardlay-out herstellen?',
+    'RestoreTemplateConfirmBodyRisk' => 'Hierdoor worden alle velden op de tabbladen Details, Maatregelen ter beperking van de schade en Beoordeling teruggezet naar hun standaardwaarden voor deze sjabloongroep. Andere sjabloongroepen worden niet beïnvloed.',
+    'RestoreTemplateConfirmBody' => 'Hierdoor worden alle velden in deze sjabloon teruggezet naar de standaardwaarden voor deze sjabloongroep. Andere sjabloongroepen worden niet beïnvloed.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Geavanceerde statistieken',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Basisscore exploitatiestatistieken',
+    'BaseScoreImpactMetrics' => 'Impactstatistieken van de basisscore',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Hoe de kwetsbaarheid kan worden misbruikt.\n• Lokaal: vereist lokale toegang, zoals een console of shell.\n• Aangrenzend netwerk: de aanvaller moet zich op hetzelfde fysieke of logische netwerksegment bevinden.\n• Netwerk: op afstand te exploiteren via een netwerk, zonder dat lokale of aangrenzende toegang nodig is.",
+    "AttackComplexityHelp" => "Hoe complex de aanval is zodra een aanvaller toegang heeft tot het doelwit.\n• Hoog: vereist specifieke voorwaarden die moeilijk te realiseren zijn.\n• Gemiddeld: er moeten enkele voorwaarden worden vervuld, maar exploitatie is niet moeilijk zodra daaraan is voldaan.\n• Laag: er zijn geen speciale voorwaarden nodig.",
+    "AuthenticationHelp" => "Het aantal keren dat een aanvaller zich moet authenticeren bij het doelwit om het te exploiteren.\n• Meerdere: authenticatie is twee of meer keer vereist, zelfs met dezelfde inloggegevens.\n• Enkele: authenticatie is één keer vereist.\n• Geen: geen authenticatie vereist.",
+    "ConfidentialityImpactHelp" => "De impact op de vertrouwelijkheid van de gegevens die het systeem verwerkt als het wordt misbruikt.\n• Geen: geen impact.\n• Gedeeltelijk: enige informatie wordt openbaar gemaakt, maar de aanvaller heeft geen controle over welke informatie, of het verlies is beperkt.\n• Volledig: alle informatie op het systeem wordt volledig openbaar gemaakt.",
+    "IntegrityImpactHelp" => "De impact op de integriteit van het systeem bij misbruik.\n• Geen: geen impact.\n• Gedeeltelijk: sommige gegevens kunnen worden gewijzigd, maar de aanvaller heeft geen controle over wat, of de reikwijdte is beperkt.\n• Volledig: totale aantasting van de systeemintegriteit; de aanvaller kan alle bestanden wijzigen.",
+    "AvailabilityImpactHelp" => "De impact op de beschikbaarheid van het systeem bij misbruik.\n• Geen: geen impact.\n• Gedeeltelijk: verminderde prestaties of onderbrekingen in de beschikbaarheid.\n• Volledig: totale uitschakeling van de betreffende bron.",
+    "RemediationLevelHelp" => "Het beschikbare niveau van herstel voor de kwetsbaarheid.\n• Officiële oplossing: een complete oplossing van de leverancier is beschikbaar.\n• Tijdelijke oplossing: een officiële, maar tijdelijke oplossing is beschikbaar.\n• Tijdelijke oplossing: er bestaat een onofficiële, niet-leveranciersgebonden tijdelijke oplossing.\n• Niet beschikbaar: er is geen oplossing beschikbaar, of er kan geen oplossing worden toegepast.",
+    "ReportConfidenceHelp" => "De mate van vertrouwen in het bestaan van de kwetsbaarheid en de geloofwaardigheid van de technische details ervan.\n• Onbevestigd: één onbevestigd bronrapport; het onderliggende probleem is speculatief.\n• Niet bevestigd: meerdere onafhankelijke bronnen melden hetzelfde gedrag, maar de hoofdoorzaak is niet bevestigd.\n• Bevestigd: de leverancier heeft het probleem erkend, of het is bevestigd door analyse van de broncode of een exploit.",
+    "CollateralDamagePotentialHelp" => "Het potentiële risico op verlies van mensenlevens, materiële bezittingen of financieel verlies als de kwetsbaarheid wordt uitgebuit.\n• Geen: dergelijk verlies is onwaarschijnlijk.\n• Laag tot gemiddeld: een matig verlies is mogelijk.\n• Hoog: een catastrofale impact op de activa, inkomsten of veiligheid van de organisatie.",
+    "TargetDistributionHelp" => "Het percentage kwetsbare systemen in uw omgeving.\n• Geen: er zijn geen doelsystemen.\n• Laag: 1-25% van de systemen is kwetsbaar.\n• Gemiddeld: 26-75% is kwetsbaar.\n• Hoog: 76-100% is kwetsbaar.",
+    "ConfidentialityRequirementHelp" => "Hoe belangrijk de vertrouwelijkheid van de betreffende gegevens voor uw organisatie is.\n• Laag: een verlies van vertrouwelijkheid heeft een beperkte impact.\n• Gemiddeld: het heeft een ernstige impact.\n• Hoog: het heeft een catastrofale impact.",
+    "IntegrityRequirementHelp" => "Hoe belangrijk de integriteit van het betreffende bedrijfsmiddel is voor uw organisatie.\n• Laag: een integriteitsverlies heeft een beperkte impact.\n• Gemiddeld: het heeft een ernstige impact.\n• Hoog: het heeft een catastrofale impact.",
+    "AvailabilityRequirementHelp" => "Hoe belangrijk de beschikbaarheid van het betreffende bedrijfsmiddel is voor uw organisatie.\n• Laag: een beschikbaarheidsverlies heeft een beperkte impact.\n• Gemiddeld: het heeft een ernstige impact.\n• Hoog: het heeft een catastrofale impact.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Hoe een aanvaller deze kwetsbaarheid zou moeten bereiken en misbruiken: waar ze zich moeten bevinden, hoe complex de aanval is en of ze zich eerst moeten authenticeren.',
+    'BaseScoreImpactMetricsDescription' => 'Wat gebeurt er als de kwetsbaarheid succesvol wordt uitgebuit: het effect op de vertrouwelijkheid, integriteit en beschikbaarheid van het getroffen systeem.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Hoe de daadwerkelijke dreiging van deze kwetsbaarheid in de loop van de tijd verandert: de huidige status van de exploitcode, welke oplossingen beschikbaar zijn en hoe zeker de meldingen zijn dat deze bestaat.',
+    'EnvironmentalScoreMetricsDescription' => 'Het risico van deze kwetsbaarheid hangt af van uw omgeving: de potentiële schade in de praktijk en hoeveel van uw systemen daadwerkelijk getroffen worden.',
+    'ImpactSubscoreModifiersDescription' => 'Weeg de impact van de basisscore af aan de mate waarin vertrouwelijkheid, integriteit en beschikbaarheid daadwerkelijk van belang zijn voor dit specifieke object.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Als een cyberaanval plaatsvindt, hoeveel schade zal er dan ontstaan?' . "\n" . '0 = Niets' . "\n" . '5 = Individuele gebruikersgegevens zijn gecompromitteerd of aangetast.' . "\n" . '10 = Volledige systeem- of gegevensvernietiging',
+    'ReproducibilityHelp' => 'Hoe makkelijk is het om de kwetsbaarheid te reproduceren?' . "\n" . '0 = Zeer moeilijk of onmogelijk, zelfs voor beheerders van de applicatie.' . "\n" . '5 = Een of twee stappen vereist, mogelijk moet u een geautoriseerde gebruiker zijn.' . "\n" . '10 = Een webbrowser en de adresbalk zijn voldoende, authenticatie is niet nodig.',
+    'ExploitabilityHelp' => 'Wat is er nodig om deze dreiging te exploiteren?' . "\n" . '0 = Geavanceerde programmeer- en netwerkkennis, met aangepaste of geavanceerde aanvalstools.' . "\n" . '5 = Er bestaat malware op het internet, of een exploit kan eenvoudig worden uitgevoerd met behulp van beschikbare aanvalstools.' . "\n" . '10 = Gewoon een webbrowser',
+    'AffectedUsersHelp' => 'Hoeveel gebruikers zullen hierdoor worden getroffen?' . "\n" . '0 = Geen' . "\n" . '5 = Sommige gebruikers, maar niet allemaal' . "\n" . '10 = Alle gebruikers',
+    'DiscoverabilityHelp' => 'Hoe gemakkelijk is het om deze dreiging te ontdekken?' . "\n" . '0 = Zeer moeilijk tot onmogelijk; vereist broncode of beheerdersrechten.' . "\n" . '5 = Kan worden achterhaald door te gokken of door netwerkverkeer te monitoren.' . "\n" . '9 = Details over dergelijke fouten zijn al openbaar bekend en kunnen eenvoudig worden gevonden met behulp van een zoekmachine.' . "\n" . '10 = De informatie is zichtbaar in de adresbalk van de webbrowser of in een formulier.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'DREAD-score',
+    'DreadMetrics' => 'DREAD-statistieken',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Hoe technisch onderlegd is deze groep dreigingsagenten?' . "\n" . '1 = Geen technische vaardigheden' . "\n" . '3 = Enkele technische vaardigheden' . "\n" . '5 = Gevorderde computergebruiker' . "\n" . '6 = Netwerk- en programmeervaardigheden' . "\n" . '9 = Vaardigheden voor beveiligingspenetratie',
+    'MotiveHelp' => 'Hoe gemotiveerd is deze groep cybercriminelen om deze kwetsbaarheid te vinden en te misbruiken?' . "\n" . '1 = Weinig of geen beloning' . "\n" . '4 = Mogelijke beloning' . "\n" . '9 = Hoge beloning',
+    'OpportunityHelp' => 'Welke middelen en mogelijkheden heeft deze groep cybercriminelen nodig om deze kwetsbaarheid te vinden en te misbruiken?' . "\n" . '0 = Volledige toegang of dure resources vereist' . "\n" . '4 = Speciale toegang of middelen vereist' . "\n" . '7 = Toegang of bepaalde middelen vereist' . "\n" . '9 = Geen toegang of middelen vereist',
+    'SizeHelp' => 'Hoe groot is deze groep bedreigingsagenten?' . "\n" . '2 = Ontwikkelaars' . "\n" . '2 = Systeembeheerders' . "\n" . '4 = Intranetgebruikers' . "\n" . '5 = Partners' . "\n" . '6 = Geverifieerde gebruikers' . "\n" . '9 = Anonieme internetgebruikers',
+    'EaseOfDiscoveryHelp' => 'Hoe gemakkelijk is het voor deze groep cybercriminelen om deze kwetsbaarheid te ontdekken?' . "\n" . '1 = Vrijwel onmogelijk' . "\n" . '3 = Moeilijk' . "\n" . '7 = Gemakkelijk' . "\n" . '9 = Beschikbare geautomatiseerde tools',
+    'EaseOfExploitHelp' => 'Hoe gemakkelijk is het voor deze groep cybercriminelen om deze kwetsbaarheid daadwerkelijk te misbruiken?' . "\n" . '1 = Theoretisch' . "\n" . '3 = Moeilijk' . "\n" . '5 = Gemakkelijk' . "\n" . '9 = Beschikbare geautomatiseerde tools',
+    'AwarenessHelp' => 'Hoe bekend is deze kwetsbaarheid voor deze groep bedreigingsagenten?' . "\n" . '1 = Onbekend' . "\n" . '4 = Verborgen' . "\n" . '6 = Duidelijk' . "\n" . '9 = Publieke kennis',
+    'IntrusionDetectionHelp' => 'Hoe groot is de kans dat een beveiligingslek wordt ontdekt?' . "\n" . '1 = Actieve detectie in de toepassing' . "\n" . '3 = Geregistreerd en beoordeeld' . "\n" . '8 = Ingelogd zonder beoordeling' . "\n" . '9 = Niet geregistreerd',
+    'LossOfConfidentialityHelp' => 'Hoeveel gegevens kunnen openbaar gemaakt worden en hoe gevoelig zijn deze?' . "\n" . '2 = Minimale niet-gevoelige gegevens die worden vrijgegeven' . "\n" . '6 = Minimale kritische gegevens openbaar gemaakt' . "\n" . '6 = Uitgebreide niet-gevoelige gegevens openbaar gemaakt' . "\n" . '7 = Uitgebreide cruciale gegevens openbaar gemaakt' . "\n" . '9 = Alle gegevens openbaar gemaakt',
+    'LossOfIntegrityHelp' => 'Hoeveel gegevens kunnen beschadigd zijn en hoe ernstig zijn ze beschadigd?' . "\n" . '1 = Minimale, licht beschadigde gegevens' . "\n" . '3 = Minimaal aantal ernstig beschadigde gegevens' . "\n" . '5 = Uitgebreide, licht beschadigde gegevens' . "\n" . '7 = Uitgebreide, ernstig corrupte gegevens' . "\n" . '9 = Alle gegevens volledig corrupt',
+    'LossOfAvailabilityHelp' => 'Hoeveel dienstverlening zou er verloren kunnen gaan en hoe essentieel is die?' . "\n" . '1 = Minimale onderbreking van secundaire diensten' . "\n" . '5 = Minimale onderbreking van primaire diensten' . "\n" . '5 = Uitgebreide secundaire diensten onderbroken' . "\n" . '7 = Uitgebreide primaire zorgverlening onderbroken' . "\n" . '9 = Alle diensten volledig uitgevallen',
+    'LossOfAccountabilityHelp' => 'Zijn de acties van de daders te herleiden tot een individu?' . "\n" . '1 = Volledig traceerbaar' . "\n" . '7 = Mogelijk traceerbaar' . "\n" . '9 = Volledig anoniem',
+    'FinancialDamageHelp' => 'Hoe groot zal de financiële schade zijn als gevolg van een dergelijke aanval?' . "\n" . '1 = Minder dan de kosten om de kwetsbaarheid te verhelpen' . "\n" . '3 = Klein effect op de jaarwinst' . "\n" . '7 = Aanzienlijk effect op de jaarwinst' . "\n" . '9 = Faillissement',
+    'ReputationDamageHelp' => 'Zou een beveiligingslek leiden tot reputatieschade die het bedrijf zou schaden?' . "\n" . '1 = Minimale schade' . "\n" . '4 = Verlies van belangrijke klanten' . "\n" . '5 = Verlies van goodwill' . "\n" . '9 = Merkschade',
+    'NonComplianceHelp' => 'Hoeveel risico loopt u door niet-naleving?' . "\n" . '2 = Kleine overtreding' . "\n" . '5 = Duidelijke overtreding' . "\n" . '7 = Ernstige overtreding',
+    'PrivacyViolationHelp' => 'Hoeveel persoonsgegevens kunnen openbaar gemaakt worden?' . "\n" . '3 = Eén individu' . "\n" . '5 = Honderden mensen' . "\n" . '7 = Duizenden mensen' . "\n" . '9 = Miljoenen mensen',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP-score',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Geeft een schatting van de waarschijnlijkheid van een succesvolle aanval door deze groep bedreigingsagenten.',
+    'VulnerabilityFactorsDescription' => 'Geeft een schatting van de waarschijnlijkheid dat deze kwetsbaarheid ontdekt en misbruikt zal worden.',
+    'TechnicalImpactDescription' => 'De impact wordt onderverdeeld naar vertrouwelijkheid, integriteit, beschikbaarheid en verantwoording.',
+    'BusinessImpactDescription' => 'Het weerspiegelt wat belangrijk is voor het bedrijf, voorbij de pure technische impact.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "De huidige stand van zaken met betrekking tot exploitatietechnieken of de beschikbaarheid van exploitcode.\n• Onbewezen: er is geen exploitcode beschikbaar, of exploitatie is theoretisch.\n• Proof-of-Concept: er bestaat exploitcode, maar deze is voor de meeste aanvallers niet praktisch.\n• Functioneel: functionele exploitcode werkt in de meeste situaties.\n• Hoog: exploitatie is betrouwbaar en ofwel geautomatiseerd (bijv. een worm) of vereist helemaal geen exploitcode.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Klassieke score',
+    'ClassicLikelihoodDescription' => 'Hoe groot is de kans dat dit risico zich voordoet?',
+    'ClassicImpactDescription' => 'Hoe ernstig de gevolgen zouden zijn als dit risico zich zou voordoen.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Aangepaste score',
+    'CustomValueDescription' => 'Een aangepaste waarde kan een decimaal getal tussen 0 en 10 zijn.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Hoe groot is de kans dat dit risico zich voordoet?',
+    'ContributingRiskDescription' => 'Elke factor hieronder is gewogen op basis van zijn relatieve belang – selecteer in welke mate dit risico door elke factor wordt beïnvloed.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Volledige details van de OWASP-risicobeoordelingsmethodologie zijn te vinden',
+    'Here' => 'hier',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Som van ( Gewicht x Impact x 5 / Max )',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Downloaden als afbeelding',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Volledige details over de CVSS-scoreberekening versie 2.0 zijn te vinden',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Ongeldige beheersmaatregel-ID.',
+    'ValidationOwner' => 'Validatie-eigenaar',
+    'ValidationStatus' => 'Validatiestatus',
+    'NotStarted' => 'Nog niet gestart',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Het risico waarnaar u op zoek bent, is mogelijk verwijderd of de link is onjuist.',
+    'MitigationControlsRequiresGovernance' => 'Voor weergave is de Governance-machtiging vereist.',
+    'ViewControlValidation' => 'Validatie van beheersmaatregel bekijken',
+    'EditControlValidation' => 'Validatie van beheersmaatregel bewerken',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Voor het uploaden van bestanden is toestemming voor het indienen van risico\'s vereist.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Voor het beheren van bestanden is de machtiging \'Risico\'s wijzigen\' vereist.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Hiervoor is toestemming van Plan Mitigations vereist om bestanden te beheren.',
+    'MitigationSubmittedBy' => 'Mitigatievoorstel ingediend door',
+    'UseADifferentDate' => 'Gebruik een andere datum',
+    'AssetGroup' => 'Activagroep',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Ongeldige fgroup.',
+    'CustomizationCardsLayoutApiScopeError' => 'De Customization Cards Layout API is alleen beschikbaar voor fgroup=risk, tab_index=1, tab_index=2 of tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Ontdek activa',
+    'DiscoveryRuns' => 'Ontdekkingsacties',
+    'DiscoveryRangeHint' => 'Eén adres, een begin-eindbereik of een IPv4 CIDR-adres.',
+    'DiscoveryResolveNames' => 'Zoek hostnamen op',
+    'DiscoveryAddAs' => 'Voeg nieuwe items toe als',
+    'DiscoveryStart' => 'Begin met ontdekken',
+    'DiscoveryBackgroundNote' => 'Wordt op de achtergrond uitgevoerd. Adressen die al bestaan, worden overgeslagen.',
+    'DiscoveryRangeInvalid' => 'Voer een geldig IPv4-adres, adresbereik of CIDR-blok in.',
+    'DiscoveryRangeTooLarge' => 'Dat bereik is te groot. De limiet is {$max} adressen.',
+    'DiscoveryRunQueued' => 'Discovery gestart.',
+    'DiscoveryRunCompleted' => 'Ontdekking voltooid: {$new} nieuwe activa.',
+    'AssetBulkSelectAll' => 'Selecteer alle {$count} -activa',
+    'AssetBulkAssignTeams' => 'Teams toewijzen…',
+    'AssetBulkAddToGroup' => 'Voeg toe aan groep…',
+    'AssetBulkDeleteConfirmTitle' => 'Assets {$count} verwijderen?',
+    'AbleToEditAssets' => 'Mogelijkheid om assets te bewerken',
+    'AbleToDeleteAssets' => 'Mogelijkheid om activa te verwijderen',
+    'AbleToVerifyAssets' => 'In staat om activa te verifiëren',
+    'AbleToRunAssetDiscovery' => 'Kan Asset Discovery uitvoeren',
+    'AbleToCreateAssetGroups' => 'Mogelijkheid om activagroepen aan te maken',
+    'AbleToEditAssetGroups' => 'Mogelijkheid om activagroepen te bewerken',
+    'AbleToDeleteAssetGroups' => 'Mogelijkheid om activagroepen te verwijderen',
+    'ViewAsset' => 'Bekijk het object',
+    'AssetUnverifiedByEditLog' => 'Asset "{$name}" werd als niet geverifieerd gemarkeerd omdat gebruiker "{$user}" zijn naam of IP-adres heeft gewijzigd zonder toestemming om assets te verifiëren.',
+    'AssetTeamsAssignedLog' => 'Het object "{$name}" is toegewezen aan team(s) "{$teams}" door gebruiker "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Voeg een activum toe',
+    'SearchAssetsPlaceholder' => 'Zoeken op naam of IP-adres',
+    'AllLocations' => 'Alle locaties',
+    'AllTags' => 'Alle tags',
+    'AllAssetGroups' => 'Alle activagroepen',
+    'AssetFields' => 'Activa-velden',
+    'AssetBulkAllSelected' => 'Alle {$count} overeenkomende activa geselecteerd',
+    'AssetDeleteConfirmTitle' => 'Asset "{$name} " verwijderen?',
+    'DeleteAsset' => 'Asset verwijderen',
+    'DeleteAssets' => 'Verwijder activa',
+    'AssetBulkAssignTeamsTitle' => 'Wijs teams toe aan {$count} activa',
+    'AssetAssignTeamsHint' => 'De geselecteerde teams worden toegevoegd. Teams die al op een asset zijn ondergebracht, blijven behouden.',
+    'AssetAddToGroupTitle' => 'Voeg {$count} -items toe aan een groep',
+    'AssetChooseTeams' => 'Kies teams',
+    'AssetChooseGroup' => 'Kies een groep',
+    'Assign' => 'Toewijzen',
+    'AssetBulkVerifiedSummary' => '{$ok} geverifieerd, {$failed} overgeslagen',
+    'AssetBulkDeletedSummary' => '{$ok} verwijderd, {$failed} overgeslagen',
+    'AssetBulkTeamsSummary' => 'Teams toegewezen aan {$ok} activa, {$failed} overgeslagen',
+    'AssetBulkGroupSummary' => '{$ok} toegevoegd aan de groep, {$failed} overgeslagen',
+    'AssetBulkSkippedList' => 'Overgeslagen: {$list}',
+    'AssetBulkReasonNotFound' => 'niet gevonden',
+    'NoAssetsYet' => 'Nog geen activa beschikbaar',
+    'NoAssetsYetHint' => 'De items die u toevoegt of ontdekt, verschijnen hier.',
+    'NoAssetsMatchFilters' => 'Er zijn geen objecten die aan uw filters voldoen.',
+    'CouldNotLoadAssets' => 'Kon de activa niet laden. Uw gegevens zijn veilig.',
+    'AllValuations' => 'Alle taxaties',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Groep toevoegen',
+    'EditAssetGroup' => 'Groep bewerken',
+    'DeleteAssetGroup' => 'Groep verwijderen',
+    'ViewGroupMembers' => 'Leden bekijken',
+    'SearchAssetGroupsPlaceholder' => 'Zoek groepen op naam',
+    'HighestValuation' => 'Hoogste waardering',
+    'LinkedRisks' => 'Gekoppelde risico\'s',
+    'RemoveFromGroup' => 'Verwijderen uit de groep',
+    'AssetGroupMoreMembers' => '+ {$count} meer',
+    'ViewAllInAssetsTab' => 'Bekijk alles in het tabblad \'Activa\'.',
+    'NoAssetsInGroup' => 'Deze groep heeft geen activa.',
+    'CouldNotLoadGroupMembers' => 'De leden van deze groep konden niet worden geladen.',
+    'AssetGroupMembers' => 'Leden',
+    'AssetGroupMembersHint' => 'Alleen zichtbare objecten worden weergegeven. Leden die u niet kunt zien, blijven in de groep.',
+    'ChooseAssets' => 'Kies activa',
+    'AddOrRemoveAssets' => 'Assets toevoegen of verwijderen…',
+    'UseTheseAssets' => 'Gebruik deze activa',
+    'AllAssets' => 'Alle activa',
+    'Valuation' => 'Waardebepaling',
+    'PickerShowingFirstN' => 'De eerste {$count} van {$total} worden weergegeven. Zoek of filter om de rest te vinden.',
+    'AssetGroupDeleteConfirmTitle' => 'Groep "{$name}" verwijderen?',
+    'AssetGroupDeleteKeepsAssets' => 'De activa in deze groep worden niet verwijderd. Alleen de groep zelf wordt verwijderd.',
+    'NoAssetGroupsYet' => 'Nog geen activagroepen beschikbaar',
+    'NoAssetGroupsYetHint' => 'Groepeer activa zodat u ze samen in kaart kunt brengen en erover kunt rapporteren.',
+    'NoAssetGroupsMatchSearch' => 'Er zijn geen activagroepen die overeenkomen met uw zoekopdracht.',
+    'CouldNotLoadAssetGroups' => 'Kon de activagroepen niet laden. Uw gegevens zijn veilig.',
+    'DiscoveryAssignTeams' => 'Wijs ze toe aan teams.',
+    'DiscoveryAssignTeamsHint' => 'Optioneel. Elk nieuw bezit wordt aan deze teams toegevoegd.',
+    'DiscoveryAddAsHint' => 'Ingesteld op basis van uw toestemming om activa te verifiëren.',
+    'DiscoveryTeamsInvalid' => 'Kies teams die bestaan en waar je lid van bent.',
+    'DiscoveryResolveNamesInvalid' => 'Het opzoeken van hostnamen moet aan of uit staan.',
+    'DiscoveryTooManyActiveRuns' => 'Je hebt al {$max} ontdekkingsruns in uitvoering. Wacht tot er een is voltooid of annuleer deze.',
+    'DiscoveryRunNotFound' => 'Ontdekkingsrun niet gevonden.',
+    'DiscoveryRunAlreadyFinished' => 'Deze verkenningsronde is al afgerond.',
+    'DiscoveryRunCancelled' => 'Het verkenningsonderzoek is geannuleerd.',
+    'DiscoveryRunFailedToast' => 'Ontdekking van {$range} mislukt.',
+    'DiscoveryStatusQueued' => 'In de wachtrij',
+    'DiscoveryProgress' => '{$scanned} van {$total}',
+    'DiscoveryLiveHosts' => 'Actieve hosts',
+    'DiscoveryNewAssets' => 'Nieuwe activa',
+    'DiscoveryStartedAt' => 'Gestart',
+    'DiscoveryCancelRun' => 'Annuleer de uitvoering',
+    'CouldNotLoadDiscoveryRuns' => 'Kon de ontdekkingsruns niet laden.',
+    'DiscoveryRangeReserved' => 'Dat bereik omvat gereserveerde adressen (loopback, link-local, multicast of 0.0.0.0/8) die niet gescand kunnen worden.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Er zijn al {$max} ontdekkingsruns bezig. Probeer het opnieuw wanneer er een is voltooid.',
+    'DiscoveryErrorScan' => 'De scan is gestopt vanwege een fout. Raadpleeg de systeemlogboeken voor meer informatie.',
+    'DiscoveryErrorWorkerLost' => 'De achtergrondverwerking van deze taak is gestopt.',
+    'DiscoveryErrorRequesterInactive' => 'De gebruiker die deze run startte, is niet langer actief.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Verzend de bulkactie als een JSON-body.',
+    'AssetBulkActionRequired' => 'Kies een bulkactie.',
+    'AssetBulkUnknownAction' => 'Die bulkactie is niet beschikbaar.',
+    'AssetBulkSelectionRequired' => 'Selecteer activa op basis van ID of via een filter.',
+    'AssetBulkIdsRequired' => 'Selecteer ten minste één object.',
+    'AssetBulkIdsInvalid' => 'Asset-ID\'s moeten hele getallen zijn.',
+    'AssetBulkTooManyAssets' => 'Je kunt maximaal {$max} activa tegelijk bewerken. Verklein je selectie en probeer het opnieuw.',
+    'AssetBulkFilterInvalid' => 'Het filter is ongeldig. Vernieuw de pagina en probeer het opnieuw.',
+    'AssetBulkFilterUnknownKey' => 'Het filter "{$key}" wordt niet herkend.',
+    'AssetBulkFilterBadValue' => 'Het filter "{$key}" heeft een waarde die niet geldig is.',
+    'AssetBulkFilterTooManyValues' => 'Het filter "{$key}" kan maximaal {$max} waarden weergeven.',
+    'AssetBulkFilterAllAlone' => 'Het selecteren van alle objecten kan niet worden gecombineerd met andere filters.',
+    'AssetBulkFilterEmpty' => 'Kies een filter of selecteer alle assets voordat u een bulkactie uitvoert.',
+    'AssetBulkExpectedCountInvalid' => 'Het verwachte aantal activa moet een geheel getal zijn.',
+    'AssetBulkParamsInvalid' => 'De opties voor deze bulkactie zijn niet geldig.',
+    'AssetBulkTeamsRequired' => 'Kies minstens één team.',
+    'AssetBulkTeamsNotFound' => 'Een of meer van die teams bestaan niet meer.',
+    'AssetBulkTeamsNotMember' => 'Je kunt alleen teams toewijzen waar je zelf lid van bent.',
+    'AssetBulkGroupNotFound' => 'Die activagroep bestaat niet meer.',
+    'AssetBulkNoMatch' => 'Er zijn geen objecten die aan uw selectie voldoen.',
+    'AssetBulkCountMismatch' => 'De overeenkomende items zijn gewijzigd van {$expected} naar {$actual} sinds u ze hebt geselecteerd. Bekijk de lijst en probeer het opnieuw.',
+    'AssetColumnSettingsBodyInvalid' => 'Verzend de kolominstellingen als een JSON-body met de kolommen of de volgorde.',
+    'AssetColumnSettingsSaveFailed' => 'Uw kolommen konden niet worden opgeslagen. Vraag een beheerder om de SimpleRisk-upgrade te voltooien.',
+    'DiscoveryRunQueueFailed' => 'Het lukte niet om de ontdekkingsrun in de wachtrij te plaatsen. Probeer het opnieuw.',
+    'DiscoveryRunStartedLog' => 'De asset discovery run #{$id} van {$range} ({$count} adressen) is gestart door gebruiker "{$user}".',
+    'DiscoveryRunCancelledLog' => 'De asset discovery run #{$id} van {$range} is geannuleerd door gebruiker "{$user}".',
+    'AssetBulkTooManyToDelete' => 'Je kunt maximaal {$max} items tegelijk verwijderen. Verklein je selectie en probeer het opnieuw.',
+    'AssetBulkFilterNotApplied' => 'Het filter "{$key}" kon niet worden toegepast zoals het was verzonden, dus er is niets gewijzigd.',
+    'AssetBulkExpectedCountRequired' => 'Om activa te verwijderen met behulp van een filter, moet u het aantal activa opgeven dat u wilt verwijderen.',
+    'AssetBulkReasonNotAttempted' => 'niet geprobeerd',
+    'MoreActions' => 'Meer acties',
+    'AssetCreateNewGroupOption' => 'Maak een nieuwe groep aan…',
+    'AssetNewGroupName' => 'Nieuwe groepsnaam',
+    'AssetFilterByTeam' => 'Filteren op team {$name}',
+    'AssetFilterByValuation' => 'Filteren op waardering {$name}',
+    'AssetFilterByTag' => 'Filteren op tag {$name}',
+    'AssetFilterByLocation' => 'Filteren op site/locatie {$name}',
+    'AssetFilteringByTeam' => 'Filteren op team {$name}',
+    'AssetFilteringByValuation' => 'Filteren op waardering {$name}',
+    'AssetFilteringByTag' => 'Filteren op tag {$name}',
+    'AssetFilteringByLocation' => 'Filteren op site/locatie {$name}',
+    'AssetShowOnlyVerified' => 'Toon alleen geverifieerde activa',
+    'AssetShowOnlyUnverified' => 'Toon alleen niet-geverifieerde activa',
+    'AssetShowingVerified' => 'Geverifieerde activa weergeven',
+    'AssetShowingUnverified' => 'Niet-geverifieerde activa worden weergegeven',
+    'CustomizationLayoutPayloadRejected' => 'De lay-out kon niet worden opgeslagen omdat deze velden of kaarten bevat die niet bij deze sjabloon horen. Er is niets gewijzigd.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Deze sjabloon kan niet worden opgeslagen vanuit de lay-outeditor. Er is niets gewijzigd.',
+    'CustomizationLayoutRejectedEmptyFields' => 'De lay-out bevat geen geldige velden, dus is deze niet opgeslagen. Er is niets gewijzigd.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Het opslaan van deze lay-out zou alle velden uit de sjabloon verwijderen, daarom is het niet gelukt. Vernieuw de pagina en probeer het opnieuw.',
+    'CustomizationLayoutRejectedRequiredField' => 'Een verplicht veld kan niet uit de lay-out worden verwijderd. Er is niets gewijzigd.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Als je deze lay-out opslaat, worden de meeste sjabloonvelden verwijderd zonder dat je ze hier hoeft te verwijderen. Vernieuw de pagina en probeer het opnieuw. Er is niets veranderd.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'De sjabloongroep bestaat niet of behoort tot een ander recordtype. Er is niets gewijzigd.',
+    'CustomizationLayoutLegacySaveRefused' => 'Deze sjabloon wordt bewerkt met de lay-outeditor en kan niet worden opgeslagen via het oude paneel-eindpunt.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Voer maximaal {$max} TCP-poorten in tussen 1 en 65535, gescheiden door komma\'s.',
+    'DiscoveryErrorProbeUnavailable' => 'De probe-methode waarmee deze run is gestart, is niet langer beschikbaar voor het achtergrondproces. Start een nieuwe run.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP-ping (niet-bevoorrechte socket)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP-ping (raw socket)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (ping-opdracht)',
+    'DiscoveryProbeTcpConnect' => 'TCP-verbinding',
+    'DiscoveryProbeMethod' => 'Sondemethode: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Gedetecteerd door de webserver. De achtergrondworker gebruikt mogelijk een andere methode.',
+    'DiscoveryTcpProbeWarning' => 'Hosts worden alleen gevonden als ze reageren op een van de gescande TCP-poorten; hosts die deze poorten blokkeren, worden dus niet gevonden. Voor volledige resultaten kunt u de server ICMP-ping laten verzenden: sta ping-sockets zonder privileges of de NET_RAW-mogelijkheid toe, of installeer ping.',
+    'DiscoveryTcpPortsForRun' => 'TCP-poorten voor deze run',
+    'DiscoveryTcpPortsHint' => 'Door komma\'s gescheiden poorten, tot {$max} . Laat leeg om de standaardpoort te gebruiken: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'TCP-poorten voor het ontdekken van assets',
+    'DiscoveryDefaultTcpPortsHint' => 'Wordt gebruikt wanneer het achtergrondproces geen ICMP-ping kan verzenden. Door komma\'s gescheiden, maximaal {$max} poorten.',
+    'DiscoveryErrorTcpUnreliable' => 'De scan is gestopt omdat het netwerk TCP-verbindingen beantwoordt voor adressen die geen echte hosts kunnen zijn (een proxy of firewall zit in de weg), waardoor elk adres actief lijkt. Vraag uw beheerder om de server ICMP-pings te laten verzenden.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'De TCP-poorten voor het ontdekken van assets zijn door de gebruiker "{$user}" teruggezet naar de standaardinstellingen.',
+    'DiscoveryNotConfigured' => 'Detectie is niet geconfigureerd. Vraag uw systeembeheerder om de toegestane bereiken in config.php in te stellen.',
+    'DiscoveryRangeNotAllowed' => 'Dat bereik ligt buiten de bereiken die Discovery mag scannen.',
+    'DiscoveryAllowedRangesList' => 'Toegestane bereiken: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Dit item is niet beschikbaar. Het is mogelijk verwijderd of u hebt er geen toegang toe.',
+    'AssetCustomFieldNotInTemplate' => 'Een of meer aangepaste velden behoren niet tot de sjabloon van dit item. Er is niets gewijzigd.',
+    'AssetMappedControlsInvalid' => 'De toegewezen beheersmaatregelen konden niet worden opgeslagen. Elke rij heeft een volwassenheidsgraad en ten minste één bestaande beheersmaatregel nodig. Er is niets gewijzigd.',
+    'AssetMappedControlsTooMany' => 'Een asset kan aan maximaal {$max} controls worden toegewezen. Er is niets gewijzigd.',
+    'AddControlsAtAnotherMaturity' => 'Voeg controles toe op een ander rijpheidsniveau.',
+    'ChoosingControlsNeedsGovernancePermission' => 'Voor het selecteren van beheersmaatregelen is de governance-machtiging vereist.',
+    'NControls' => '{n} beheersmaatregel(en)',
+    'SavingKeepsTheCurrentControlMappings' => 'Bij het opslaan blijven de huidige koppelingen met beheersmaatregelen behouden.',
+    'LoadingControls' => 'Beheersmaatregelen laden…',
+    'ControlListCouldNotBeLoaded' => 'De lijst met besturingselementen kon niet worden geladen, waardoor de toegewezen besturingselementen momenteel niet kunnen worden gewijzigd.',
+    'RemoveControlsAtMaturity' => 'Verwijder controles bij volwassenheid {maturity}',
+    'ControlIdUnavailable' => '#{id} (niet beschikbaar)',
+    'AssetRecordEdit' => 'Bewerk het betreffende item',
+    'AssetRecordIdN' => 'Asset #{$id}',
+    'AssetRecordCopyLink' => 'Kopieer de link naar dit asset',
+    'AssetRecordLinkCopied' => 'Link gekopieerd.',
+    'AssetRecordLinkCopyFailed' => 'De link kon niet worden gekopieerd. Kopieer hem in plaats daarvan vanuit de adresbalk.',
+    'AssetRecordMarkUnverified' => 'Markeer als niet geverifieerd',
+    'AssetRecordViewAuditTrail' => 'Auditlogboek bekijken',
+    'AssetRecordAuditTrailTitle' => 'Auditspoor',
+    'AssetRecordAuditTrailEmpty' => 'Er zijn in deze periode geen activiteiten voor dit object geregistreerd.',
+    'AssetRecordAuditTrailFailed' => 'Het auditlogboek kon niet worden geladen.',
+    'AssetRecordBackToAsset' => 'Terug naar activa',
+    'AssetRecordSave' => 'Bewaar activa',
+    'AssetRecordProvenanceVerified' => 'Geverifieerd · toegevoegd {$date}',
+    'AssetRecordProvenanceUnverified' => 'Niet geverifieerd: nog niet bevestigd door iemand die de activa kan verifiëren · toegevoegd {$date}',
+    'AssetRecordUnsavedHint' => 'Als u afsluit met niet-opgeslagen wijzigingen, wordt u eerst om bevestiging gevraagd.',
+    'AssetRecordDiscardQuestion' => 'Niet-opgeslagen wijzigingen verwijderen?',
+    'AssetRecordKeepEditing' => 'Blijf bewerken',
+    'AssetRecordDiscardChanges' => 'Wijzigingen negeren',
+    'AssetRecordVerificationCard' => 'Verificatie',
+    'AssetRecordVerificationTag' => 'Vereist de machtiging \'activa verifiëren\'.',
+    'AssetRecordVerifiedHint' => 'Een verantwoordelijke persoon heeft dit item beoordeeld. Het wijzigen van de naam of het IP-adres zonder de machtiging \'items verifiëren\' zorgt ervoor dat het item weer als niet-geverifieerd wordt gemarkeerd.',
+    'AssetRecordLoadFailed' => 'Het activum kon niet worden geladen. Probeer het opnieuw.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'De Customization Cards Layout API is alleen beschikbaar voor fgroup=risk (tab_index 1, 2 of 3) en fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'De gebruiker die deze run heeft gestart, heeft geen toestemming meer om asset discovery uit te voeren.',
+    'AssetRecordEditField' => 'Bewerken {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Vertrouwelijkheid',
+    'Integrity' => 'Integriteit',
+    'Availability' => 'Beschikbaarheid',
+    'AssetScoringLevelLow' => 'Laag',
+    'AssetScoringLevelModerate' => 'Gematigd',
+    'AssetScoringLevelHigh' => 'Hoog',
+    'AssetScoringValueInvalid' => 'Vertrouwelijkheid, integriteit en beschikbaarheid accepteren laag, gemiddeld of hoog (vertrouwelijkheid accepteert ook niet van toepassing).',
+    'AssetScoringChangedLog' => 'Het activum "{$name}" {$objective} is door gebruiker "{$user}" gewijzigd van {$from} naar {$to}.',
+    'FIPSCategorization' => 'FIPS-categorisatie',
+    'WeightedScore' => 'Gewogen score',
+    'WeightedBand' => 'Verzwaarde band',
+    'AllCategorizations' => 'Alle categorisaties',
+    'AllBands' => 'Alle bands',
+    'AssetFilterByCategorization' => 'Filteren op FIPS-categorisatie {$name}',
+    'AssetFilteringByCategorization' => 'Filteren op FIPS-categorisatie {$name}',
+    'AssetFilterByBand' => 'Filteren op gewogen band {$name}',
+    'AssetFilteringByBand' => 'Filteren op basis van gewogen band {$name}',
+    'AssetScoring' => 'Asset Scoring',
+    'AssetScoringSettingsHint' => 'Elk asset wordt beoordeeld als Laag, Gemiddeld of Hoog voor vertrouwelijkheid, integriteit en beschikbaarheid. Vertrouwelijkheid kan ook als Niet van toepassing worden beoordeeld, waardoor het in beide resultaten wordt weggelaten. De FIPS-categorisatie is de hoogste van de drie beoordelingen. De gewogen score is het gewogen gemiddelde van de drie niveauwaarden, en de banddrempels zetten die score om in een Laag, Gemiddeld of Hoog niveau. Het wijzigen van deze instellingen zorgt ervoor dat elk asset direct opnieuw wordt beoordeeld.',
+    'Weights' => 'Gewichten',
+    'AssetScoringWeightsHint' => 'Hoeveel gewicht elk doel heeft in de gewogen score: 0 tot 100, met maximaal twee decimalen. Een gewicht van 0 betekent dat het betreffende doel niet wordt meegenomen. Integriteit en Beschikbaarheid kunnen niet beide 0 zijn, omdat een vertrouwelijkheidsstatus \'Niet van toepassing\' altijd wordt weggelaten.',
+    'LevelValues' => 'Niveauwaarden',
+    'AssetScoringLevelValuesHint' => 'Het aantal punten dat elke beoordeling bijdraagt aan de gewogen score: van boven de 0 tot en met 100, met maximaal twee decimalen, en Laag onder Gemiddeld onder Hoog. De standaardwaarden zijn Laag 1, Gemiddeld 2 en Hoog 3.',
+    'BandThresholds' => 'Banddrempels',
+    'AssetScoringBandThresholdsHint' => 'Een gewogen score gelijk aan of hoger dan een drempelwaarde valt in die categorie, en een score onder de drempelwaarde \'Gemiddeld\' valt in de categorie \'Laag\'. \'Gemiddeld\' moet beginnen boven de waarde \'Laag\', en \'Hoog\' moet beginnen boven \'Gemiddeld\' en niet hoger dan de waarde \'Hoog\'.',
+    'ModerateStartsAt' => 'Gemiddeld begint bij',
+    'HighStartsAt' => 'Hoog begint bij',
+    'DefaultScoringForNewAssets' => 'Standaardscore voor nieuwe activa',
+    'AssetScoringDefaultsHint' => 'Hiermee worden deze beoordelingen vooraf geselecteerd wanneer iemand een asset toevoegt via het assetformulier. Assets die via discovery, import of de API worden aangemaakt, blijven onbeoordeeld, tenzij ze zelf beoordelingen opgeven. Laat alle drie de opties \'Niet ingesteld\' staan om deze functie uit te schakelen.',
+    'AssetScoringWeightsInvalid' => 'De gewichten voor de activascore moeten getallen zijn van 0 tot 100 met maximaal twee decimalen, en Integriteit en Beschikbaarheid mogen niet beide 0 zijn.',
+    'AssetScoringValuesInvalid' => 'De waarden voor de Asset Scoring-niveaus moeten getallen zijn tussen 0 en 100 met maximaal twee decimalen, waarbij Laag onder Gemiddeld onder Hoog ligt.',
+    'AssetScoringThresholdsInvalid' => 'De drempelwaarden voor de Asset Scoring-categorieën mogen maximaal twee decimalen hebben, waarbij \'Gemiddeld\' boven de \'Laag\'-waarde begint, \'Hoog\' boven \'Gemiddeld\' en \'Hoog\' niet hoger dan de \'Hoog\'-waarde.',
+    'AssetScoringDefaultsInvalid' => 'De standaardscore voor nieuwe activa moet overeenkomen met het niveau dat elk doel biedt.',
+    'AssetScoringSettingsNotSaved' => 'De instellingen voor assetscore konden niet worden opgeslagen. Er is niets gewijzigd.',
+    'AssetScoringSettingsChangedLog' => 'De instellingen voor de activascore zijn gewijzigd door gebruiker "{$user}".',
+    'AssetScoringNotSet' => 'Niet ingesteld',
+    'NotScored' => 'Niet beoordeeld',
+    'AssetScoringNotScoredHint' => 'Beantwoord alle drie de doelstellingen om dit actief te beoordelen.',
+    'ImportAssetScoringValueIgnored' => 'De waarde {$objective} "{$value}" voor activum "{$asset_name}" is geen geldige beoordeling en werd genegeerd.',
+    'AssetScoringSecurityObjectives' => 'Beveiligingsdoelstellingen',
+    'AssetScoringConfidentialityHelp' => 'Wat zijn de mogelijke gevolgen als de informatie over dit object zonder toestemming openbaar wordt gemaakt?',
+    'AssetScoringIntegrityHelp' => 'Wat zijn de mogelijke gevolgen als de informatie op dit actief zonder toestemming wordt gewijzigd of vernietigd?',
+    'AssetScoringAvailabilityHelp' => 'Wat zijn de mogelijke gevolgen als de toegang tot of het gebruik van deze voorziening wordt verstoord?',
+    'AssetScoringHelpHigh' => 'Ernstige of catastrofale nadelige gevolgen',
+    'AssetScoringHelpModerate' => 'Ernstige nadelige gevolgen',
+    'AssetScoringHelpLow' => 'Beperkt of geen nadelig effect',
+    'AssetScoringHelpNotApplicable' => 'Vertrouwelijkheid is geen aandachtspunt voor dit type informatie (bijvoorbeeld openbare informatie).',
+    'AssetScoringHelpLabel' => '{$objective} beoordelingsrichtlijnen',
+    'AssetScoringMeterValue' => '{$score}, {$band} band',
+    'AssetScoringNoWeightedScore' => 'Geen gewogen score',
+    'AssetScoringNoWeightedScoreNote' => 'Geen gewogen score: elk meetellend doel heeft een gewicht van 0.',
+    'AssetScoringUpgradePending' => 'De assetscore kan pas worden opgeslagen nadat de SimpleRisk-database-upgrade is uitgevoerd. Er is niets gewijzigd.',
+    'AssetScoringResultHelpLabel' => '{$result} uitleg',
+    'AssetScoringScoreHelp' => 'De gewogen score combineert de drie beoordelingen tot één getal van {$low} tot {$high}. Elke beoordeling wordt de bijbehorende waarde en wordt vermenigvuldigd met het gewicht van het betreffende doel. De resultaten worden bij elkaar opgeteld en gedeeld door het totaal van de gewichten. Een vertrouwelijkheidsstatus van \'Niet van toepassing\' wordt weggelaten, samen met het bijbehorende gewicht. De waarden en gewichten worden geconfigureerd in de voorkeuren. Alle drie de doelen moeten beoordeeld zijn voordat een score wordt weergegeven.',
+    'AssetScoringCategorizationHelp' => 'De FIPS 199-beveiligingscategorisatie is de hoogste norm: de hoogste beoordeling van alle van toepassing zijnde doelstellingen. Een enkele \'Hoog\'-beoordeling maakt het actief \'Hoog\', ongeacht de andere beoordelingen. \'Niet van toepassing\' wordt genegeerd.',
+    'AssetScoringBandHelp' => 'De band plaatst de gewogen score op een schaal van Laag, Gemiddeld of Hoog. Een score lager dan {$moderate} is Laag, van {$moderate} tot en met {$highAt} is Gemiddeld en {$highAt} of hoger is Hoog. De drempelwaarden worden ingesteld in de voorkeuren.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Alle vertrouwelijkheidsbeoordelingen',
+    'AllIntegrityRatings' => 'Alle integriteitsbeoordelingen',
+    'AllAvailabilityRatings' => 'Alle beschikbaarheidsbeoordelingen',
+    'AssetFilterByConfidentiality' => 'Filteren op vertrouwelijkheid {$name}',
+    'AssetFilteringByConfidentiality' => 'Filteren op vertrouwelijkheid {$name}',
+    'AssetFilterByIntegrity' => 'Filteren op integriteit {$name}',
+    'AssetFilteringByIntegrity' => 'Filteren op integriteit {$name}',
+    'AssetFilterByAvailability' => 'Filteren op beschikbaarheid {$name}',
+    'AssetFilteringByAvailability' => 'Filteren op beschikbaarheid {$name}',
+    'HighestFIPSCategorization' => 'Hoogste FIPS-categorisatie',
+    'HighestWeightedScore' => 'Hoogste gewogen score',
+    'HighestWeightedBand' => 'Hoogst gewogen band',
+    'AssetGroupFields' => 'Assetgroepvelden',
+    'NoAssetGroupsMatchFilters' => 'Er zijn geen activagroepen die overeenkomen met uw filters.',
+    'AssetGroupFilterByHighestCategorization' => 'Filteren op hoogste FIPS-categorie {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Filteren op hoogste FIPS-categorie {$name}',
+    'AssetGroupFilterByHighestBand' => 'Filteren op de hoogste gewogen band {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Filteren op de hoogste gewogen band {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Selecteer activagroepen op basis van ID of filter.',
+    'AssetGroupBulkIdsRequired' => 'Selecteer ten minste één activagroep.',
+    'AssetGroupBulkIdsInvalid' => 'ID\'s van activagroepen moeten hele getallen zijn.',
+    'AssetGroupBulkFilterAllAlone' => 'Het selecteren van alle activagroepen kan niet worden gecombineerd met andere filters.',
+    'AssetGroupBulkFilterEmpty' => 'Kies een filter of selecteer alle activagroepen voordat u ze verwijdert.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Het verwachte aantal activagroepen moet een geheel getal zijn.',
+    'AssetGroupBulkExpectedCountRequired' => 'Om activagroepen te verwijderen met behulp van een filter, moet u het aantal groepen opgeven dat u wilt verwijderen.',
+    'AssetGroupBulkNoMatch' => 'Er zijn geen activagroepen die overeenkomen met uw selectie.',
+    'AssetGroupBulkCountMismatch' => 'De overeenkomende activagroepen zijn gewijzigd van {$expected} naar {$actual} sinds u ze hebt geselecteerd. Controleer de lijst en probeer het opnieuw.',
+    'AssetGroupBulkTooManyToDelete' => 'Je kunt maximaal {$max} activagroepen tegelijk verwijderen. Verklein je selectie en probeer het opnieuw.',
+    'AssetGroupBulkSelectAll' => 'Selecteer alle {$count} activagroepen',
+    'AssetGroupBulkAllSelected' => 'Alle {$count} overeenkomende activagroepen geselecteerd',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Assetgroepen {$count} verwijderen?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'De activa in deze groepen worden niet verwijderd. Alleen de groepen zelf worden verwijderd.',
+    'DeleteAssetGroups' => 'Groepen verwijderen',
+    'AssetGroupBulkDeletedSummary' => '{$ok} groepen verwijderd, {$failed} overgeslagen',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Voor het selecteren van de bijbehorende risico\'s is de machtiging Risicomanagement vereist.',
+    'NAssociatedRisks' => '{n} geassocieerde risico(\'s)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Opslaan behoudt de huidige gekoppelde risico\'s.',
+    'UpgradePhpPartialTarget' => 'Upgraden naar {$target}, de nieuwste versie die PHP {$php} ondersteunt. Versie {$blocked} en hoger vereist PHP {$needed} of nieuwer.',
+    'UpgradeNoPhpCli' => 'Voor de upgrade is de PHP-opdrachtregelinterface met de pdo_mysql-extensie nodig om de database te upgraden, en deze is niet op deze server gevonden. Er is niets gewijzigd. Installeer deze (de geplande taken van SimpleRisk hebben deze ook nodig) en voer de upgrade vervolgens opnieuw uit.',
+    'UpgradeDatabaseStepFailed' => 'De database-upgrade is mislukt. De database heeft versie {$reached}. Bekijk de bovenstaande berichten en het SimpleRisk-logboek en voer de upgrade vervolgens opnieuw uit.',
+    'UpgradeReplacingVendorDirectory' => 'De vendor-directory wordt vervangen.',
+    'AdvancedSearchLockedPlaceholder' => 'Doorzoek je hele programma',
+    'AdvancedSearchLockedAria' => 'Doorzoek je hele programma. Vergrendeld: vereist de extra optie \'Geavanceerd zoeken\'.',
+    'AdvancedSearchLockedPitch' => 'Zoek een risico, beheersmaatregel, document of actief in één vak en ga direct naar de bijbehorende records.',
+    'AdvancedSearchUnlocksLabel' => 'Ontgrendelt zoeken in',
+    'RequiresAdvancedSearchExtra' => 'Vereist de extra optie \'Geavanceerd zoeken\'.',
+    'UnlockAdvancedSearchLink' => 'Kijk wat het toevoegt',
+    'UnlockActivateAdvancedSearchNote' => 'De extra functie voor geavanceerd zoeken is geïnstalleerd, maar niet ingeschakeld.',
+    'UnlockActivateAdvancedSearchLink' => 'Schakel het in.',
+    'AdvancedSearchControlCount' => 'Beheersmaatregelen: {$count}',
+    'AdvancedSearchAssetCount' => 'Activa: {$count}',
+    'AdvancedSearchValuationRange' => '{$min} tot {$max}',
+    'AdvancedSearchTypes' => 'Soorten',
+    'AdvancedSearchTypesToggle' => 'Typen · {$count}',
+    'AdvancedSearchViewAll' => 'Alles bekijken',
+    'AdvancedSearchMatchedIn' => 'Gevonden in {$field}:',
+    'AdvancedSearchMatchedInFilter' => 'Overeenkomsten in',
+    'AdvancedSearchAnyField' => 'Elk veld',
+    'AdvancedSearchSortBest' => 'Beste match',
+    'AdvancedSearchSummary' => 'Resultaten: {$count}',
+    'AdvancedSearchSummaryTypes' => 'Gezochte typen: {$types}',
+    'AdvancedSearchNoResultsTitle' => 'Geen resultaten gevonden voor “{$q}”',
+    'AdvancedSearchNoResultsTip' => 'Controleer de spelling, of probeer minder woorden te gebruiken.',
+    'AdvancedSearchFailedTitle' => 'Zoeken is momenteel niet mogelijk.',
+    'AdvancedSearchFailedBody' => 'Je gegevens zijn veilig. Probeer het over een moment opnieuw.',
+    'AdvancedSearchIncompleteTitle' => 'De resultaten zijn mogelijk onvolledig.',
+    'AdvancedSearchIncompleteDetail' => 'Dit zoektype doorzocht alleen de meest recente records. Verfijn uw zoekopdracht om meer resultaten te zien.',
+    'AdvancedSearchTimeLimitNote' => 'De zoekopdracht werd vroegtijdig gestopt om snel te blijven, waardoor sommige typen niet werden doorzocht. Verfijn uw zoekopdracht om ze wel mee te nemen.',
+    'AdvancedSearchNotSearched' => 'Niet doorzocht',
+    'AdvancedSearchMinChars' => 'Typ minimaal {$count} tekens om te zoeken.',
+    'AdvancedSearchEmptyPrompt' => 'Zoek naar risico\'s, controles, documenten, activa en meer.',
+    'AdvancedSearchFirstPage' => 'Eerste pagina',
+    'AdvancedSearchNoAccess' => 'Met uw account kunt u geen recordtypen doorzoeken. Vraag een beheerder om toegang.',
+    'AdvancedSearchSort' => 'Sorteren',
+    'AdvancedSearchConnectedRecords' => 'Gekoppelde records',
+    'AdvancedSearchConnectedRecordsNote' => 'Toont alleen records waartoe u toegang hebt.',
+    'AdvancedSearchNoConnections' => 'Er zijn geen gekoppelde records zichtbaar.',
+    'AdvancedSearchConnectionsFailed' => 'De gekoppelde records konden niet worden geladen.',
+    'AdvancedSearchShowConnections' => 'Toon verbonden records voor {$title}',
+    'AdvancedSearchExploreConnections' => 'Verken de verbanden',
+    'AdvancedSearchCopyLink' => 'Link kopiëren',
+    'AdvancedSearchMoreCount' => '+{$count} meer',
+    'AdvancedSearchCopyLinkFailed' => 'Het lukte niet om de link te kopiëren.',
+    'AdvancedSearchOpenRecord' => 'Open',
+    'ControlDeepLinkUnavailable' => 'Die beheersmaatregel is niet beschikbaar. Deze is mogelijk verwijderd of u hebt er geen toegang toe.',
+    'ExceptionDeepLinkUnavailable' => 'Die uitzondering kan hier niet worden geopend. U hebt mogelijk geen toegang tot het bijbehorende beleidsdocument.',
+    // Advanced Search: the topbar typeahead
+    'AdvancedSearchSeeAll' => 'Bekijk alle resultaten voor “{$q}”',
+    'AdvancedSearchTopHit' => 'Tophit',
+    'AdvancedSearchKeyMove' => 'Verplaatsen',
+    'AdvancedSearchKeyEsc' => 'esc',
+    'AdvancedSearchSuggestions' => 'Zoeksuggesties',
+    'AdvancedSearchAssessmentSubtitle' => '{$contact} · {$percent}% voltooid',
+    'AdvancedSearchScannerId' => 'Scanner-ID',
+    'AdvancedSearchVendor' => 'Leverancier',
+    'AdvancedSearchProduct' => 'Product',
+    'AdvancedSearchSeverityLevel' => 'Ernst {$level}',
+    'AdvancedSearchFromYourExtras' => 'Uit uw extra\'s',
+    'UpdateAnExistingUser' => 'Een bestaande gebruiker bijwerken',
+    'UserImportProgressTitle' => 'Gebruikers importeren',
+    'UserImportQueued' => 'In de wachtrij. De import start over een ogenblik…',
+    'UserImportProgressCount' => '{$processed} van {$total} rijen verwerkt…',
+    'UserImportComplete' => 'Import voltooid.',
+    'UserImportFailed' => 'De import kon niet worden voltooid.',
+    'UserImportSummary' => '{$created} aangemaakt, {$updated} bijgewerkt, {$failed} niet geïmporteerd.',
+    'UserImportRowInvalid' => 'Rij {$row}: niet geïmporteerd. Een gebruikersnaam, een volledige naam en een geldig e-mailadres zijn vereist.',
+    'UserImportRowError' => 'Rij {$row}: niet geïmporteerd vanwege een onverwachte fout.',
+    'UserImportRevealPasswords' => 'Tijdelijke wachtwoorden weergeven',
+    'UserImportPasswordsOnce' => 'De tijdelijke wachtwoorden van nieuwe gebruikers worden eenmalig weergegeven en daarna verwijderd. Kopieer ze nu en geef elke gebruiker zijn of haar wachtwoord op een veilige manier. Elke gebruiker moet het wachtwoord wijzigen bij de eerste aanmelding.',
+    'UserImportPasswordsShownOnce' => 'Deze tijdelijke wachtwoorden zijn verwijderd uit SimpleRisk en kunnen niet opnieuw worden weergegeven. Kopieer ze nu. Elke gebruiker moet zijn of haar wachtwoord wijzigen bij de eerste aanmelding.',
+    'UserImportPasswordsUnavailable' => 'De tijdelijke wachtwoorden kunnen niet langer worden weergegeven. Ze worden eenmalig getoond, alleen aan de beheerder die de import heeft gestart en alleen in het browsertabblad waarmee de import is gestart. SimpleRisk bewaart geen gegevens die ze opnieuw zouden kunnen tonen. Stel voor elke nieuwe gebruiker een nieuw wachtwoord in door de gebruiker te bewerken.',
+    'UserImportBackgroundNote' => 'Deze pagina wordt automatisch bijgewerkt en de import blijft actief, zelfs als u de pagina verlaat. Open de pagina opnieuw om het resultaat te bekijken.',
+    'AuditAdditionalStakeholdersSetOnTest' => 'Er zijn extra belanghebbenden ingesteld voor de test. Om deze te wijzigen, bewerk je de test onder {$page}; de wijziging wordt direct toegepast op deze audit.',
+    'QuestionnaireDraftSomeFilesNotSaved' => 'Je antwoorden zijn opgeslagen, maar een of meer bijlagen zijn niet opgeslagen. Een bestand is mogelijk te groot of van een niet-toegestaan type.',
+    'UploadFileTooBigForDatabase' => 'Het geüploade bestand is te groot voor de database. Een SimpleRisk-beheerder kan de waarden voor max_allowed_packet en innodb_log_file_size in de MySQL-configuratie verhogen.',
+    'UploadErrorIniSize' => 'Het geüploade bestand overschrijdt de upload_max_filesize-richtlijn in php.ini.',
+    'UploadErrorFormSize' => 'Het geüploade bestand overschrijdt de MAX_FILE_SIZE-limiet die in het HTML-formulier is opgegeven.',
+    'UploadErrorPartial' => 'Het geüploade bestand is slechts gedeeltelijk geüpload.',
+    'UploadErrorNoFile' => 'Er is geen bestand geüpload.',
+    'UploadErrorNoTmpDir' => 'Er ontbreekt een tijdelijke map.',
+    'UploadErrorCantWrite' => 'Het schrijven van het bestand naar de schijf is mislukt.',
+    'UploadErrorExtension' => 'Een PHP-extensie heeft het uploaden van het bestand geblokkeerd.',
+    'MaxUploadSizeNeedsInteger' => 'De maximale bestandsgrootte voor uploads moet een geheel getal zijn, groter dan nul bytes.',
+    'MaxUploadSizeUpdated' => 'De maximale bestandsgrootte voor uploads is succesvol bijgewerkt.',
+    'MaxUploadSizeCapped' => 'De opgeslagen waarde is hoger dan deze server toestaat, waardoor grotere bestanden worden geweigerd totdat de PHP- en MySQL-limieten worden verhoogd of deze waarde wordt verlaagd. Grootste bestand dat momenteel wordt geaccepteerd, in bytes:',
+    'PleaseEnterAValidEmailAddress' => 'Voer een geldig e-mailadres in.',
+    'RiskImportedClosedWithoutCloseReason' => 'Risico {$risk_id} ("{$subject}") is geïmporteerd met de status Gesloten, maar zonder reden voor sluiting. De informatie over de sluiting is daarom onvolledig. Voeg een reden voor sluiting toe aan het bestand en importeer het opnieuw, of voltooi de sluiting via de risicopagina.',
+    // SR-115: HTTP Strict Transport Security (HSTS)
+    'EnableHSTS' => 'Schakel HTTP Strict Transport Security (HSTS) in.',
+    'EnableHSTSHelp' => 'Geeft browsers de instructie om alleen via HTTPS verbinding te maken met SimpleRisk gedurende de hieronder vermelde maximale geldigheidsduur. Schakel dit alleen in nadat HTTPS betrouwbaar werkt op deze site: browsers die de header hebben gezien, zullen gewone HTTP weigeren en een ongeldig certificaat kan niet worden omzeild totdat de maximale geldigheidsduur is verlopen. Begin met een korte maximale geldigheidsduur, bijvoorbeeld 300 seconden, en verhoog deze zodra HTTPS is geverifieerd.',
+    'HSTSMaxAge' => 'Maximale leeftijd van HSTS (seconden)',
+    'HSTSMaxAgeInvalid' => 'De maximale leeftijd van de HSTS moet een geheel aantal seconden zijn tussen 0 en 63072000.',
+    'HSTSIncludeSubdomains' => 'Pas HSTS toe op alle subdomeinen.',
+    'HSTSIncludeSubdomainsHelp' => 'Dwingt ook HTTPS af voor elk subdomein van deze host. Schakel deze optie uit als een subdomein via gewoon HTTP wordt aangeboden.',
     '' => '',
 );
 ?>

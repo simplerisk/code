@@ -16,6 +16,61 @@ This file was introduced during the v1.7.x series. Structured entries below cove
 
 ## [Unreleased]
 
+## [2.0.2]
+
+### Changed
+
+- Draft conformance tool pin bumped `0.2.0-alpha.11` → `0.2.0-alpha.12`
+  (published 2026-10-01) and the draft baseline re-curated from real
+  runs: **both lists are now empty**. The eight SEP-2663 Tasks
+  `wire-schema-valid` entries retired because alpha.12 ships upstream
+  #468 (fixes modelcontextprotocol/conformance#424), which validates
+  extension result envelopes such as `CreateTaskResult` instead of
+  forcing them through the core `CallToolResult` schema; and
+  `auth/pre-registration` retired because alpha.12 ships our upstream PR
+  #423 (fixes conformance#422), so the scenario now supplies the
+  authorization server's `issuer` and `conformance/everything-client.php`
+  binds its pre-registered credentials to it on the draft track — the
+  SDK's default strict `2026-07-28` Authorization Server Binding passes
+  14/14 without `allowUnboundClientCredentials`. alpha.12 also adds a
+  deterministic `tools/list` ordering check, the 2025-11-25+ tool-name
+  SHOULD rules, a number-typed `x-mcp-header` negative fixture, exact
+  RFC 8707 `resource`-matches-PRM checks, and per-scenario server
+  timeouts; the SDK passes all of them unchanged (draft server 103/103 +
+  nine runnable Tasks scenarios, draft client 168/168). No SDK code
+  change; the stable pin stays `0.1.16`.
+- [ROADMAP.md](ROADMAP.md): added an ongoing gradual internal-refactoring
+  initiative (decomposing the `HttpServerTransport` and `McpServer`
+  facades behind unchanged public API, with an explicit
+  protected-extension-point policy and a per-path PHPStan ratchet for
+  newly extracted classes) and three PHP-ecosystem integration items to
+  the post-v2 batteries — attribute/docblock-driven tool schema
+  generation, an optional PSR-7 boundary converter, and optional PSR-11
+  container resolution for handler references — plus the sequencing
+  between the refactor and those batteries. Documentation only; no code
+  change.
+
+### Fixed
+
+- Client: the standalone GET SSE helper is no longer forked under web
+  SAPIs (`fpm-fcgi`, `apache2handler`, `cli-server`, ...). A forked copy
+  of a PHP-FPM worker inherits the request's FastCGI connection, and
+  whenever the GET ended promptly — a server declining the stream with
+  405 (which the spec allows), a connection error, or the SSE idle
+  timeout — the child's normal `exit()` ran PHP's request shutdown and
+  finished the parent's HTTP response; the rest of the parent's output
+  was silently discarded. `SseConnection` now forks only under
+  `cli`/`phpdbg` and uses the in-process non-blocking stream everywhere
+  else. Where the helper is used it ends with a hard kill (no shutdown
+  functions, destructors, or output-buffer flush run in the child),
+  reports a declined stream to the parent so `wasDeclinedByServer()` and
+  `getResponseStatus()` work in background mode too, and the parent
+  drains the IPC pipe (buffering partial frames) before treating the
+  helper as gone. `start()` also resets per-attempt state, so a
+  `stop()`/`start()` cycle on the same instance no longer inherits an
+  earlier decline or reaped-helper flag.
+  ([#65](https://github.com/logiscape/mcp-sdk-php/issues/65))
+
 ## [2.0.1]
 
 ### Changed

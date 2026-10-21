@@ -365,7 +365,7 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Искам да прегледам много висок риск на всеки',
     'AbleToReviewVeryHighRisks'=>'В състояние да преразгледа много висок риск',
     'AbleToReviewInsignificantRisks'=>'В състояние да преразгледа незначителните рискове',
-    'AllTeams'=>'Всички отбори',
+    'AllTeams'=>'Всички екипи',
     'FileUploadSettings'=>'Настройки за качване на файлове',
     'AllowedFileTypes'=>'Разрешени файлови типове',
     'AddNewFileTypeOf'=>'Добавяне на нов тип файл на',
@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Потребителски сесии',
     'SessionActivityTimeout' => 'Изчакване на активността на сесията',
     'Security' => 'Сигурност',
-    'EnableCSP' => 'Разрешаване на правила за защита на съдържанието (това е прекъснато Chrome в миналото)',
+    'EnableCSP' => 'Активиране на политиката за сигурност на съдържанието (препоръчително)',
     'EnableDebugLogging' => 'Разрешаване на грешки при регистриране',
     'seconds' => 'секунди',
     'FieldSample' => 'Поле проба',
@@ -2004,7 +2004,7 @@ $lang = array(
     'AccessComplexity' => 'Сложност на достъпа',
     'MaturityAudit' => 'Одит на зрялост',
     'DefaultCurrentMaturity' => 'Зрялост по подразбиране (текуща)',
-    'DefaultDesiredMaturity' => 'Желан падеж по подразбиране',
+    'DefaultDesiredMaturity' => 'Желана зрялост по подразбиране',
     'ComplianceAssessment' => 'Оценка на съответствието',
     'MaturityAssessment' => 'Оценка на зрялостта',
     'FileAttachment' => 'Прикачен файл',
@@ -2023,7 +2023,7 @@ $lang = array(
     'AssessmentContact' => 'Контакт за оценка',
     'User' => 'Потребител',
     'QuestionnaireResultShareAuditLog' => 'Потребител „{$user_name}“ сподели въпросник „{$questionnaire_name}„(изпратен до контакт „{$contact_name}„ на „{$date}„) резултат с коментар „{$comment}„. Споделен с „{$shared_with_contacts}„.',
-    'QuestionnaireResultStopSharingAuditLog' => 'Потребителят „{$user_name}“ спря споделянето на въпросника „{$questionnaire_name}„(изпратен до контакт „{$contact_name}„ на резултата „{$date}„). Спрях споделянето с „{$stopped_sharing_with_contacts}„.',
+    'QuestionnaireResultStopSharingAuditLog' => 'Потребителят „{$user_name}“ спря споделянето на резултата от въпросника „{$questionnaire_name}“ (изпратен до контакт „{$contact_name}“ на „{$date}“). Спря споделянето с „{$stopped_sharing_with_contacts}“.',
     'QuestionnaireResultShareOpenedAuditLog' => 'Резултатът от споделения въпросник „{$questionnaire_name}“ (изпратен до контакт „{$contact_name}“ на „{$date}“, споделен с „{$shared_with_contact_name}“) беше отворен.',
     'Pending' => 'В очакване',
     'PasswordResetRequestsExceeded' => 'Вече е поискано нулиране на паролата за този потребител. Моля, изчакайте 10 минути, преди да поискате друго нулиране на паролата.',
@@ -2427,7 +2427,7 @@ $lang = array(
     'RisksByMonth' => 'Рискове по месеци',
     'WidgetType_chart' => 'Диаграма',
     'WidgetType_table' => 'Таблица',
-    'WidgetType_WYSIWYG' => 'WYSIWYG (Виждам какво)',
+    'WidgetType_WYSIWYG' => 'WYSIWYG',
     'EnableAIAssistanceForRiskData' => 'Активиране на помощ от изкуствен интелект за данни за риска',
     'ArtificialIntelligenceAssistant' => 'Асистент по изкуствен интелект',
     'LastUpdated' => 'Последна актуализация',
@@ -2523,7 +2523,7 @@ $lang = array(
     'DocumentControlMappingHelp'=>'Този отчет показва всички съпоставяния на документи с контроли',
     'DocumentID' => 'Идентификационен номер на документа',
     'Score' => 'Резултат',
-    'TFIDFSimilarity' => 'Сходство между TF и IDF',
+    'TFIDFSimilarity' => 'Сходство TF-IDF',
     'MatchingKeywords' => 'Съвпадащи ключови думи',
     'AIMatch' => 'Съвпадение с изкуствен интелект',
     'AIConfidence' => 'Увереност в изкуствения интелект',
@@ -2599,7 +2599,7 @@ $lang = array(
     'EnableLoggingDebug' => 'DEBUG: Подробна диагностична информация за разработчици.',
     'QueueMonitor' => 'Монитор на опашката',
     'PleaseEnterAValidTimezone' => 'Моля, въведете валидна часова зона.',
-    'TFIDFMatch' => 'Мач TF-IDF',
+    'TFIDFMatch' => 'Съвпадение TF-IDF',
     'CompletionDate' => 'Дата на завършване',
     'AssetsAndControls' => 'Активи и контроли',
     'AssetsByControl' => 'Активи по контрол',
@@ -2625,7 +2625,7 @@ $lang = array(
     'NoPermissionDeleteSavedRiskReports' => 'Нямате разрешение да изтривате запазени отчети за риска.',
     'LimitedPeriodTestmailMessage' => 'Наскоро беше изпратен тестов имейл. Можете да изпращате до 5 тестови имейла на час.',
     'ATestEmailHasBeenSentUsingTheCurrentSettings' => 'Изпратен е тестов имейл с текущите настройки.',
-    'ControlPassFailStatus' => 'Статус на успешно/неуспешно управление',
+    'ControlPassFailStatus' => 'Статус на контрола: преминат/непреминат',
     'GovernanceDashboard' => 'Табло за управление',
     'GovernanceDashboardDescription' => 'Тази диаграма показва текущата зрялост на всички контроли.',
     'GovernanceControlsByFrameworkMaturityStacked' => 'Контроли по рамка и текуща зрялост',
@@ -2740,7 +2740,7 @@ $lang = array(
     'SettingsPreferencesDesc'             => 'Стойности по подразбиране и предпочитания за поведение в SimpleRisk: език, часова зона, състояния на одит, изисквания за картографиране на риска, превключватели за поведение на потребителския интерфейс и други подобни.',
     'SettingsFileUploadDesc'              => 'Разрешени типове качени файлове и ограничения за размера на различните полета за прикачени файлове.',
     'SettingsMailDesc'                    => 'SMTP конфигурация за изходящи имейл известия, включително транспорт, хост, удостоверяване и отговор.',
-    'SettingsBackupsDesc'                 => 'Конфигурирайте запазването на резервни копия, планирайте и изтегляйте връзки за резервни копия на базата данни SimpleRisk.',
+    'SettingsBackupsDesc'                 => 'Конфигурирайте запазването на резервни копия, графика и връзките за изтегляне на резервните копия на базата данни SimpleRisk.',
     'SettingsSecurityDesc'                => 'Настройки за удостоверяване, сесия, политика за пароли, базов URL адрес и API сигурност.',
     'SettingsLoggingDesc'                 => 'Конфигурация за регистриране на грешки и одит: нива на регистриране, съхранение и местоположение на регистрационните файлове.',
     'HealthCheckDesc'                     => 'Диагностициране на състоянието на системата: версия на PHP, разширения, разрешения за файлове, свързаност с базата данни, cron график и допълнителни активации.',
@@ -2748,7 +2748,7 @@ $lang = array(
     'RegisterAndUpgradeDesc'              => 'Регистрирайте вашата инсталация на SimpleRisk, въведете или подновете абонаментен ключ и задействайте Core/Extra надстройки с едно щракване.',
     'QueueMonitorDesc'                    => 'Проверете опашката от фонови задачи: чакащи, изпълняващи се и неуспешни задачи.',
     'ExtrasDesc'                          => 'Активирайте, деактивирайте и конфигурирайте SimpleRisk Extras (платени добавки).',
-    'ArtificialIntelligenceExtraDesc'     => 'Допълнителното изкуствено разузнаване предоставя подобрен анализ на риска (включително FAIR оценки) и персонализирана документация.',
+    'ArtificialIntelligenceExtraDesc'     => 'Допълнителният модул „Изкуствен интелект“ предоставя подобрен анализ на риска (включително FAIR оценки) и персонализирана документация.',
     'CustomizationExtraDesc'              => 'Допълнителната функция за персонализиране дава възможност за добавяне и премахване на различни видове полета и динамично създаване на персонализирани шаблони за страници.',
     'NotificationExtraDesc'               => 'Допълнителната функция за имейл известия позволява на SimpleRisk да изпраща имейл известия, когато рисковете са подадени, променени или по тях се предприемат други действия. Тази допълнителна функция може да се добави и като планиран скрипт за изпращане на рутинни напомняния, когато рисковете са готови за преглед от ръководството. В продукта SimpleRisk Core, без тази допълнителна функция, не се съобщават известия извън самия инструмент.',
     'VulnerabilityManagementExtraDesc'    => 'Допълнителното управление на уязвимостите предоставя на клиентите възможността да интегрират своя SimpleRisk екземпляр с Qualys, Tenable.io или Rapid7 Nexpose/InsightVM и да импортират данни за активи и уязвимости в SimpleRisk. Оттам можете да изберете кои сайтове искате да покриете, да определите кои оценки на уязвимостите трябва да бъдат импортирани и да прецените кои уязвимости се превръщат в рискове, за да ги проследите.',
@@ -2776,13 +2776,13 @@ $lang = array(
     'ImportExportExtraDesc'               => 'Допълнителната функция за импортиране-експортиране предоставя възможност за импортиране на данни в SimpleRisk чрез съпоставяне на полета в CSV файл с полета в базата данни на SimpleRisk. Може да се използва за импортиране на резултати от одит от електронна таблица на трета страна, резултати от сканиране за уязвимости от друг инструмент, ресурси от вашата CMDB и други. Допълнителната функция предоставя и възможност за експортиране на CSV файлове от SimpleRisk, съдържащи рискове, смекчаващи мерки, прегледи или комбиниран отчет и за трите.',
     'JiraExtraDesc'                       => 'Jira Integration Extra предоставя на потребителите възможността за двупосочна интеграция с Jira екземпляр. Тя позволява свързването на рискове с проблеми в Jira, както и синхронизирането на техните данни, статус и коментари.',
     'APIExtraDesc'                        => 'API Extra позволява на клиентите да използват RESTful API за създаване на скриптирани взаимодействия с други приложения, за да получат разширена автоматизация и да използват съществуващата инфраструктура.',
-    'AdvancedSearchExtraDesc'             => "Допълнителното разширено търсене разширява функционалността на полето за търсене в горната лента, за да може да се намират рискове чрез текстово търсене в данни за риска.",
+    'AdvancedSearchExtraDesc'             => "Допълнителната функция за разширено търсене превръща полето за търсене в горната лента в едно търсене по рискове, рамки, контроли, документи, изключения, тестове, одити, активи и групи активи, с пълна страница за търсене за работа с резултатите. Тя показва само записи, които потребителят има право да вижда.",
     'AssessmentsExtraDesc'                => 'Допълнителната функция за оценка на риска предоставя на потребителите възможността да дефинират контакти, да създават въпроси (включително логически), да сглобяват множество въпроси с шаблон за въпросник, да създават въпросници и да ги изпращат до контакти, да преглеждат резултатите от въпросника, да добавят рискове въз основа на тези резултати и да сравняват резултатите във времето, да импортират и експортират външно персонализирани оценки и да преглеждат одитната следа от оценката на риска.',
     'ActiveAssessmentsDesc'               => 'Преглеждайте и управлявайте оценките, които в момента са в процес на разработка.',
     'WorkflowsExtraDesc'                  => 'Workflows Extra предоставя визуален, управляван от събития механизъм за работен процес, който автоматизира действията за управление на риска в отговор на събития в SimpleRisk. Можете да проектирате работни процеси, които се задействат при промени – като например подаване, актуализиране или преглед на риск – за насочване на одобрения, възлагане на работа и поддържане на процеса ви в движение без ръчна намеса.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'Unified Compliance Framework (UCF) Extra е интеграция на ниво API между Unified Compliance Framework и SimpleRisk. Активирането ѝ ви позволява да импортирате избрани рамки и да контролирате съпоставянията директно от UCF.',
+    'UCFExtraDesc'                        => 'Unified Compliance Framework (UCF) Extra е интеграция на ниво API между Unified Compliance Framework и SimpleRisk. Активирането ѝ ви позволява да импортирате избрани рамки и съпоставяния на контроли директно от UCF.',
     'SCFExtraDesc'                        => "Рамката за защитени контроли (SCF) Extra е директна интеграция между рамката за защитени контроли и SimpleRisk. Тя импортира каталога с контроли на SCF и техните съпоставяния в широк спектър от рамки за съответствие и киберсигурност във функционалността за управление на SimpleRisk, така че можете да внедрите рамките, от които се нуждаете, и да управлявате техните контроли, без да ги изграждате на ръка.",
 
     // Configure Hub - tile descriptions (maintenance category)
@@ -2893,7 +2893,7 @@ $lang = array(
     'EncryptionActivationAlreadyRunning' => 'Вече се извършва активиране на криптиране. Изчакайте да завърши или използвайте възстановяване от резервно копие за възстановяване.',
     'EncryptionActivationEnqueued'           => 'Активирането на допълнително криптиране е поставено в опашка. Административният интерфейс ще следи напредъка, докато базата данни е криптирана.',
     'EncryptionActivationEnqueueFailed'      => 'Неуспешно добавяне на задачата за активиране на криптиране. Проверете дневника за отстраняване на грешки за подробности.',
-    'EncryptionDeactivationEnqueued'         => 'Шифроване. Допълнителното деактивиране е поставено на опашка. Административният интерфейс ще следи напредъка, докато базата данни се дешифрира.',
+    'EncryptionDeactivationEnqueued'         => 'Деактивирането на Encryption Extra е поставено на опашка. Административният интерфейс ще следи напредъка, докато базата данни се дешифрира.',
     'EncryptionDeactivationEnqueueFailed'    => 'Неуспешно поставяне на задачата за деактивиране на криптиране в опашката. Проверете дневника за отстраняване на грешки за подробности.',
     'EncryptionPipelineInProgress'           => 'В момента се извършва процес на криптиране (активиране, деактивиране или възстановяване). Изчакайте да приключи, преди да опитате отново.',
     'EncryptionPipelineInProgressTask'       => 'В момента се изпълнява процес на криптиране (задача #{id}, {type}). Изчакайте да приключи, преди да опитате отново.',
@@ -2977,7 +2977,7 @@ $lang = array(
     'DeleteRemovedControls' => 'Изтриване на премахнатите SCF контроли',
     'CreateEvidenceRequests' => 'Създаване на заявки за доказателства за SCF контроли',
     'SelectSCFFrameworks' => 'Изберете SCF рамки',
-    'SCFReleaseProcessing' => 'Обработка на освобождаването на SCF',
+    'SCFReleaseProcessing' => 'Обработка на изданието на SCF',
     'NotFrameworkDescription' => 'Уиджетът по-долу показва всички заглавки, намиращи се в електронната таблица на Secure Controls Framework (SCF). Използвайте го, за да изберете кои колони съдържат данни за рамки спрямо данни, които не са от рамки.',
     'Note' => 'Забележка',
     'AISettingsNote' => 'Активирането на AI асистенцията ще изпрати данни до Anthropic за анализ в техния LLM, използвайки вашия Anthropic API ключ, за да ви предостави персонализирани резултати.',
@@ -3147,7 +3147,7 @@ $lang = array(
     'FilterByControl' => 'Филтриране по контрола',
     'Pushing' => 'Натискане на…',
     'Deleting' => 'Изтриване на…',
-    'ConfirmPushSelectedPendingRisks' => 'Push the {n} selected pending risk(s) to risks?',
+    'ConfirmPushSelectedPendingRisks' => 'Да се прехвърлят ли избраните {n} чакащи риска в рисковете?',
     'ConfirmDeleteSelectedPendingRisks' => 'Да се изтрият ли {n} избрани чакащи рискове? Това не може да бъде отменено.',
     'ConfirmDeleteSelectedSelfAssessments' => 'Да се изтрият ли {n} избрани самооценки? Това не може да бъде отменено.',
     'BulkPartialFailure' => '{n} от {total} елемента са успешни; останалите са неуспешни. Опреснете, за да видите текущото състояние.',
@@ -3240,7 +3240,7 @@ $lang = array(
     'GSRegisterDesc' => 'Активирайте поддръжката и актуализациите с вашия лицензионен ключ.',
     'GSRegisterCta' => 'Регистрирайте се',
     'GSScfTitle' => 'Инсталирайте рамката за защитени контроли',
-    'GSScfDesc' => 'Инсталирайте SCF — вашата библиотека за управление в различните стандарти.',
+    'GSScfDesc' => 'Инсталирайте SCF — вашата библиотека с контроли в различните стандарти.',
     'GSScfCta' => 'Инсталиране на SCF',
     'GSInviteTitle' => 'Поканете екипа си',
     'GSInviteDesc' => 'Добавете колеги, за да може работата да бъде възлагана и преглеждана.',
@@ -3361,7 +3361,7 @@ $lang = array(
     'AICapSurfacedEveryPage' => 'Всяка страница — плаващ асистент',
     'AICapabilitiesCatalog' => 'Възможности',
     'AICapSearchPlaceholder' => 'Търсене на възможности на изкуствен интелект…',
-    'AICapFilterDomain' => 'Домейн',
+    'AICapFilterDomain' => 'Област',
     'AICapFilterTier' => 'Ниво',
     'AICapFilterState' => 'Статус',
     'AICapTierExtra' => 'AI Extra',
@@ -3458,7 +3458,7 @@ $lang = array(
     // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
     'LastResult' => 'Последен резултат',
     'NextDue' => 'Следващ срок',
-    'DueSoon' => 'Краен срок',
+    'DueSoon' => 'Срокът наближава',
     'Retired' => 'Отменен',
     'MyTests' => 'Моите тестове',
     'Failing' => 'Неуспешно',
@@ -3527,7 +3527,7 @@ $lang = array(
     'ReturnedForReworkBannerText' => 'Този одит беше отхвърлен и върнат за преработка.',
     'RejectReason' => 'Причина за отхвърляне',
     'AreYouSureYouWantToApproveThisAudit' => 'Сигурни ли сте, че искате да одобрите този одит?',
-    'AtLeastOneControlRequired' => 'Изисква се поне един контролен елемент.',
+    'AtLeastOneControlRequired' => 'Изисква се поне един контрол.',
     'DtNCommonAcrossNControls' => '{$common} общи · {$n} контроли',
     'DtUntestedControls' => 'Нетествани контроли',
     'DtControlsInScopeNoCoverage' => 'Няма покритие',
@@ -3572,13 +3572,13 @@ $lang = array(
     'UntestedControls' => 'Нетествани контроли',
     'OverdueByXDays' => 'Просрочено · {n} дни',
     'OverdueByOneDay' => 'Просрочено · 1 ден',
-    'DueInXDays' => 'Срокът е {n} дни',
+    'DueInXDays' => 'Срок след {n} дни',
     'DueTomorrow' => 'Краен срок утре',
     'DueToday' => 'Срокът е днес',
     'ScheduledForX' => 'Планирано · {date}',
     'AllTesters' => 'Всички тестери',
     'AllStatuses' => 'Всички статуси',
-    'OnTrack' => 'На път',
+    'OnTrack' => 'По план',
     'NextTestDateDerivedHint' => 'Изчислява се от последната дата на теста плюс честотата на теста. Задайте честота, за да се планира автоматично, или оставете честотата празно, за да зададете тази дата сами.',
     'DueStatus' => 'Статус на падежа',
     'AllResults' => 'Всички резултати',
@@ -3589,7 +3589,7 @@ $lang = array(
     'RemoveTestFromControlStays' => 'Тестът остава на другите си {n} контроли. Нищо не се изтрива.',
     'RemoveTestFromControlStaysOne' => 'Тестът остава на 1-вия си друг контролен елемент. Нищо не се изтрива.',
     'CannotRemoveTestsOnlyControl' => 'Тестът трябва да принадлежи към поне един контролен елемент. Вместо това, отменете или изтрийте теста.',
-    'TestRemovedFromControl' => 'Тестът беше премахнат от контролната група.',
+    'TestRemovedFromControl' => 'Тестът беше премахнат от контрола.',
     'CouldNotRemoveTestFromControl' => 'Тестът не можа да бъде премахнат от контролата.',
     'TestRemovedFromControlAuditLogMessage' => 'Тестът „{$test_name}„(ID: {$test_id}) беше премахнат от контролата (ID: {$control_id}) от потребителя „{$user}„.',
     'DeleteTestUsedByNControls' => 'Използва се от контроли {n} и ще бъде премахнат от всички тях.',
@@ -3613,7 +3613,7 @@ $lang = array(
     'AllControls' => 'Всички контроли',
     'AddOrRemoveControls' => 'Добавяне или премахване на контроли…',
     'LastTested' => 'Последно тествано',
-    'LastTestDateAnchorHint' => 'Интервално планиране на котвите (тази дата плюс честотата). След като тестът запише резултатите, мрежата показва датата на най-новия резултат.',
+    'LastTestDateAnchorHint' => 'Определя опорната точка за интервалното планиране (тази дата плюс честотата). След като тестът запише резултатите, мрежата показва датата на най-новия резултат.',
     'Filters' => 'Филтри',
     'ShowFilters' => 'Показване на филтри',
     'HideFilters' => 'Скриване на филтрите',
@@ -3658,7 +3658,7 @@ $lang = array(
     'AIControlTestGenNotFound' => 'НЕ Е НАМЕРЕНО: Посоченият контрол не можа да бъде намерен.',
     'AIControlTestGenConflict' => 'КОНФЛИКТ: Генерирането вече е на опашка за този контрол.',
     'AIControlTestGenQueued' => 'ПРИЕТО: Генерирането на контролен тест е поставено на опашка.',
-    'AIControlTestGenFailed' => 'ВЪТРЕШНА ГРЕШКА НА СЪРВЪРА: Неуспешно генериране на тест за управление на опашката.',
+    'AIControlTestGenFailed' => 'ВЪТРЕШНА ГРЕШКА НА СЪРВЪРА: Неуспешно поставяне в опашка на генерирането на тест на контрола.',
     'AIControlTestGenCheckFailed' => 'ГРЕШКА: Не може да се провери контролата преди поставяне на опашка.',
     'GenerateTestsWithAI' => 'Генериране на тестове с изкуствен интелект',
     'ShowAiSuggestedTests' => 'Тестове, предложени от изкуствен интелект',
@@ -3682,7 +3682,7 @@ $lang = array(
     'TestGenerationStillRunning' => 'Генерирането на тестове все още работи; черновите ще се появят скоро.',
     'TestGenerationNoNew' => 'Генерирането е завършено — няма нови тестове, които да се предложат за този контрол.',
     'SearchEntities' => 'Търсене на обекти',
-    'SearchEntitiesPlaceholder' => 'Рискове, контроли, политики, изключения при търсене…',
+    'SearchEntitiesPlaceholder' => 'Търсене на рискове, контроли, политики, изключения…',
     'ShowTypes' => 'Показване на типове',
     'Depth' => 'Дълбочина',
     'Inspector' => 'Инспектор',
@@ -3867,7 +3867,7 @@ $lang = array(
     // reader to guess unfavourably.
     'SoaLegendTitle' => 'Как да четем това изявление',
     'SoaLegendYes' => 'Всеки тест, дефиниран за този контрол, е преминал успешно при последното му изпълнение.',
-    'SoaLegendPartial' => 'Тестовете на контролната група не са съгласни: поне един е преминал успешно, а поне един не е преминал успешно или не е дал резултат.',
+    'SoaLegendPartial' => 'Тестовете на контрола не съвпадат: поне един е преминал успешно, а поне един не е преминал успешно или не е дал резултат.',
     'SoaLegendNo' => 'Нито един тест на този контрол не е преминал успешно при последното му изпълнение и поне един е бил неуспешен.',
     // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
     // and the labels alone do not quite carry that -- so the legend spells it
@@ -3984,7 +3984,7 @@ $lang = array(
     'UnlockNeedsAdministrator' => 'Администратор може да настрои това.',
     // API date parsing. {$field} is the request field name (next_date, last_date,
     // test_date); {$format} is this instance's configured display date format.
-    'InvalidSubmittedDate' => 'Стойността {$field} не е валидна дата. Изпратете я като ГГГГ-ММ-ДД или във формата на датата за този случай ({$format}).',
+    'InvalidSubmittedDate' => 'Стойността {$field} не е валидна дата. Изпратете я като ГГГГ-ММ-ДД или във формата на датата на тази инстанция ({$format}).',
     // Companion to InvalidSubmittedDate, for a value that matches the expected
     // shape but names a day that does not exist (February 31st, month 13).
     // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
@@ -4139,7 +4139,7 @@ $lang = array(
     // the same labels the governance dashboard's maturity-gap widgets already
     // carry -- and the column chip renders those same three strings, so the
     // filter and the cell can never read differently.
-    'AnyMaturity' => 'Всякакъв падеж',
+    'AnyMaturity' => 'Всяко ниво на зрялост',
     // Task 46: accessible name for the control table's pager landmark
     // (governance-frameworks.js's renderPager()). The pager's own buttons
     // reuse the existing Previous/Next keys Define Tests' pager already
@@ -4350,8 +4350,8 @@ $lang = array(
     // generic sentence is not the organization's own, and an auditor reading 1,500
     // identical rows of boilerplate is entitled to ask whose risk assessment it
     // refers to.
-    'SoaMissingFieldsTitle' => 'В това изявление липсват подробности за прикритието.',
-    'SoaMissingScopeStatement' => 'За тази рамка не е записано описание на обхвата. В декларацията за действие (SOA) трябва да се посочи обхватът, спрямо който е изготвена.',
+    'SoaMissingFieldsTitle' => 'В това изявление липсват подробности за заглавната страница.',
+    'SoaMissingScopeStatement' => 'За тази рамка не е записано описание на обхвата. В декларацията за приложимост (SoA) трябва да се посочи обхватът, спрямо който е изготвена.',
     'SoaMissingInclusionJustification' => 'Не е регистрирано обоснование за включване по подразбиране. Приложимите контроли без свързани рискове ще се използват общо твърдение, а не ваше собствено.',
     'SoaEditFrameworkToAdd' => 'Добавете ги към рамката',
 
@@ -4543,7 +4543,7 @@ $lang = array(
     'UpgradeStepNotNeeded' => 'Не е необходимо',
     // Recovering an Upgrade Extra whose files are damaged
     'UpgradeExtraDamagedReinstalling' => 'Инсталираният Upgrade Extra е повреден. Изтегля се ново копие.',
-    'UpgradeExtraDamagedRepaired' => 'Допълнителното подобрение беше заменено с работещо копие.',
+    'UpgradeExtraDamagedRepaired' => 'Upgrade Extra беше заменен с работещо копие.',
     'UpgradeExtraDamagedFailed' => 'Допълнителното разширение е повредено и не може да бъде подменено автоматично. Преинсталирайте го от страницата „Допълнителни“ или възстановете simplerisk/extras/upgrade/ от резервно копие, след което опитайте отново.',
     'UpgradeAlreadyCurrent' => 'Този екземпляр вече е на {version}, което е най-новата версия. Нищо не се нуждаеше от надграждане.',
     'UpgradeShowWhatItDid' => 'Покажи какво е направило',
@@ -4565,7 +4565,7 @@ $lang = array(
     'UpgradeJobUnwritable' => 'Надстройката не можа да започне, защото записът за напредъка ѝ не можа да бъде записан. Проверете дали временната системна директория е достъпна за запис от уеб потребителя.',
     'UpgradeStepCheckingVersions' => 'Проверка на версиите',
     'UpgradeStepUpgradingDatabase' => 'Надграждане на схемата на базата данни',
-    'UpgradeStepFinalising' => 'Прилагане на реализациите след надстройката',
+    'UpgradeStepFinalising' => 'Прилагане на преобразуванията след надстройката',
     'UpgradeDatabaseHeading' => 'Надграждане на базата данни',
     'UpgradeDatabaseComplete' => 'Надстройката на базата данни е завършена.',
     'UpgradeHideWhatItDid' => 'Скрий какво е направило',
@@ -4967,6 +4967,669 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Нямате разрешение да затваряте рискове.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Моля, отговорете на всички задължителни въпроси, преди да завършите оценката.',
+    'AuditLog_ControlStatusAutoSynced' => 'Статусът на контролата „{$short_name}“ беше автоматично актуализиран на „{$status_text}“ въз основа на най-скорошния(ите) резултат(и) от теста.',
+    'EnableCSPHelp' => 'Политиката за сигурност на съдържанието (CSP) ограничава браузъра да зарежда скриптове, стилове, изображения и шрифтове само от самия SimpleRisk и блокира рамкирането на страници и подаването на формуляри от друг източник. Това е най-силната вградена защита срещу междусайтово скриптиране. Оставете активирано, освен ако не е в конфликт с прокси, разширение за браузър или интеграция на трета страна във вашата среда.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Стандартни полета',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Администратор',
+    'AccountDetails' => 'Данни за акаунта',
+    'YourPermissions' => 'Вашите разрешения',
+    'RoleAndTeamsGrantAccess' => 'До какво имате достъп вашата роля и екипи',
+    'AllGranted' => 'Всичко е предоставено',
+    'PermissionsCountLabel' => '$count разрешения',
+    'ManagedByYourAdministrator' => 'Тези детайли се управляват от вашия администратор. Свържете се с него, ако нещо тук трябва да се промени.',
+    'MultiFactorAuthenticationHint' => 'Добавете втора стъпка към входа си, за да защитите профила си.',
+    'ChangingPasswordSignsOutEverywhere' => 'Промяната на паролата ви ще ви отпише от всички останали места.',
+    'APIKeyHint' => 'Използва се за удостоверяване на вашите собствени скриптове и интеграции спрямо SimpleRisk API.',
+    'ResetDisplaySettingsHint' => 'Връща избраните от вас персонализирани колони обратно към стойностите по подразбиране.',
+    'CardGeneral' => 'Общи',
+    'CardClassification' => 'Класификация',
+    'CardScoring' => 'Точкуване',
+    'CardAdditionalInformation' => 'Допълнителна информация',
+    'CardCustomFields' => 'Потребителски полета',
+    'CardCustomFieldsHint' => 'Тези полета трябва да бъдат сортирани в карта',
+    'LayoutEditorHint' => 'Плъзнете поле в друга карта, за да го преназначите, плъзнете в карта, за да го пренаредите или преоразмерите, и плъзнете или преоразмерете карта, за да промените позицията ѝ на страницата.',
+    'ScoringNotYetAvailableInThisView' => 'Конфигурацията за оценяване все още не е налична в този изглед.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Плъзнете, за да промените размера',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} поле(а) не се побират в тази карта. Преоразмерете картата, за да се появят.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Стратегия за смекчаване',
+    'CardMitigationSolution' => 'Решение за смекчаване',
+    'CardMitigationControls' => 'Контроли за смекчаване',
+    'CardReview' => 'Преглед',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Нулиране на формуляра',
+    'SaveAndNew' => 'Запазване и ново',
+    'SaveAndView' => 'Запазване и преглед',
+    'ResetFormConfirmTitle' => 'Да се отхвърли ли това подаване на риск?',
+    'ResetFormConfirmBody' => 'Всяка въведена от вас информация ще бъде загубена.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Възстановяване на оформлението по подразбиране?',
+    'RestoreTemplateConfirmBodyRisk' => 'Това нулира всяко поле в разделите „Детайли“, „Смекчаване“ и „Преглед“ до стойностите им по подразбиране за тази група шаблони. Другите групи шаблони не са засегнати.',
+    'RestoreTemplateConfirmBody' => 'Това нулира всяко поле в този шаблон до стойностите му по подразбиране за тази група шаблони. Други групи шаблони не са засегнати.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Разширени показатели',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Базови показатели за експлоатационност',
+    'BaseScoreImpactMetrics' => 'Показатели за въздействие на базовия резултат',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Как може да се осъществи достъп до уязвимостта.\n• Локален: изисква локален достъп, като например конзола или обвивка.\n• Съседна мрежа: атакуващият трябва да е в същия физически или логически мрежов сегмент.\n• Мрежов: може да се използва дистанционно през мрежа, без да е необходим локален или съседен достъп.",
+    "AttackComplexityHelp" => "Колко сложна е атаката, след като атакуващият има достъп до целта.\n• Висока: изисква специализирани условия, които са трудни за изпълнение.\n• Средна: някои условия трябва да бъдат изпълнени, но експлоатацията не е трудна, след като са изпълнени.\n• Ниска: не са необходими специални условия.",
+    "AuthenticationHelp" => "Броят пъти, в които атакуващият трябва да се удостовери пред целта, за да я използва.\n• Множествено: удостоверяването се изисква два или повече пъти, дори с едни и същи идентификационни данни.\n• Единично: удостоверяването се изисква веднъж.\n• Няма: не се изисква удостоверяване.",
+    "ConfidentialityImpactHelp" => "Въздействието върху поверителността на данните, които системата обработва, ако бъде използвана.\n• Няма: няма въздействие.\n• Частично: известно разкриване на информация, но атакуващият не контролира каква или загубата е ограничена.\n• Пълно: пълно разкриване на цялата информация в системата.",
+    "IntegrityImpactHelp" => "Въздействие върху целостта на системата, ако бъде използвана.\n• Няма: няма въздействие.\n• Частично: някои данни могат да бъдат променени, но атакуващият не контролира какви или обхватът е ограничен.\n• Пълно: пълно компрометиране на целостта на системата; атакуващият може да променя всякакви файлове.",
+    "AvailabilityImpactHelp" => "Въздействието върху наличността на системата, ако бъде използвана.\n• Няма: няма въздействие.\n• Частично: намалена производителност или прекъсвания в наличността.\n• Пълно: пълно изключване на засегнатия ресурс.",
+    "RemediationLevelHelp" => "Нивото на налично отстраняване на уязвимостта.\n• Официално решение: налично е цялостно решение от доставчик.\n• Временно решение: налично е официално, но временно решение.\n• Заобиколно решение: съществува неофициално решение, което не е от доставчик.\n• Не е налично: няма налично решение или никое не може да бъде приложено.",
+    "ReportConfidenceHelp" => "Степента на увереност в съществуването на уязвимостта и достоверността на техническите ѝ детайли.\n• Непотвърдено: доклад от един-единствен, непотвърден източник; основният проблем е спекулативен.\n• Непотвърдено: множество независими източници съобщават за едно и също поведение, но първопричината не е потвърдена.\n• Потвърдено: доставчикът е потвърдил проблема или той е потвърден от анализ на изходния код или експлойта.",
+    "CollateralDamagePotentialHelp" => "Потенциал за загуба на човешки живот, физически активи или финансови загуби, ако уязвимостта бъде използвана.\n• Няма: такава загуба е вероятна.\n• Ниска до средна: възможна е умерена загуба.\n• Висока: катастрофално въздействие върху активите, приходите или безопасността на организацията.",
+    "TargetDistributionHelp" => "Делът на уязвимите системи във вашата среда.\n• Няма: не съществуват целеви системи.\n• Ниско: 1-25% от системите са уязвими.\n• Средно: 26-75% са уязвими.\n• Високо: 76-100% са уязвими.",
+    "ConfidentialityRequirementHelp" => "Колко важна е поверителността на засегнатия актив за вашата организация.\n• Ниска: загубата на поверителност има ограничено въздействие.\n• Средна: има сериозно въздействие.\n• Висока: има катастрофално въздействие.",
+    "IntegrityRequirementHelp" => "Колко важна е целостта на засегнатия актив за вашата организация.\n• Ниска: загубата на целостта има ограничено въздействие.\n• Средна: има сериозно въздействие.\n• Висока: има катастрофално въздействие.",
+    "AvailabilityRequirementHelp" => "Колко важна е наличността на засегнатия актив за вашата организация.\n• Ниска: загубата на наличност има ограничено въздействие.\n• Средна: има сериозно въздействие.\n• Висока: има катастрофално въздействие.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Как атакуващият трябва да достигне и задейства тази уязвимост: къде трябва да се намира, колко сложна е атаката и дали трябва да се удостовери първо.',
+    'BaseScoreImpactMetricsDescription' => 'Какво се случва, ако уязвимостта бъде успешно използвана: ефектът върху поверителността, целостта и наличността на засегнатата система.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Как се променя реалната заплаха на тази уязвимост с течение на времето: текущото състояние на експлойт кода, какви средства за отстраняване са налични и колко уверени са докладите, че тя съществува.',
+    'EnvironmentalScoreMetricsDescription' => 'Как рискът от тази уязвимост зависи от вашата среда: потенциалът за реални щети и колко от вашите системи са действително засегнати.',
+    'ImpactSubscoreModifiersDescription' => 'Претеглете влиянието на базовия резултат според това доколко поверителността, целостта и наличността действително са важни за този конкретен актив.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Ако се случи експлоатация на заплаха, какви щети ще бъдат причинени?' . "\n" . '0 = Нищо' . "\n" . '5 = Данните на отделните потребители са компрометирани или засегнати.' . "\n" . '10 = Пълно унищожаване на системата или данните',
+    'ReproducibilityHelp' => 'Колко лесно е да се възпроизведе заплахата?' . "\n" . '0 = Много трудно или невъзможно, дори за администраторите на приложението.' . "\n" . '5 = Необходими са една или две стъпки, може да е необходимо да сте оторизиран потребител.' . "\n" . '10 = Само уеб браузър и адресната лента са достатъчни, без удостоверяване.',
+    'ExploitabilityHelp' => 'Какво е необходимо, за да се използва тази заплаха?' . "\n" . '0 = Разширени познания за програмиране и работа в мрежи, с персонализирани или усъвършенствани инструменти за атака.' . "\n" . '5 = В интернет съществува зловреден софтуер или лесно се извършва експлойт, използвайки наличните инструменти за атака.' . "\n" . '10 = Само уеб браузър',
+    'AffectedUsersHelp' => 'Колко потребители ще бъдат засегнати?' . "\n" . '0 = Няма' . "\n" . '5 = Някои потребители, но не всички' . "\n" . '10 = Всички потребители',
+    'DiscoverabilityHelp' => 'Колко лесно е да се открие тази заплаха?' . "\n" . '0 = Много трудно до невъзможно; изисква изходен код или администраторски достъп.' . "\n" . '5 = Може да се разбере чрез догадки или чрез наблюдение на мрежови следи.' . "\n" . '9 = Подробности за подобни неизправности вече са публично достояние и могат лесно да бъдат открити с помощта на търсачка.' . "\n" . '10 = Информацията е видима в адресната лента на уеб браузъра или във формуляр.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'Оценка DREAD',
+    'DreadMetrics' => 'DREAD показатели',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Колко технически квалифицирана е тази група от агенти на заплахи?' . "\n" . '1 = Няма технически умения' . "\n" . '3 = Някои технически умения' . "\n" . '5 = Напреднал потребител на компютър' . "\n" . '6 = Мрежови и програмни умения' . "\n" . '9 = Умения за проникване в сигурността',
+    'MotiveHelp' => 'Доколко мотивирана е тази група агенти на заплахи да открият и използват тази уязвимост?' . "\n" . '1 = Ниска или никаква награда' . "\n" . '4 = Възможна награда' . "\n" . '9 = Висока награда',
+    'OpportunityHelp' => 'Какви ресурси и възможности са необходими на тази група агенти на заплахи, за да открият и използват тази уязвимост?' . "\n" . '0 = Необходим е пълен достъп или скъпи ресурси' . "\n" . '4 = Необходим е специален достъп или ресурси' . "\n" . '7 = Необходим е известен достъп или ресурси' . "\n" . '9 = Не се изисква достъп или ресурси',
+    'SizeHelp' => 'Колко голяма е тази група от заплашителни агенти?' . "\n" . '2 = Разработчици' . "\n" . '2 = Системни администратори' . "\n" . '4 = Потребители на интранет' . "\n" . '5 = Партньори' . "\n" . '6 = Удостоверени потребители' . "\n" . '9 = Анонимни интернет потребители',
+    'EaseOfDiscoveryHelp' => 'Колко лесно е за тази група агенти на заплахи да открият тази уязвимост?' . "\n" . '1 = Практически невъзможно' . "\n" . '3 = Трудно' . "\n" . '7 = Лесно' . "\n" . '9 = Налични автоматизирани инструменти',
+    'EaseOfExploitHelp' => 'Колко лесно е за тази група злонамерени агенти реално да използват тази уязвимост?' . "\n" . '1 = Теоретично' . "\n" . '3 = Трудно' . "\n" . '5 = Лесно' . "\n" . '9 = Налични автоматизирани инструменти',
+    'AwarenessHelp' => 'Колко добре позната е тази уязвимост за тази група злонамерени агенти?' . "\n" . '1 = Неизвестно' . "\n" . '4 = Скрито' . "\n" . '6 = Очевидно' . "\n" . '9 = Публично знание',
+    'IntrusionDetectionHelp' => 'Колко е вероятно да бъде открита експлойт?' . "\n" . '1 = Активно откриване в приложението' . "\n" . '3 = Регистрирано и прегледано' . "\n" . '8 = Регистрирано без преглед' . "\n" . '9 = Не е регистрирано',
+    'LossOfConfidentialityHelp' => 'Колко данни могат да бъдат разкрити и колко чувствителни са те?' . "\n" . '2 = Разкрити са минимални нечувствителни данни' . "\n" . '6 = Разкрити са минимални критични данни' . "\n" . '6 = Разкрити са обширни нечувствителни данни' . "\n" . '7 = Разкрити са обширни критични данни' . "\n" . '9 = Всички данни са разкрити',
+    'LossOfIntegrityHelp' => 'Колко данни могат да бъдат повредени и до каква степен са те?' . "\n" . '1 = Минимално леко повредени данни' . "\n" . '3 = Минимално сериозно повредени данни' . "\n" . '5 = Обширни, леко повредени данни' . "\n" . '7 = Обширни, сериозно повредени данни' . "\n" . '9 = Всички данни са напълно повредени',
+    'LossOfAvailabilityHelp' => 'Колко услуга може да бъде загубена и колко жизненоважна е тя?' . "\n" . '1 = Прекъснати минимални вторични услуги' . "\n" . '5 = Прекъснати минимални основни услуги' . "\n" . '5 = Прекъснати обширни вторични услуги' . "\n" . '7 = Прекъснати са обширни основни услуги' . "\n" . '9 = Всички услуги са напълно загубени',
+    'LossOfAccountabilityHelp' => 'Могат ли действията на агентите на заплахата да бъдат проследени до дадено лице?' . "\n" . '1 = Напълно проследимо' . "\n" . '7 = Възможно е да се проследи' . "\n" . '9 = Напълно анонимен',
+    'FinancialDamageHelp' => 'Какви финансови щети ще настъпят в резултат на експлоатация?' . "\n" . '1 = По-малко от цената за отстраняване на уязвимостта' . "\n" . '3 = Незначителен ефект върху годишната печалба' . "\n" . '7 = Значително влияние върху годишната печалба' . "\n" . '9 = Фалит',
+    'ReputationDamageHelp' => 'Би ли експлойт довел до увреждане на репутацията, което би навредило на бизнеса?' . "\n" . '1 = Минимални щети' . "\n" . '4 = Загуба на основни клиенти' . "\n" . '5 = Загуба на репутация' . "\n" . '9 = Щети по марката',
+    'NonComplianceHelp' => 'До каква степен на експозиция води неспазването на изискванията?' . "\n" . '2 = Незначително нарушение' . "\n" . '5 = Явно нарушение' . "\n" . '7 = Нарушение с висок профил',
+    'PrivacyViolationHelp' => 'Колко лична информация може да бъде разкрита?' . "\n" . '3 = Един човек' . "\n" . '5 = Стотици хора' . "\n" . '7 = Хиляди хора' . "\n" . '9 = Милиони хора',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP резултат',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Оценява вероятността за успешна атака от тази група заплашителни агенти.',
+    'VulnerabilityFactorsDescription' => 'Оценява вероятността тази уязвимост да бъде открита и използвана.',
+    'TechnicalImpactDescription' => 'Разделя въздействието по поверителност, цялост, наличност и отчетност.',
+    'BusinessImpactDescription' => 'Отразява това, което е важно за бизнеса, отвъд суровото техническо въздействие.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Текущо състояние на техниките за експлоатация или наличността на код.\n• Недоказано: няма наличен код за експлоатация или експлоатацията е теоретична.\n• Доказателство за концепция: код за експлоатация съществува, но не е практичен за повечето нападатели.\n• Функционално: функционалният код за експлоатация работи в повечето ситуации.\n• Високо: експлоатацията е надеждна и или автоматизирана (напр. червей), или изобщо не изисква код за експлоатация.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Класически резултат',
+    'ClassicLikelihoodDescription' => 'Колко вероятно е да се случи този риск.',
+    'ClassicImpactDescription' => 'Колко сериозни биха били последствията, ако се случи този риск.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Персонализиран резултат',
+    'CustomValueDescription' => 'Персонализираната стойност може да бъде десетична стойност между 0 и 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Колко вероятно е да се случи този риск.',
+    'ContributingRiskDescription' => 'Всеки фактор по-долу е претеглен по относителната му важност -- изберете колко е засегнат този риск от всеки от тях.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Пълни подробности за методологията за оценка на риска на OWASP можете да намерите',
+    'Here' => 'тук',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Сума от (Тегло x Въздействие x 5 / Макс.)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Изтегляне като изображение',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Пълни подробности за оценяването на CVSS версия 2.0 можете да намерите',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Невалиден идентификатор на контрола.',
+    'ValidationOwner' => 'Собственик на валидиране',
+    'ValidationStatus' => 'Статус на валидиране',
+    'NotStarted' => 'Не е започнато',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Рискът, който търсите, може да е бил изтрит или връзката може да е неправилна.',
+    'MitigationControlsRequiresGovernance' => 'Изисква разрешение за управление за преглед.',
+    'ViewControlValidation' => 'Валидиране на контрола за преглед',
+    'EditControlValidation' => 'Редактиране на валидиране на контрол',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Изисква разрешение за изпращане на риск (Submit Risk), за да качвате файлове.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Изисква разрешение за промяна на рискове за управление на файлове.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Изисква разрешение за смекчаване на плана за управление на файлове.',
+    'MitigationSubmittedBy' => 'Смекчаване, подадено от',
+    'UseADifferentDate' => 'Използвайте друга дата',
+    'AssetGroup' => 'Група активи',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Невалидна f-група.',
+    'CustomizationCardsLayoutApiScopeError' => 'API за оформление на персонализирани карти е наличен само за fgroup=risk, tab_index=1, tab_index=2 или tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Открийте активи',
+    'DiscoveryRuns' => 'Изпълнения за откриване',
+    'DiscoveryRangeHint' => 'Един адрес, начален и краен диапазон или IPv4 CIDR',
+    'DiscoveryResolveNames' => 'Търсене на имена на хостове',
+    'DiscoveryAddAs' => 'Добавяне на нови активи като',
+    'DiscoveryStart' => 'Започнете откриването',
+    'DiscoveryBackgroundNote' => 'Работи във фонов режим. Адресите, които вече съществуват, се пропускат.',
+    'DiscoveryRangeInvalid' => 'Въведете валиден IPv4 адрес, диапазон или CIDR блок.',
+    'DiscoveryRangeTooLarge' => 'Този диапазон е твърде голям. Лимитът е {$max} адреса.',
+    'DiscoveryRunQueued' => 'Откритието започна.',
+    'DiscoveryRunCompleted' => 'Откриването е завършено: {$new} нови активи.',
+    'AssetBulkSelectAll' => 'Изберете всички {$count} активи',
+    'AssetBulkAssignTeams' => 'Разпределяне на екипи…',
+    'AssetBulkAddToGroup' => 'Добавяне към групата…',
+    'AssetBulkDeleteConfirmTitle' => 'Да се изтрият ли {$count} активи?',
+    'AbleToEditAssets' => 'Възможност за редактиране на активи',
+    'AbleToDeleteAssets' => 'Възможност за изтриване на активи',
+    'AbleToVerifyAssets' => 'Възможност за проверка на активи',
+    'AbleToRunAssetDiscovery' => 'Може да извършва откриване на активи',
+    'AbleToCreateAssetGroups' => 'Възможност за създаване на групи активи',
+    'AbleToEditAssetGroups' => 'Възможност за редактиране на групи активи',
+    'AbleToDeleteAssetGroups' => 'Възможност за изтриване на групи активи',
+    'ViewAsset' => 'Преглед на актива',
+    'AssetUnverifiedByEditLog' => 'Активът „{$name}“ бе върнат като непроверен, защото потребителят „{$user}“ е променил името или IP адреса си без разрешение за проверка на активите.',
+    'AssetTeamsAssignedLog' => 'Активът „{$name}“ беше присвоен на екип(и) „{$teams}“ от потребителя „{$user}“.',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Добавяне на актив',
+    'SearchAssetsPlaceholder' => 'Търсене по име или IP адрес',
+    'AllLocations' => 'Всички местоположения',
+    'AllTags' => 'Всички тагове',
+    'AllAssetGroups' => 'Всички групи активи',
+    'AssetFields' => 'Полета на активите',
+    'AssetBulkAllSelected' => 'Всички {$count} съответстващи активи са избрани',
+    'AssetDeleteConfirmTitle' => 'Да се изтрие ли активът „{$name}"?',
+    'DeleteAsset' => 'Изтриване на актив',
+    'DeleteAssets' => 'Изтриване на активи',
+    'AssetBulkAssignTeamsTitle' => 'Разпределете екипи към {$count} активи',
+    'AssetAssignTeamsHint' => 'Избраните екипи се добавят. Екипите, които вече са към актива, остават.',
+    'AssetAddToGroupTitle' => 'Добавяне на {$count} активи към група',
+    'AssetChooseTeams' => 'Изберете екипи',
+    'AssetChooseGroup' => 'Изберете група',
+    'Assign' => 'Присвояване',
+    'AssetBulkVerifiedSummary' => '{$ok} проверено, {$failed} пропуснато',
+    'AssetBulkDeletedSummary' => '{$ok} изтрито, {$failed} пропуснато',
+    'AssetBulkTeamsSummary' => 'Екипи, присвоени на {$ok} активи, {$failed} пропуснати',
+    'AssetBulkGroupSummary' => '{$ok} добавен към групата, {$failed} пропуснат',
+    'AssetBulkSkippedList' => 'Пропуснато: {$list}',
+    'AssetBulkReasonNotFound' => 'не е намерено',
+    'NoAssetsYet' => 'Все още няма активи',
+    'NoAssetsYetHint' => 'Активите, които добавяте или откривате, се показват тук.',
+    'NoAssetsMatchFilters' => 'Няма активи, които да отговарят на вашите филтри',
+    'CouldNotLoadAssets' => 'Не можаха да се заредят активите. Данните ви са в безопасност.',
+    'AllValuations' => 'Всички оценки',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Добавяне на група',
+    'EditAssetGroup' => 'Редактиране на група',
+    'DeleteAssetGroup' => 'Изтриване на група',
+    'ViewGroupMembers' => 'Преглед на членовете',
+    'SearchAssetGroupsPlaceholder' => 'Търсене на групи по име',
+    'HighestValuation' => 'Най-висока оценка',
+    'LinkedRisks' => 'Свързани рискове',
+    'RemoveFromGroup' => 'Премахване от групата',
+    'AssetGroupMoreMembers' => '+ {$count} още',
+    'ViewAllInAssetsTab' => 'Вижте всички в раздела „Активи“',
+    'NoAssetsInGroup' => 'Няма активи в тази група.',
+    'CouldNotLoadGroupMembers' => 'Не можаха да се заредят членовете на тази група.',
+    'AssetGroupMembers' => 'Членове',
+    'AssetGroupMembersHint' => 'Изброени са само активите, които можете да видите. Членовете, които не можете да видите, остават в групата.',
+    'ChooseAssets' => 'Изберете активи',
+    'AddOrRemoveAssets' => 'Добавяне или премахване на активи…',
+    'UseTheseAssets' => 'Използвайте тези активи',
+    'AllAssets' => 'Всички активи',
+    'Valuation' => 'Оценка',
+    'PickerShowingFirstN' => 'Показване на първите {$count} от {$total}. Търсете или стеснете обхвата, за да намерите останалите.',
+    'AssetGroupDeleteConfirmTitle' => 'Да се изтрие ли групата „{$name}“?',
+    'AssetGroupDeleteKeepsAssets' => 'Активите в тази група не се изтриват. Премахва се само групата.',
+    'NoAssetGroupsYet' => 'Все още няма групи активи',
+    'NoAssetGroupsYetHint' => 'Групирайте активите, за да можете да ги картографирате и отчитате заедно.',
+    'NoAssetGroupsMatchSearch' => 'Няма групи активи, които да отговарят на търсенето ви',
+    'CouldNotLoadAssetGroups' => 'Не можаха да се заредят групите активи. Данните ви са в безопасност.',
+    'DiscoveryAssignTeams' => 'Разпределете на екипи',
+    'DiscoveryAssignTeamsHint' => 'По избор. Всеки нов актив се добавя към тези екипи.',
+    'DiscoveryAddAsHint' => 'Зададено с вашето разрешение за проверка на активите.',
+    'DiscoveryTeamsInvalid' => 'Изберете екипи, които съществуват и към които принадлежите.',
+    'DiscoveryResolveNamesInvalid' => 'Търсенето на имена на хостове трябва да е включено или изключено.',
+    'DiscoveryTooManyActiveRuns' => 'Вече имате {$max} изпълнявания за откриване в процес на изпълнение. Изчакайте едно да завърши или го отменете.',
+    'DiscoveryRunNotFound' => 'Изпълнението за откриване не е намерено.',
+    'DiscoveryRunAlreadyFinished' => 'Това откривателско изпълнение вече е приключило.',
+    'DiscoveryRunCancelled' => 'Изпълнението за откриване беше отменено.',
+    'DiscoveryRunFailedToast' => 'Откриването на {$range} не бе успешно.',
+    'DiscoveryStatusQueued' => 'На опашка',
+    'DiscoveryProgress' => '{$scanned} от {$total}',
+    'DiscoveryLiveHosts' => 'Активни хостове',
+    'DiscoveryNewAssets' => 'Нови активи',
+    'DiscoveryStartedAt' => 'Започнато',
+    'DiscoveryCancelRun' => 'Отмяна на изпълнението',
+    'CouldNotLoadDiscoveryRuns' => 'Не можаха да се заредят изпълненията за откриване.',
+    'DiscoveryRangeReserved' => 'Този диапазон включва резервирани адреси (loopback, link-local, multicast или 0.0.0.0/8), които не могат да бъдат сканирани.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Вече има {$max} изпълнения за откриване. Опитайте отново, когато някое от тях приключи.',
+    'DiscoveryErrorScan' => 'Сканирането спря поради грешка. Проверете системните регистрационни файлове за подробности.',
+    'DiscoveryErrorWorkerLost' => 'Фоновата опашка спря обработката на това изпълнение.',
+    'DiscoveryErrorRequesterInactive' => 'Потребителят, който е стартирал това изпълнение, вече не е активен.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Изпратете груповото действие като JSON тяло.',
+    'AssetBulkActionRequired' => 'Изберете групово действие.',
+    'AssetBulkUnknownAction' => 'Това групово действие не е налично.',
+    'AssetBulkSelectionRequired' => 'Изберете активи или по идентификатор, или по филтър.',
+    'AssetBulkIdsRequired' => 'Изберете поне един актив.',
+    'AssetBulkIdsInvalid' => 'Идентификационните номера на активите трябва да са цели числа.',
+    'AssetBulkTooManyAssets' => 'Можете да работите с най-много {$max} актива едновременно. Стеснете избора си и опитайте отново.',
+    'AssetBulkFilterInvalid' => 'Филтърът не е валиден. Презаредете страницата и опитайте отново.',
+    'AssetBulkFilterUnknownKey' => 'Филтърът „{$key}“ не е разпознат.',
+    'AssetBulkFilterBadValue' => 'Филтърът „{$key}“ има невалидна стойност.',
+    'AssetBulkFilterTooManyValues' => 'Филтърът „{$key}“ може да изведе най-много {$max} стойности.',
+    'AssetBulkFilterAllAlone' => 'Избирането на всички активи не може да се комбинира с други филтри.',
+    'AssetBulkFilterEmpty' => 'Изберете филтър или изберете всички активи, преди да извършите групово действие.',
+    'AssetBulkExpectedCountInvalid' => 'Очакваният брой активи трябва да е цяло число.',
+    'AssetBulkParamsInvalid' => 'Опциите за това групово действие не са валидни.',
+    'AssetBulkTeamsRequired' => 'Изберете поне един екип.',
+    'AssetBulkTeamsNotFound' => 'Един или повече от тези екипи вече не съществуват.',
+    'AssetBulkTeamsNotMember' => 'Можете да присвоявате само екипи, към които принадлежите.',
+    'AssetBulkGroupNotFound' => 'Тази група активи вече не съществува.',
+    'AssetBulkNoMatch' => 'Няма активи, които да съответстват на избрания от вас.',
+    'AssetBulkCountMismatch' => 'Съответстващите активи се промениха от {$expected} на {$actual} , откакто ги избрахте. Прегледайте списъка и опитайте отново.',
+    'AssetColumnSettingsBodyInvalid' => 'Изпратете настройките на колоните като JSON тяло с колони или ред.',
+    'AssetColumnSettingsSaveFailed' => 'Не можах да запазя колоните ви. Помолете администратор да завърши надстройката на SimpleRisk.',
+    'DiscoveryRunQueueFailed' => 'Не можа да се постави на опашка изпълнението за откриване. Опитайте отново.',
+    'DiscoveryRunStartedLog' => 'Изпълнение за откриване на активи #{$id} от {$range} ({$count} адреса) е стартирано от потребителя „{$user}“.',
+    'DiscoveryRunCancelledLog' => 'Изпълнението за откриване на активи #{$id} от {$range} беше отменено от потребителя „{$user}“.',
+    'AssetBulkTooManyToDelete' => 'Можете да изтриете най-много {$max} активи наведнъж. Стеснете избора си и опитайте отново.',
+    'AssetBulkFilterNotApplied' => 'Филтърът „{$key}“ не можа да бъде приложен така, както е изпратен, така че нищо не беше променено.',
+    'AssetBulkExpectedCountRequired' => 'Изтриването на активи по филтър изисква броя активи, които очаквате да бъдат изтрити.',
+    'AssetBulkReasonNotAttempted' => 'не е направен опит',
+    'MoreActions' => 'Още действия',
+    'AssetCreateNewGroupOption' => 'Създаване на нова група…',
+    'AssetNewGroupName' => 'Ново име на групата',
+    'AssetFilterByTeam' => 'Филтриране по екип {$name}',
+    'AssetFilterByValuation' => 'Филтриране по оценка {$name}',
+    'AssetFilterByTag' => 'Филтриране по етикет {$name}',
+    'AssetFilterByLocation' => 'Филтриране по сайт/местоположение {$name}',
+    'AssetFilteringByTeam' => 'Филтриране по екип {$name}',
+    'AssetFilteringByValuation' => 'Филтриране по оценка {$name}',
+    'AssetFilteringByTag' => 'Филтриране по етикет {$name}',
+    'AssetFilteringByLocation' => 'Филтриране по сайт/местоположение {$name}',
+    'AssetShowOnlyVerified' => 'Показване само на проверени активи',
+    'AssetShowOnlyUnverified' => 'Показване само на непроверени активи',
+    'AssetShowingVerified' => 'Показване на проверени активи',
+    'AssetShowingUnverified' => 'Показване на непроверени активи',
+    'CustomizationLayoutPayloadRejected' => 'Оформлението не можа да бъде запазено, защото съдържа полета или карти, които не принадлежат към този шаблон. Нищо не беше променено.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Този обхват на шаблона не може да бъде запазен от редактора на оформлението. Нищо не е променено.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Оформлението няма валидни полета, така че не е запазено. Нищо не е променено.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Запазването на това оформление ще премахне всички полета от шаблона, така че то не беше запазено. Презаредете страницата и опитайте отново.',
+    'CustomizationLayoutRejectedRequiredField' => 'Задължително поле не може да бъде премахнато от оформлението. Нищо не е променено.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Запазването на това оформление ще премахне повечето полета на шаблона, без да ги премахвате тук. Презаредете страницата и опитайте отново. Нищо не е променено.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Групата шаблони не съществува или принадлежи към различен тип запис. Нищо не е променено.',
+    'CustomizationLayoutLegacySaveRefused' => 'Този шаблон се редактира с редактора на оформление и не може да бъде запазен чрез крайната точка на стария панел.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Въведете до {$max} TCP портове между 1 и 65535, разделени със запетаи.',
+    'DiscoveryErrorProbeUnavailable' => 'Методът на сонда, с който е започнало това изпълнение, вече не е достъпен за фоновия worker. Стартирайте ново изпълнение.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping (непривилегирован сокет)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping (необработен сокет)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (команда ping)',
+    'DiscoveryProbeTcpConnect' => 'TCP връзка',
+    'DiscoveryProbeMethod' => 'Метод на сондата: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Открито от уеб сървъра. Фоновият worker може да използва различен метод.',
+    'DiscoveryTcpProbeWarning' => 'Хостовете се намират само ако отговарят на един от сканираните TCP портове, така че хостовете, които блокират тези портове, няма да бъдат намерени. За пълни резултати, позволете на сървъра да изпраща ICMP ping: разрешете непривилегировани ping сокети или възможността NET_RAW или инсталирайте ping.',
+    'DiscoveryTcpPortsForRun' => 'TCP портове за това изпълнение',
+    'DiscoveryTcpPortsHint' => 'Разделени със запетаи, до {$max} портове. Оставете празно, за да използвате стойността по подразбиране: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'TCP портове за откриване на активи',
+    'DiscoveryDefaultTcpPortsHint' => 'Използва се, когато фоновият worker не може да изпрати ICMP ping. Разделени със запетаи, до {$max} портове.',
+    'DiscoveryErrorTcpUnreliable' => 'Сканирането спря, защото мрежата отговаря на TCP връзки за адреси, които не могат да бъдат реални хостове (прокси или защитна стена пречат), така че всеки адрес би изглеждал активен. Помолете администратора си да позволи на сървъра да изпраща ICMP ping.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'TCP портовете за откриване на активи бяха нулирани до стойностите по подразбиране от потребителя „{$user}“.',
+    'DiscoveryNotConfigured' => 'Откриването не е конфигурирано. Помолете системния си администратор да зададе разрешените диапазони в config.php.',
+    'DiscoveryRangeNotAllowed' => 'Този диапазон е извън диапазоните, които Discovery може да сканира.',
+    'DiscoveryAllowedRangesList' => 'Допустими диапазони: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Този актив не е наличен. Възможно е да е бил изтрит или може да нямате достъп до него.',
+    'AssetCustomFieldNotInTemplate' => 'Едно или повече персонализирани полета не принадлежат към шаблона на този актив. Нищо не е променено.',
+    'AssetMappedControlsInvalid' => 'Нанесените контроли не можаха да бъдат запазени. Всеки ред се нуждае от зрялост и поне един съществуващ контрол. Нищо не беше променено.',
+    'AssetMappedControlsTooMany' => 'Актив може да бъде съпоставен с най-много {$max} контроли. Нищо не е променено.',
+    'AddControlsAtAnotherMaturity' => 'Добавяне на контроли при друго ниво на зрялост',
+    'ChoosingControlsNeedsGovernancePermission' => 'Избирането на контроли изисква разрешение за управление.',
+    'NControls' => '{n} контрол(и)',
+    'SavingKeepsTheCurrentControlMappings' => 'Запазването запазва текущите съпоставяния на контролите.',
+    'LoadingControls' => 'Зареждане на контроли…',
+    'ControlListCouldNotBeLoaded' => 'Списъкът с контроли не можа да бъде зареден, така че картографираните контроли не могат да бъдат променяни в момента.',
+    'RemoveControlsAtMaturity' => 'Премахване на контролите при достигане на зрялост {maturity}',
+    'ControlIdUnavailable' => '#{id} (не е налично)',
+    'AssetRecordEdit' => 'Редактиране на актив',
+    'AssetRecordIdN' => 'Актив #{$id}',
+    'AssetRecordCopyLink' => 'Копиране на връзката към този актив',
+    'AssetRecordLinkCopied' => 'Линкът е копиран.',
+    'AssetRecordLinkCopyFailed' => 'Връзката не можа да бъде копирана. Вместо това я копирайте от адресната лента.',
+    'AssetRecordMarkUnverified' => 'Маркирай като непотвърдено',
+    'AssetRecordViewAuditTrail' => 'Преглед на одитната следа',
+    'AssetRecordAuditTrailTitle' => 'Одитна следа',
+    'AssetRecordAuditTrailEmpty' => 'През този период не е регистрирана активност за този актив.',
+    'AssetRecordAuditTrailFailed' => 'Одитната следа не можа да бъде заредена.',
+    'AssetRecordBackToAsset' => 'Обратно към актива',
+    'AssetRecordSave' => 'Запазване на актива',
+    'AssetRecordProvenanceVerified' => 'Проверено · добавено {$date}',
+    'AssetRecordProvenanceUnverified' => 'Непроверено: все още не е потвърдено от някой, който може да провери активите · добавено {$date}',
+    'AssetRecordUnsavedHint' => 'Затварянето с незапазени промени изисква първо потвърждение.',
+    'AssetRecordDiscardQuestion' => 'Да се отхвърлят ли незапазените промени?',
+    'AssetRecordKeepEditing' => 'Продължете да редактирате',
+    'AssetRecordDiscardChanges' => 'Отхвърляне на промените',
+    'AssetRecordVerificationCard' => 'Проверка',
+    'AssetRecordVerificationTag' => 'Изисква разрешение за проверка на активите',
+    'AssetRecordVerifiedHint' => 'Отговорно лице е прегледало този актив. Промяната на името или IP адреса му без разрешение за проверка на активите го връща в статус „Непроверен“.',
+    'AssetRecordLoadFailed' => 'Активът не можа да бъде зареден. Моля, опитайте отново.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'API за оформление на персонализирани карти е наличен само за fgroup=risk (tab_index 1, 2 или 3) и fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'Потребителят, който е стартирал това изпълнение, вече няма разрешение да изпълнява откриване на активи.',
+    'AssetRecordEditField' => 'Редактиране {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Поверителност',
+    'Integrity' => 'Цялост',
+    'Availability' => 'Наличност',
+    'AssetScoringLevelLow' => 'Ниско',
+    'AssetScoringLevelModerate' => 'Умерено',
+    'AssetScoringLevelHigh' => 'Високо',
+    'AssetScoringValueInvalid' => 'Поверителност, целостта и наличността се приемат като ниска, умерена или висока (поверителност се приема и като неприложимо).',
+    'AssetScoringChangedLog' => 'Активът „{$name}“ {$objective} беше променен от {$from} на {$to} от потребителя „{$user}“.',
+    'FIPSCategorization' => 'FIPS категоризация',
+    'WeightedScore' => 'Претеглена оценка',
+    'WeightedBand' => 'Претеглена лента',
+    'AllCategorizations' => 'Всички категоризации',
+    'AllBands' => 'Всички диапазони',
+    'AssetFilterByCategorization' => 'Филтриране по FIPS категоризация {$name}',
+    'AssetFilteringByCategorization' => 'Филтриране по FIPS категоризация {$name}',
+    'AssetFilterByBand' => 'Филтриране по претеглена лента {$name}',
+    'AssetFilteringByBand' => 'Филтриране по претеглена лента {$name}',
+    'AssetScoring' => 'Оценка на активите',
+    'AssetScoringSettingsHint' => 'Всеки актив е оценен с Ниска, Умерена или Висока степен на поверителност, целостност и наличност, а поверителността може вместо това да бъде Неприложима, което го изключва от двата резултата. Категоризацията му по FIPS е най-високата от трите оценки. Претеглената му оценка е среднопретеглената стойност на трите нива, а праговете на диапазоните превръщат тази оценка в Ниска, Умерена или Висока група. Промяната на тези настройки преоценява всеки актив незабавно.',
+    'Weights' => 'Тежести',
+    'AssetScoringWeightsHint' => 'Колко тежи всяка цел в претеглената оценка: от 0 до 100, с до два знака след десетичната запетая. Тегло 0 изключва тази цел. Почтеността и Наличността не могат да бъдат едновременно 0, защото поверителността „Не е приложимо“ винаги се изключва.',
+    'LevelValues' => 'Стойности на нивата',
+    'AssetScoringLevelValuesHint' => 'Числото, с което всяка оценка допринася за претеглената оценка: над 0 и до 100, с до два знака след десетичната запетая, и Ниско под Умерено под Високо. Стойностите по подразбиране са Ниско 1, Умерено 2 и Високо 3.',
+    'BandThresholds' => 'Прагове на лентата',
+    'AssetScoringBandThresholdsHint' => 'Претеглена оценка на или над прага е в тази лента, а оценка под умерения праг е нисък. Умерената трябва да започва над ниската стойност, а високата трябва да започва над умерената и не по-висока от високата стойност.',
+    'ModerateStartsAt' => 'Умерено започва от',
+    'HighStartsAt' => 'Високото започва от',
+    'DefaultScoringForNewAssets' => 'Оценяване по подразбиране за нови активи',
+    'AssetScoringDefaultsHint' => 'Предварително избира тези оценки, когато някой добави актив във формуляра за активи. Активите, създадени чрез откриване, импортиране или API, остават без оценка, освен ако не предоставят свои собствени оценки. Оставете и трите опции „Не е зададено“, за да изключите това.',
+    'AssetScoringWeightsInvalid' => 'Теглата за оценка на активите трябва да са числа от 0 до 100 с най-много два знака след десетичната запетая, а Целостта и Наличността не могат едновременно да бъдат 0.',
+    'AssetScoringValuesInvalid' => 'Стойностите на нивата на оценка на активите трябва да са числа над 0 и до 100 с най-много два знака след десетичната запетая, като „Ниско“ е под „Умерено“ и „Високо“.',
+    'AssetScoringThresholdsInvalid' => 'Праговете за диапазоните за оценяване на активите трябва да имат най-много два знака след десетичната запетая, като умерената започва над ниската стойност, високата започва над умерената, а високата започва не по-високо от високата стойност.',
+    'AssetScoringDefaultsInvalid' => 'Стандартното оценяване за нови активи трябва да бъде ниво, предлагано от всяка цел.',
+    'AssetScoringSettingsNotSaved' => 'Настройките за оценяване на активите не можаха да бъдат запазени. Нищо не беше променено.',
+    'AssetScoringSettingsChangedLog' => 'Настройките за оценяване на активите бяха променени от потребителя „{$user}“.',
+    'AssetScoringNotSet' => 'Не е зададено',
+    'NotScored' => 'Не е оценено',
+    'AssetScoringNotScoredHint' => 'Отговорете и на трите цели, за да оцените този актив.',
+    'ImportAssetScoringValueIgnored' => 'Стойността {$objective} „{$value}“ за актива „{$asset_name}“ не е валидна оценка и беше игнорирана.',
+    'AssetScoringSecurityObjectives' => 'Цели за сигурност',
+    'AssetScoringConfidentialityHelp' => 'Какво е потенциалното въздействие, ако има неоторизирано разкриване на информацията за този актив?',
+    'AssetScoringIntegrityHelp' => 'Какво е потенциалното въздействие, ако има неоторизирана промяна или унищожаване на информацията върху този актив?',
+    'AssetScoringAvailabilityHelp' => 'Какво е потенциалното въздействие, ако има прекъсване на достъпа до или използването на този актив?',
+    'AssetScoringHelpHigh' => 'Тежък или катастрофален неблагоприятен ефект',
+    'AssetScoringHelpModerate' => 'Сериозен нежелан ефект',
+    'AssetScoringHelpLow' => 'Ограничен или никакъв неблагоприятен ефект',
+    'AssetScoringHelpNotApplicable' => 'Поверителността не е от значение за този актив (например, публична информация)',
+    'AssetScoringHelpLabel' => '{$objective} насоки за оценка',
+    'AssetScoringMeterValue' => '{$score}, {$band} лента',
+    'AssetScoringNoWeightedScore' => 'Няма претеглена оценка',
+    'AssetScoringNoWeightedScoreNote' => 'Няма претеглена оценка: всяка цел, която има значение, има тегло 0.',
+    'AssetScoringUpgradePending' => 'Оценката на активите не може да бъде запазена, докато не бъде изпълнено надграждането на базата данни SimpleRisk. Нищо не е променено.',
+    'AssetScoringResultHelpLabel' => '{$result} обяснение',
+    'AssetScoringScoreHelp' => 'Претеглената оценка обединява трите оценки в едно число от {$low} до {$high}. Всяка оценка става зададена стойност и всяка се умножава по теглото на съответната цел. Резултатите се сумират и се делят на общия брой на теглата. Пропуска се „Поверителност“ „Не е приложимо“, заедно с теглото ѝ. Зададените стойности и тегла се конфигурират в „Предпочитания“. И трите цели трябва да бъдат оценени, преди да се покаже оценка.',
+    'AssetScoringCategorizationHelp' => 'Категоризацията на сигурността по FIPS 199 е най-високата оценка: най-високата оценка сред приложимите цели. Една висока оценка прави актива Висок, каквито и да са останалите. „Не е приложимо“ се игнорира.',
+    'AssetScoringBandHelp' => 'Групата поставя претеглената оценка по скала Ниска, Умерена или Висока. Резултат под {$moderate} е Нисък, от {$moderate} до {$highAt} е Умерен, а {$highAt} или повече е Висок. Праговете се конфигурират в Предпочитания.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Всички оценки за поверителност',
+    'AllIntegrityRatings' => 'Всички оценки за цялостност',
+    'AllAvailabilityRatings' => 'Всички оценки за наличност',
+    'AssetFilterByConfidentiality' => 'Филтриране по поверителност {$name}',
+    'AssetFilteringByConfidentiality' => 'Филтриране по поверителност {$name}',
+    'AssetFilterByIntegrity' => 'Филтриране по цялостност {$name}',
+    'AssetFilteringByIntegrity' => 'Филтриране по цялостност {$name}',
+    'AssetFilterByAvailability' => 'Филтриране по наличност {$name}',
+    'AssetFilteringByAvailability' => 'Филтриране по наличност {$name}',
+    'HighestFIPSCategorization' => 'Най-висока FIPS категоризация',
+    'HighestWeightedScore' => 'Най-висок претеглен резултат',
+    'HighestWeightedBand' => 'Най-високопретеглена лента',
+    'AssetGroupFields' => 'Полета на група активи',
+    'NoAssetGroupsMatchFilters' => 'Няма групи активи, които да отговарят на вашите филтри',
+    'AssetGroupFilterByHighestCategorization' => 'Филтриране по най-висока FIPS категоризация {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Филтриране по най-висока FIPS категоризация {$name}',
+    'AssetGroupFilterByHighestBand' => 'Филтриране по най-високопретеглена лента {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Филтриране по най-високопретеглена лента {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Изберете групи активи или по идентификатор, или по филтър.',
+    'AssetGroupBulkIdsRequired' => 'Изберете поне една група активи.',
+    'AssetGroupBulkIdsInvalid' => 'Идентификационните номера на групите активи трябва да са цели числа.',
+    'AssetGroupBulkFilterAllAlone' => 'Избирането на всички групи активи не може да се комбинира с други филтри.',
+    'AssetGroupBulkFilterEmpty' => 'Изберете филтър или изберете всички групи активи, преди да ги изтриете.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Очакваният брой групи активи трябва да е цяло число.',
+    'AssetGroupBulkExpectedCountRequired' => 'Изтриването на групи активи по филтър изисква броя групи, които очаквате да бъдат изтрити.',
+    'AssetGroupBulkNoMatch' => 'Няма групи активи, които да съответстват на избраното от вас.',
+    'AssetGroupBulkCountMismatch' => 'Съвпадащите групи активи се промениха от {$expected} на {$actual} , откакто ги избрахте. Прегледайте списъка и опитайте отново.',
+    'AssetGroupBulkTooManyToDelete' => 'Можете да изтриете най-много {$max} групи активи едновременно. Стеснете избора си и опитайте отново.',
+    'AssetGroupBulkSelectAll' => 'Изберете всички {$count} групи активи',
+    'AssetGroupBulkAllSelected' => 'Всички {$count} съответстващи групи активи са избрани',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Да се изтрият ли {$count} групи активи?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Активите в тези групи не се изтриват. Премахват се само групите.',
+    'DeleteAssetGroups' => 'Изтриване на групи',
+    'AssetGroupBulkDeletedSummary' => '{$ok} групи са изтрити, {$failed} са пропуснати',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Избирането на свързани рискове изисква разрешение от отдел „Управление на риска“.',
+    'NAssociatedRisks' => '{n} свързан(и) риск(ове)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Запазването запазва текущите свързани рискове.',
+    'UpgradePhpPartialTarget' => 'Надграждане до {$target}, най-новата версия, която PHP {$php} поддържа. Версия {$blocked} и по-късни изискват PHP {$needed} или по-нова.',
+    'UpgradeNoPhpCli' => 'За надстройката е необходим PHP интерфейсът на командния ред с разширението pdo_mysql, за да се надстрои базата данни, но на този сървър не е намерен такъв. Нищо не е променено. Инсталирайте го (планираните задачи на SimpleRisk също го изискват), след което стартирайте надстройката отново.',
+    'UpgradeDatabaseStepFailed' => 'Надстройката на базата данни не бе успешна. Базата данни е с версия {$reached}. Вижте съобщенията по-горе и лога на SimpleRisk, след което стартирайте надстройката отново.',
+    'UpgradeReplacingVendorDirectory' => 'Подмяна на директорията vendor.',
+    'AdvancedSearchLockedPlaceholder' => 'Търсене в цялата ви програма',
+    'AdvancedSearchLockedAria' => 'Търсене в цялата програма. Заключено: изисква се допълнителното разширено търсене.',
+    'AdvancedSearchLockedPitch' => 'Намерете риск, контрол, документ или актив от едно поле и преминете към свързаните с него записи.',
+    'AdvancedSearchUnlocksLabel' => 'Отключва търсенето в',
+    'RequiresAdvancedSearchExtra' => 'Изисква допълнителното разширено търсене.',
+    'UnlockAdvancedSearchLink' => 'Вижте какво добавя',
+    'UnlockActivateAdvancedSearchNote' => 'Допълнителното разширено търсене е инсталирано, но не е включено.',
+    'UnlockActivateAdvancedSearchLink' => 'Включете го',
+    'AdvancedSearchControlCount' => 'Контроли: {$count}',
+    'AdvancedSearchAssetCount' => 'Активи: {$count}',
+    'AdvancedSearchValuationRange' => '{$min} до {$max}',
+    'AdvancedSearchTypes' => 'Видове',
+    'AdvancedSearchTypesToggle' => 'Видове · {$count}',
+    'AdvancedSearchViewAll' => 'Вижте всички',
+    'AdvancedSearchMatchedIn' => 'Съвпада в {$field}:',
+    'AdvancedSearchMatchedInFilter' => 'Съвпада в',
+    'AdvancedSearchAnyField' => 'Всяко поле',
+    'AdvancedSearchSortBest' => 'Най-добро съвпадение',
+    'AdvancedSearchSummary' => 'Резултати: {$count}',
+    'AdvancedSearchSummaryTypes' => 'Търсени типове: {$types}',
+    'AdvancedSearchNoResultsTitle' => 'Няма резултати за „{$q}“',
+    'AdvancedSearchNoResultsTip' => 'Проверете правописа или опитайте с по-малко думи.',
+    'AdvancedSearchFailedTitle' => 'Не можах да търся в момента',
+    'AdvancedSearchFailedBody' => 'Данните ви са в безопасност. Опитайте отново след малко.',
+    'AdvancedSearchIncompleteTitle' => 'Резултатите може да са непълни.',
+    'AdvancedSearchIncompleteDetail' => 'Този тип е търсил само в най-новите си записи. Стеснете търсенето си, за да видите още.',
+    'AdvancedSearchTimeLimitNote' => 'Търсенето спря рано, за да се запази скоростта, така че някои типове не бяха търсени. Стеснете търсенето си, за да ги включите.',
+    'AdvancedSearchNotSearched' => 'Не е търсено',
+    'AdvancedSearchMinChars' => 'Въведете поне {$count} знака за търсене.',
+    'AdvancedSearchEmptyPrompt' => 'Търсене на рискове, контроли, документи, активи и други.',
+    'AdvancedSearchFirstPage' => 'Първа страница',
+    'AdvancedSearchNoAccess' => 'Вашият акаунт не може да търси никакви типове записи. Помолете администратор за достъп.',
+    'AdvancedSearchSort' => 'Сортиране',
+    'AdvancedSearchConnectedRecords' => 'Свързани записи',
+    'AdvancedSearchConnectedRecordsNote' => 'Показва само записи, до които имате достъп.',
+    'AdvancedSearchNoConnections' => 'Няма свързани записи, които можете да видите.',
+    'AdvancedSearchConnectionsFailed' => 'Не можаха да се заредят свързаните записи.',
+    'AdvancedSearchShowConnections' => 'Показване на свързани записи за {$title}',
+    'AdvancedSearchExploreConnections' => 'Разгледайте връзките',
+    'AdvancedSearchCopyLink' => 'Копиране на връзката',
+    'AdvancedSearchMoreCount' => '+{$count} още',
+    'AdvancedSearchCopyLinkFailed' => 'Не можах да копирам линка.',
+    'AdvancedSearchOpenRecord' => 'Отвори',
+    'ControlDeepLinkUnavailable' => 'Този контрол не е наличен. Възможно е да е бил изтрит или може да нямате достъп до него.',
+    'ExceptionDeepLinkUnavailable' => 'Това изключение не може да бъде отворено тук. Възможно е да нямате достъп до документа с правилата му.',
+    // Advanced Search: the topbar typeahead
+    'AdvancedSearchSeeAll' => 'Вижте всички резултати за „{$q}“',
+    'AdvancedSearchTopHit' => 'Най-добър резултат',
+    'AdvancedSearchKeyMove' => 'Преместване',
+    'AdvancedSearchKeyEsc' => 'изход',
+    'AdvancedSearchSuggestions' => 'Предложения за търсене',
+    'AdvancedSearchAssessmentSubtitle' => '{$contact} · {$percent}% завършено',
+    'AdvancedSearchScannerId' => 'Идентификатор на скенер',
+    'AdvancedSearchVendor' => 'Доставчик',
+    'AdvancedSearchProduct' => 'Продукт',
+    'AdvancedSearchSeverityLevel' => 'Тежест {$level}',
+    'AdvancedSearchFromYourExtras' => 'От вашите допълнителни модули',
+    'UpdateAnExistingUser' => 'Актуализиране на съществуващ потребител',
+    'UserImportProgressTitle' => 'Импортиране на потребители',
+    'UserImportQueued' => 'На опашка. Импортирането ще започне след малко…',
+    'UserImportProgressCount' => '{$processed} от {$total} обработени редове…',
+    'UserImportComplete' => 'Импортирането е завършено.',
+    'UserImportFailed' => 'Импортирането не можа да бъде завършено.',
+    'UserImportSummary' => '{$created} създадено, {$updated} актуализирано, {$failed} неимпортирано.',
+    'UserImportRowInvalid' => 'Ред {$row}: не е импортиран. Изискват се потребителско име, пълно име и валиден имейл адрес.',
+    'UserImportRowError' => 'Ред {$row}: не е импортиран поради неочаквана грешка.',
+    'UserImportRevealPasswords' => 'Показване на временни пароли',
+    'UserImportPasswordsOnce' => 'Временните пароли на новите потребители се показват веднъж и след това се изтриват. Копирайте ги сега и дайте на всеки потребител тяхната защитена парола. Всеки потребител трябва да я промени при първото влизане.',
+    'UserImportPasswordsShownOnce' => 'Тези временни пароли са изтрити от SimpleRisk и не могат да бъдат показани отново. Копирайте ги сега. Всеки потребител трябва да промени своята при първото влизане.',
+    'UserImportPasswordsUnavailable' => 'Временните пароли вече не могат да се показват. Те се показват веднъж, само на администратора, който е стартирал импортирането, и само в раздела на браузъра, който го е стартирал, и SimpleRisk не запазва нищо, което би могло да ги покаже отново. Задайте нова парола за всеки нов потребител, като редактирате потребителя.',
+    'UserImportBackgroundNote' => 'Тази страница се актуализира сама и импортирането продължава, дори ако я напуснете. Отворете страницата отново, за да видите резултата.',
+    'AuditAdditionalStakeholdersSetOnTest' => 'Допълнителни заинтересовани страни са зададени за теста. За да ги промените, редактирайте теста под {$page}; промяната се прилага за този одит веднага.',
+    'QuestionnaireDraftSomeFilesNotSaved' => 'Вашите отговори бяха запазени, но един или повече прикачени файлове не бяха запазени. Възможно е даден файл да е твърде голям или от неразрешен тип.',
+    'UploadFileTooBigForDatabase' => 'Каченият файл е твърде голям за съхранение в базата данни. Администратор на SimpleRisk може да увеличи стойностите на max_allowed_packet и innodb_log_file_size в конфигурацията на MySQL.',
+    'UploadErrorIniSize' => 'Каченият файл надвишава директивата upload_max_filesize в php.ini.',
+    'UploadErrorFormSize' => 'Каченият файл превишава директивата MAX_FILE_SIZE, посочена във формуляра HTML.',
+    'UploadErrorPartial' => 'Каченият файл е качен само частично.',
+    'UploadErrorNoFile' => 'Не е качен файл.',
+    'UploadErrorNoTmpDir' => 'Липсва временна папка.',
+    'UploadErrorCantWrite' => 'Записването на файла на диск не бе успешно.',
+    'UploadErrorExtension' => 'PHP разширение спря качването на файла.',
+    'MaxUploadSizeNeedsInteger' => 'Максималният размер на качения файл трябва да бъде цяло число байтове, по-голямо от нула.',
+    'MaxUploadSizeUpdated' => 'Максималният размер на качения файл беше актуализиран успешно.',
+    'MaxUploadSizeCapped' => 'Запазената стойност е по-висока от позволеното от този сървър, така че по-големите файлове се отказват, докато ограниченията на PHP и MySQL не бъдат увеличени или тази стойност не бъде намалена. Най-големият файл, който се приема в момента, в байтове:',
+    'PleaseEnterAValidEmailAddress' => 'Моля, въведете валиден имейл адрес.',
+    'RiskImportedClosedWithoutCloseReason' => 'Риск {$risk_id} ("{$subject}") е импортиран със статус „Затворен“, но без причина за затваряне, така че информацията за затварянето му е непълна. Добавете причина за затваряне към файла и го импортирайте отново или завършете затварянето от страницата с риска.',
+    // SR-115: HTTP Strict Transport Security (HSTS)
+    'EnableHSTS' => 'Активиране на HTTP Strict Transport Security (HSTS)',
+    'EnableHSTSHelp' => 'Указва на браузърите да се свързват със SimpleRisk само през HTTPS за максималната възраст, посочена по-долу. Активирайте това само след като HTTPS работи надеждно на този сайт: браузърите, които са видели заглавката, ще откажат обикновен HTTP, а повреден сертификат не може да бъде заобиколен, докато не изтече максималната възраст. Започнете с кратка максимална възраст, например 300 секунди, и я увеличете, след като HTTPS бъде проверен.',
+    'HSTSMaxAge' => 'Максимална възраст по HSTS (секунди)',
+    'HSTSMaxAgeInvalid' => 'Максималната възраст на HSTS трябва да бъде цяло число секунди между 0 и 63072000.',
+    'HSTSIncludeSubdomains' => 'Приложете HSTS към всички поддомейни',
+    'HSTSIncludeSubdomainsHelp' => 'Също така налага HTTPS на всеки поддомейн на този хост. Оставете опцията изключена, ако някой поддомейн се обслужва през обикновен HTTP.',
     '' => '',
 );
 ?>

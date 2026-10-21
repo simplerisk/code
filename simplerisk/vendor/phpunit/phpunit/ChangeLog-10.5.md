@@ -2,6 +2,18 @@
 
 All notable changes of the PHPUnit 10.5 release series are documented in this file using the [Keep a CHANGELOG](https://keepachangelog.com/) principles.
 
+## [10.5.66] - 2026-10-05
+
+### Changed
+
+* The Software Bill of Materials (SBOM) embedded in the PHAR now uses CycloneDX 1.7 and provides the NTIA minimum elements as well as the data fields that BSI TR-03183-2 (version 2.1.0) requires for logical and identified components, including component creators, original, distribution and effective licences, source code URIs, and the PHP runtime and its extensions as external components
+
+## [10.5.65] - 2026-09-23
+
+### Changed
+
+* Do not pass empty output of a test that was run in a separate process to `unserialize()` (which emits a warning for an empty string as of PHP 8.6)
+
 ## [10.5.64] - 2026-07-06
 
 ### Changed
@@ -533,6 +545,8 @@ All notable changes of the PHPUnit 10.5 release series are documented in this fi
 
 * [#5563](https://github.com/sebastianbergmann/phpunit/issues/5563): `createMockForIntersectionOfInterfaces()` does not automatically register mock object for expectation verification
 
+[10.5.66]: https://github.com/sebastianbergmann/phpunit/compare/10.5.65...10.5.66
+[10.5.65]: https://github.com/sebastianbergmann/phpunit/compare/10.5.64...10.5.65
 [10.5.64]: https://github.com/sebastianbergmann/phpunit/compare/10.5.63...10.5.64
 [10.5.63]: https://github.com/sebastianbergmann/phpunit/compare/10.5.62...10.5.63
 [10.5.62]: https://github.com/sebastianbergmann/phpunit/compare/10.5.61...10.5.62

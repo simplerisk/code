@@ -89,18 +89,36 @@ function init_minimun_editor(selector) {
 // height so several of these can sit in one modal without burying the fields
 // below them. Same save-on-change wiring as the others, so callers using
 // hugerte.triggerSave() / .save() are unaffected.
-function init_compact_editor(selector, height = 150) {
+// onReady, when given, fires once per editor instance the instant HugeRTE's
+// own 'init' event fires -- i.e. the editor object exists and supports
+// setContent()/getContent(), even though hugerte.init()'s own returned
+// promise (now returned here too, for the same reason) may still be
+// resolving asset loads. A caller that opens a modal repeatedly (Control
+// Validation, risk-mitigation-controls.js) needs this: the editor is built
+// ONCE, but content arrives fresh on every open via an AJAX fetch that can
+// resolve before OR after HugeRTE's own async boot finishes, and a bare
+// .val() on the underlying textarea only reaches an editor that has not
+// rendered yet -- it never updates one that already has.
+function init_compact_editor(selector, height = 150, onReady) {
 
-    hugerte.init({
+    return hugerte.init({
         selector: selector,
         statusbar: false,
         plugins: 'lists link autolink',
         menubar: false,
-        // No separators: at half-width (a two-column card row) the pipes push
-        // this onto a second toolbar row, which costs more height than the
-        // grouping is worth.
-        toolbar: 'bold italic underline bullist numlist link',
-        toolbar_mode: 'wrap',
+        // The same full formatting set init_default_editor() offers --
+        // undo/redo, font family/size, paragraph style, alignment, text/
+        // highlight color -- not just the 6-item subset this toolbar
+        // shipped with originally (bold/italic/underline/lists/link only).
+        // toolbar_mode: 'floating' (not 'wrap') keeps it to ONE row: at
+        // half-width (a two-column card row) wrapping this many groups
+        // would run five-plus rows deep, burying the field below the
+        // toolbar. 'floating' instead shows what fits on the row and
+        // collapses the rest behind a "»" button that opens the remainder
+        // in a small panel -- HugeRTE's own built-in overflow affordance,
+        // not a custom one.
+        toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | link removeformat',
+        toolbar_mode: 'floating',
         quickbars_insert_toolbar: false,
         contextmenu: 'link',
         height: height,
@@ -122,6 +140,11 @@ function init_compact_editor(selector, height = 150) {
             editor.on('change', function () {
                 editor.save();
             });
+            if (typeof onReady === 'function') {
+                editor.on('init', function () {
+                    onReady(editor);
+                });
+            }
         }
     });
 }

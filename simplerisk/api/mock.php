@@ -114,9 +114,10 @@ add_session_check();
         }';
         $results['response'] = '{
               "status": 200,
-              "status_message": "Risk ID 3143 submitted successfully!",
+              "status_message": "Risk \"Subject\" has been submitted successfully.",
               "data": {
-                "risk_id": 3143
+                "risk_id": 3143,
+                "associate_test": 0
               }
             }';
             

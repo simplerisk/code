@@ -46,6 +46,12 @@ use Smalot\PdfParser\Config;
 use Smalot\PdfParser\Exception\EmptyPdfException;
 use Smalot\PdfParser\Exception\MissingPdfHeaderException;
 
+/**
+ * Reads the low-level structure of a PDF file: header, cross-reference data,
+ * trailer and the raw indirect objects. It is used by Parser only.
+ *
+ * @internal
+ */
 class RawDataParser
 {
     /**
@@ -619,14 +625,53 @@ class RawDataParser
     }
 
     /**
+     * Skip a balanced pair of delimiters ('[' … ']' or '<<' … '>>') that starts at
+     * $offset and return the offset just after the matching closing delimiter. Used
+     * to discard a container whose nesting exceeds the configured limit, keeping the
+     * surrounding structure balanced.
+     */
+    private function skipBalancedDelimiters(string $pdfData, int $offset, string $open, string $close): int
+    {
+        $length = \strlen($pdfData);
+        $openLen = \strlen($open);
+        $closeLen = \strlen($close);
+        $level = 0;
+
+        while ($offset < $length) {
+            if (substr($pdfData, $offset, $closeLen) === $close) {
+                --$level;
+                $offset += $closeLen;
+                if ($level <= 0) {
+                    return $offset;
+                }
+
+                continue;
+            }
+
+            if (substr($pdfData, $offset, $openLen) === $open) {
+                ++$level;
+                $offset += $openLen;
+
+                continue;
+            }
+
+            ++$offset;
+        }
+
+        return $offset;
+    }
+
+    /**
      * Get object type, raw value and offset to next object
      *
      * @param int        $offset    Object offset
      * @param array|null $headerDic obj header's dictionary, parsed by getRawObject. Used for stream parsing optimization
      *
      * @return array containing object type, raw value and offset to next object
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=26 ISO 32000-1:2008, 7.3.6 (array objects) and 7.3.7 (dictionary objects)
      */
-    protected function getRawObject(string $pdfData, int $offset = 0, ?array $headerDic = null): array
+    protected function getRawObject(string $pdfData, int $offset = 0, ?array $headerDic = null, int $depth = 0): array
     {
         $objtype = ''; // object type to be returned
         $objval = ''; // object value to be returned
@@ -636,6 +681,22 @@ class RawDataParser
 
         // get first char
         $char = $pdfData[$offset];
+
+        // Bound the structural nesting depth. Arrays and dictionaries recurse into
+        // getRawObject() once per level; past the limit such a container is skipped
+        // as a whole and returned empty instead of being descended into, so a
+        // pathologically nested object cannot exhaust the call stack or memory
+        // while the surrounding structure stays balanced.
+        $maxNestingDepth = $this->config->getMaxNestingDepth();
+        if (0 < $maxNestingDepth && $depth >= $maxNestingDepth) {
+            if ('[' === $char) {
+                return ['[', [], $this->skipBalancedDelimiters($pdfData, $offset, '[', ']')];
+            }
+            if ('<' === $char && isset($pdfData[$offset + 1]) && '<' === $pdfData[$offset + 1]) {
+                return ['<<', [], $this->skipBalancedDelimiters($pdfData, $offset, '<<', '>>')];
+            }
+        }
+
         // get object type
         switch ($char) {
             case '%':  // \x25 PERCENT SIGN
@@ -644,7 +705,8 @@ class RawDataParser
                 if ($next > 0) {
                     $offset += $next;
 
-                    return $this->getRawObject($pdfData, $offset);
+                    // A comment is not a nesting level, so $depth is passed on unchanged.
+                    return $this->getRawObject($pdfData, $offset, null, $depth);
                 }
                 break;
 
@@ -704,7 +766,7 @@ class RawDataParser
                     do {
                         $oldOffset = $offset;
                         // get element
-                        $element = $this->getRawObject($pdfData, $offset);
+                        $element = $this->getRawObject($pdfData, $offset, null, $depth + 1);
                         $offset = $element[2];
                         $objval[] = $element;
                     } while ((']' != $element[0]) && ($offset != $oldOffset));
@@ -725,7 +787,7 @@ class RawDataParser
                         do {
                             $oldOffset = $offset;
                             // get element
-                            $element = $this->getRawObject($pdfData, $offset);
+                            $element = $this->getRawObject($pdfData, $offset, null, $depth + 1);
                             $offset = $element[2];
                             $objval[] = $element;
                         } while (('>>' != $element[0]) && ($offset != $oldOffset));
@@ -947,14 +1009,48 @@ class RawDataParser
     /**
      * Parses PDF data and returns extracted data as array.
      *
+     * All indirect objects are held in memory at once. Parser uses
+     * parseHeaderAndXref() and iterateIndirectObjects() to get them one at a
+     * time.
+     *
      * @param string $data PDF data to parse
      *
-     * @return array array of parsed PDF document objects
+     * @return array{0: array, 1: array<string, array>} [$xref, $objects]; objects are keyed by object reference
      *
      * @throws EmptyPdfException if empty PDF data given
      * @throws MissingPdfHeaderException if PDF data missing `%PDF-` header
      */
     public function parseData(string $data): array
+    {
+        list($xref, $pdfData) = $this->parseHeaderAndXref($data);
+
+        return [$xref, iterator_to_array($this->iterateIndirectObjects($pdfData, $xref))];
+    }
+
+    /**
+     * Normalizes the raw PDF data and decodes the cross-reference/trailer data.
+     *
+     * Normalized PDF data starts with the header. If the offsets of the
+     * cross-reference table only fit after replacing \r\n by \n, its line
+     * endings are replaced accordingly.
+     *
+     * The trailer is available before any object gets decoded, which allows
+     * callers (e.g. Parser) to inspect it (for instance to detect encryption)
+     * and to get the objects via iterateIndirectObjects() afterwards.
+     *
+     * @param string $data PDF data to parse
+     *
+     * @return array{0: array, 1: string} [$xref, $pdfData]
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=47 ISO 32000-1:2008, 7.5.2 (file header)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=48 ISO 32000-1:2008, 7.5.4 (cross-reference table)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=50 ISO 32000-1:2008, 7.5.5 (file trailer)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=57 ISO 32000-1:2008, 7.5.8 (cross-reference streams)
+     *
+     * @throws EmptyPdfException if empty PDF data given
+     * @throws MissingPdfHeaderException if PDF data missing `%PDF-` header
+     */
+    public function parseHeaderAndXref(string $data): array
     {
         if (empty($data)) {
             throw new EmptyPdfException('Empty PDF data given.');
@@ -976,15 +1072,39 @@ class RawDataParser
             $xref = $this->getXrefData($pdfData);
         }
 
-        // parse all document objects
-        $objects = [];
-        foreach ($xref['xref'] as $obj => $offset) {
-            if (!isset($objects[$obj]) && ($offset > 0)) {
-                // decode objects with positive offset
-                $objects[$obj] = $this->getIndirectObject($pdfData, $xref, $obj, $offset, true);
+        return [$xref, $pdfData];
+    }
+
+    /**
+     * Yields the raw structure of each indirect object, one at a time.
+     *
+     * An object gets decoded when the consumer asks for it. A consumer, which
+     * processes and discards a structure before it asks for the next one,
+     * holds only one raw structure in memory at a time. The raw structures
+     * are by far the largest transient data when parsing a document.
+     *
+     * @param string $pdfData normalized PDF data, as returned by parseHeaderAndXref()
+     * @param array  $xref    xref/trailer data, as returned by parseHeaderAndXref()
+     *
+     * @return \Generator<string, array> raw object structure keyed by object reference
+     *
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=29 ISO 32000-1:2008, 7.3.10 (indirect objects)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=53 ISO 32000-1:2008, 7.5.7 (object streams)
+     * @see https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf#page=59 ISO 32000-1:2008, 7.5.8.3, Table 18 (types of cross-reference stream entries)
+     */
+    public function iterateIndirectObjects(string $pdfData, array $xref): \Generator
+    {
+        // $xref['xref'] is missing, if the cross-reference data contains no
+        // object which is in use.
+        foreach ($xref['xref'] ?? [] as $obj => $offset) {
+            // Only objects with a positive offset are decoded. Objects which
+            // are located in an object stream have an offset of -1, they get
+            // extracted from their object stream by Parser::parseObject().
+            // $xref['xref'] is keyed by object reference, so each object is
+            // decoded exactly once.
+            if ($offset > 0) {
+                yield $obj => $this->getIndirectObject($pdfData, $xref, $obj, $offset, true);
             }
         }
-
-        return [$xref, $objects];
     }
 }

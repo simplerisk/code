@@ -11,24 +11,20 @@ enforce_permission("riskmanagement");
 
 ?>
 <div class="risk-session overview clearfix">
-    <div class="card-body my-2 border">
-        <div class="row">
-            <div class="col-12">
-                <?php view_top_table($id, $calculated_risk, $subject, $status, true, $mitigation_percent, $display_risk); ?>
-            </div>
-        </div>
-    </div>
-    <div class="row mt-2">
+    <div class="row">
         <div class="col-12">
-            <div class="accordion">
-    <?php
-                // Risk soring form
-                include(realpath(__DIR__ . '/score.php'));
-
-                // Show visualization of risk score
-                include(realpath(__DIR__ . '/score-overtime.php'));
-    ?>
-            </div>
+            <?php view_top_table($id, $calculated_risk, $subject, $status, true, $mitigation_percent, $display_risk); ?>
         </div>
     </div>
+    <?php
+        // The "View Risk Scoring Details" (score.php) and "Show Risk Score
+        // Over Time" (score-overtime.php, removed earlier) expanders that
+        // used to render here in a shared accordion wrapper are both
+        // retired -- their functionality (per-method score breakdown with
+        // formula captions, method switching, and the inherent/residual
+        // history chart) now lives inline in the Details tab's Scoring
+        // card (risk-details-view.js's renderCards()/buildScoringMethod*/
+        // buildScoringHistoryWidget()). See score.php's own removal
+        // commit for the gap analysis that cleared it for removal.
+    ?>
 </div>

@@ -3112,13 +3112,13 @@ function display_supporting_documentation_add($panel_name="", $template_group_id
                 <div class='file-uploader'>
                 
                     <script>
-                        var max_upload_size = " . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ";
+                        var max_upload_size = " . $escaper->escapeJs(max_upload_size_effective()) . ";
                         var fileTooBigMessage = '" . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . "'; 
                     </script>
 
                     <label for='file-upload-" . $template_group_id . "' class='btn btn-primary m-r-20'>" . $escaper->escapeHtml($lang['ChooseFile']) . "</label>
                     <span class='file-count-html'> <span class='file-count'>0</span> " . $escaper->escapeHtml($lang['FileAdded']) . "</span>
-                    <p><font size='2'><strong>Max " . $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)) . " Mb</strong></font></p>
+                    <p><font size='2'><strong>Max " . $escaper->escapeHtml(max_upload_size_label()) . " Mb</strong></font></p>
                     <ul class='file-list'>
                     </ul>
                     <input type='file' id='file-upload-" . $template_group_id . "' name='file[]' class='d-none hidden-file-upload active' />

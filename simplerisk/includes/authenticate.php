@@ -414,22 +414,9 @@ function set_user_permissions($user, $upgrade = false)
         }
     }
 
-    // If the users language is not null
-    if (!is_null($array[0]['lang']))
-    {
-        // Set the session value
-        $_SESSION['lang'] = $array[0]['lang'];
-    }
-    // Otherwise, the session should use the default language
-    else
-    {
-        $default_language = get_setting("default_language");
-        if (!$default_language)
-        {
-            $_SESSION['lang'] = "en";
-        }
-        else $_SESSION['lang'] = get_setting("default_language");
-    }
+    // See resolve_user_lang_preference() (functions.php) for why NULL and ''
+    // are both treated as "no preference" (SD-854).
+    $_SESSION['lang'] = resolve_user_lang_preference($array[0]['lang']);
 
     // Close the database connection
     db_close($db);
@@ -1923,6 +1910,19 @@ function sess_gc($sess_maxlifetime)
     return true;
 }
 
+/**********************************
+ * FUNCTION: LOGOUT AUDIT MESSAGE *
+ **********************************/
+// The audit message for a logout, or null when nobody was signed in
+function logout_audit_message($username, $uid)
+{
+    if ((int)$uid <= 0) {
+        return null;
+    }
+
+    return "Username \"" . $username . "\" logged out successfully.";
+}
+
 /********************
  * FUNCTION: LOGOUT *
  ********************/
@@ -1932,9 +1932,11 @@ function logout()
     $username = $_SESSION['user'] ?? '';
     $uid = $_SESSION['uid'] ?? 0;
 
-    // Audit log
-    $message = "Username \"" . $username . "\" logged out successfully.";
-    write_log($uid + 1000, $uid, $message, "user");
+    // Audit log, but only for a signed-in user: logout.php can be requested by anything
+    $message = logout_audit_message($username, $uid);
+    if ($message !== null) {
+        write_log($uid + 1000, $uid, $message, "user");
+    }
 
     // Invalidate all server-side sessions for this user (other browsers,
     // devices, or stolen cookies) so that logout is a complete sign-out.

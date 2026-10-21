@@ -294,22 +294,6 @@ $(document).ready(function () {
 
     });
 
-    $('body').on('click', '.show-score-overtime', function (e) {
-        e.preventDefault();
-        var tabContainer = $(this).parents('.risk-session');
-        $('.score-overtime-container', tabContainer).show();
-        $('.hide-score-overtime', tabContainer).show();
-        $('.show-score-overtime', tabContainer).hide();
-    });
-
-    $('body').on('click', '.hide-score-overtime', function (e) {
-        e.preventDefault();
-        var tabContainer = $(this).parents('.risk-session');
-        $('.score-overtime-container', tabContainer).hide();
-        $('.hide-score-overtime', tabContainer).hide();
-        $('.show-score-overtime', tabContainer).show();
-    });
-
     // Refresh the file numbers on page load
     $('input[type=file].active').each(function() {
         refreshFilelist($(this).closest(".file-uploader"));

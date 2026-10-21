@@ -12,7 +12,10 @@ use CompileError;
 use InvalidArgumentException;
 use ParseError;
 use Phan\Analysis\AttributeAnalyzer;
+use Phan\Analysis\CloneReplay;
+use Phan\Analysis\CloneReplaySnapshot;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
+use Phan\Analysis\EmitOnlyChecks;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
 use Phan\Analysis\ThrowsTypesAnalyzer;
@@ -28,8 +31,8 @@ use Phan\Internal\InternalStubCacheEntry;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\ClassConstant;
+use Phan\Language\Element\Comment;
 use Phan\Language\Element\Func;
-use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -38,6 +41,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Library\FileCache;
 use Phan\Library\Map;
+use Phan\Library\PhaseTimer;
 use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
@@ -249,9 +253,55 @@ class Analysis
             $functions,
             $global_constants,
             $file_level_suppressions,
-            $class_members
+            $class_members,
+            self::stubHasMandatoryPHPDocParam($functions, $class_members)
         );
         self::$internal_stub_cache_misses++;
+    }
+
+    /**
+     * Does any cached function or method of a stub document a `@phan-mandatory-param`?
+     *
+     * Replaying a cached stub does not re-parse doc comments, so this is recorded with the
+     * cache entry and restored, keeping CodeBase::sawMandatoryParamAnnotation() accurate for
+     * every CodeBase that reuses the entry.
+     *
+     * @param list<Func> $functions
+     * @param array<string,array{methods:list<Method>,properties:list<Property>,constants:list<ClassConstant>}> $class_members
+     */
+    private static function stubHasMandatoryPHPDocParam(array $functions, array $class_members): bool
+    {
+        foreach ($functions as $function) {
+            if (self::commentHasMandatoryPHPDocParam($function->getComment())) {
+                return true;
+            }
+        }
+        foreach ($class_members as $members) {
+            foreach ($members['methods'] as $method) {
+                if (self::commentHasMandatoryPHPDocParam($method->getComment())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static function commentHasMandatoryPHPDocParam(?Comment $comment): bool
+    {
+        if (!$comment) {
+            return false;
+        }
+        foreach ($comment->getParameterList() as $parameter) {
+            if ($parameter->isMandatoryInPHPDoc()) {
+                return true;
+            }
+        }
+        foreach ($comment->getParameterMap() as $parameter) {
+            if ($parameter->isMandatoryInPHPDoc()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static function normalizeInternalStubPath(string $file_path): string
@@ -394,6 +444,18 @@ class Analysis
         $kind = $node->kind;
         $context->setLineNumberStart($node->lineno);
 
+        if (isset(ParseVisitor::NO_OP_NODE_KINDS[$kind])) {
+            // ParseVisitor's handler for this kind (most nodes) returns $context and does nothing else,
+            // so skip creating the visitor. This is equivalent to the default case below.
+            $child_context = $context;
+            foreach ($node->children as $child_node) {
+                if (\is_object($child_node)) {
+                    $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
+                }
+            }
+            return $context;
+        }
+
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the
@@ -465,23 +527,56 @@ class Analysis
         $plugin_set = ConfigPluginSet::instance();
         $has_function_or_method_plugins = $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins();
         $show_progress = CLI::shouldShowProgress();
-        $analyze_function_or_method = static function (FunctionInterface $function_or_method) use (
+        // Issues in files excluded from analysis are discarded, so by default,
+        // the checks that only emit issues about a function or method declared in such a file are skipped.
+        // (PHAN_ANALYZE_EXCLUDED_METHODS=1 runs them, PHAN_VERIFY_SKIPPED_CHECKS=1 verifies that skipping them changes nothing)
+        $excluded_file_checks = EmitOnlyChecks::modeForExcludedFiles();
+        /** @var array<string,bool> $is_excluded_file cache of Phan::isExcludedAnalysisFile() */
+        $is_excluded_file = [];
+        // The number of user-defined functions and methods for which the emit-only checks were run/skipped or verified
+        $checks_count = [EmitOnlyChecks::RUN => 0, EmitOnlyChecks::SKIP => 0, EmitOnlyChecks::VERIFY => 0];
+        EmitOnlyChecks::resetLookedUpTypes();
+        /**
+         * @param ?CloneReplaySnapshot $clone_replay_snapshot for an inherited method,
+         * the results of the declaration analysis of the method it was cloned from, to replay (see CloneReplay)
+         */
+        $analyze_function_or_method = static function (Func|Method $function_or_method, ?CloneReplaySnapshot $clone_replay_snapshot = null) use (
             $code_base,
             $plugin_set,
             $has_function_or_method_plugins,
-            $file_filter
+            $file_filter,
+            $excluded_file_checks,
+            &$is_excluded_file,
+            &$checks_count
         ): void {
             if ($function_or_method->isPHPInternal()) {
                 return;
             }
-            // Phan always has to call this, to add default values to types of parameters.
-            $function_or_method->ensureScopeInitialized($code_base);
-
-            // If there is an array limiting the set of files, skip this file if it's not in the list.
-            if (\is_array($file_filter) && !isset($file_filter[$function_or_method->getContext()->getFile()])) {
-                return;
+            if ($clone_replay_snapshot !== null && $function_or_method instanceof Method) {
+                // An inherited method whose declaration analysis (the parameters part of ensureScopeInitialized() and
+                // ParameterTypesAnalyzer::analyzeParameterTypesOfDeclaration()) would compute the same as that of the method
+                // it was cloned from, and check no issue: make the same changes to it instead (see CloneReplay).
+                $function_or_method->replayDeclarationAnalysis($code_base, $clone_replay_snapshot);
+            } else {
+                // Phan always has to call this, to add default values to types of parameters.
+                $function_or_method->ensureScopeInitialized($code_base);
             }
 
+            $file = $function_or_method->getContext()->getFile();
+            // If there is an array limiting the set of files, skip this file if it's not in the list.
+            if (\is_array($file_filter) && !isset($file_filter[$file])) {
+                return;
+            }
+            // The steps below that modify $function_or_method (or other state read by the analysis) always run.
+            // The checks that only emit issues about $function_or_method are skipped
+            // if it is declared in a file excluded from analysis (Issue::emitInstance() discards those issues).
+            $checks = EmitOnlyChecks::RUN;
+            if ($excluded_file_checks !== EmitOnlyChecks::RUN && ($is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file))) {
+                $checks = $excluded_file_checks;
+            }
+            $checks_count[$checks]++;
+
+            // This emits issues at the location of the original definition, which may be in a file that is analyzed.
             DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
                 $code_base,
                 $function_or_method
@@ -489,11 +584,31 @@ class Analysis
 
             // This is the most time consuming step.
             // Can probably apply this to other functions, but this was the slowest.
-            ParameterTypesAnalyzer::analyzeParameterTypes(
-                $code_base,
-                $function_or_method
-            );
+            // (Its first part is replayed with the rest of the declaration analysis, see above)
+            if ($clone_replay_snapshot === null) {
+                $is_declaration_analyzed = ParameterTypesAnalyzer::analyzeParameterTypesOfDeclaration(
+                    $code_base,
+                    $function_or_method,
+                    $checks
+                );
+                if (CloneReplay::$has_pending_method && $function_or_method instanceof Method) {
+                    // Record the results of the declaration analysis of a method that other methods were cloned from
+                    // (or verify those of a clone that could be replayed, for PHAN_VERIFY_SKIPPED_CHECKS=1)
+                    CloneReplay::endDeclarationAnalysis($code_base, $function_or_method, $is_declaration_analyzed);
+                }
+            } else {
+                $is_declaration_analyzed = true;
+            }
+            if ($is_declaration_analyzed) {
+                ParameterTypesAnalyzer::analyzeParameterTypesOfOverrides(
+                    $code_base,
+                    $function_or_method,
+                    $checks
+                );
+            }
 
+            // This always runs: it adds references to attribute classes, may create their default constructor,
+            // and analyzes the arguments of the attributes.
             AttributeAnalyzer::analyzeAttributesOfFunctionInterface(
                 $code_base,
                 $function_or_method
@@ -501,8 +616,9 @@ class Analysis
 
             // Infer more accurate return types
             // For daemon mode/the language server, we also call this whenever we use the return type of a function/method.
-            $function_or_method->analyzeReturnTypes($code_base);
+            $function_or_method->analyzeReturnTypes($code_base, $checks);
 
+            // This always runs: it inherits (at)throws types, and its checks look up the classes used in them.
             ThrowsTypesAnalyzer::analyzeThrowsTypes(
                 $code_base,
                 $function_or_method
@@ -511,6 +627,7 @@ class Analysis
             // XXX: Add a way to run plugins on all functions/methods, this was limited for speed.
             // Assumes that the given plugins will emit an issue in the same file as the function/method,
             // which isn't necessarily the case.
+            // (Plugins always run, even for elements declared in excluded files: they may record state.)
             // 0.06
             if ($has_function_or_method_plugins) {
                 if ($function_or_method instanceof Func) {
@@ -518,7 +635,7 @@ class Analysis
                         $code_base,
                         $function_or_method
                     );
-                } elseif ($function_or_method instanceof Method) {
+                } else {
                     $plugin_set->analyzeMethod(
                         $code_base,
                         $function_or_method
@@ -541,9 +658,24 @@ class Analysis
 
         // Analyze user-defined method declarations.
         // Plugins may also analyze user-defined methods here.
+        PhaseTimer::begin('analyze_methods');
         $i = 0;
         $method_set = $code_base->getMethodSet();
         CLI::progress('method', 0.0, null);
+        $collect_timings = PhaseTimer::$enabled;
+        // Nanoseconds spent on methods, split by declared vs. inherited and by excluded vs. analyzed file (--dump-phase-timings)
+        $method_ns = ['declared' => 0, 'inherited' => 0, 'excluded' => 0, 'analyzed' => 0];
+        // PHAN_VERIFY_SKIPPED_CHECKS=1 also runs and verifies the walks over overridden methods that can be skipped
+        EmitOnlyChecks::beginAnalyzingMethods($excluded_file_checks === EmitOnlyChecks::VERIFY);
+        // Replay the declaration analysis of inherited methods that would compute the same as that of their source
+        // (PHAN_DISABLE_CLONE_REPLAY=1 disables this, PHAN_VERIFY_SKIPPED_CHECKS=1 verifies it instead).
+        // This is disabled when only some files are analyzed (daemon mode), where the source may not be processed.
+        $clone_replay = CloneReplay::beginAnalyzingMethods(
+            $code_base,
+            $file_filter === null && !\getenv('PHAN_DISABLE_CLONE_REPLAY'),
+            $excluded_file_checks === EmitOnlyChecks::VERIFY,
+            $collect_timings
+        );
         foreach ($method_set as $method) {
             if ($show_progress) {
                 // Method analysis can trigger class hydration which adds
@@ -551,7 +683,74 @@ class Analysis
                 // is needed so that the progress bar is accurate.
                 CLI::progress('method', (++$i) / (count($method_set)), $method);
             }
-            $analyze_function_or_method($method);
+            if ($method->isPHPInternal()) {
+                continue;
+            }
+            // For an inherited method, this records whether the walks over the methods it overrides
+            // that cannot find anything can be skipped while it is processed.
+            EmitOnlyChecks::beginAnalyzingMethod($code_base, $method);
+            try {
+                if ($collect_timings) {
+                    $start_ns = \hrtime(true);
+                    $analyze_function_or_method($method, $clone_replay ? CloneReplay::beginAnalyzingMethod($code_base, $method) : null);
+                    $elapsed_ns = \hrtime(true) - $start_ns;
+                    $file = $method->getContext()->getFile();
+                    $method_ns[$method->getDefiningFQSEN() !== $method->getFQSEN() ? 'inherited' : 'declared'] += $elapsed_ns;
+                    $method_ns[($is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file)) ? 'excluded' : 'analyzed'] += $elapsed_ns;
+                } else {
+                    $analyze_function_or_method($method, $clone_replay ? CloneReplay::beginAnalyzingMethod($code_base, $method) : null);
+                }
+            } finally {
+                EmitOnlyChecks::endAnalyzingMethod();
+                if (CloneReplay::$has_pending_method) {
+                    CloneReplay::endAnalyzingMethod();
+                }
+            }
+        }
+        if ($collect_timings) {
+            self::recordMethodSetStats($code_base, $method_ns, $is_excluded_file);
+            PhaseTimer::note('functionlikes_checks_run', $checks_count[EmitOnlyChecks::RUN]);
+            PhaseTimer::note('functionlikes_checks_skipped', $checks_count[EmitOnlyChecks::SKIP]);
+            PhaseTimer::note('functionlikes_checks_verified', $checks_count[EmitOnlyChecks::VERIFY]);
+            EmitOnlyChecks::recordAncestorWalkStats();
+        }
+        CloneReplay::endAnalyzingMethods($code_base);
+        EmitOnlyChecks::resetLookedUpTypes();
+        EmitOnlyChecks::reportVerificationResults($code_base, $checks_count[EmitOnlyChecks::VERIFY]);
+    }
+
+    /**
+     * Record the number of user-defined classes and methods (for --dump-phase-timings).
+     * Inherited methods are clones of the method declared in the ancestor class or trait.
+     *
+     * @param array<string,int> $method_ns nanoseconds spent analyzing methods, by category
+     * @param array<string,bool> &$is_excluded_file cache of Phan::isExcludedAnalysisFile()
+     */
+    private static function recordMethodSetStats(CodeBase $code_base, array $method_ns, array &$is_excluded_file): void
+    {
+        $counts = ['declared' => 0, 'inherited_clones' => 0, 'excluded' => 0, 'analyzed' => 0, 'internal' => 0];
+        foreach ($code_base->getMethodSet() as $method) {
+            if ($method->isPHPInternal()) {
+                $counts['internal']++;
+                continue;
+            }
+            $counts[$method->getDefiningFQSEN() !== $method->getFQSEN() ? 'inherited_clones' : 'declared']++;
+            $file = $method->getContext()->getFile();
+            $counts[($is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file)) ? 'excluded' : 'analyzed']++;
+        }
+        $user_function_count = 0;
+        foreach ($code_base->getFunctionMap() as $function) {
+            if (!$function->isPHPInternal()) {
+                $user_function_count++;
+            }
+        }
+        PhaseTimer::note('user_classes', count($code_base->getUserDefinedClassMap()));
+        PhaseTimer::note('user_functions', $user_function_count);
+        foreach ($counts as $key => $count) {
+            PhaseTimer::note("methods_$key", $count);
+        }
+        foreach ($method_ns as $key => $ns) {
+            PhaseTimer::note("methods_{$key}_s", \round($ns / 1e9, 6));
         }
     }
 

@@ -1,5 +1,11 @@
 # MediaWiki Security Check Plugin changelog
 
+## v10.1.0
+### New features
+* (MW) Added support for analyzing `ReplaceQueryBuilder::rows()` and `::row()`
+* (MW) Added support for updated namespace of `\MediaWiki\Language\Message\Message`
+* (MW) Added support for updated namespace of `\Wikimedia\StatusValue\StatusValue`
+
 ## v10.0.0
 ### Breaking changes
 * Dropped support for PHP < 8.3

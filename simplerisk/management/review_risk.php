@@ -42,7 +42,53 @@ render_header_and_sidebar(
     //   to ONE dedicated batch endpoint in a single request instead of
     //   chunking client-side, so review-risk.js no longer calls
     //   runBatchedRequests() (js/simplerisk/bulk-request-batch.js).
-    ['blockUI', 'selectize', 'datatables', 'colreorder', 'multiselect', 'datetimerangepicker', 'WYSIWYG', 'UILayoutWidget', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:sr-select.js', 'CUSTOM:pages/review-risk.js', 'EXTRA:JS:artificial_intelligence:ai-chat.js'],
+    // - 'gridstack' + CUSTOM:common/risk-details-form.js: the + Add Risk
+    //   modal's Cards-based form engine (js/simplerisk/common/
+    //   risk-details-form.js, the same one management/index.php's standalone
+    //   Submit Risk page uses) -- review-risk.js's shown.bs.modal handler
+    //   calls window.RiskDetailsForm.init() against #review-risk-add-modal's
+    //   canvas. selectize/multiselect/WYSIWYG/datetimerangepicker (already
+    //   listed above for this page's own grid/filters) double as this
+    //   engine's field-widget dependencies -- gridstack is the only one this
+    //   page didn't already need for itself.
+    // - CUSTOM:common/cvss-v2-scoring.js MUST precede CUSTOM:common/
+    //   risk-details-form.js: the RiskScoringMethod widget's CVSS holder
+    //   (Phase 4d-ii) calls window.CvssV2Scoring.loadFromHiddenFields()/
+    //   calculateCVSS() directly from its "Score with CVSS" click handler --
+    //   without this script this page's own + Add Risk modal throws
+    //   TypeError: Cannot read properties of undefined (reading
+    //   'loadFromHiddenFields') the moment CVSS is picked. Same insertion
+    //   management/index.php and management/view.php already carry.
+    // - CUSTOM:common/dread-scoring.js MUST precede CUSTOM:common/
+    //   risk-details-form.js for the same reason: the RiskScoringMethod
+    //   widget's DREAD holder (Phase 4d-iii) calls
+    //   window.DreadScoring.calculateDread() at BUILD time, the moment the
+    //   holder is constructed -- not only from a later change handler like
+    //   CVSS's own click-triggered call above -- so the script must already
+    //   be loaded before this page's own + Add Risk modal's canvas is
+    //   first built, not merely by the time a user interacts with it.
+    // - CUSTOM:common/owasp-scoring.js MUST precede CUSTOM:common/
+    //   risk-details-form.js for the same reason as DREAD above: the
+    //   RiskScoringMethod widget's OWASP holder (Phase 4d-iv) calls
+    //   window.OwaspScoring.calculateOwasp() at BUILD time. Missing here
+    //   originally (caught by Task 5's own SCENARIO-7 Playwright test --
+    //   window.OwaspScoring was undefined and #OwaspScore silently stayed
+    //   '0' with no thrown JS error, since buildOwaspHolder()'s own calls
+    //   are all guarded by `if (window.OwaspScoring && ...)`).
+    // - CUSTOM:common/classic-scoring.js MUST precede CUSTOM:common/
+    //   risk-details-form.js for the same reason: the RiskScoringMethod
+    //   widget's Classic holder (Risk Scoring -- Classic Inline) calls
+    //   window.ClassicScoring.calculateClassic() at BUILD time. Found
+    //   missing from every page's script list during this phase's own
+    //   live verification -- same silent-'0' failure mode owasp-scoring.js's
+    //   own omission had (buildClassicHolder()'s calls are all guarded by
+    //   `if (window.ClassicScoring && ...)`, so nothing threw).
+    // - CUSTOM:common/contributing-risk-scoring.js MUST precede CUSTOM:common/
+    //   risk-details-form.js for the same reason as Classic/CVSS/DREAD/OWASP's
+    //   own scoring scripts: the RiskScoringMethod widget's Contributing Risk
+    //   holder calls window.ContributingRiskScoring.calculateContributingRisk()
+    //   at BUILD time, the moment the holder is constructed.
+    ['blockUI', 'selectize', 'datatables', 'colreorder', 'multiselect', 'datetimerangepicker', 'WYSIWYG', 'UILayoutWidget', 'gridstack', 'CUSTOM:common.js', 'CUSTOM:common/cvss-v2-scoring.js', 'CUSTOM:common/dread-scoring.js', 'CUSTOM:common/owasp-scoring.js', 'CUSTOM:common/classic-scoring.js', 'CUSTOM:common/contributing-risk-scoring.js', 'CUSTOM:common/risk-details-form.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:sr-select.js', 'CUSTOM:pages/review-risk.js', 'EXTRA:JS:artificial_intelligence:ai-chat.js'],
     ['check_riskmanagement' => true, 'show_ai_chat' => true],
     'ReviewRisk',
     'RiskManagement',
@@ -83,7 +129,14 @@ render_header_and_sidebar(
         // review-risk.js). The <th> itself is server-rendered (display.php
         // reads $lang['ReviewedBy'] directly, no L() call needed there) --
         // this entry is for the picker only.
-        'ReviewedBy']
+        'ReviewedBy',
+        // 'SubmitRisk' -- the + Add Risk modal's footer Submit proxy button
+        // (syncAddRiskModalFooter(), review-risk.js). window.RiskDetailsForm's
+        // embedded .save-risk-form affordance is deliberately unlabeled (it's
+        // never shown), so the footer button falls back to this key -- the
+        // same one the legacy display_add_risk() markup rendered server-side
+        // for this action.
+        'SubmitRisk']
 );
 
 require_once(realpath(__DIR__ . '/../includes/display.php'));

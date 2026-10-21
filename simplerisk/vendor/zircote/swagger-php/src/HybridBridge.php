@@ -35,6 +35,8 @@ class HybridBridge
                 $annotation instanceof OA\Components => $this->convertComponents($annotation, $specification),
                 $annotation instanceof OA\Operation && !$annotation->_context->is('nested') => $specification->operations[] = $this->convertOperation($annotation, $this->val($annotation->path), $this->methodFromAnnotation($annotation)),
                 $annotation instanceof OA\Schema && !$this->isNestedSchemaType($annotation) && $annotation->_context->reflector instanceof \ReflectionClass && !$annotation->_context->is('nested') => $classSchemas[$annotation->_context->reflector->getName()][] = $annotation,
+                // on a method, a schema is a component only where it names itself, as in classic
+                $annotation instanceof OA\Schema && !$this->isNestedSchemaType($annotation) && $annotation->_context->reflector instanceof \ReflectionMethod && !$annotation->_context->is('nested') && !Undefined::isDefault($annotation->schema) => $specification->schemas[] = $this->convertSchema($annotation),
                 $annotation instanceof OA\Property && $this->isClassMember($annotation) => $memberProperties[] = $annotation,
                 $annotation instanceof OA\Response && !$annotation->_context->is('nested') && !Undefined::isDefault($annotation->response) => $specification->responses[] = $this->convertResponse($annotation),
                 $annotation instanceof OA\RequestBody && !$annotation->_context->is('nested') && ($annotation->_context->reflector instanceof \ReflectionClass || !Undefined::isDefault($annotation->request)) => $specification->requestBodies[] = $this->convertRequestBody($annotation),
@@ -71,6 +73,12 @@ class HybridBridge
 
     protected function isClassMember(OA\Property $property): bool
     {
+        // A Property nested inside another annotation's `properties` array describes
+        // that annotation's payload, not the class member its reflector happens to be.
+        if ($property->_context->nested instanceof OA\AbstractAnnotation) {
+            return false;
+        }
+
         $reflector = $property->_context->reflector;
 
         return $reflector instanceof \ReflectionProperty
@@ -176,7 +184,7 @@ class HybridBridge
         );
 
         if (!Undefined::isDefault($openApi->security)) {
-            $spec->openapi->security = $this->convertSecurityRequirements($openApi->security);
+            $spec->openapi->security = $this->convertSecurityRequirements($openApi->security, $openApi);
         }
 
         if (!Undefined::isDefault($openApi->externalDocs)) {
@@ -249,7 +257,7 @@ class HybridBridge
                     serverVariable: $this->val($variable->serverVariable),
                     default: $this->val($variable->default),
                     description: $this->val($variable->description),
-                    enum: Undefined::isDefault($variable->enum) ? null : $variable->enum,
+                    enum: Undefined::isDefault($variable->enum) ? null : (is_string($variable->enum) ? [$variable->enum] : $variable->enum),
                     x: $this->extensions($variable),
                 );
             }
@@ -383,7 +391,7 @@ class HybridBridge
 
         $security = null;
         if (!Undefined::isDefault($op->security)) {
-            $security = $this->convertSecurityRequirements($op->security);
+            $security = $this->convertSecurityRequirements($op->security, $op);
         }
 
         $result = new Spec\Operation(
@@ -415,7 +423,6 @@ class HybridBridge
     protected function convertParameter(OA\Parameter $param): Spec\Parameter
     {
         $result = new Spec\Parameter(
-            parameter: $this->val($param->parameter),
             name: $this->val($param->name),
             in: $this->val($param->in),
             description: Undefined::isDefault($param->description) ? Undefined::UNDEFINED : $param->description,
@@ -430,8 +437,9 @@ class HybridBridge
             example: Undefined::isDefault($param->example) ? Undefined::UNDEFINED : $param->example,
             examples: Undefined::isDefault($param->examples)
                 ? null
-                : array_map($this->convertExample(...), $param->examples),
+                : array_values(array_map($this->convertExample(...), $param->examples)),
             content: $this->resolveContent($param),
+            component: $this->val($param->parameter),
             x: $this->extensions($param),
         );
         $this->copyReflector($param, $result);
@@ -474,11 +482,11 @@ class HybridBridge
     protected function convertRequestBody(OA\RequestBody $body): Spec\RequestBody
     {
         $result = new Spec\RequestBody(
-            request: $this->val($body->request),
             description: $this->val($body->description),
             required: $this->val($body->required),
             ref: $this->val($body->ref),
             content: $this->resolveContent($body),
+            component: $this->val($body->request),
             x: $this->extensions($body),
         );
         $this->copyReflector($body, $result);
@@ -502,7 +510,7 @@ class HybridBridge
             example: Undefined::isDefault($mediaType->example) ? Undefined::UNDEFINED : $mediaType->example,
             examples: Undefined::isDefault($mediaType->examples)
                 ? null
-                : array_map($this->convertExample(...), $mediaType->examples),
+                : array_values(array_map($this->convertExample(...), $mediaType->examples)),
             encoding: $encoding,
             x: $this->extensions($mediaType),
         );
@@ -511,11 +519,13 @@ class HybridBridge
     /**
      * @return list<Spec\MediaType>|null
      */
-    protected function resolveContent(OA\Response|OA\RequestBody|OA\Parameter $parent): ?array
+    protected function resolveContent(OA\Response|OA\RequestBody|OA\Parameter|OA\Header $parent): ?array
     {
         $content = [];
 
-        if (!Undefined::isDefault($parent->content)) {
+        // a JsonContent/XmlContent set directly on $content (rather than left in _unmerged,
+        // which the loop below handles) is not a media type map; the declared type allows it
+        if (!Undefined::isDefault($parent->content) && is_array($parent->content)) {
             foreach ($parent->content as $mediaType) {
                 if ($mediaType instanceof OA\MediaType) {
                     $content[] = $this->convertMediaType($mediaType);
@@ -551,7 +561,7 @@ class HybridBridge
             example: Undefined::isDefault($annotation->example) ? Undefined::UNDEFINED : $annotation->example,
             examples: Undefined::isDefault($annotation->examples)
                 ? null
-                : array_map($this->convertExample(...), $annotation->examples),
+                : array_values(array_map($this->convertExample(...), $annotation->examples)),
             encoding: $encoding,
         );
     }
@@ -570,10 +580,8 @@ class HybridBridge
             example: Undefined::isDefault($header->example) ? Undefined::UNDEFINED : $header->example,
             examples: Undefined::isDefault($header->examples)
                 ? null
-                : array_map($this->convertExample(...), $header->examples),
-            content: Undefined::isDefault($header->content)
-                ? null
-                : array_map($this->convertMediaType(...), $header->content),
+                : array_values(array_map($this->convertExample(...), $header->examples)),
+            content: $this->resolveContent($header),
             x: $this->extensions($header),
         );
         $this->copyReflector($header, $result);
@@ -649,7 +657,6 @@ class HybridBridge
         }
 
         $result = new Spec\Schema(
-            schema: $this->val($schema->schema),
             title: $this->val($schema->title),
             description: Undefined::isDefault($schema->description) ? Undefined::UNDEFINED : $schema->description,
             ref: $this->val($schema->ref) ?? $this->typeAsRef($schema->type),
@@ -671,7 +678,7 @@ class HybridBridge
             minItems: $this->val($schema->minItems),
             maxItems: $this->val($schema->maxItems),
             uniqueItems: $this->val($schema->uniqueItems),
-            prefixItems: Undefined::isDefault($schema->prefixItems) ? null : array_map($this->convertSchemaValue(...), $schema->prefixItems),
+            prefixItems: Undefined::isDefault($schema->prefixItems) ? null : array_values(array_map($this->convertSchemaValue(...), $schema->prefixItems)),
             contains: $this->convertSchemaOrBool($schema->contains),
             minContains: $this->val($schema->minContains),
             maxContains: $this->val($schema->maxContains),
@@ -690,14 +697,14 @@ class HybridBridge
                 : $this->convertSchema($schema->propertyNames),
             dependentRequired: Undefined::isDefault($schema->dependentRequired) ? null : $schema->dependentRequired,
             dependentSchemas: Undefined::isDefault($schema->dependentSchemas) ? null : array_map($this->convertSchemaValue(...), $schema->dependentSchemas),
-            allOf: Undefined::isDefault($schema->allOf) ? null : array_map($this->convertSchema(...), $schema->allOf),
-            anyOf: Undefined::isDefault($schema->anyOf) ? null : array_map($this->convertSchema(...), $schema->anyOf),
-            oneOf: Undefined::isDefault($schema->oneOf) ? null : array_map($this->convertSchema(...), $schema->oneOf),
+            allOf: Undefined::isDefault($schema->allOf) ? null : array_values(array_map($this->convertSchema(...), $schema->allOf)),
+            anyOf: Undefined::isDefault($schema->anyOf) ? null : array_values(array_map($this->convertSchema(...), $schema->anyOf)),
+            oneOf: Undefined::isDefault($schema->oneOf) ? null : array_values(array_map($this->convertSchema(...), $schema->oneOf)),
             not: Undefined::isDefault($schema->not) ? null : $this->convertSchema($schema->not),
             if: Undefined::isDefault($schema->if) ? null : $this->convertSchemaValue($schema->if),
             then: Undefined::isDefault($schema->then) ? null : $this->convertSchemaValue($schema->then),
             else: Undefined::isDefault($schema->else) ? null : $this->convertSchemaValue($schema->else),
-            enum: Undefined::isDefault($schema->enum) ? null : $schema->enum,
+            enum: Undefined::isDefault($schema->enum) ? null : (is_string($schema->enum) ? [$schema->enum] : $schema->enum),
             const: Undefined::isDefault($schema->const) ? Undefined::UNDEFINED : $schema->const,
             example: Undefined::isDefault($schema->example) ? Undefined::UNDEFINED : $schema->example,
             examples: Undefined::isDefault($schema->examples)
@@ -714,6 +721,7 @@ class HybridBridge
                 ? null
                 : $this->convertExternalDocs($schema->externalDocs),
             xml: Undefined::isDefault($schema->xml) ? null : $this->convertXml($schema->xml),
+            component: $this->val($schema->schema),
             x: $this->extensions($schema),
         );
         $this->copyReflector($schema, $result);
@@ -812,7 +820,6 @@ class HybridBridge
         }
 
         $result = new Spec\Security\Scheme(
-            securityScheme: $this->val($scheme->securityScheme),
             type: $this->val($scheme->type),
             description: $this->val($scheme->description),
             name: $this->val($scheme->name),
@@ -822,6 +829,7 @@ class HybridBridge
             openIdConnectUrl: $this->val($scheme->openIdConnectUrl),
             flows: $flows,
             ref: $this->val($scheme->ref),
+            component: $this->val($scheme->securityScheme),
             x: $this->extensions($scheme),
         );
         $this->copyReflector($scheme, $result);
@@ -860,14 +868,21 @@ class HybridBridge
     }
 
     /**
+     * @param array<mixed> $security classic security blocks: each entry is a scheme => scopes map,
+     *                               or a bare scheme name, which classic reads as that scheme with no scopes
+     *
      * @return list<Spec\Security\Requirement>
      */
-    protected function convertSecurityRequirements(array $security): array
+    protected function convertSecurityRequirements(array $security, OA\AbstractAnnotation $owner): array
     {
         $requirements = [];
         foreach ($security as $item) {
             if (is_array($item)) {
                 $requirements[] = new Spec\Security\Requirement(schemes: $item);
+            } elseif (is_string($item)) {
+                // kept, as in classic, and reported, since spec drops it
+                $owner->_context->logger?->warning(sprintf('Security requirement "%s" is a bare scheme name, use [\'%s\' => []] in %s', $item, $item, $owner->_context));
+                $requirements[] = new Spec\Security\Requirement(scheme: $item);
             }
         }
 
@@ -925,6 +940,11 @@ class HybridBridge
         }
     }
 
+    /**
+     * @param array<string, mixed> $callbacks
+     *
+     * @return array<string, mixed>
+     */
     protected function convertCallbacks(array $callbacks): array
     {
         $result = [];
@@ -988,6 +1008,9 @@ class HybridBridge
         return null;
     }
 
+    /**
+     * @return list<string>|string|null
+     */
     protected function filterType(mixed $type): string|array|null
     {
         if (Undefined::isDefault($type)) {

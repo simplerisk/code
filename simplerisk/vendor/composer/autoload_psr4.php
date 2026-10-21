@@ -101,6 +101,7 @@ return array(
     'PHPStan\\PhpDocParser\\' => array($vendorDir . '/phpstan/phpdoc-parser/src'),
     'PHPMailer\\PHPMailer\\' => array($vendorDir . '/phpmailer/phpmailer/src'),
     'OpenSpout\\' => array($vendorDir . '/openspout/openspout/src'),
+    'OpenApi\\Rector\\' => array($vendorDir . '/zircote/swagger-php/rector/src'),
     'OpenApi\\' => array($vendorDir . '/zircote/swagger-php/src'),
     'Nyholm\\Psr7\\' => array($vendorDir . '/nyholm/psr7/src'),
     'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),

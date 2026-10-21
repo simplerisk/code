@@ -1,0 +1,898 @@
+// Manage assets (asset management redesign, Task 9) -- page-scoped additions
+// to the shipped .sr-table-card vocabulary (modules/_tables.scss). Everything
+// here is namespaced under #manage-assets-card (or a .sr-assets-* class) so it
+// cannot leak into another page's table. pages/ compiles BEFORE modules/, so
+// the ID scope is also what lets these rules win over the shared ones.
+//
+// The row ⋯ menu at every width comes from the shared compact-tier class
+// (.sr-dt-fold-compact on the card, spec D6), not from a rule here.
+#manage-assets-card {
+
+  // The card has no overflow:hidden (dropdowns must escape it) and carries its
+  // 8px radius on its first/last zones. Here the first zone is the tab strip,
+  // whose solid background would otherwise square off the top corners.
+  // The card's own background is the same white, so the strip goes
+  // transparent too: then it can never square off a corner, including the
+  // bottom ones while the Asset groups panel is still empty.
+  //
+  // The tab row also carries the active tab's create actions (tab-row
+  // actions, design-system 6): the tabs keep the left, the actions sit on the
+  // right, and the row's bottom rule (moved here from .sr-tabs) runs under
+  // both.
+  > .sr-assets-tabbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-right: 1.25rem;
+    border-bottom: 1px solid $gray-300;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    background: transparent;
+
+    > .sr-tabs {
+      flex: 1 1 auto;
+      min-width: 0;
+      border-bottom: 0;
+      background: transparent;
+    }
+  }
+
+  .sr-assets-tab-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+    padding-top: 0.5rem;
+
+    &.d-none {
+      display: none;
+    }
+  }
+
+  // Discover assets folds into this menu at <=900px (below); hidden above.
+  .sr-assets-more-actions {
+    position: relative;
+  }
+
+  .sr-assets-more-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    background: $sr-body;
+    color: $gray-700;
+
+    &:hover,
+    &[aria-expanded='true'] {
+      background: $gray-100;
+      color: $sr-primary;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $sr-primary;
+      outline-offset: 1px;
+    }
+  }
+
+  .sr-assets-more-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+    padding: 4px;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    background: $sr-body;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .sr-assets-more-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 12px 7px 9px;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: $sr-primary;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+
+    &:hover,
+    &:focus-visible {
+      background: $gray-100;
+      outline: 0;
+    }
+
+    i {
+      width: 14px;
+      text-align: center;
+      color: $gray-600;
+    }
+  }
+
+  // Columns picker foot (both tabs): Restore default layout, under the list.
+  .colpanel-foot {
+    margin-top: 4px;
+    padding: 6px 6px 0;
+    border-top: 1px solid $gray-200;
+    text-align: right;
+
+    .colpanel-reset {
+      padding: 0;
+      font-size: 12.5px;
+    }
+  }
+
+  // Bulk bar: let the actions wrap under the count on a narrow card rather
+  // than run off its edge (every permitted action stays reachable).
+  .sr-bulk-bar {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    border-radius: 0;
+
+    .sr-bulk-actions {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+  }
+
+  // A bulk/row action is in flight: row Verify is inert until it settles.
+  #manage-assets-table.sr-assets-busy [data-action='row-verify'] {
+    pointer-events: none;
+    opacity: .5;
+  }
+
+  // The segment is <button>s (keyboard reachable) rather than the <span>s the
+  // shared chip row was written for: drop the UA button chrome and restate
+  // the active look the reset would otherwise override.
+  #manage-assets-status-filter .sr-status-chip {
+    border: 0;
+    background: transparent;
+    line-height: inherit;
+
+    .n {
+      margin-left: 2px;
+      font-variant-numeric: tabular-nums;
+      opacity: .75;
+    }
+
+    &.active {
+      background: $sr-body;
+      color: $sr-primary;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $sr-primary;
+      outline-offset: 1px;
+    }
+  }
+
+  // Unverified assets are the attention count (design-system 7).
+  #manage-assets-status-filter .sr-status-chip--attn.has-items .n {
+    color: $sr-important;
+    opacity: 1;
+  }
+
+  // Filters · n is a button at every width here (the shared rule shows it
+  // only below 1100px), sitting in the toolbar rather than under it.
+  // Same line box as the Columns button beside it (.filterbtn's 1.5), so the
+  // toolbar controls share one height instead of Filters sitting 4px short.
+  .sr-qf-toggle {
+    display: inline-flex;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  // The Asset groups tab has nothing to the left of its search now that Add
+  // group lives in the tab row, so the search starts at the card's edge like
+  // the status chips do on the Assets tab (the shared .sr-table-tools rule
+  // right-aligns it, which is right only beside a title). The .dt-search
+  // max-width still bounds it.
+  #asset-groups-toolbar .sr-table-tools {
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+
+  // The shared toolbar pads 13px above / 4px below because a quick-filter row
+  // normally sits under it and completes the header zone. This tab has no
+  // filter row, so the search would sit 13px from the top edge and 4px above
+  // the table header; give it equal space on both sides instead.
+  #asset-groups-toolbar {
+    padding-top: 13px;
+    padding-bottom: 13px;
+  }
+
+  // Empty-state buttons (Retry, Add asset, Clear filters) sit outside the
+  // wrappers that carry the shared 6px control radius (.sr-table-tools .btn),
+  // so on the bare Bootstrap default they measured 1px, square beside every
+  // other control on the page.
+  .sr-table-empty-action .btn {
+    border-radius: 6px;
+  }
+
+  // Filterable chips (filterChip() in manage-assets.js): a chip that adds
+  // its value to the matching Filters select. Neutral at rest -- the look is
+  // exactly .sr-chip -- with a tint on hover and a ring on keyboard focus, so
+  // the click target is discoverable without changing the chip's layout. A
+  // <button>, so the UA chrome is reset here. The valuation cell is the same
+  // control with inner structure (.sr-assets-val): its level chip carries the
+  // tint instead, since the button itself has no box.
+  .sr-assets-chip-filter {
+    font-family: inherit;
+    line-height: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid $sr-primary;
+      outline-offset: 1px;
+    }
+
+    &.sr-chip {
+      &:not([class*='sr-chip--level-']):hover {
+        background: $gray-200;
+        border-color: $gray-400;
+      }
+
+      // Categorization / band chips carry their level colour; hover darkens
+      // it a step instead of turning it gray.
+      &[class*='sr-chip--level-']:hover {
+        filter: brightness(0.94);
+      }
+    }
+
+    // A status pill (Verified / Unverified) that filters: the pill's own
+    // soft-state colours stay, only the button chrome is reset and hover /
+    // focus darken it a step.
+    &.sr-state-pill {
+      line-height: 1;
+      text-align: center;
+
+      &:hover {
+        filter: brightness(0.94);
+      }
+    }
+
+    &.sr-assets-val {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      border-radius: 6px;
+
+      &:hover .sr-assets-val-chip {
+        background: $gray-200;
+        border-color: $gray-400;
+      }
+    }
+  }
+
+  // Name: the row's identity and its View affordance.
+  .sr-assets-name {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: $sr-primary;
+    font-weight: 700;
+    text-align: left;
+
+    &:hover,
+    &:focus-visible {
+      text-decoration: underline;
+    }
+  }
+
+  // Valuation: fixed-width, centred chip. asset_values carries no colour, so
+  // the chip stays neutral rather than inventing a severity scale.
+  .sr-assets-val-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 84px;
+    max-width: 180px;
+    padding: 3px 10px;
+    overflow: hidden;
+    border: 1px solid $gray-300;
+    border-radius: 20px;
+    background: $gray-100;
+    color: $gray-700;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  // A valuation says both what it is called and what it is worth: the level
+  // name's chip over the currency range, or the range alone when the level
+  // is unnamed (asset_valuation_parts()). Stacked, so a long range never
+  // widens the column past the chip, and one line when there is no name.
+  .sr-assets-val {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    max-width: 100%;
+    white-space: nowrap;
+  }
+
+  .sr-assets-val-sub {
+    font-size: 11.5px;
+    line-height: 1.2;
+    color: $gray-600;
+  }
+
+  .sr-assets-val-range {
+    display: inline;
+  }
+
+  // Chip columns (teams, locations, tags, controls, risks) wrap their chips
+  // inside a bounded width instead of claiming the width of every chip on one
+  // line, which the auto table layout would take from the asset name.
+  // The Asset groups table's Teams / Site/Location / Tags columns too.
+  #manage-assets-table td[data-col] .sr-chip-row,
+  #asset-groups-table td[data-col] .sr-chip-row {
+    max-width: 220px;
+  }
+
+  .sr-assets-more {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: $gray-600;
+  }
+
+  a.sr-assets-risk-link {
+    color: $sr-primary;
+    text-decoration: none;
+
+    &:hover {
+      border-color: $gray-500;
+      text-decoration: underline;
+    }
+  }
+
+  .sr-assets-loading {
+    padding: 40px 16px;
+    text-align: center;
+    color: $gray-600;
+  }
+
+  // Ticked rows share the bulk bar's tint so the count reads as these rows
+  // (the Asset groups table's too).
+  #manage-assets-table tbody tr.sr-assets-row-checked,
+  #manage-assets-table tbody tr.sr-assets-row-checked:hover,
+  #asset-groups-table tbody tr.sr-group-row.sr-assets-row-checked,
+  #asset-groups-table tbody tr.sr-group-row.sr-assets-row-checked:hover {
+    background: $sr-row-selected;
+  }
+
+  // Bulk delete is neutral until hover (design-system 6: never a standing
+  // red button); the red commit lives in the confirm dialog.
+  #manage-assets-bulk-delete:hover,
+  #asset-groups-bulk-delete:hover {
+    color: $sr-important;
+    border-color: $sr-important;
+  }
+
+  .sr-assets-status-col {
+    white-space: nowrap;
+  }
+
+  // The row ⋯ column stays pinned to the card's right edge when enough
+  // columns are on to make .sr-table-scroll scroll sideways (Review Risk's
+  // sticky-actions pattern, modules/_tables.scss). Opaque, so cells scrolled
+  // underneath never show through, and tracking every row state that tints
+  // the row: rest, hover and ticked.
+  #manage-assets-table {
+    thead th.sr-actions-col {
+      right: 0;
+      z-index: 2;
+    }
+
+    tbody td.sr-actions-col {
+      position: sticky;
+      right: 0;
+      background: $sr-body;
+    }
+
+    tbody tr:hover:not(.sr-empty-row) td.sr-actions-col {
+      background: $gray-100;
+    }
+
+    tbody tr.sr-assets-row-checked td.sr-actions-col,
+    tbody tr.sr-assets-row-checked:hover td.sr-actions-col {
+      background: $sr-row-selected;
+    }
+
+    // A pinned cell is its own stacking context, so an open menu is lifted
+    // above the next rows' pinned cells for as long as it is open.
+    tbody tr:has(.sr-row-actions-wrap.is-open) td.sr-actions-col {
+      z-index: 3;
+    }
+  }
+
+  // The separator shows only while columns are actually scrolled under the
+  // pinned cell (manage-assets.js sets the class from the scroll position).
+  // A left-only shadow via negative spread, NOT clip-path: clipping the cell
+  // would also clip the row menu it opens.
+  .sr-table-scroll.sr-assets-scrolled-under #manage-assets-table {
+    thead th.sr-actions-col,
+    tbody td.sr-actions-col {
+      box-shadow: -8px 0 10px -8px rgba(0, 0, 0, .2);
+    }
+  }
+}
+
+// ===== Asset groups tab (Task 10) ======================================
+#asset-groups-panel {
+  // The member drawer's nested table (design-system §6 .sr-subtable).
+  @include sr-subtable-drawer;
+
+  // The drawer scrolls its own table sideways on a narrow card rather than
+  // widening the row it hangs from.
+  tr.sr-expand-row .sr-expand-panel {
+    overflow-x: auto;
+  }
+
+  // Group rows carry .sr-group-row for the caret/expand contract, but they
+  // are the table's data rows, not navigation headers: rest on the card's
+  // white, take the ordinary hover tint and normal weight (plan-projects'
+  // same override).
+  #asset-groups-table tbody tr.sr-group-row {
+    background: transparent;
+    cursor: default;
+
+    &:hover {
+      background: $gray-100;
+    }
+
+    td {
+      font-weight: 400;
+      color: inherit;
+    }
+  }
+
+  .sr-group-caret {
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid $sr-primary;
+      outline-offset: 2px;
+      border-radius: 3px;
+    }
+  }
+
+  .sr-asset-groups-name {
+    font-weight: 700;
+    color: $sr-primary;
+  }
+
+  .sr-asset-groups-count-col {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // The layout's headers may wrap to two lines ("Highest Weighted / Score"):
+  // the Asset Scoring headers are the longest in the table, and a header
+  // that will not wrap widens its whole column past what its chips need.
+  // Auto table layout only wraps them when the table would otherwise
+  // overflow the card. The caret, Name and actions headers stay one line.
+  #asset-groups-table thead th[data-col] {
+    white-space: normal;
+  }
+
+  // The inline "View all in the Assets tab" link inside the drawer foot.
+  .sr-asset-groups-view-all {
+    padding: 0;
+    border: 0;
+    font-size: 12px;
+    vertical-align: baseline;
+  }
+}
+
+// Asset picker: three facets, the list and the selection (the shipped
+// four-pane grid has one facet fewer), and an IP address in the number column.
+#asset-picker {
+  .sr-picker-panes {
+    grid-template-columns: 160px 170px 170px minmax(0, 1fr) 200px;
+
+    @media (max-width: 1199px) {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    @media (max-width: 767px) {
+      grid-template-columns: 1fr;
+
+      .sr-picker-pane {
+        border-right: 0;
+        border-bottom: 1px solid $gray-200;
+      }
+
+      .sr-picker-scroll {
+        height: 180px;
+      }
+    }
+  }
+
+  .sr-picker-row {
+    grid-template-columns: 16px 110px minmax(0, 1fr);
+  }
+
+  .sr-asset-picker-capped {
+    border-top: 1px solid $gray-200;
+  }
+}
+
+// ===== Tab-row actions at narrow widths =================================
+// <=900px: Add stays a button, Discover assets moves into the More actions
+// menu beside it. <=430px: Add shrinks to "+"; its label stays in the
+// accessible name (visually hidden, not removed).
+@media (max-width: 900px) {
+  #manage-assets-card {
+    #manage-assets-discover {
+      display: none !important;
+    }
+
+    .sr-assets-more-actions.is-available {
+      display: block !important;
+    }
+  }
+}
+
+@media (max-width: 430px) {
+  #manage-assets-card {
+    > .sr-assets-tabbar {
+      gap: 6px;
+      padding-right: 0.75rem;
+
+      > .sr-tabs {
+        gap: 0.875rem;
+        padding-left: 0.75rem;
+      }
+    }
+
+    .sr-assets-add-btn {
+      min-width: 36px;
+      padding-right: 10px;
+      padding-left: 10px;
+
+      .sr-assets-add-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+      }
+    }
+  }
+}
+
+// ===== Queue tier (design-system 6b) ==================================
+// Same breakpoint as the shared ladder. Below it the row becomes a stacked
+// block: name first, then the verified state and valuation (what decides
+// action), then a quiet line per remaining visible column. The checkbox and
+// the ⋯ menu stay where they were, so selection and row actions keep working.
+@media (max-width: 900px) {
+  #manage-assets-card {
+    #manage-assets-table thead {
+      display: none;
+    }
+
+    #manage-assets-table,
+    #manage-assets-table tbody {
+      display: block;
+      width: auto;
+    }
+
+    #manage-assets-table tbody tr:not(.sr-empty-row) {
+      display: grid;
+      grid-template-columns: 30px minmax(0, auto) minmax(0, 1fr) 38px;
+      align-items: center;
+      gap: 5px 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid $gray-300;
+
+      > td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      > .sr-check-col {
+        grid-area: 1 / 1;
+        width: auto;
+        padding: 0;
+      }
+
+      > .sr-assets-name-col {
+        grid-area: 1 / 2 / 2 / 4;
+        min-width: 0;
+        font-size: 13.5px;
+      }
+
+      > .sr-actions-col {
+        grid-area: 1 / 4;
+        justify-self: end;
+        width: auto;
+        // The stacked row has no sideways scroll: the pin is off here.
+        position: static;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      > .sr-assets-status-col {
+        grid-area: 2 / 2;
+      }
+
+      > td[data-col='value'] {
+        grid-area: 2 / 3;
+        justify-self: start;
+
+        // Beside the status pill the level and range flow inline after the
+        // label and may wrap, rather than push the stacked row wider than a
+        // phone.
+        .sr-assets-val {
+          display: inline;
+          white-space: normal;
+        }
+
+        .sr-assets-val-sub {
+          margin-left: 4px;
+        }
+      }
+
+      > td[data-col]:not([data-col='value']) {
+        grid-column: 2 / 5;
+        font-size: 12px;
+        color: $gray-600;
+      }
+
+      // Each stacked value says what it is: the column label (data-label,
+      // set from the server-resolved header text) leads the line.
+      > td[data-label]::before {
+        content: attr(data-label);
+        margin-right: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: $gray-600;
+      }
+
+      // Chip lists sit inline after their label rather than on a new line.
+      > td[data-label] > .sr-chip-row,
+      > td[data-label] > .sr-cell-truncate {
+        display: inline-flex;
+        vertical-align: middle;
+        max-width: 100%;
+      }
+
+      // An empty field is not a line worth reading in a stacked block.
+      > td.sr-assets-cell-empty {
+        display: none;
+      }
+    }
+
+    #manage-assets-table tbody tr.sr-empty-row,
+    #manage-assets-table tbody tr.sr-empty-row > td {
+      display: block;
+    }
+
+    // Asset groups: caret, name and ⋯ on the first line, then one labelled
+    // line per aggregate; the member drawer spans the block.
+    // Child combinators: the member drawer's own .sr-subtable keeps its
+    // header and table layout.
+    #asset-groups-table > thead {
+      display: none;
+    }
+
+    #asset-groups-table,
+    #asset-groups-table > tbody {
+      display: block;
+      width: auto;
+    }
+
+    #asset-groups-table > tbody > tr.sr-asset-groups-row {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr) 38px;
+      align-items: center;
+      gap: 5px 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid $gray-300;
+
+      > td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      > .sr-caret-col {
+        grid-area: 1 / 1;
+        width: auto;
+      }
+
+      > .sr-check-col {
+        width: auto;
+        padding: 0;
+      }
+
+      > .sr-name-col {
+        grid-area: 1 / 2;
+        font-size: 13.5px;
+      }
+
+      > .sr-actions-col {
+        grid-area: 1 / 3;
+        justify-self: end;
+        width: auto;
+      }
+
+      > td[data-label] {
+        grid-column: 2 / 4;
+        font-size: 12px;
+        color: $gray-600;
+      }
+
+      > td[data-label]::before {
+        content: attr(data-label);
+        margin-right: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: $gray-600;
+      }
+
+      > td[data-label] > .sr-chip-row {
+        display: inline-flex;
+        vertical-align: middle;
+        max-width: 100%;
+      }
+
+      > td.sr-assets-cell-empty {
+        display: none;
+      }
+    }
+
+    // With the selection column (asset_group_delete): checkbox, caret, name, ⋯.
+    #asset-groups-table.sr-asset-groups-selectable > tbody > tr.sr-asset-groups-row {
+      grid-template-columns: 26px 26px minmax(0, 1fr) 38px;
+
+      > .sr-check-col {
+        grid-area: 1 / 1;
+      }
+
+      > .sr-caret-col {
+        grid-area: 1 / 2;
+      }
+
+      > .sr-name-col {
+        grid-area: 1 / 3;
+      }
+
+      > .sr-actions-col {
+        grid-area: 1 / 4;
+      }
+
+      > td[data-label] {
+        grid-column: 3 / 5;
+      }
+    }
+
+    #asset-groups-table > tbody > tr.sr-expand-row,
+    #asset-groups-table > tbody > tr.sr-expand-row > td,
+    #asset-groups-table > tbody > tr.sr-empty-row,
+    #asset-groups-table > tbody > tr.sr-empty-row > td {
+      display: block;
+    }
+
+    #asset-groups-panel tr.sr-expand-row .sr-expand-panel {
+      padding: 12px;
+    }
+  }
+}
+
+// Discovery runs (Task 11): a collapsible sub-panel under the Assets table.
+// A plain .sr-table (no DataTables); it scrolls inside .sr-table-scroll, and
+// the Started / Started by columns drop out on a narrow card.
+#manage-assets-card .sr-assets-runs {
+  border-top: 1px solid $gray-300;
+
+  .sr-assets-runs-head {
+    margin: 0;
+    font-size: inherit;
+  }
+
+  .sr-assets-runs-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    border: 0;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 700;
+    color: $gray-700;
+    text-align: left;
+
+    &:focus-visible {
+      outline: 2px solid $gray-600;
+      outline-offset: -2px;
+    }
+  }
+
+  .sr-assets-runs-caret {
+    width: 12px;
+    font-size: 11px;
+    color: $gray-600;
+  }
+
+  .sr-assets-runs-table {
+    width: 100%;
+
+    td {
+      vertical-align: middle;
+    }
+  }
+
+  .sr-assets-runs-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .sr-assets-runs-range {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .sr-assets-runs-state {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+  }
+
+  .sr-assets-runs-progress {
+    font-size: 12px;
+    color: $gray-600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .sr-assets-runs-cancel {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 700px) {
+    .sr-assets-runs-opt {
+      display: none;
+    }
+  }
+}
+
+// Discover assets modal: "Add new assets as" is a read-only value.
+#asset-discovery-modal .sr-assets-discovery-addas {
+  display: block;
+  font-weight: 600;
+  color: $gray-700;
+}

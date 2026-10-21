@@ -772,17 +772,21 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      */
     public function withErasedUnionTypes(): Type
     {
-        return $this->memoize(__METHOD__, function (): GenericArrayType {
-            $erased_element_type = $this->element_type->withErasedUnionTypes();
-            if ($erased_element_type === $this->element_type) {
-                return $this;
-            }
-            return static::fromElementType(
-                $erased_element_type,
-                $this->is_nullable,
-                $this->key_type
-            );
-        });
+        return $this->getMemoizedForCurrentState(__METHOD__)
+            ?? ($this->memoized_data[__METHOD__] = $this->computeWithErasedUnionTypes());
+    }
+
+    private function computeWithErasedUnionTypes(): GenericArrayType
+    {
+        $erased_element_type = $this->element_type->withErasedUnionTypes();
+        if ($erased_element_type === $this->element_type) {
+            return $this;
+        }
+        return static::fromElementType(
+            $erased_element_type,
+            $this->is_nullable,
+            $this->key_type
+        );
     }
 
     /**
@@ -896,5 +900,18 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     public function castToListTypes(): UnionType
     {
         return ListType::fromElementType($this->element_type, $this->is_nullable)->asPHPDocUnionType();
+    }
+
+    /**
+     * Returns the non-empty associative array type with the same key and element types as this type.
+     * @override
+     */
+    public function castToNonEmptyAssociativeArrayTypes(): UnionType
+    {
+        return NonEmptyAssociativeArrayType::fromElementType(
+            $this->element_type,
+            false,
+            $this->key_type
+        )->asPHPDocUnionType();
     }
 }

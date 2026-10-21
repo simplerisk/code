@@ -9,6 +9,7 @@ use ast;
 use ast\Node;
 use InvalidArgumentException;
 use Phan\Analysis\ScopeVisitor;
+use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
@@ -876,6 +877,17 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
+     * Returns true if $union_type refers to any class (including in generics, array shapes, closures, etc.)
+     */
+    private static function referencesClasses(UnionType $union_type): bool
+    {
+        foreach ($union_type->getReferencedClasses() as $_) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @param Node|string|float|int|null $default_node
      * @param list<Attribute> $attributes
      */
@@ -1062,21 +1074,31 @@ class ParseVisitor extends ScopeVisitor
                 }
             }
 
-            // XXX during the parse phase, parent classes may be missing.
             if ($default_node !== null &&
                 !$original_union_type->isType(NullType::instance(false)) &&
                 !$variable->getUnionType()->canCastToUnionType($original_union_type, $this->code_base) &&
-                !$original_union_type->canCastToUnionType($variable->getUnionType(), $this->code_base) &&
-                !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)
+                !$original_union_type->canCastToUnionType($variable->getUnionType(), $this->code_base)
             ) {
-                $this->emitIssue(
-                    Issue::TypeMismatchPropertyDefault,
-                    $lineno,
-                    (string)$variable->getUnionType(),
-                    $property->getName(),
-                    ASTReverter::toShortString($default_node),
-                    (string)$original_union_type
-                );
+                if (self::referencesClasses($original_union_type) || self::referencesClasses($variable->getUnionType())) {
+                    // During the parse phase, classes referenced by either type (and their parents, interfaces
+                    // and __invoke methods) may not have been parsed yet, so the failed check is repeated by
+                    // PropertyTypesAnalyzer once all classes are known (issue #5578).
+                    $property->setPendingDefaultTypeCheck(
+                        $variable->getUnionType(),
+                        $original_union_type,
+                        ASTReverter::toShortString($default_node),
+                        $lineno
+                    );
+                } elseif (!$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchPropertyDefault,
+                        $lineno,
+                        (string)$variable->getUnionType(),
+                        $property->getName(),
+                        ASTReverter::toShortString($default_node),
+                        (string)$original_union_type
+                    );
+                }
             }
 
             $original_property_type = $property->getUnionType();
@@ -1102,10 +1124,43 @@ class ParseVisitor extends ScopeVisitor
             })) {
                 // Don't convert `/** @var T[] */ public $x = []` to union type `T[]|array`
                 $property->setUnionType($variable_type->withRealTypeSet($real_type_set));
+            } elseif ($variable_type->isEmpty()) {
+                $property->setUnionType($original_property_type->withRealTypeSet($real_type_set));
             } else {
                 // Set the declared type to the doc-comment type and add
-                // |null if the default value is null
-                $property->setUnionType($original_property_type->withUnionType($variable_type)->withRealTypeSet($real_type_set));
+                // |null if the default value is null.
+                // Drop declared types (derived from the native type) that the doc-comment type
+                // already describes more precisely, e.g. `/** @var Box<A> */ private Box $b;`
+                // should be `Box<A>`, not `Box|Box<A>` (which would lose the template parameter
+                // when resolving method calls on $b). The real type set is unaffected by this,
+                // it is always overwritten below with $real_type_set.
+                $merged = $variable_type;
+                $doc_type_set = $variable_type->getTypeSet();
+                $doc_contains_nullable = $variable_type->containsNullable();
+                $lost_nullable = false;
+                foreach ($original_property_type->getTypeSet() as $type) {
+                    $is_redundant = false;
+                    foreach ($doc_type_set as $doc_type) {
+                        if ($doc_type->isSubtypeOf($type, $this->code_base)) {
+                            $is_redundant = true;
+                            break;
+                        }
+                    }
+                    if ($is_redundant) {
+                        // Don't let dropping this type silently drop nullability that the
+                        // doc-comment type doesn't otherwise account for,
+                        // e.g. `/** @var Box<A> */ private ?Box $b = null;` should stay nullable.
+                        if ($type->isNullable() && !$doc_contains_nullable) {
+                            $lost_nullable = true;
+                        }
+                    } else {
+                        $merged = $merged->withType($type);
+                    }
+                }
+                if ($lost_nullable && !$merged->containsNullable()) {
+                    $merged = $merged->withIsNullable(true);
+                }
+                $property->setUnionType($merged->withRealTypeSet($real_type_set));
             }
         }
 
@@ -1892,17 +1947,37 @@ class ParseVisitor extends ScopeVisitor
         // define() is typically used to conditionally set constants or to set them to variable values.
         // TODO: Could add 'configuration_constant_set' to add additional constants to treat as dynamic such as PHP_OS, PHP_VERSION_ID, etc. (convert literals to non-literal types?)
         $constant->setIsDynamicConstant($is_fully_qualified);
+        if ($is_fully_qualified) {
+            // Include a hash of the value so that multiple define() calls on the same line get distinct keys,
+            // while the analysis phase re-registering the same call (with the same value) gets the same key.
+            $constant->setDeclarationKey($context->getFile() . ':' . $lineno . ':' . self::hashDefineValue($value));
+        }
 
+        // The constant with the same name which is already declared, if this is an additional define() call for it.
+        $primary_constant = null;
         if ($code_base->hasGlobalConstantWithFQSEN($fqsen)) {
             $other_constant = $code_base->getGlobalConstantByFQSEN($fqsen);
-            $other_context = $other_constant->getContext();
-            if (!$other_context->equals($context)) {
-                // Be consistent about the constant's type and only track the first declaration seen when parsing (or redeclarations)
-                // Note that global constants don't have alternates.
-                return;
+            $is_other_define = $is_fully_qualified && $other_constant->isDynamicConstant() && !$other_constant->isPHPInternal();
+            if ($is_other_define) {
+                $is_same_declaration = $other_constant->getDeclarationKey() === $constant->getDeclarationKey();
+            } else {
+                $is_same_declaration = $other_constant->getContext()->equals($context);
             }
-            // Keep track of old references to the new constant
-            $constant->copyReferencesFrom($other_constant);
+            if (!$is_same_declaration) {
+                if (!$is_other_define) {
+                    // Only track the first declaration seen when parsing (or redeclarations of it in the analysis phase).
+                    // Note that global constants don't have alternates.
+                    return;
+                }
+                // This is a different define() call for a constant that was already declared with define()
+                // (e.g. in the other branch of an if/else, or in a different config file).
+                // Any of the define() calls may be the one that runs, so union the types of all of them.
+                $primary_constant = $other_constant;
+            } else {
+                // Keep track of old references to the new constant
+                $constant->copyReferencesFrom($other_constant);
+                $constant->copyAlternateDeclarationsFrom($other_constant);
+            }
 
             // Otherwise, add the constant now that we know about all of the elements in the codebase
         }
@@ -1940,12 +2015,36 @@ class ParseVisitor extends ScopeVisitor
         $constant->setIsDeprecated($comment->isDeprecated());
         $constant->setIsNSInternal($comment->isNSInternal());
 
-        $code_base->addGlobalConstant(
-            $constant
-        );
+        if ($primary_constant) {
+            $primary_constant->addAlternateDeclaration($constant);
+            $undo_tracker = $code_base->getUndoTracker();
+            if ($undo_tracker) {
+                $key = $constant->getDeclarationKey();
+                $undo_tracker->recordUndo(static function (CodeBase $inner) use ($fqsen, $key): void {
+                    $inner->removeGlobalConstantDeclaration($fqsen, $key);
+                });
+            }
+        } else {
+            $code_base->addGlobalConstant(
+                $constant
+            );
+        }
 
         // Track constant declaration for incremental analysis
         DependencyTracker::track($fqsen->__toString(), 'declares');
+    }
+
+    /**
+     * @param Node|mixed $value the value passed to define()
+     * @return string a hash of the value expression, ignoring line numbers
+     */
+    private static function hashDefineValue(mixed $value): string
+    {
+        if ($value instanceof Node || \is_int($value) || \is_float($value) || \is_string($value) || $value === null) {
+            return ASTHasher::hash($value);
+        }
+        // bool or resource (only for internal constants, which are not merged)
+        return \is_bool($value) ? ($value ? 'true' : 'false') : \gettype($value);
     }
 
     /**
@@ -2012,6 +2111,104 @@ class ParseVisitor extends ScopeVisitor
         $this->code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
         return parent::visitNamespace($node);
     }
+
+    /**
+     * The node kinds for which the handler of ParseVisitor returns $this->context and has no side effects
+     * (the inherited KindVisitorImplementation methods that call ScopeVisitor::visit(), and the no-ops below).
+     *
+     * Analysis::parseNodeInContext() does not create a ParseVisitor for nodes of these kinds.
+     * This must be updated when a handler for one of these kinds is added or changed (ParseVisitorNoOpKindsTest checks this).
+     */
+    public const NO_OP_NODE_KINDS = [
+        ast\AST_ARG_LIST => true,
+        ast\AST_ARRAY => true,
+        ast\AST_ARRAY_ELEM => true,
+        ast\AST_ASSIGN => true,
+        ast\AST_ASSIGN_OP => true,
+        ast\AST_ASSIGN_REF => true,
+        ast\AST_ATTRIBUTE => true,
+        ast\AST_ATTRIBUTE_LIST => true,
+        ast\AST_ATTRIBUTE_GROUP => true,
+        ast\AST_BINARY_OP => true,
+        ast\AST_BREAK => true,
+        ast\AST_CALLABLE_CONVERT => true,
+        ast\AST_CAST => true,
+        ast\AST_CATCH => true,
+        ast\AST_CLASS_CONST => true,
+        ast\AST_CLASS_CONST_DECL => true,
+        ast\AST_CLASS_NAME => true,
+        ast\AST_CLOSURE_USES => true,
+        ast\AST_CLOSURE_VAR => true,
+        ast\AST_CONST => true,
+        ast\AST_CONST_ELEM => true,
+        ast\AST_DIM => true,
+        ast\AST_DO_WHILE => true,
+        ast\AST_ECHO => true,
+        ast\AST_EMPTY => true,
+        ast\AST_ENCAPS_LIST => true,
+        ast\AST_EXIT => true,
+        ast\AST_EXPR_LIST => true,
+        ast\AST_FOREACH => true,
+        ast\AST_ISSET => true,
+        ast\AST_GLOBAL => true,
+        ast\AST_IF => true,
+        ast\AST_IF_ELEM => true,
+        ast\AST_INSTANCEOF => true,
+        ast\AST_MAGIC_CONST => true,
+        ast\AST_MATCH => true,
+        ast\AST_MATCH_ARM => true,
+        ast\AST_MATCH_ARM_LIST => true,
+        ast\AST_METHOD_CALL => true,
+        ast\AST_NAME => true,
+        ast\AST_NAMED_ARG => true,
+        ast\AST_NEW => true,
+        ast\AST_NULLSAFE_METHOD_CALL => true,
+        ast\AST_NULLSAFE_PROP => true,
+        ast\AST_PARAM => true,
+        ast\AST_PARAM_LIST => true,
+        ast\AST_PRE_INC => true,
+        ast\AST_PRINT => true,
+        ast\AST_PROP => true,
+        ast\AST_PROP_DECL => true,
+        ast\AST_PROP_ELEM => true,
+        ast\AST_PROPERTY_HOOK => true,
+        ast\AST_PROPERTY_HOOK_SHORT_BODY => true,
+        ast\AST_STATIC_PROP => true,
+        ast\AST_SWITCH => true,
+        ast\AST_SWITCH_CASE => true,
+        ast\AST_SWITCH_LIST => true,
+        ast\AST_TYPE => true,
+        ast\AST_TYPE_INTERSECTION => true,
+        ast\AST_TYPE_UNION => true,
+        ast\AST_NULLABLE_TYPE => true,
+        ast\AST_UNARY_OP => true,
+        ast\AST_USE_ELEM => true,
+        ast\AST_VAR => true,
+        ast\AST_WHILE => true,
+        ast\AST_CATCH_LIST => true,
+        ast\AST_CLONE => true,
+        ast\AST_CONDITIONAL => true,
+        ast\AST_CONTINUE => true,
+        ast\AST_FOR => true,
+        ast\AST_GOTO => true,
+        ast\AST_HALT_COMPILER => true,
+        ast\AST_INCLUDE_OR_EVAL => true,
+        ast\AST_LABEL => true,
+        ast\AST_METHOD_REFERENCE => true,
+        ast\AST_NAME_LIST => true,
+        ast\AST_POST_DEC => true,
+        ast\AST_POST_INC => true,
+        ast\AST_PRE_DEC => true,
+        ast\AST_REF => true,
+        ast\AST_SHELL_EXEC => true,
+        ast\AST_THROW => true,
+        ast\AST_TRAIT_ADAPTATIONS => true,
+        ast\AST_TRAIT_ALIAS => true,
+        ast\AST_TRAIT_PRECEDENCE => true,
+        ast\AST_TRY => true,
+        ast\AST_UNPACK => true,
+        ast\AST_UNSET => true,
+    ];
 
     // common no-ops
     public function visitArrayElem(Node $node): Context

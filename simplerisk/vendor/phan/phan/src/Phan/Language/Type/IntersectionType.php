@@ -269,9 +269,8 @@ final class IntersectionType extends Type
      */
     public function __toString(): string
     {
-        return $this->memoize(__METHOD__, function (): string {
-            return implode('&', $this->type_parts);
-        });
+        return $this->getMemoizedForCurrentState(__METHOD__)
+            ?? ($this->memoized_data[__METHOD__] = implode('&', $this->type_parts));
     }
 
     /**
@@ -282,13 +281,16 @@ final class IntersectionType extends Type
      */
     public function toErrorMessageString(): string
     {
-        return $this->memoize(__METHOD__, function (): string {
+        $string = $this->getMemoizedForCurrentState(__METHOD__);
+        if ($string === null) {
             $parts = [];
             foreach ($this->type_parts as $part) {
                 $parts[] = $part->toErrorMessageString();
             }
-            return implode('&', $parts);
-        });
+            $string = implode('&', $parts);
+            $this->memoized_data[__METHOD__] = $string;
+        }
+        return $string;
     }
 
     /**
@@ -655,6 +657,20 @@ final class IntersectionType extends Type
     }
 
     /**
+     * withStaticResolvedInContext() returns $this exactly when every part resolves to itself,
+     * so this is a no-op iff resolving 'static' is a no-op for every part.
+     */
+    public function isStaticResolutionNoOp(): bool
+    {
+        foreach ($this->type_parts as $type) {
+            if (!$type->isStaticResolutionNoOp()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * @return Type
      * Either this or 'static' resolved to the given type.
      */
@@ -814,11 +830,10 @@ final class IntersectionType extends Type
     /**
      * @return bool
      * True if this type is a callable or a Closure.
-     * @unused-param $code_base
      */
     public function isCallable(CodeBase $code_base): bool
     {
-        return $this->anyTypePartsMatchMethod(__FUNCTION__);
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $code_base);
     }
 
     /**

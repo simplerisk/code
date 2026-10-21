@@ -18,6 +18,11 @@
 //     (display_framework_acquisition_chooser(), includes/governance.php)
 //   * Statement of Applicability -- the Import-Export-backed PDF / XLSX export
 //     buttons
+//   * The topbar search (display_locked_topbar_search(), includes/display.php)
+//     when the Advanced Search Extra is not active
+//   * The inactive Search page (display_locked_search_page(),
+//     includes/display.php), search/index.php's body when the Advanced
+//     Search Extra is not active
 //
 // The matching DECISION lives in resolve_extra_affordance()
 // (includes/settings_catalog.php), deliberately separate from this file so a
@@ -169,5 +174,135 @@
         outline: 2px solid $sr-important;
         outline-offset: 2px;
         border-radius: 2px;
+    }
+}
+
+// Topbar search (header.php) when the Advanced Search Extra is not active.
+// The pill's geometry comes from `.topbar .nav-item-search .search-box`
+// (_app-shell.scss); this only mutes it, names the state, and makes the
+// single <button> inside it fill the pill. The topbar is the charcoal ground,
+// so the text is a translucent white rather than $gray-500, and the accent
+// is not spent. The trigger is the one thing here that is clickable (it opens
+// the popover), so it restores the pointer that `.sr-locked *` removes.
+.topbar .nav-item-search .search-box.sr-locked-search {
+    .sr-locked-search__trigger {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 34px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: rgba($sr-sidebar-text, .55);
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid $sr-sidebar-text;
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+    }
+
+    .sr-locked-search__placeholder {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .sr-locked-badge {
+        flex: 0 0 auto;
+    }
+}
+
+// Narrow screens: the pill is as small as 44px wide, so only the glyph fits.
+// The badge and placeholder hide; the aria-label still names the whole state.
+@include media-breakpoint-down(sm) {
+    .topbar .nav-item-search .search-box.sr-locked-search {
+        .sr-locked-search__placeholder,
+        .sr-locked-badge {
+            display: none;
+        }
+    }
+}
+
+// The popover body. Bootstrap renders it inside li.nav-item-search (the
+// `container` option, so the unlock link follows the trigger in tab order),
+// but it is styled by its own .popover class rather than under .topbar so the
+// topbar's link/overflow rules do not need to be reasoned about here.
+.popover.sr-locked-search-popover {
+    max-width: 320px;
+
+    .sr-locked-search__pitch {
+        margin: 0 0 8px;
+        color: $gray-700;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .sr-locked-search__unlocks-label {
+        display: block;
+        margin-bottom: 4px;
+        color: $gray-600;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .sr-locked-search__types {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin: 0 0 8px;
+        padding: 0;
+        list-style: none;
+    }
+
+    // .sr-chip's base padding is asymmetric (room for a remove button these
+    // read-only chips do not have).
+    .sr-locked-search__types .sr-chip {
+        padding: 3px 10px;
+    }
+}
+
+// The Search page body when the Advanced Search Extra is not active
+// (display_locked_search_page(), includes/display.php). Reuses the popover's
+// pitch / chip / note classes on the light page ground.
+.sr-locked-search-page {
+    max-width: 640px;
+
+    .sr-locked-search-page__body {
+        display: grid;
+        gap: 10px;
+        padding: 16px;
+    }
+
+    .sr-locked-search__pitch { margin: 0; color: $gray-700; }
+    .sr-locked-search__unlocks-label {
+        color: $gray-600;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+    .sr-locked-search__types {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    // Same as the popover: .sr-chip's base padding leaves room for a remove
+    // button these read-only chips do not have.
+    .sr-locked-search__types .sr-chip {
+        padding: 3px 10px;
     }
 }

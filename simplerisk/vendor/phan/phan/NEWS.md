@@ -1,7 +1,42 @@
 ## Phan NEWS
 
-Phan 6.0.8-dev
+Oct 10 2026, Phan 6.0.8
 --------------
+
+New features:
+- Support PHPStan/Psalm-style conditional return types such as `@return ($x is null ? A : B)` in `@return`, `@psalm-return` and `@phan-return`; add `PhanCommentReturnConditionalWithoutRealParam` ([#5574](https://github.com/phan/phan/issues/5574), [#5576](https://github.com/phan/phan/pull/5576))
+- Add `--dump-phase-timings` and `--phase-timings-json <path>` to report the time and memory of each phase of a run ([#5583](https://github.com/phan/phan/pull/5583))
+- Add the `process_file_assignment` config setting to balance files across `--processes N` analysis processes ([#5589](https://github.com/phan/phan/pull/5589))
+- Infer `positive-int`, `negative-int` and `non-zero-int` for arithmetic results when the sign is known ([#5577](https://github.com/phan/phan/issues/5577), [#5580](https://github.com/phan/phan/pull/5580))
+
+Performance improvements:
+- Reduce FQSEN, `Type` and `UnionType` overhead and skip redundant `realpath()`/stat calls and the `clone` normalization pass for files without `clone` ([#5564](https://github.com/phan/phan/pull/5564), [#5586](https://github.com/phan/phan/pull/5586))
+- Reduce the per-inherited-method cost of the class and method analysis phases ([#5587](https://github.com/phan/phan/pull/5587))
+- Speed up the parse phase by about 12 % on large projects ([#5591](https://github.com/phan/phan/pull/5591))
+- Skip emit-only declaration checks of functions and methods declared in excluded files ([#5588](https://github.com/phan/phan/pull/5588))
+- Skip the `@phan-mandatory-param` and `@throws` ancestor walks of inherited methods when they cannot find anything ([#5590](https://github.com/phan/phan/pull/5590))
+- Replay the declaration analysis of inherited methods instead of repeating it ([#5592](https://github.com/phan/phan/pull/5592))
+- Exit `--processes N` analysis workers without PHP's shutdown sequence to avoid copying shared pages (`PHAN_DISABLE_FAST_EXIT=1` restores the old behavior) ([#5585](https://github.com/phan/phan/pull/5585))
+
+Bug fixes:
+- Make the output of `--processes N` deterministic by combining worker results in worker order ([#5584](https://github.com/phan/phan/pull/5584))
+- Narrow the receiver of a nullsafe access (`$x?->method()`, `$x?->prop`) to non-null in conditions that imply the access succeeded ([#5569](https://github.com/phan/phan/issues/5569), [#5571](https://github.com/phan/phan/pull/5571))
+- Keep the real type of constants declared with `define()` and infer `constant('NAME')` for them ([#5542](https://github.com/phan/phan/issues/5542), [#5570](https://github.com/phan/phan/pull/5570))
+- Fix false positives when a branch calls a `never`-returning method on a variable assigned with `new ClassName()` ([#5553](https://github.com/phan/phan/issues/5553), [#5554](https://github.com/phan/phan/pull/5554))
+- Fix crash in `is_callable()` narrowing on intersection types ([#5555](https://github.com/phan/phan/issues/5555), [#5557](https://github.com/phan/phan/pull/5557))
+- Fix `@var Foo<T>` losing its template parameter on properties with a native type declaration ([#5556](https://github.com/phan/phan/issues/5556), [#5560](https://github.com/phan/phan/pull/5560))
+- Fix static calls on `class-string<Foo>` variables not resolving ([#5558](https://github.com/phan/phan/issues/5558), [#5561](https://github.com/phan/phan/pull/5561))
+- Fix false positive `PhanTypeMismatchPropertyDefault` for promoted property defaults using a class declared later ([#5578](https://github.com/phan/phan/issues/5578), [#5581](https://github.com/phan/phan/pull/5581))
+- Fix false positive `PhanImpossibleConditionInGlobalScope` when a loop in the global scope precedes a function that modifies a global ([#5575](https://github.com/phan/phan/issues/5575), [#5579](https://github.com/phan/phan/pull/5579))
+- Fix false positive `PhanParamTooFewInternal` for `array_diff()`, `array_intersect()` and related functions called with one array ([#5566](https://github.com/phan/phan/issues/5566), [#5568](https://github.com/phan/phan/pull/5568))
+- Fix `array_is_list()` being false narrowing arrays to `non-empty-associative-array<array>` ([#5565](https://github.com/phan/phan/issues/5565), [#5567](https://github.com/phan/phan/pull/5567))
+- Infer the return type of `hrtime()` from its `$as_number` argument ([#5550](https://github.com/phan/phan/issues/5550))
+- Infer the return type of `substr_replace()` from its `$string` argument ([#5551](https://github.com/phan/phan/issues/5551), [#5552](https://github.com/phan/phan/pull/5552))
+- Fix parameter signatures of `imagecreatefromavif()` and `imageavif()` ([#5562](https://github.com/phan/phan/issues/5562), [#5563](https://github.com/phan/phan/pull/5563))
+
+Miscellaneous:
+- Add `tool/perf/` scripts for benchmarking and profiling Phan ([#5582](https://github.com/phan/phan/pull/5582))
+- Update squizlabs/php_codesniffer to 3.13.6 in `internal/PHP_CodeSniffer` ([#5559](https://github.com/phan/phan/pull/5559))
 
 Jun 22 2026, Phan 6.0.7
 --------------

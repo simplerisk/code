@@ -242,7 +242,12 @@ function resolve_interval_next_date($last_date, int $test_frequency, $submitted)
         return $has_submitted ? $submitted : false;
     }
 
-    return date('Y-m-d', strtotime($last_date) + $test_frequency * 24 * 60 * 60);
+    // Advance via a relative date string ("+N days"), not N*86400 seconds --
+    // a fixed second count is NOT a fixed number of calendar days across a
+    // DST transition (a fall-back day has 90000 seconds, a spring-forward day
+    // has 82800), so the seconds form silently lands on the wrong date
+    // whenever the span crosses one.
+    return date('Y-m-d', strtotime("{$last_date} +{$test_frequency} days"));
 }
 
 /**

@@ -9,6 +9,7 @@ namespace OpenApi;
 use OpenApi\Contracts\AttributeInterface;
 use OpenApi\Spec as OA;
 use OpenApi\Specification\ComponentIndex;
+use OpenApi\Specification\PathItemHierarchy;
 use OpenApi\Specification\Walker;
 
 /**
@@ -59,6 +60,9 @@ class Specification
     /** @var list<OA\Example> */
     public array $examples = [];
 
+    /** @var list<OA\MediaType> reusable media types, OpenAPI 3.2 — only a keyed MediaType is root and lands here */
+    public array $mediaTypes = [];
+
     /** @var list<OA\Attachable> */
     public array $attachables = [];
 
@@ -86,6 +90,7 @@ class Specification
                 $attribute instanceof OA\Security\Scheme => $this->securitySchemes[] = $attribute,
                 $attribute instanceof OA\Link => $this->links[] = $attribute,
                 $attribute instanceof OA\Example => $this->examples[] = $attribute,
+                $attribute instanceof OA\MediaType => $this->mediaTypes[] = $attribute,
                 $attribute instanceof OA\Attachable => $this->attachables[] = $attribute,
                 $attribute instanceof OA\Components => $this->addComponentsChildren($attribute),
                 default => throw OpenApiException::fromSource(
@@ -106,6 +111,11 @@ class Specification
     public function buildComponentIndex(): ComponentIndex
     {
         return new ComponentIndex($this);
+    }
+
+    public function buildPathItemHierarchy(): PathItemHierarchy
+    {
+        return new PathItemHierarchy($this);
     }
 
     protected function addComponentsChildren(OA\Components $components): void

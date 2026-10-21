@@ -1,4 +1,4 @@
-/*! RowReorder 2.0.0 for DataTables
+/*! RowReorder 2.1.1 for DataTables
  * Copyright (c) SpryMedia Ltd - datatables.net/license
  */
 
@@ -46,8 +46,8 @@ var Api = DataTable.Api;
 var util = DataTable.util;
 
 // Sanity check that we are using DataTables
-if (!DataTable || !DataTable.versionCheck('3')) {
-    throw 'DataTables RowReorder requires DataTables 3 or newer';
+if (!DataTable || !DataTable.versionCheck('3.1')) {
+    throw 'DataTables RowReorder requires DataTables 3.1 or newer';
 }
 /**
  * RowReorder provides the ability in DataTables to click and drag rows to
@@ -758,7 +758,7 @@ RowReorder.defaults = {
     excludedChildren: 'a',
     cancelable: false
 };
-RowReorder.version = '2.0.0';
+RowReorder.version = '2.1.1';
 
 
 // Doesn't do anything - work around for a bug in DT... Not documented
@@ -785,7 +785,7 @@ Api.register('rowReorder.disable()', function () {
 DataTable.RowReorder = RowReorder;
 // Attach a listener to the document which listens for DataTables initialisation
 // events so we can automatically initialise
-Dom.s(document).on('init.dt.dtr', function (e, settings, json) {
+Dom.on('init.dt.dtr', function (e, settings, json) {
     if (e.namespace !== 'dt') {
         return;
     }

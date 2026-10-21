@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Käyttäjän istunnot',
     'SessionActivityTimeout' => 'Istunnon toiminnon aika katkaisu',
     'Security' => 'Turva',
-    'EnableCSP' => 'Ota sisällön suojaus käytäntö käyttöön (tämä on aiemmin rikkonut Chromea)',
+    'EnableCSP' => 'Ota käyttöön sisällön suojauskäytäntö (suositus)',
     'EnableDebugLogging' => 'Ota virheen korjauksen kirjaaminen käyttöön',
     'seconds' => 'sekuntia',
     'FieldSample' => 'Kentän malli',
@@ -1987,7 +1987,7 @@ $lang = array(
     'QuestionsLackingAubjectEdited' => 'Kysymyksiä, joista puuttui aihe, muokattiin, jotta tyhjää riskiaihetta ei yritetä lähettää.',
     'AdminSelfEditWarning' => 'Järjestelmänvalvojat eivät voi poistaa omia järjestelmänvalvojan oikeuksiaan tai lukita itseään ulos.',
     'Value' => 'Arvo',
-    'ControlDetails' => 'Ohjaustiedot',
+    'ControlDetails' => 'Kontrollin tiedot',
     'CannotDeleteLastItem' => 'Viimeistä kohdetta ei voi poistaa.',
     'FieldChangeTemplate' => '`{$field_name}` (`{$before}` => `{$after}`)',
     'AuditLog_TestAuditReopen' => 'Käyttäjä "{$user_name} " avasi uudelleen auditoinnin "{$test_audit_name}"(ID: {$test_audit_id}).',
@@ -2016,13 +2016,13 @@ $lang = array(
     'StopSharingResults' => 'Lopeta jakaminen',
     'AreYouSureYouWantToStopSharingThisResult' => 'Haluatko varmasti lopettaa tämän tuloksen jakamisen?',
     'ShareResultsWith' => 'Jaa tulokset seuraavien kanssa:',
-    'QuestionnaireResultShareContactsRequired' => 'Jaa yhteystiedot vaaditaan!',
+    'QuestionnaireResultShareContactsRequired' => 'Yhteystietojen jakaminen vaaditaan!',
     'QuestionnaireResultShareGetContactFailed' => 'Yhteystietojen hakeminen epäonnistui!',
     'QuestionnaireResultShareSuccessful' => 'Kyselylomakkeen tulos on jaettu onnistuneesti valittujen yhteyshenkilöiden kanssa.',
     'QuestionnaireResultStopSharingSuccessful' => 'Kyselytuloksen jakaminen lopetettiin onnistuneesti',
     'AssessmentContact' => 'Arviointiyhteyshenkilö',
     'User' => 'Käyttäjä',
-    'QuestionnaireResultShareAuditLog' => 'Käyttäjä "{$user_name}" jakoi kyselylomakkeen "{$questionnaire_name}" (lähetetty yhteyshenkilölle "{$contact_name}" kohteelle "{$date}") ja antoi tulokseksi kommentin "{$comment}". Jaettu käyttäjän "{$shared_with_contacts} " kanssa.',
+    'QuestionnaireResultShareAuditLog' => 'Käyttäjä "{$user_name}" jakoi kyselylomakkeen "{$questionnaire_name}" tuloksen (lähetetty yhteyshenkilölle "{$contact_name}" ajankohtana "{$date}") kommentilla "{$comment}". Jaettu: "{$shared_with_contacts}".',
     'QuestionnaireResultStopSharingAuditLog' => 'Käyttäjä "{$user_name}" lopetti kyselylomakkeen jakamisen "{$questionnaire_name}" (lähetetty yhteyshenkilölle "{$contact_name}" päivämääränä "{$date}") tulos. Lopetti jakamisen käyttäjän "{$stopped_sharing_with_contacts} " kanssa.',
     'QuestionnaireResultShareOpenedAuditLog' => 'Jaetun kyselyn "{$questionnaire_name}" (lähetetty yhteyshenkilölle "{$contact_name}" ajankohtana "{$date}", jaettu "{$shared_with_contact_name}" kanssa) tulos avattiin.',
     'Pending' => 'Odottaa',
@@ -2043,7 +2043,7 @@ $lang = array(
     'BackupSettingsUpdated' => 'Käyttäjä "{$user_name} " päivitti varmuuskopiointiasetukset.',
     'BackupInitiatedByUser' => 'Käyttäjä "{$user_name} " aloitti varmuuskopioinnin.',
     'BackupInitiated' => 'Varmuuskopiointi aloitettu. Tämä voi kestää useita minuutteja.',
-    'NoControlsAvailable' => 'Ei käytettävissä olevia ohjaimia',
+    'NoControlsAvailable' => 'Ei käytettävissä olevia kontrolleja',
     'AdminCantDisableItself' => 'Ylläpitäjä ei voi poistaa itseään käytöstä.',
     'AdminCantDeleteItself' => 'Ylläpitäjä ei voi poistaa itseään.',
     'NoFrameworksFromGithub' => 'Githubista ei ole tuotu tiettyjä kehyksiä',
@@ -2094,7 +2094,7 @@ $lang = array(
     'RiskDetails' => 'Riskien tiedot',
     'TagType_questionnaire_risk' => 'Kyselyn riski',
     'SAMLRoleMapping' => 'SAML-roolikartoitus',
-    'SAMLTeamMapping' => 'SAML Team Mapping',
+    'SAMLTeamMapping' => 'SAML-tiimien yhdistäminen',
     'RemoteSAMLRolePlaceholder' => 'Valitse etärooli tai lisää uusi',
     'RemoteSAMLTeamPlaceholder' => 'Valitse etätiimi tai lisää uusi',
     'MappingSuccessfullyUpdated' => 'Kartoitus on päivitetty onnistuneesti!',
@@ -2383,7 +2383,7 @@ $lang = array(
     'ResetAPIKey' => 'Nollaa API-avain',
     'ArtificialIntelligence' => 'Tekoäly',
     'ArtificialIntelligenceAdditionalContext' => 'Tekoälyn lisäkonteksti',
-    'ArtificialIntelligenceAdditionalContextDescription' => 'Seuraavat tiedot ovat valinnaisia, mutta ne antavat tekoälylle lisäkontekstin, jota se tarvitsee merkityksellisempien tulosten tuottamiseen. Kaikki alla syötetyt tiedot LÄHETETÄÄN MÄÄRITTÄMÄLLE TEKOAJAN TARJOAJALLE analysoitavaksi, jotta vastaukset voidaan räätälöidä organisaatiollesi.',
+    'ArtificialIntelligenceAdditionalContextDescription' => 'Seuraavat tiedot ovat valinnaisia, mutta ne antavat tekoälylle lisäkontekstin, jota se tarvitsee merkityksellisempien tulosten tuottamiseen. Kaikki alla syötetyt tiedot LÄHETETÄÄN MÄÄRITTÄMÄLLESI TEKOÄLYN TARJOAJALLE analysoitavaksi, jotta vastaukset voidaan räätälöidä organisaatiollesi.',
     'OrganizationContext' => 'Organisaation konteksti',
     'DataContext' => 'Tietokonteksti',
     'MaturityContext' => 'Kypsyyskonteksti',
@@ -2515,17 +2515,17 @@ $lang = array(
     'EnterAValuationLevelName' => 'Anna arvostustason nimi.',
     'TheNameFieldCannotBeEmptyOrContainOnlySpaces' => 'Nimikenttä ei voi olla tyhjä tai sisältää vain välilyöntejä.',
     'EditAsset' => 'Muokkaa omaisuutta',
-    'TheSelectedControlsWereDeletedSuccessfully' => 'Valitut säätimet poistettiin onnistuneesti.',
-    'NothingControlsForDeletingWereSelected' => 'Mitään poistotoimintoa ei ole valittu.',
+    'TheSelectedControlsWereDeletedSuccessfully' => 'Valitut kontrollit poistettiin onnistuneesti.',
+    'NothingControlsForDeletingWereSelected' => 'Poistettavia kontrolleja ei ole valittu.',
     'PleaseSelectARoleBeforeDeleting' => 'Valitse rooli ennen poistamista.',
     'DocumentInstallation' => 'Asiakirjan asennus',
-    'DocumentControlMapping' => 'Dokumentin ja hallintalaitteiden yhdistäminen',
-    'DocumentControlMappingHelp'=>'Tämä raportti näyttää kaikki dokumentin ja ohjausobjektin yhdistämismääritykset',
+    'DocumentControlMapping' => 'Dokumentin ja kontrollien yhdistäminen',
+    'DocumentControlMappingHelp'=>'Tämä raportti näyttää kaikki dokumenttien ja kontrollien väliset yhdistämismääritykset',
     'DocumentID' => 'Asiakirjan tunnus',
     'Score' => 'Pisteet',
     'TFIDFSimilarity' => 'TF-IDF-samankaltaisuus',
     'MatchingKeywords' => 'Vastaavat avainsanat',
-    'AIMatch' => 'Tekoälyottelu',
+    'AIMatch' => 'Tekoälyvastaavuus',
     'AIConfidence' => 'Tekoälyn luottamus',
     'AIReasoning' => 'Tekoälypäättely',
     'DocumentColumns' => 'Asiakirjan sarakkeet',
@@ -2544,13 +2544,13 @@ $lang = array(
     'UnlikelyMatch' => 'Epätodennäköinen osuma',
     'NotAMatch' => 'Ei osuma',
     'ReviewManually' => 'Tarkista manuaalisesti',
-    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Linkitettyjä ohjausobjekteja sisältävien kysymysten vastaukset päivittävät ohjausobjektin tyypiksi',
+    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Linkitettyjä kontrolleja sisältävien kysymysten vastaukset päivittävät kontrollin tyypiksi',
     'AuditLog_IncidentUpdated' => 'Käyttäjä "{$user_name}" päivitti tapahtuman "{$incident_summary}" (ID: {$incident_id}). Muutokset: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'Vastaukset tallennetaan automaattisesti arviointeihin',
     'SecondsAssessmentsAreAutoSaved' => 'Sekuntiarvioinnit tallentuvat automaattisesti',
     'NotifyOnAuditInitiate' => 'Ilmoita aloitetuista tarkastuksista',
     'NotifyAuditInitiateSubject' => 'Tarkastus aloitettu',
-    'BypassPendingRisksAndCreateRisksImmediatelyAfterAssessmentCompletion' => 'Ohita "Keskeiset riskit" ja luo riskit heti arvioinnin valmistumisen jälkeen',
+    'BypassPendingRisksAndCreateRisksImmediatelyAfterAssessmentCompletion' => 'Ohita "Odottavat riskit" ja luo riskit heti arvioinnin valmistumisen jälkeen',
     'AssociatedExceptions' => 'Liittyvät poikkeukset',
     'EmailInstructions' => 'Sähköpostiohjeet',
     'ApproveSelectedVulnerabilities' => 'Hyväksy valitut haavoittuvuudet',
@@ -2558,7 +2558,7 @@ $lang = array(
     'DeleteSelectedQuestions' => 'Poista valitut kysymykset',
     'PleaseSelectAtLeastOneItemToDelete' => 'Valitse vähintään yksi poistettava kohde.',
     'AreYouSureYouWantToDeleteTheSelectedQuestions' => 'Haluatko varmasti poistaa valitut kysymykset?',
-    'AssetAuditLogUpdate' => 'Käyttäjä "{$user}" päivitti tiedoston "{$asset_name}". Tehdyt muutokset: {$changes}.',
+    'AssetAuditLogUpdate' => 'Käyttäjä "{$user}" päivitti omaisuuserän "{$asset_name}". Tehdyt muutokset: {$changes}.',
     'AssetAuditLogUpdateChange' => '"{$key}" arvo muutettiin arvosta "{$value}" arvoon "{$new_value}"',
     'AreYouSureYouWantToDiscardTheSelection' => 'Haluatko varmasti hylätä valinnan?',
     'AreYouSureYouWantToVerifyTheSelection' => 'Haluatko varmasti vahvistaa valinnan?',
@@ -2571,7 +2571,7 @@ $lang = array(
     'Tab' => 'Välilehti',
     'TabOrdering' => 'Välilehtien järjestys',
     'AutoInitiateAudit' => 'Aloita tarkastus automaattisesti',
-    'AuditInitiationOffset' => 'Tarkastuksen aloituksen vastapaino',
+    'AuditInitiationOffset' => 'Tarkastuksen aloituksen siirtymä',
     'AuditInitiationOffset_explanation' => 'päivää eräpäivästä',
     'AuditInitiationOffsetMustBeANonNegativeValue' => 'Tarkastuksen aloitussiirtymän arvon on oltava ei-negatiivinen.',
     'AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency' => 'Auditoinnin aloituspoikkeaman on oltava pienempi tai yhtä suuri kuin testitaajuus.',
@@ -2599,10 +2599,10 @@ $lang = array(
     'EnableLoggingDebug' => 'VIRHEENJÄRJESTELMÄ: Yksityiskohtaisia diagnostiikkatietoja kehittäjille.',
     'QueueMonitor' => 'Jononvalvonta',
     'PleaseEnterAValidTimezone' => 'Anna kelvollinen aikavyöhyke.',
-    'TFIDFMatch' => 'TF-IDF-ottelu',
+    'TFIDFMatch' => 'TF-IDF-osuma',
     'CompletionDate' => 'Valmistumispäivämäärä',
     'AssetsAndControls' => 'Varat ja hallinta',
-    'AssetsByControl' => 'Varat määräysvallan mukaan',
+    'AssetsByControl' => 'Omaisuuserät kontrollin mukaan',
     'ControlsByAsset' => 'Omaisuuskohtaiset kontrollit',
     'NoIncidentDetectionDataAvailable' => 'Ei tallennettuja tapahtumia, joilla olisi sekä alkamispäivä että havaitsemispäivä.',
     'IncidentDashboard' => 'Tapahtumakojelauta',
@@ -2663,7 +2663,7 @@ $lang = array(
     'Reports'                  => 'Raportit',
     'Dashboards'               => 'Kojelaudat',
     'RiskCharts'               => 'Riskikaaviot',
-    'SearchReports'            => 'Hakuraportit...',
+    'SearchReports'            => 'Hae raportteja...',
     'SearchConfigure'          => 'Hakuasetukset...',
     'Favorites'                => 'Suosikit',
     'AddToFavorites'           => 'Lisää suosikkeihin',
@@ -2680,7 +2680,7 @@ $lang = array(
     'ComplianceDashboardDesc'                 => 'Yleinen näkymä auditoinnin edistymiseen, vaatimustenmukaisuuden tilanteeseen ja korjaaviin toimiin.',
     'GovernanceDashboardDesc'                 => 'Tilannekuva ohjauskehyksestäsi, dokumentointiohjelmastasi ja poikkeustilastasi.',
     'RiskChartsDesc'                          => 'Valmiiksi tehdyt kaaviot, jotka kattavat riskitasot, iät ja lähetystrendit.',
-    'RiskAppetiteReportDesc'                  => 'Vertaa nykyisiä avoimia riskejä määritettyihin riskinottohalukkuuteen.',
+    'RiskAppetiteReportDesc'                  => 'Vertaa nykyisiä avoimia riskejä määrittämiisi riskinottohalukkuuden raja-arvoihin.',
     'RiskTrendDesc'                           => 'Ajan kuluessa esitetty kumulatiiviset avoimet ja suljetut riskimäärät.',
     'DynamicRiskReportDesc'                   => 'Konfiguroitava, vietävä raporttien rakentaja ad-hoc-riskikyselyihin.',
     'GraphicalRiskAnalysisDesc'               => 'Visualisoi riskejä useissa ulottuvuuksissa viiva- ja pylväsdiagrammien avulla.',
@@ -2690,7 +2690,7 @@ $lang = array(
     'RiskAdviceDesc'                          => 'Jäännösriskin tasojakauma ja priorisoidut lieventämissuositukset panostuksen ja vaikutuksen suhteen perusteella.',
     'RisksAndIssuesDesc'                      => 'Avointen riskien ja niihin liittyvien ongelmien ristiviittaukset.',
     'AllOpenRisksAssignedToMeByRiskLevelDesc' => 'Riskit, joissa olet omistaja, johtaja tai sidosryhmä, tasoittain lajiteltuna.',
-    'AllOpenRisksNeedingReviewDesc'           => 'Riskit, joita ei ole tarkistettu seuraavan tarkistuspäivämäärän jälkeen tai joita ei ole koskaan tarkistettu.',
+    'AllOpenRisksNeedingReviewDesc'           => 'Riskit, joiden seuraava tarkistuspäivämäärä on ohitettu tai joita ei ole koskaan tarkistettu.',
     'AllOpenRisksByTeamByLevelDesc'           => 'Riskit ryhmiteltynä tiimin ja sitten riskitason mukaan omistajuusraportointia varten.',
     'HighRiskReportDesc'                      => 'Korkeat ja erittäin korkeat riskit kaikissa tiimeissä.',
     'SubmittedRisksByDateDesc'                => 'Lähetetyt riskit ryhmiteltyinä päivämäärävälin mukaan lähetysprosentin trendin kanssa.',
@@ -2707,14 +2707,14 @@ $lang = array(
     'AllOpenRisksByScoringMethodDesc'                            => 'Avoimet riskit ryhmiteltyinä pistemäärän laskentamenetelmän mukaan.',
     'AllOpenRisksByTeamDesc'                                     => 'Avoimet riskit ryhmiteltyinä sen tiimin mukaan, johon ne on osoitettu.',
     'AllOpenRisksByTechnologyDesc'                               => 'Avoimet riskit ryhmiteltyinä niihin viittaavan teknologiatunnisteen mukaan.',
-    'DynamicAuditReportDesc'                  => 'Konfiguroitava auditoinnin edistymisraportti, jossa on viitekehys ja ohjaussuodattimet.',
+    'DynamicAuditReportDesc'                  => 'Konfiguroitava auditoinnin edistymisraportti, jossa on viitekehys- ja kontrollisuodattimet.',
     'AuditTimelineDesc'                       => 'Tarkastustoimien, tilanmuutosten ja havaintojen kronologinen katsaus.',
     'AuditRemediationCycleTimeDesc'           => 'Keskimääräinen aika tarkastuslöydöksestä korjaavaan toimenpiteeseen viitekehyksen mukaan.',
     'ControlGapAnalysisDesc'                  => 'Kontrollit, joista puuttuu testejä, omistajia tai jotka ovat vanhentuneita.',
     'DocumentProgramReportDesc'               => 'Asiakirjaohjelman tila: määrät, hyväksynnät ja odottavat tarkistukset.',
     'ExceptionReportDesc'                     => 'Avoimet poikkeukset vanhenemispäivineen ja hyväksymistilaineen.',
     'ConnectivityVisualizerDesc'              => 'Vuorovaikutteinen kaavio siitä, miten riskit, varat, kontrollit ja viitekehykset liittyvät toisiinsa.',
-    'RisksAndAssetsDesc'                      => 'Avointen riskien ja niiden vaikutuspiirissä olevien varojen ristiviittaukset.',
+    'RisksAndAssetsDesc'                      => 'Avointen riskien ja niiden vaikutuspiirissä olevien omaisuuserien ristiviittaukset.',
     'RisksAndControlsDesc'                    => 'Riskien ja niitä lieventävien kontrollien ristiviittaukset.',
     'AssetsAndControlsDesc'                   => 'Omaisuuserien ja niitä suojaavien kontrollien ristiviittaukset.',
     'DocumentControlMappingDesc'              => 'Hallintoasiakirjojen yhdistäminen niiden dokumentoimiin kontrolleihin.',
@@ -2755,7 +2755,7 @@ $lang = array(
     'IncidentManagementExtraDesc'         => 'Incident Management Extra perustuu NIST 800-61 Computer Security Incident Handling Guide -oppaaseen ja tarjoaa incidendienhallintaominaisuuksia SimpleRisk-järjestelmän sisältä.',
 
     // Configure Hub - tile descriptions (customization category)
-    'RedefineNamingConventionsDesc'       => 'Nimeä SimpleRiskin terminologia uudelleen (Risk, Asset, Framework jne.) käyttöliittymässä.',
+    'RedefineNamingConventionsDesc'       => 'Nimeä SimpleRiskin terminologia uudelleen (riski, omaisuuserä, kehys jne.) käyttöliittymässä.',
     'RiskConfigurationDesc'               => 'Määritä riskipisteytyssäännöt: tasot, halukkuus, SLA-kynnysarvot ja klassiset/myötävaikuttavat riskikaavat.',
     'RiskAndThreatCatalogDesc'            => 'Ylläpidä alasvetovalikoissa käytettyjen riski- ja uhka-arvojen luetteloa.',
     'AddAndRemoveValuesDesc'              => 'Hallitse riskikenttien alasvetovalikkojen arvoja: sijainti, lähde, kategoria, tiimi, teknologia ja paljon muuta.',
@@ -2776,7 +2776,7 @@ $lang = array(
     'ImportExportExtraDesc'               => 'Tuo-Vie-Lisätoiminto mahdollistaa tietojen tuomisen SimpleRiskiin yhdistämällä CSV-tiedoston kentät SimpleRisk-tietokannan kenttiin. Sitä voidaan käyttää esimerkiksi tarkastustulosten tuomiseen kolmannen osapuolen laskentataulukosta, haavoittuvuusskannausten tulosten tuomiseen toisesta työkalusta ja CMDB-tietokannan resurssien tuomiseen. Lisätoiminto mahdollistaa myös CSV-tiedostojen viennin SimpleRiskistä, jotka sisältävät riskejä, lieventäviä toimenpiteitä, arviointeja tai kaikkien kolmen yhdistelmäraportin.',
     'JiraExtraDesc'                       => 'Jira Integration Extra tarjoaa käyttäjille mahdollisuuden integroitua kaksisuuntaisesti Jira-instanssiin. Se mahdollistaa riskien yhdistämisen Jira-ongelmiin sekä niiden tietojen, tilan ja kommenttien synkronoinnin.',
     'APIExtraDesc'                        => 'API Extra antaa asiakkaille mahdollisuuden käyttää RESTful-rajapintaa luodakseen skriptattuja vuorovaikutuksia muiden sovellusten kanssa, mikä parantaa automaatiota ja hyödyntää olemassa olevaa infrastruktuuria.',
-    'AdvancedSearchExtraDesc'             => "Laajennettu haku -lisätoiminto laajentaa yläpalkin hakukentän toiminnallisuutta siten, että riskejä voidaan löytää tekstihaulla riskitiedoista.",
+    'AdvancedSearchExtraDesc'             => "Laajennettu haku -toiminto muuttaa yläpalkin hakukentän yhdeksi hauksi, joka kattaa riskit, viitekehykset, kontrollit, dokumentit, poikkeukset, testit, auditoinnit, omaisuuserät ja omaisuusryhmät. Hakusivulla voi tarkastella tuloksia kokonaisuudessaan. Se näyttää vain ne tiedot, jotka käyttäjällä on oikeus nähdä.",
     'AssessmentsExtraDesc'                => 'Risk Assessment Extra tarjoaa käyttäjille mahdollisuuden määrittää yhteyshenkilöitä, luoda kysymyksiä (mukaan lukien logiikka), koota useita kysymyksiä kyselylomakkeen pohjalta, luoda kyselylomakkeita ja lähettää niitä yhteyshenkilöille, tarkastella kyselylomakkeen tuloksia, lisätä riskejä tulosten perusteella ja verrata tuloksia ajan kuluessa, tuoda ja viedä ulkoisesti mukautettuja arviointeja sekä tarkastella riskinarvioinnin lokitietoja.',
     'ActiveAssessmentsDesc'               => 'Tarkastele ja hallinnoi parhaillaan käynnissä olevia arviointeja.',
     'WorkflowsExtraDesc'                  => 'Workflows Extra tarjoaa visuaalisen, tapahtumapohjaisen työnkulkumoottorin, joka automatisoi riskienhallintatoimenpiteet vastauksena SimpleRiskissä tapahtuviin tapahtumiin. Voit suunnitella työnkulkuja, jotka käynnistyvät muutosten – kuten riskin lähettämisen, päivittämisen tai tarkistamisen – perusteella hyväksyntöjen reitittämiseksi, töiden jakamiseksi ja prosessien pitämiseksi käynnissä ilman manuaalisia toimia.',
@@ -2891,9 +2891,9 @@ $lang = array(
     'EncryptionMissingLockTablesPrivilegeUi' => 'SimpleRisk-tietokannan käyttäjällä ei ole salaukseen tarvittavaa LOCK TABLES -käyttöoikeutta. Tietokannan pääkäyttäjän on suoritettava seuraava komento: GRANT LOCK TABLES ON {$db}.* TO {$user}; yritä sitten uudelleen.',
     'EncryptionRequiredGrantLabel' => 'Vaadittu GRANT-lausunto:',
     'EncryptionActivationAlreadyRunning' => 'Salauksen aktivointi on jo käynnissä. Odota sen valmistumista tai palauta varmuuskopiosta -komennolla.',
-    'EncryptionActivationEnqueued'           => 'Salaus Lisäaktivointi on jonossa. Järjestelmänvalvojan käyttöliittymä seuraa edistymistä, kun tietokantaa salataan.',
+    'EncryptionActivationEnqueued'           => 'Salaus-lisäosan aktivointi on lisätty jonoon. Järjestelmänvalvojan käyttöliittymä seuraa edistymistä, kun tietokantaa salataan.',
     'EncryptionActivationEnqueueFailed'      => 'Salauksen aktivointitehtävän lisääminen jonoon epäonnistui. Tarkista lisätietoja virheenkorjauslokista.',
-    'EncryptionDeactivationEnqueued'         => 'Salaus Ylimääräinen deaktivointi on jonossa. Järjestelmänvalvojan käyttöliittymä seuraa edistymistä tietokannan salauksen purkamisen aikana.',
+    'EncryptionDeactivationEnqueued'         => 'Encryption Extran deaktivointi on asetettu jonoon. Järjestelmänvalvojan käyttöliittymä seuraa edistymistä tietokannan salauksen purkamisen aikana.',
     'EncryptionDeactivationEnqueueFailed'    => 'Salauksen deaktivointitehtävän lisääminen jonoon epäonnistui. Tarkista lisätietoja virheenkorjauslokista.',
     'EncryptionPipelineInProgress'           => 'Salausprosessi (aktivointi, deaktivointi tai palautus) on parhaillaan käynnissä. Odota sen valmistumista ennen kuin yrität uudelleen.',
     'EncryptionPipelineInProgressTask'       => 'Salausprosessi on parhaillaan käynnissä (tehtävä #{id}, {type}). Odota sen valmistumista ennen kuin yrität uudelleen.',
@@ -2972,7 +2972,7 @@ $lang = array(
     'ContextQuestions' => 'Kontekstikysymykset',
     'AIProviderNotConfiguredWarning' => 'Tekoälypalveluntarjoajaa ei ole määritetty. Reaaliaikaisia tuloksia ei voida tuottaa, ennen kuin olet määrittänyt palveluntarjoajan ja API-avaimen Palveluntarjoajan määritys -välilehdellä.',
     'AutoProcessSCFUpdates' => 'Käsittele uudet Secure Controls Framework (SCF) -julkaisut automaattisesti',
-    'AddNewControls' => 'Lisää uusia SCF-säätimiä',
+    'AddNewControls' => 'Lisää uusia SCF-kontrolleja',
     'UpdateExistingControls' => 'Päivitä olemassa olevat SCF-kontrollit',
     'DeleteRemovedControls' => 'Poista poistetut SCF-kontrollit',
     'CreateEvidenceRequests' => 'Luo todistepyyntöjä SCF-kontrolleille',
@@ -2981,10 +2981,10 @@ $lang = array(
     'NotFrameworkDescription' => 'Alla oleva widget näyttää kaikki Secure Controls Framework (SCF) -laskentataulukon otsikot. Sen avulla voit valita, mitkä sarakkeet sisältävät framework-tietoja ja mitkä eivät.',
     'Note' => 'Huomautus',
     'AISettingsNote' => 'Tekoälyavustuksen käyttöönotto lähettää dataa Anthropicille analysoitavaksi heidän LLM-järjestelmässään Anthropic API -avaimesi avulla, jotta sinulle voidaan tarjota räätälöityjä tuloksia.',
-    'EnableAIAssistanceForControlData' => 'Ota tekoälyn apu käyttöön ohjaustiedoille',
+    'EnableAIAssistanceForControlData' => 'Ota tekoälyn apu käyttöön kontrollitiedoille',
     'ReferenceText' => 'Viiteteksti',
     'FrameworkSelection' => 'Kehyksen valinta',
-    'Show' => 'Show',
+    'Show' => 'Näytä',
     'InProgress' => 'Käynnissä',
     'Canceled' => 'Peruutettu',
     'Failed' => 'Epäonnistui',
@@ -2995,9 +2995,9 @@ $lang = array(
     'DynamicAuditReportHelp' => 'Tämä raportti näyttää kaikki auditoinnit ja niiden tilat.',
     'ComplianceDashboardDescription' => 'Tämä kaavio näyttää kunkin viitekehyksen kontrollien lukumäärän, läpäisseet kontrollit vihreällä ja epäonnistuneet kontrollit punaisella.',
     'PassingControls' => 'Läpäistyt kontrollit',
-    'FailingControls' => 'Epäonnistuneet säätimet',
+    'FailingControls' => 'Epäonnistuneet kontrollit',
     'ControlsByFramework' => 'Kehyksen mukaiset kontrollit',
-    'NumberOfControls' => 'Säätimien lukumäärä',
+    'NumberOfControls' => 'Kontrollien lukumäärä',
     'PasswordResetTokenExpirationPeriod' => 'Salasanan nollaustunnuksen voimassaoloaika',
     'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'Salasanan palautustunnuksen vanhenemisajan tulisi olla yli 5 minuuttia.',
     'MeanTimeToRemediate' => 'Keskimääräinen korjausaika',
@@ -3054,7 +3054,7 @@ $lang = array(
     'License' => 'Lisenssi',
     'NoLicensedExtras' => 'Ei lisensoituja lisäosia.',
     'NoExpiredExtras' => 'Ei vanhentuneita lisäpalveluita.',
-    'NoUnlicensedExtras' => 'Ei luvattomia lisämateriaaleja.',
+    'NoUnlicensedExtras' => 'Ei lisensoimattomia lisämoduuleja.',
     'Unlimited' => 'Rajoittamaton',
     'LicenseStateLockMessage' => 'Lisenssitilasi on tällä hetkellä poistanut käytöstä lisäasennus- ja päivitystoiminnot. Aiemmin asennetut lisätoiminnot toimivat edelleen.',
     'LicenseStateFailMessage' => 'SimpleRisk-lisenssisi on vanhentunut tai deaktivoitu. Ota yhteyttä SimpleRiskin tukeen palvelun palauttamiseksi.',
@@ -3062,7 +3062,7 @@ $lang = array(
     'LicenseStateUnknownMessage' => 'SimpleRisk ei saanut yhteyttä lisenssipalveluun. Lisenssin tila päivittyy automaattisesti seuraavan tarkistuksen yhteydessä.',
     'ExtraIntegrityCheckFailed' => 'Ladatun paketin eheystarkistus epäonnistui, eikä sitä asennettu.',
     'ExtraInstallWriteFailed' => 'Lisätiedostoa ei voitu asentaa, koska lisätiedostojen hakemistoon ei voi kirjoittaa.',
-    'ExtraInstallExtractFailed' => 'Lisätiedosto ladattiin, mutta sitä ei voitu purkaa ja asentaa. Tarkista sovelluslokit.',
+    'ExtraInstallExtractFailed' => 'Lisäosa ladattiin, mutta sitä ei voitu purkaa ja asentaa. Tarkista sovelluslokit.',
     'EncryptionPreflightFailed' => 'Alustava DDL epäonnistui — katso lisätietoja virheenkorjauslokista.',
     'EncryptionActivationFailed' => 'Salauksen aktivointi epäonnistui alustavan asennuksen aikana. Tarkista sovelluksen lokit.',
     'QuestionnaireSentSchedulingOnly' => 'Tämä kyselylomake on lähetetty. Vain alla olevia aikatauluasetuksia voi muokata.',
@@ -3101,7 +3101,7 @@ $lang = array(
     'QuestionnaireNamePlaceholder' => 'esim. Toimittajien tietoturvakatsaus 2026',
     'AddTeamPlaceholder' => 'Lisää tiimi…',
     'AddStakeholderPlaceholder' => 'Lisää sidosryhmä…',
-    'AddControlTypePlaceholder' => 'Lisää ohjaustyyppi…',
+    'AddControlTypePlaceholder' => 'Lisää kontrollityyppi…',
     'AddLocationPlaceholder' => 'Lisää sijainti…',
     'NotifyWhenNotCompleteLabel' => 'Ilmoita, kun ei ole valmis',
     'NotifyWhenNotCompleteDescription' => 'Muistuta yhteyshenkilöitä, jotka eivät ole suorittaneet arviointia.',
@@ -3116,7 +3116,7 @@ $lang = array(
     'RegisterYourInstance' => 'Rekisteröi instanssisi',
     'RegisterYourInstanceHelp' => 'Rekisteröinti linkittää tämän instanssin SimpleRiskin lisensointipalveluun, jotta ilmaisia lisäosia (mukaan lukien SCF) voidaan ladata.',
     'InstallTheSCF' => 'Asenna Secure Controls Framework',
-    'InstallTheSCFHelp' => 'SCF on ilmainen lisäominaisuus, joka tarjoaa viitekehykset, kontrollikysymykset ja riskikartoitukset, joita tämä ominaisuus vertaa arviointiin. Asennus toimii taustalla ja voi kestää muutaman minuutin.',
+    'InstallTheSCFHelp' => 'SCF on ilmainen lisäominaisuus, joka tarjoaa viitekehykset, kontrollikysymykset ja riskikartoitukset, joita vasten tämä ominaisuus tekee arvioinnin. Asennus toimii taustalla ja voi kestää muutaman minuutin.',
     'GoToRegistration' => 'Siirry rekisteröintiin',
     'GoToSCF' => 'Siirry Secure Controls Frameworkiin',
     'SelfAssessmentEnableTip' => 'Valinnainen: kohdassa Hallinto > Viitekehykset voit ottaa käyttöön tiettyjä SCF-viitekehyksiä, jolloin näet lyhyen kuratoidun luettelon arvioinnin aloittamisen yhteydessä. Voit myös arvioida mitä tahansa SCF-luettelon viitekehystä vasten ottamatta sitä käyttöön.',
@@ -3132,7 +3132,7 @@ $lang = array(
     'AnsweredOfTotal' => 'vastattu',
     'FailedSoFar' => 'epäonnistunut tähän mennessä',
     'StartedBy' => 'Aloittaja',
-    'FailedControls' => 'Epäonnistuneet ohjaimet',
+    'FailedControls' => 'Epäonnistuneet kontrollit',
     'PushToRisk' => 'Työnnä riskiin',
     'ConfirmDeleteSelfAssessment' => 'Poistetaanko tämä itsearviointi? Tätä ei voi perua.',
     'ConfirmCompleteSelfAssessment' => 'Merkitäänkö tämä arviointi valmiiksi? Riskejä syntyy epäonnistuneista kontrolleista.',
@@ -3144,7 +3144,7 @@ $lang = array(
     'GeneratedFromSelfAssessment' => 'Luotu itsearvioinnista',
     'SelfAssessmentMitigationSolution' => 'Toteuta alla linkitetyt kontrollit, joiden havaittiin olevan puutteellisia tässä itsearvioinnissa, tämän riskin lieventämiseksi.',
     'NSelected' => '{n} valittu',
-    'FilterByControl' => 'Suodata ohjausobjektin mukaan',
+    'FilterByControl' => 'Suodata kontrollin mukaan',
     'Pushing' => 'Siirretään…',
     'Deleting' => 'Poistetaan…',
     'ConfirmPushSelectedPendingRisks' => 'Siirretäänkö valitut odottavat riskit {n} kohtaan riskit?',
@@ -3169,7 +3169,7 @@ $lang = array(
     'WhatsNextAllCaughtUp' => 'Olet kärryillä.',
     'WhatsNextRegisterInstance' => 'Rekisteröi SimpleRisk-instanssisi',
     'WhatsNextSubmitFirstRisk' => 'Lähetä ensimmäinen riskisi',
-    'WhatsNextLoadFramework' => 'Lataa ohjauskehys',
+    'WhatsNextLoadFramework' => 'Lataa kontrollikehys',
     'WhatsNextUnreviewedRisks' => 'Tarkistettavat riskit',
     'WhatsNextUnmitigatedRisks' => 'Lievennettävä riski',
     'WhatsNextInitiateAudits' => 'Käynnistettävät tarkastukset',
@@ -3191,7 +3191,7 @@ $lang = array(
     'ListExpiringExceptions' => 'Vanhenevat poikkeukset',
     'ImKpiOpenIncidents' => 'Yhteensä avoinna',
     'ImKpiOverdue' => 'Myöhässä',
-    'ImKpiMttr30' => 'Keskimääräinen resoluutio',
+    'ImKpiMttr30' => 'Keskimääräinen ratkaisuaika',
     'ImKpiMttrQuarter' => 'Keskimääräinen ratkaisu (90 päivää)',
     'ImKpiMttrYear' => 'Keskimääräinen ratkaisu (1 v)',
     'ImKpiMttrAll' => 'Keskimääräinen ratkaisu (kaikki)',
@@ -3258,7 +3258,7 @@ $lang = array(
     'GSReviewDesc' => 'Tarkastele riskiä ja päätä sen seuraava askel.',
     'GSReviewCta' => 'Suorita tarkistus',
     'GSDefineTestTitle' => 'Määrittele kontrollitesti',
-    'GSDefineTestDesc' => 'Määritä, miten ohjausobjekti testataan.',
+    'GSDefineTestDesc' => 'Määritä, miten valvontatoimenpide testataan.',
     'GSDefineTestCta' => 'Määrittele testi',
     'GSInitiateAuditTitle' => 'Aloita tarkastus',
     'GSInitiateAuditDesc' => 'Käynnistä testi- tai auditointisykli.',
@@ -3271,10 +3271,10 @@ $lang = array(
     'GSPrevCards' => 'Näytä edelliset vaiheet',
     'GSNextCards' => 'Näytä seuraavat vaiheet',
     'WhatsNextInstallSCF' => 'Asenna Secure Controls Framework',
-    'GSActivateScfTitle' => 'Aktivoi suojattujen hallintatyökalujen viitekehys',
-    'GSActivateScfDesc' => 'Ota asennettu SCF käyttöön ladataksesi sen ohjausobjektit kirjastoosi.',
+    'GSActivateScfTitle' => 'Aktivoi Secure Controls Framework -viitekehys',
+    'GSActivateScfDesc' => 'Ota asennettu SCF käyttöön ladataksesi sen kontrollit kirjastoosi.',
     'GSActivateScfCta' => 'Aktivoi SCF',
-    'WhatsNextActivateSCF' => 'Aktivoi suojattujen hallintatyökalujen viitekehys',
+    'WhatsNextActivateSCF' => 'Aktivoi Secure Controls Framework',
     'GSEnableFrameworksTitle' => 'Ota käyttöön sovellettavat viitekehykset',
     'GSEnableFrameworksDesc' => 'Ota käyttöön organisaatioosi sovellettavat SCF-kehykset.',
     'GSEnableFrameworksCta' => 'Ota käyttöön kehykset',
@@ -3290,7 +3290,7 @@ $lang = array(
     'ControlsByPhase' => 'Kontrollit vaiheittain',
     'ControlsByPriority' => 'Kontrollit prioriteetin mukaan',
     'ControlsByCurrentMaturity' => 'Kontrollit nykyisen kypsyyden mukaan',
-    'ControlStatusOverTime' => 'Ohjaustilanne ajan kuluessa',
+    'ControlStatusOverTime' => 'Kontrollin tila ajan kuluessa',
     'ComplianceTotalControls' => 'Kontrollit yhteensä',
     'HomeKpiOverdueTests' => 'Myöhässä olevat testit',
     'Total' => 'Yhteensä',
@@ -3299,10 +3299,10 @@ $lang = array(
     'GoToTest' => 'Siirry testiin',
     'NotTested' => 'Ei testattu',
     'PassingPercent' => 'Läpäisyprosentti',
-    'ListFailingControls' => 'Epäonnistuneet säätimet',
+    'ListFailingControls' => 'Epäonnistuneet kontrollit',
     'Exceptions' => 'Poikkeukset',
     'Documents' => 'Dokumentit',
-    'ControlsBelowMaturity' => 'Kypsyysrajan alapuolella olevat ohjaimet',
+    'ControlsBelowMaturity' => 'Kypsyysrajan alapuolella olevat kontrollit',
     'ControlsAtMaturity' => 'Kontrollit kypsyydessä',
     'ControlsAboveMaturity' => 'Kypsyysrajan ylittävät valvontatoimet',
     'Maturity' => 'Kypsyys',
@@ -3323,7 +3323,7 @@ $lang = array(
     'ImKpiCriticalOpen' => 'Kriittinen avoin',
     'ImKpiResolvedInSla' => 'Ratkaistu palvelutasosopimuksessa',
     'Events' => 'Tapahtumat',
-    'ImEventsIncidents' => 'Tapahtumat ja vaaratilanteet',
+    'ImEventsIncidents' => 'Tapahtumat ja poikkeamat',
     'ImSourceBreakdown' => 'Lähde luokittain',
     'ImClosureSummary' => 'Sulkemisyhteenveto',
     'ImSignalQuality' => 'Signaalin laatu',
@@ -3344,9 +3344,9 @@ $lang = array(
     'AICapFairAnalysis' => 'FAIR-kvantitatiivinen analyysi',
     'AICapFairAnalysisDesc' => 'Tekoäly arvioi Beta-PERT-tappioparametrit; SimpleRisk suorittaa 10 000 iteraation Monte Carlo -testin riskin kvantifioimiseksi dollareissa.',
     'AICapDocumentCustomization' => 'Asiakirjan mukauttaminen',
-    'AICapDocumentCustomizationDesc' => 'Täyttää paikkamerkit ja tyhjentää käytäntötekstin asiakirjamalleissasi, jotta vakiokäytäntö lukee sinun käytäntösi mukaisesti.',
+    'AICapDocumentCustomizationDesc' => 'Täyttää paikkamerkit ja siistii käytäntötekstin asiakirjamalleissasi, jotta vakiokäytäntö lukee sinun käytäntösi mukaisesti.',
     'AICapDocumentControlMatching' => 'Dokumentti ↔ Kontrollien täsmäytys',
-    'AICapDocumentControlMatchingDesc' => 'Yhdistää ohjausobjektit automaattisesti käytäntöasiakirjoihin, joissa on luotettavuuspisteet ja perustelut, joita voit tarkastella.',
+    'AICapDocumentControlMatchingDesc' => 'Yhdistää kontrollit automaattisesti käytäntöasiakirjoihin, joissa on luotettavuuspisteet ja perustelut, joita voit tarkastella.',
     'AICapDocumentTemplates' => 'Asiakirjamallikirjasto',
     'AICapDocumentTemplatesDesc' => 'Asenna SimpleRisk-kirjastosta kuratoituja käytäntö-, ohje- ja menettelytapamalleja.',
     'AICapControlReferenceEnhancement' => 'Ohjausviitteen parannus',
@@ -3475,7 +3475,7 @@ $lang = array(
     'ShowingXToYOfZ' => 'Näytetään {$start}–{$end} / {$total}',
     // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
     'Reference' => 'Viite',
-    'NoFrameworksMapped' => 'Tähän ohjausobjektiin ei ole yhdistetty kehyksiä.',
+    'NoFrameworksMapped' => 'Tähän kontrolliin ei ole yhdistetty kehyksiä.',
     // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
     'Retire' => 'Poista käytöstä',
     'ReassignTester' => 'Testaajan uudelleenmäärääminen',
@@ -3492,7 +3492,7 @@ $lang = array(
     // chips above (identical text) rather than duplicated here.
     'DtTotalTests' => 'Testien kokonaismäärä',
     'DtCoverageGaps' => 'Kattavuusaukot',
-    'DtAcrossNControls' => '{$n} -ohjainten välillä',
+    'DtAcrossNControls' => '{$n} kontrollin kesken',
     'DtControlsWithNoTest' => 'Kontrollit ilman testiä',
     'DtNeedInitiationNow' => 'Tarvitaan aloitus nyt',
     'DtWithinLeadInWindow' => 'Aloitusikkunan sisällä',
@@ -3508,9 +3508,9 @@ $lang = array(
     'Sample' => 'Näyte',
     'RequiredEvidence' => 'Vaaditut todisteet',
     'Approvers' => 'Hyväksyjät',
-    'AuditLog_TestAuditApproved' => 'Käyttäjä "{$test_audit_name}"(ID: {$test_audit_id}) hyväksyi auditoinnin "{$user_name}".',
-    'AuditLog_TestAuditRejected' => 'Audit "{$test_audit_name}"(ID: {$test_audit_id}) was rejected by user "{$user_name}" with comment "{$comment}".',
-    'AuditLog_TestAuditAwaitingApproval' => 'Käyttäjä "{$user_name}" lähetti tarkastustiedoston "{$test_audit_name}"(ID: {$test_audit_id}) suljettavaksi ja odottaa hyväksyntää. Muutokset: {$changes}.',
+    'AuditLog_TestAuditApproved' => 'Käyttäjä "{$user_name}" hyväksyi auditoinnin "{$test_audit_name}" (ID: {$test_audit_id}).',
+    'AuditLog_TestAuditRejected' => 'Auditointi "{$test_audit_name}" (ID: {$test_audit_id}) hylättiin käyttäjän "{$user_name}" toimesta kommentilla "{$comment}".',
+    'AuditLog_TestAuditAwaitingApproval' => 'Käyttäjä "{$user_name}" lähetti tarkastuksen "{$test_audit_name}" (ID: {$test_audit_id}) suljettavaksi, ja se odottaa hyväksyntää. Muutokset: {$changes}.',
     'AuditApproved' => 'Auditointi hyväksyttiin onnistuneesti.',
     'AuditRejected' => 'Tarkastus hylättiin onnistuneesti.',
     'RejectCommentRequired' => 'Tarkastuksen hylkäämiseen vaaditaan kommentti.',
@@ -3527,14 +3527,14 @@ $lang = array(
     'ReturnedForReworkBannerText' => 'Tämä tarkastus hylättiin ja palautettiin uudelleen käsiteltäväksi.',
     'RejectReason' => 'Hylkäyksen syy',
     'AreYouSureYouWantToApproveThisAudit' => 'Oletko varma, että haluat hyväksyä tämän tarkastuksen?',
-    'AtLeastOneControlRequired' => 'Vähintään yksi ohjausobjekti vaaditaan.',
-    'DtNCommonAcrossNControls' => '{$common} yleinen · {$n} ohjausobjektit',
+    'AtLeastOneControlRequired' => 'Vähintään yksi kontrolli vaaditaan.',
+    'DtNCommonAcrossNControls' => '{$common} yhteistä · {$n} kontrollia',
     'DtUntestedControls' => 'Testaamattomat kontrollit',
-    'DtControlsInScopeNoCoverage' => 'Ei vakuutusturvaa',
+    'DtControlsInScopeNoCoverage' => 'Ei kattavuutta',
     'Passing' => 'Läpäisty',
     'DtLastResultPassed' => 'Viimeisin tulos hyväksytty',
     'AllFamilies' => 'Kaikki perheet',
-    'SearchTestsPlaceholder' => 'Hakutestit, -kontrollit ja -kehykset',
+    'SearchTestsPlaceholder' => 'Hae testejä, kontrolleja ja kehyksiä',
     'AnySchedule' => 'Mikä tahansa aikataulu',
     'AnyTag' => 'Mikä tahansa tunniste',
     'AuditAutoClosedTestRetired' => 'Suljettu automaattisesti epäselvänä, koska testi on poistettu käytöstä.',
@@ -3545,7 +3545,7 @@ $lang = array(
     'AddTheFirstTest' => 'Lisää ensimmäinen testi',
     'ApplyCommonTestHint' => 'Käytä tähän kontrolliin yhtä tai useampaa olemassa olevaa testiä. Jokainen testi säilyttää nykyiset kontrollinsa ja siitä tulee yhteinen testi, joka kattaa myös tämän.',
     'CommonTestApplied' => 'Testi sovellettu tähän kontrolliin.',
-    'CouldNotApplyCommonTest' => 'Testiä ei voitu soveltaa tähän ohjausobjektiin.',
+    'CouldNotApplyCommonTest' => 'Testiä ei voitu soveltaa tähän valvontatoimeen.',
     'SelectOneOrMoreTests' => 'Valitse yksi tai useampi testi',
     'CommonTestsApplied' => '{n} testiä sovellettiin tähän kontrolliin.',
     'ApplyCommonTests' => 'Käytä yleisiä testejä…',
@@ -3583,10 +3583,10 @@ $lang = array(
     'DueStatus' => 'Erääntymistila',
     'AllResults' => 'Kaikki tulokset',
     // Remove a test from one control (Define Tests grid unlink row action)
-    'RemoveFromThisControl' => 'Poista tästä ohjausobjektista',
+    'RemoveFromThisControl' => 'Poista tästä kontrollista',
     'RemoveTestFromControl' => 'Poista testi kontrollista',
     'RemoveTestFromControlConfirm' => 'Poistetaanko "{test_name}" kohdasta {control_name}?',
-    'RemoveTestFromControlStays' => 'Testi pysyy sen {n} muissa säätimissä. Mitään ei poisteta.',
+    'RemoveTestFromControlStays' => 'Testi pysyy sen {n} muussa kontrollissa. Mitään ei poisteta.',
     'RemoveTestFromControlStaysOne' => 'Testi pysyy yhdellä muulla kontrollillaan. Mitään ei poisteta.',
     'CannotRemoveTestsOnlyControl' => 'Testin on kuuluttava vähintään yhteen kontrolliin. Poista testi sen sijaan.',
     'TestRemovedFromControl' => 'Testi poistettiin kontrollista.',
@@ -3594,12 +3594,12 @@ $lang = array(
     'TestRemovedFromControlAuditLogMessage' => 'Testi "{$test_name}"(ID: {$test_id}) poistettiin kontrollista (ID: {$control_id}) käyttäjän "{$user} " toimesta.',
     'DeleteTestUsedByNControls' => 'Sitä käyttävät {n} -kontrollit ja se poistetaan niistä kaikista.',
     'BulkDeleteSharedTestsNote' => '{n} näistä ovat muiden kontrollien käytössä ja ne poistetaan myös niistä.',
-    'BulkRetireSharedTestsNote' => '{n} näistä ovat muiden ohjausobjektien käytössä ja ne poistetaan käytöstä myös siellä.',
-    'BulkDeleteOneSharedTestNote' => 'Yksi näistä on muiden ohjausobjektien käytössä ja se poistetaan myös niistä.',
-    'BulkRetireOneSharedTestNote' => 'Yhtä näistä käyttävät muut ohjausobjektit, ja nekin poistetaan käytöstä.',
+    'BulkRetireSharedTestsNote' => '{n} näistä ovat muiden kontrollien käytössä ja ne poistetaan käytöstä myös siellä.',
+    'BulkDeleteOneSharedTestNote' => 'Yksi näistä on muiden kontrollien käytössä ja se poistetaan myös niistä.',
+    'BulkRetireOneSharedTestNote' => 'Yhtä näistä käyttävät muut kontrollit, ja se poistetaan käytöstä myös niissä.',
     'CouldNotLoadTest' => 'Tämän testin lataaminen epäonnistui.',
     'Expand' => 'Laajenna',
-    'SearchMappings' => 'Hakukehykset ja -viitteet',
+    'SearchMappings' => 'Hae kehyksiä ja viitteitä',
     'NoMatchingMappings' => 'Hakua vastaavia kartoituksia ei löytynyt.',
     'Insights' => 'Näkemyksiä',
     'ShowInsights' => 'Näytä tietoruudut',
@@ -3608,7 +3608,7 @@ $lang = array(
     'UseTheseControls' => 'Käytä näitä säätimiä',
     'SearchControlsPlaceholder' => 'Hae numerolla tai nimellä',
     'PickerKeyboardHint' => 'Ylös/alas siirtymiseen, Enter valintaan, Esc peruutukseen',
-    'NoControlsMatchFilters' => 'Mikään ei vastaa hakutuloksia. Levitä vasemmalla olevaa sivua tai tyhjennä haku.',
+    'NoControlsMatchFilters' => 'Mikään ei täsmää. Laajenna yhtä vaihetta vasemmalla tai tyhjennä haku.',
     'NoControlsSelectedYet' => 'Mitään ei ole vielä valittu.',
     'AllControls' => 'Kaikki kontrollit',
     'AddOrRemoveControls' => 'Lisää tai poista kontrolleja…',
@@ -3655,10 +3655,10 @@ $lang = array(
     'AICapSurfacedControlTestGeneration' => 'Vaatimustenmukaisuus — Määrittele testit',
     'AIControlTestGenUnavailable' => 'PALVELU EI OLE KÄYTETTÄVISSÄ: Järjestelmänvalvojan on otettava tämä toiminto käyttöön tekoälyasetuksissa.',
     'AIControlTestGenInvalidId' => 'VIRHEELLINEN PYYNTÖ: Positiivinen kontrollitunnus vaaditaan.',
-    'AIControlTestGenNotFound' => 'EI LÖYDY: Määritettyä ohjausobjektia ei löytynyt.',
+    'AIControlTestGenNotFound' => 'EI LÖYDY: Määritettyä valvontatoimenpidettä ei löytynyt.',
     'AIControlTestGenConflict' => 'RISTIRIITA: Tämän ohjausobjektin testien luonti on jo jonossa.',
     'AIControlTestGenQueued' => 'HYVÄKSYTTY: Kontrollitestin generointi jonossa.',
-    'AIControlTestGenFailed' => 'SISÄINEN PALVELINVIRHE: Jonotuksen ohjaustestin luonti epäonnistui.',
+    'AIControlTestGenFailed' => 'SISÄINEN PALVELINVIRHE: Kontrollitestin luonnin lisääminen jonoon epäonnistui.',
     'AIControlTestGenCheckFailed' => 'VIRHE: Kontrollin vahvistaminen ennen jonottamista epäonnistui.',
     'GenerateTestsWithAI' => 'Testien luominen tekoälyn avulla',
     'ShowAiSuggestedTests' => 'Tekoälyn ehdottamat testit',
@@ -3682,7 +3682,7 @@ $lang = array(
     'TestGenerationStillRunning' => 'Testien luonti on edelleen käynnissä; luonnokset ilmestyvät pian.',
     'TestGenerationNoNew' => 'Generointi päättynyt — ei uusia testejä ehdotettavaksi tälle kontrollille.',
     'SearchEntities' => 'Hae yksiköitä',
-    'SearchEntitiesPlaceholder' => 'Haku riskejä, valvontaa, käytäntöjä, poikkeuksia…',
+    'SearchEntitiesPlaceholder' => 'Hae riskejä, kontrolleja, käytäntöjä, poikkeuksia…',
     'ShowTypes' => 'Näytä tyypit',
     'Depth' => 'Syvyys',
     'Inspector' => 'Tarkastaja',
@@ -3694,7 +3694,7 @@ $lang = array(
     'RankedByMaturityGap' => 'Maturiteettieron mukaan luokiteltu',
     'RankedByRiskScore' => 'Riskipistemäärän mukaan luokiteltu',
     'RankedByRecentFailure' => 'Järjestyksessä viimeisimmän epäonnistumisen mukaan',
-    'RankedByReviewDate' => 'Järjestys seuraavan arvostelupäivämäärän mukaan',
+    'RankedByReviewDate' => 'Järjestys seuraavan tarkistuspäivämäärän mukaan',
     'RankedBySeverity' => 'Vakavuuden mukaan luokiteltu',
     'RankedByName' => 'Nimen mukaan luokiteltu',
     'NodeTypeSelfAssessmentResult' => 'Itsearvioinnin tulos',
@@ -3708,7 +3708,7 @@ $lang = array(
     // fieldLabel() in connectivity-visualizer.js did not yet cover.
     'LastDate' => 'Viimeinen päivämäärä',
     'LastResultDate' => 'Viimeisin tulospäivämäärä',
-    'PercentComplete' => 'Valmistumisprosentti',
+    'PercentComplete' => 'Valmiusprosentti',
     'AssessmentDate' => 'Arviointipäivämäärä',
     'NextDate' => 'Seuraava päivämäärä',
     'Number' => 'Määrä',
@@ -3757,7 +3757,7 @@ $lang = array(
     // SimpleRisk user acting on that contact's questionnaire, so both the
     // contact and the acting user are named.
     'QuestionnaireCompletedAuditLogViaApi' => 'Kyselylomake "{$questionnaire_name}" yhteydenottoa varten "{$contact_name}" täytettiin API:n kautta käyttäjän "{$user_name} " toimesta.',
-    'QuestionnaireDraftAuditLogViaApi' => 'Kyselylomake "{$questionnaire_name}" yhteyshenkilölle "{$contact_name}" tallensi luonnoksena API:n kautta käyttäjän "{$user_name} " toimesta.',
+    'QuestionnaireDraftAuditLogViaApi' => 'Kyselylomake "{$questionnaire_name}" yhteyshenkilölle "{$contact_name}" tallennettiin luonnoksena API:n kautta käyttäjän "{$user_name}" toimesta.',
     // Bad-input response for the questionnaire risk-list endpoints, which
     // previously reported a malformed questionnaire_id as a permission denial.
     // Mirrors the existing 'MissingOrInvalidTrackingID'.
@@ -3866,9 +3866,9 @@ $lang = array(
     // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
     // reader to guess unfavourably.
     'SoaLegendTitle' => 'Kuinka lukea tämä lausunto',
-    'SoaLegendYes' => 'Jokainen tälle ohjausobjektille määritetty testi läpäisi sen viimeisimmän suorituksen.',
-    'SoaLegendPartial' => 'Kontrolliryhmän testit ovat ristiriidassa: ainakin yksi läpäisi ja ainakin yksi epäonnistui tai ei tuottanut tulosta.',
-    'SoaLegendNo' => 'Yksikään tämän ohjausobjektin testi ei läpäissyt sitä viimeksi suoritettaessa, ja ainakin yksi epäonnistui.',
+    'SoaLegendYes' => 'Jokainen tälle kontrollille määritetty testi läpäisi sen viimeisimmän suorituksen.',
+    'SoaLegendPartial' => 'Kontrollin testit ovat ristiriidassa: ainakin yksi läpäisi ja ainakin yksi epäonnistui tai ei tuottanut tulosta.',
+    'SoaLegendNo' => 'Yksikään tämän kontrollin testi ei läpäissyt sitä viimeksi suoritettaessa, ja ainakin yksi epäonnistui.',
     // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
     // and the labels alone do not quite carry that -- so the legend spells it
     // out. This is the distinction the whole six-state set exists for.
@@ -3877,7 +3877,7 @@ $lang = array(
     'SoaLegendNotApplicable' => 'Kontrolli ei kuulu tämän viitekehyksen soveltamisalaan, joten sillä ei ole toteutustilaa.',
     // The one most in need of explaining: with nothing to define it, this reads
     // as an admission about the control rather than as what it is.
-    'SoaLegendUnknown' => 'SimpleRisk ei voinut nimetä tallennettua tilaa, joten toteutusta ei esitellä tässä. Tämä on ohjelmistossa oleva vika eikä kerro mitään ohjauksesta – ei siitä, että se toimii, eikä siitä, ettei se toimi.',
+    'SoaLegendUnknown' => 'SimpleRisk ei voinut nimetä tallennettua tilaa, joten toteutusta ei esitellä tässä. Tämä on ohjelmistossa oleva vika eikä kerro mitään kontrollista – ei siitä, että se toimii, eikä siitä, ettei se toimi.',
     'SoaLegendOverdue' => 'Näytetty tulos on edelleen voimassa, mutta ainakin yhden sen taustalla olevista testeistä seuraava testipäivämäärä on jo ohi. Todisteet ovat vanhentuneita.',
     'SoaLegendNoEvidence' => 'Kontrolli on laajuudessa, eikä sen tueksi ole linkitetty mitään: ei vahvistettua asiakirjaa eikä testiä, joka olisi tuottanut tulosta.',
     'SoaLegendEvidenceNotExpected' => 'Todisteita ei odoteta, koska kontrolli on rajattu soveltamisalan ulkopuolelle.',
@@ -3984,7 +3984,7 @@ $lang = array(
     'UnlockNeedsAdministrator' => 'Ylläpitäjä voi määrittää tämän.',
     // API date parsing. {$field} is the request field name (next_date, last_date,
     // test_date); {$format} is this instance's configured display date format.
-    'InvalidSubmittedDate' => 'Arvo {$field} ei ole kelvollinen päivämäärä. Lähetä se muodossa VVVV-KK-PP tai tässä tapauksessa päivämäärämuodossa ({$format}).',
+    'InvalidSubmittedDate' => 'Arvo {$field} ei ole kelvollinen päivämäärä. Lähetä se muodossa VVVV-KK-PP tai tämän instanssin päivämäärämuodossa ({$format}).',
     // Companion to InvalidSubmittedDate, for a value that matches the expected
     // shape but names a day that does not exist (February 31st, month 13).
     // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
@@ -4030,7 +4030,7 @@ $lang = array(
     // The Evidence column's four bullet glyphs. Load-bearing since the visible
     // result word was dropped from pass and fail bullets, and until now defined
     // nowhere at all.
-    'SoaLegendEvidencePass' => 'Tämän ohjausobjektin testi tallensi läpäisyn viimeisimmällä suorituskerralla. Sen vieressä oleva päivämäärä osoittaa suoritusajankohdan.',
+    'SoaLegendEvidencePass' => 'Tämän valvontatoimen testi tallensi läpäisyn viimeisimmällä suorituskerralla. Sen vieressä oleva päivämäärä osoittaa suoritusajankohdan.',
     'SoaLegendEvidenceFail' => 'Tämän kontrollin testi havaitsi epäonnistumisen viimeisimmällä ajokerralla. Liitteessä R on hoitosuunnitelma, jos sellainen on olemassa.',
     'SoaLegendEvidenceInconclusive' => 'Tämän kontrollin testi suoritettiin, mutta tulosta ei saatu. Samaa arvosanaa käytetään tulokselle, jota tämä dokumentti ei tunnista, ja siinä tapauksessa itse tulos tulostetaan sen viereen.',
     // The TERM beside the § glyph. Not a document type -- the four types
@@ -4065,21 +4065,21 @@ $lang = array(
     'OwnershipAndMaturity' => 'Omistajuus ja kypsyys',
     'MappingsAndGuidance' => 'Kartoitukset ja ohjeet',
     'DeleteFrameworkTitle' => 'Poistetaanko kehys \'{$name}\'?',
-    'DeleteControlTitle' => 'Poistetaanko ohjausobjekti \'{$name}\'?',
+    'DeleteControlTitle' => 'Poistetaanko kontrolli \'{$name}\'?',
     'DeleteControlsTitle' => 'Poistetaanko {$n} -kontrollit?',
     'DeleteCannotBeUndone' => 'Tätä ei voi perua.',
     'DeleteFrameworkConsequence' => 'Tämä poistaa kehyksen ja kaikki sen ohjausmääritykset.',
-    'DeleteControlConsequence' => 'Tämä poistaa ohjauksen kaikista kehyksistä, joihin se on yhdistetty.',
-    'DeleteControlsConsequence' => 'Tämä poistaa jokaisen valitun ohjausobjektin jokaisesta kehyksestä, johon se on yhdistetty.',
+    'DeleteControlConsequence' => 'Tämä poistaa valvontatoimen kaikista kehyksistä, joihin se on yhdistetty.',
+    'DeleteControlsConsequence' => 'Tämä poistaa jokaisen valitun kontrollin jokaisesta kehyksestä, johon se on yhdistetty.',
     // Task 9: empty states (design-system.md §10) -- the four intents on
     // Define Control Frameworks. Reuses existing keys where the copy already
     // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
     // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
     // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
     // with no existing match are added below.
-    'NoControlsMatch' => 'Yksikään ohjausobjekti ei vastaa suodattimiasi',
-    'CouldNotLoadControls' => 'Ohjainten lataaminen epäonnistui',
-    'ControlsYouAddWillAppearHere' => 'Lisäämäsi ohjausobjektit näkyvät tässä.',
+    'NoControlsMatch' => 'Yksikään kontrolli ei vastaa suodattimiasi',
+    'CouldNotLoadControls' => 'Kontrollien lataaminen epäonnistui',
+    'ControlsYouAddWillAppearHere' => 'Lisäämäsi kontrollit näkyvät tässä.',
     'NoFrameworksYet' => 'Ei vielä kehyksiä',
     'FrameworksYouAddWillAppearHere' => 'Lisäämäsi tai tuomasi kehykset näkyvät tässä.',
     'CouldNotLoadFrameworks' => 'Kehyksiä ei voitu ladata',
@@ -4100,7 +4100,7 @@ $lang = array(
     'FwLastTestFailed' => 'Viimeisin testi epäonnistui',
     'FwNoEvidence' => 'Soveltuu, ei näyttöä',
     'FwMaturityUnderDesired' => 'Kypsyys alle halutun',
-    'FwScopeAFramework' => 'Laajennuskehyksen määrittäminen päätöksenteon tueksi',
+    'FwScopeAFramework' => 'Kehyksen laajuuden määrittäminen päätöksentekoa varten',
     'FwNotApplicableOrInherited' => 'Ei sovellettavissa tai peritty',
     // Task 22: framework rail search (governance/index.php's #sr-fw-search,
     // wired client-side in governance-frameworks.js). Reuses the shipped
@@ -4220,8 +4220,8 @@ $lang = array(
     // while "Select all N" escalates to the whole filtered result set -- the two
     // genuinely differ once the table pages, and a note that blurred them would
     // let the user write 1,535 decisions believing they had written 25.
-    'ApplicabilityScopeNote' => 'Tämä päätös koskee vain "{$framework}" -rakennetta. Sama ohjausobjekti voi pysyä voimassa myös toisessa viitekehyksessä.',
-    'ApplicabilityAppliesToSelected' => 'Se tallennetaan tällä sivulla valittuja {$n} -komponentteja vasten.',
+    'ApplicabilityScopeNote' => 'Tämä päätös koskee vain viitekehystä "{$framework}". Sama valvontatoimi voi pysyä voimassa myös toisessa viitekehyksessä.',
+    'ApplicabilityAppliesToSelected' => 'Se tallennetaan tällä sivulla valittuihin kontrolleihin ({$n}).',
     'ApplicabilityAppliesToAllFiltered' => 'Se tallennetaan kaikkien nykyisiä suodattimia vastaavien {$n} -kontrollien kohdalle, mukaan lukien muiden sivujen suodattimet.',
     // Per-state hints under the segmented control. The "applicable" one is the
     // load-bearing sentence of the whole modal, and the SoA audit-readiness work
@@ -4260,9 +4260,9 @@ $lang = array(
     'DeleteControlsPreviewChecking' => 'Tarkistetaan poistettavat tiedot...',
     'DeleteControlsPreviewSplit' => '{$n} kontrolli(a) poistetaan. Tätä ei voi perua. {$m} kontrolli(a)n testitulokset säilytetään tarkastushistoriaa varten.',
     'DeleteControlsPreviewKeptOnly' => 'Kaikki {$n} kontrolli(t) poistetaan. Tätä ei voi perua. Testitulokset säilytetään tarkastushistoriaa varten.',
-    'DeleteControlsPreviewRemovedOnly' => '{$n} ohjausobjektia poistetaan. Tätä ei voi perua.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} kontrollia poistetaan. Tätä ei voi perua.',
     'DeleteControlsPreviewNone' => 'Ei poistettavaa: valittuja ohjausobjekteja ei enää ole olemassa.',
-    'ControlsDeletedResult' => '{$n} ohjausobjektia poistettu.',
+    'ControlsDeletedResult' => '{$n} kontrollia poistettu.',
 
     // The Add/Edit framework modal's Status field. The label reuses the existing
     // 'Status' key -- the same word the rail's Active/Inactive/All filter already
@@ -4271,7 +4271,7 @@ $lang = array(
     // to retire a framework (unlike Delete, which cannot be undone), and that the
     // change cascades through the hierarchy, which is what update_framework_status()
     // has always done and is genuinely surprising when a parent is deactivated.
-    'FrameworkStatusHint' => 'Passiiviset kehykset säilyttävät kaikki ohjausobjektinsa ja määrityksensä, mutta ne piilotetaan oletuskehysluettelosta ja jätetään pois hallinnon koontinäytöstä. Kehyksen deaktivointi deaktivoi myös kaikki sen alaiset kehykset; yhden aktivointi aktivoi myös sen yläkehykset.',
+    'FrameworkStatusHint' => 'Passiiviset kehykset säilyttävät kaikki kontrollinsa ja määrityksensä, mutta ne piilotetaan oletuskehysluettelosta ja jätetään pois hallinnon koontinäytöstä. Kehyksen deaktivointi deaktivoi myös kaikki sen alaiset kehykset; yhden aktivointi aktivoi myös sen yläkehykset.',
 
     // Task 60: the same #applicability--set modal, opened from ONE control's row
     // action instead of the selection bulk bar. The button's own label reuses
@@ -4351,7 +4351,7 @@ $lang = array(
     // identical rows of boilerplate is entitled to ask whose risk assessment it
     // refers to.
     'SoaMissingFieldsTitle' => 'Tästä lausunnosta puuttuu kansitiedot',
-    'SoaMissingScopeStatement' => 'Tälle viitekehykselle ei ole tallennettu laajuuslausuntoa. Tarkastuslausunnossa tulee ilmoittaa, mitä laajuutta vasten se on tehty.',
+    'SoaMissingScopeStatement' => 'Tälle viitekehykselle ei ole tallennettu laajuuslausuntoa. Soveltuvuuslausunnossa (SoA) tulee ilmoittaa, mitä laajuutta vasten se on tehty.',
     'SoaMissingInclusionJustification' => 'Oletusarvoista sisällyttämistä koskevaa perustelua ei ole tallennettu. Sovellettavat kontrollit, joihin ei liity riskejä, palaavat yleiseen lauseeseen oman lauseesi sijaan.',
     'SoaEditFrameworkToAdd' => 'Lisää ne runkoon',
 
@@ -4383,7 +4383,7 @@ $lang = array(
 
     // A framework with no controls mapped into it. Not an error -- it is a real
     // and recoverable state, and saying so beats an empty table.
-    'SoaNoControls' => 'Tässä kehyksessä ei ole hallintalaitteita',
+    'SoaNoControls' => 'Tässä kehyksessä ei ole hallintakeinoja',
     'SoaNoControlsHint' => 'Kontrollien kartoittaminen viitekehykseen ja sen sovellettavuuslausunto listaavat ne.',
 
     // The second half of the statement-of-applicability launcher's affordance
@@ -4416,7 +4416,7 @@ $lang = array(
     // about to overwrite it, and {$n} is the count of the OTHER selected
     // controls -- the target is excluded, because it is very often ticked too
     // and a promise that included it would be false.
-    'ApplicabilityAppliesToControlNotSelection' => 'Se tallennetaan vain "{$name}" -kohtaan — valitsemiisi {$n} -komponentteihin tämä ei vaikuta.',
+    'ApplicabilityAppliesToControlNotSelection' => 'Se tallennetaan vain "{$name}" -kohtaan — valitsemiisi {$n} kontrolliin tämä ei vaikuta.',
 
     // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
     // sentence ('GenerateStatementOfApplicability' above) stays as the button's
@@ -4470,14 +4470,14 @@ $lang = array(
     // someone who cannot take it.
     'HowDoYouWantToAddAFramework' => 'Miten haluat lisätä kehyksen?',
     'CreateFrameworkManually' => 'Luo yksi manuaalisesti',
-    'CreateFrameworkManuallyHint' => 'Nimeä kehys itse ja lisää tai yhdistä sen ohjausobjektit.',
+    'CreateFrameworkManuallyHint' => 'Nimeä kehys itse ja lisää tai yhdistä sen kontrollit.',
     // Named for the framework rather than for its vendor. The hint was reworded
     // at the same time: it used to end "...load its Secure Controls Framework
     // controls", which read as a stutter once the label carried those words.
     'GetFrameworkFromScf' => 'Hanki sellainen Secure Controls Frameworkista',
-    'GetFrameworkFromScfHint' => 'Valitse julkaistu kehys ja lataa sen yhdistetyt ohjausobjektit yhdellä kertaa.',
+    'GetFrameworkFromScfHint' => 'Valitse julkaistu kehys ja lataa sen yhdistetyt kontrollit yhdellä kertaa.',
     'ImportFrameworkFromCatalog' => 'Tuo yksi',
-    'ImportFrameworkFromCatalogHint' => 'Asenna kehys ja sen ohjausobjektit SimpleRisk-sisältöluettelosta.',
+    'ImportFrameworkFromCatalogHint' => 'Asenna kehys ja sen kontrollit SimpleRisk-sisältöluettelosta.',
 
     // The framework acquisition chooser's third route, which now offers the
     // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
@@ -4495,7 +4495,7 @@ $lang = array(
     // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
     // is left in place and unreferenced by that page: other surfaces still use
     // it, and every locale carries it.
-    'UnassignedControls' => 'Määrittämättömät ohjausobjektit',
+    'UnassignedControls' => 'Määrittämättömät valvontatoimenpiteet',
     // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
     // returns the exception's message as the API status message and the page
     // renders it in a toast, so a hardcoded English literal here would be
@@ -4577,7 +4577,7 @@ $lang = array(
     'UpgradeStoppedShort' => 'Päivitys pysähtyi kohtaan {reached} saavuttamatta arvoa {app}. Katso palvelimen loki.',
     'UpgradeStepBackingUp' => 'Varmuuskopiointi',
     'UpgradeStepUpgradingFiles' => 'Sovellustiedostojen päivittäminen',
-    'UpgradeStepUpgradingExtras' => 'Asennettujen lisävarusteiden päivittäminen',
+    'UpgradeStepUpgradingExtras' => 'Asennettujen lisäosien päivittäminen',
     'UpgradeStepUpdatingUpgradeExtra' => 'Päivityksen lisäosan päivittäminen',
     // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
     // about it. These are the highest-stakes messages the upgrade produces --
@@ -4714,7 +4714,7 @@ $lang = array(
     'ApproveSelectedDocumentsConfirmBody' => 'Tämä hyväksyy {n} valitut asiakirjat ja laskee kunkin seuraavan tarkistuspäivämäärän.',
     'AddCategory' => 'Lisää luokka',
     'ExceptionsApproved' => 'Poikkeukset hyväksyttiin.',
-    'FrameworkControl' => 'Kehys / Ohjaus',
+    'FrameworkControl' => 'Kehys / Hallintakeino',
     'NoExceptionsYet' => 'Ei vielä poikkeuksia',
     'NoExceptionsYetBody' => 'Lisäämäsi poikkeukset näkyvät tässä.',
     'NoExceptionsMatchFilters' => 'Hakuasi vastaavia poikkeuksia ei löytynyt',
@@ -4738,7 +4738,7 @@ $lang = array(
     'ReviewCadence' => 'Tarkistustiheys',
     'ExceptionDetails' => 'Poikkeuksen tiedot',
     'DescriptionJustification' => 'Kuvaus ja perustelu',
-    'ChooseAControl' => 'Valitse ohjausobjekti',
+    'ChooseAControl' => 'Valitse kontrolli',
     'CantDeleteDocumentCategoryInUse' => 'Tätä asiakirjatyyppiä ei voida poistaa, koska sen alle on arkistoitu muita asiakirjoja.',
     'ExceptionDoesNotExist' => 'Asiakirjapoikkeusta ei ole olemassa',
     'DocumentAuditTrailReport' => 'Asiakirjan tarkastusketjuraportti',
@@ -4967,6 +4967,669 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Sinulla ei ole lupaa sulkea riskejä.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Vastaa kaikkiin pakollisiin kysymyksiin ennen arvioinnin suorittamista.',
+    'AuditLog_ControlStatusAutoSynced' => 'Kontrollin "{$short_name}" tilaksi päivitettiin automaattisesti "{$status_text}" sen viimeisimmän testituloksen/tulosten perusteella.',
+    'EnableCSPHelp' => 'Sisällön suojauskäytäntö (CSP) rajoittaa selaimen lataamaan skriptejä, tyylejä, kuvia ja fontteja vain SimpleRiskiltä itsestään ja estää sivujen kehystyksen ja lomakkeiden lähettämisen eri lähteistä. Se on vahvin sisäänrakennettu puolustus sivustojen välistä komentosarjojen käyttöä vastaan. Jätä tämä käytäntö käyttöön, ellei se ole ristiriidassa välityspalvelimen, selainlaajennuksen tai kolmannen osapuolen integraation kanssa ympäristössäsi.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Vakiokentät',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Ylläpitäjä',
+    'AccountDetails' => 'Tilitiedot',
+    'YourPermissions' => 'Käyttöoikeutesi',
+    'RoleAndTeamsGrantAccess' => 'Mitä roolisi ja tiimisi sinulle myöntävät käyttöoikeuden',
+    'AllGranted' => 'Kaikki myönnetty',
+    'PermissionsCountLabel' => '$count käyttöoikeudet',
+    'ManagedByYourAdministrator' => 'Näitä tietoja hallinnoi ylläpitäjäsi. Ota yhteys häneen, jos jotain täällä on muutettava.',
+    'MultiFactorAuthenticationHint' => 'Lisää toinen vaihe kirjautumiseen tilisi turvallisuuden parantamiseksi.',
+    'ChangingPasswordSignsOutEverywhere' => 'Salasanan vaihtaminen kirjaa sinut ulos kaikkialta muualta.',
+    'APIKeyHint' => 'Käytetään omien skriptiesi ja integraatioidesi todentamiseen SimpleRisk API:a vastaan.',
+    'ResetDisplaySettingsHint' => 'Palauttaa mukautetut sarakevalinnat oletusarvoihin.',
+    'CardGeneral' => 'Yleiset',
+    'CardClassification' => 'Luokitus',
+    'CardScoring' => 'Pisteytys',
+    'CardAdditionalInformation' => 'Lisä tietoja',
+    'CardCustomFields' => 'Mukautetut kentät',
+    'CardCustomFieldsHint' => 'Nämä kentät täytyy lajitella korttiin',
+    'LayoutEditorHint' => 'Vedä kenttä toiseen korttiin määrittääksesi sen uudelleen, vedä kortin sisällä muuttaaksesi sen järjestystä tai kokoa ja vedä tai muuta kortin kokoa muuttaaksesi sen sijaintia sivulla.',
+    'ScoringNotYetAvailableInThisView' => 'Pisteytysmääritykset eivät ole vielä käytettävissä tässä näkymässä.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Vedä muuttaaksesi kokoa',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} kenttä(ä) eivät mahdu tähän korttiin. Muuta kortin kokoa, jotta ne näkyvät.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Lieventämisstrategia',
+    'CardMitigationSolution' => 'Lieventävä ratkaisu',
+    'CardMitigationControls' => 'Lieventämisen valvonta',
+    'CardReview' => 'Katselmus',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Tyhjennä lomake',
+    'SaveAndNew' => 'Tallenna ja uusi',
+    'SaveAndView' => 'Tallenna ja näytä',
+    'ResetFormConfirmTitle' => 'Hylätäänkö tämä riskinarviointi?',
+    'ResetFormConfirmBody' => 'Kaikki antamasi tiedot menetetään.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Palauta oletusasettelu?',
+    'RestoreTemplateConfirmBodyRisk' => 'Tämä palauttaa kaikki Tiedot-, Lieventäminen- ja Tarkista-välilehtien kenttien oletusarvot tälle mallipohjaryhmälle. Muihin mallipohjaryhmiin tämä ei vaikuta.',
+    'RestoreTemplateConfirmBody' => 'Tämä palauttaa tämän mallin jokaisen kentän takaisin oletusarvoihinsa tälle mallipohjaryhmälle. Muihin mallipohjaryhmiin tämä ei vaikuta.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Edistyneet mittarit',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Peruspistemäärän hyödynnettävyysmittarit',
+    'BaseScoreImpactMetrics' => 'Peruspisteiden vaikutusmittarit',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Miten haavoittuvuuteen voidaan päästä käsiksi.\n• Paikallinen: vaatii paikallisen pääsyn, kuten konsolin tai komentotulkin.\n• Viereinen verkko: hyökkääjän on oltava samassa fyysisessä tai loogisessa verkkosegmentissä.\n• Verkko: hyödynnettävissä etänä verkon kautta ilman paikallista tai viereistä pääsyä.",
+    "AttackComplexityHelp" => "Kuinka monimutkainen hyökkäys on, kun hyökkääjällä on pääsy kohteeseen.\n• Korkea: vaatii erikoisehtoja, joita on vaikea järjestää.\n• Keskitaso: jotkin ehdot on täytettävä, mutta hyväksikäyttö ei ole vaikeaa, kun ne on täytetty.\n• Matala: ei erityisehtoja tarvita.",
+    "AuthenticationHelp" => "Kuinka monta kertaa hyökkääjän on todennettava itseään kohteelle hyödyntääkseen sitä.\n• Useita: todennus vaaditaan kaksi tai useampaa kertaa, jopa samoilla tunnistetiedoilla.\n• Yksittäinen: todennus vaaditaan kerran.\n• Ei mitään: todennusta ei vaadita.",
+    "ConfidentialityImpactHelp" => "Vaikutus järjestelmän käsittelemien tietojen luottamuksellisuuteen, jos hyökkäystä hyödynnetään.\n• Ei mitään: ei vaikutusta.\n• Osittainen: jonkin verran tietoa paljastuu, mutta hyökkääjä ei hallitse sitä, mitä, tai menetys on rajallinen.\n• Täydellinen: kaikkien järjestelmässä olevien tietojen täydellinen paljastuminen.",
+    "IntegrityImpactHelp" => "Vaikutus järjestelmän eheyteen, jos hyökkäystä hyväksikäytetään.\n• Ei mitään: ei vaikutusta.\n• Osittainen: joitakin tietoja voidaan muokata, mutta hyökkääjä ei hallitse mitä, tai laajuus on rajoitettu.\n• Täydellinen: järjestelmän eheys vaarantuu kokonaan; hyökkääjä voi muokata mitä tahansa tiedostoja.",
+    "AvailabilityImpactHelp" => "Vaikutus järjestelmän käytettävyyteen, jos sitä hyödynnetään.\n• Ei mitään: ei vaikutusta.\n• Osittainen: heikentynyt suorituskyky tai keskeytyksiä käytettävyydessä.\n• Täydellinen: kyseinen resurssi sammutetaan kokonaan.",
+    "RemediationLevelHelp" => "Haavoittuvuuteen saatavilla oleva korjaustaso.\n• Virallinen korjaus: saatavilla on täydellinen toimittajan ratkaisu.\n• Väliaikainen korjaus: saatavilla on virallinen, mutta väliaikainen korjaus.\n• Kiertotapa: olemassa on epävirallinen, ei-toimittajan tekemä kiertotapa.\n• Ei saatavilla: ratkaisua ei ole saatavilla tai sitä ei voida soveltaa.",
+    "ReportConfidenceHelp" => "Haavoittuvuuden olemassaolon ja sen teknisten yksityiskohtien uskottavuuden luottamusaste.\n• Vahvistamaton: yhden vahvistamattoman lähteen raportti; taustalla oleva ongelma on spekulatiivinen.\n• Vahvistamaton: useat riippumattomat lähteet raportoivat samasta toiminnasta, mutta syytä ei ole vahvistettu.\n• Vahvistettu: toimittaja on kuitannut ongelman tai se on vahvistettu lähdekoodin tai hyökkäysanalyysin avulla.",
+    "CollateralDamagePotentialHelp" => "Mahdollisuus ihmishenkien menetykseen, fyysisen omaisuuden menettämiseen tai taloudelliseen menetykseen, jos haavoittuvuutta hyödynnetään.\n• Ei mitään: tällaista menetystä ei todennäköisesti tapahdu.\n• Matala tai keskitaso: kohtalainen menetys on mahdollinen.\n• Korkea: katastrofaalinen vaikutus organisaation varoihin, tuloihin tai turvallisuuteen.",
+    "TargetDistributionHelp" => "Haavoittuvien järjestelmien osuus ympäristössäsi.\n• Ei mitään: kohdejärjestelmiä ei ole.\n• Matala: 1–25 % järjestelmistä on haavoittuvia.\n• Keskitaso: 26–75 % on haavoittuvia.\n• Korkea: 76–100 % on haavoittuvia.",
+    "ConfidentialityRequirementHelp" => "Kuinka tärkeää kyseisen resurssin luottamuksellisuus on organisaatiollesi.\n• Matala: luottamuksellisuuden menetyksellä on rajallinen vaikutus.\n• Keskitaso: sillä on vakava vaikutus.\n• Korkea: sillä on katastrofaalinen vaikutus.",
+    "IntegrityRequirementHelp" => "Kuinka tärkeä kyseisen omaisuuden eheys on organisaatiollesi.\n• Matala: eheyden menetyksellä on rajallinen vaikutus.\n• Keskitaso: sillä on vakava vaikutus.\n• Korkea: sillä on katastrofaalinen vaikutus.",
+    "AvailabilityRequirementHelp" => "Kuinka tärkeää kyseisen resurssin saatavuus on organisaatiollesi.\n• Matala: saatavuushäviöllä on rajallinen vaikutus.\n• Keskitaso: sillä on vakava vaikutus.\n• Korkea: sillä on katastrofaalinen vaikutus.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Miten hyökkääjän tulisi päästä tähän haavoittuvuuteen ja aktivoida se: missä hänen täytyy olla, kuinka monimutkainen hyökkäys on ja tarvitseeko hänen ensin todentaa itsensä.',
+    'BaseScoreImpactMetricsDescription' => 'Mitä tapahtuu, jos haavoittuvuutta hyödynnetään onnistuneesti: vaikutus haavoittuvan järjestelmän luottamuksellisuuteen, eheyteen ja saatavuuteen.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Kuinka haavoittuvuuden todellinen uhka muuttuu ajan myötä: hyväksikäyttökoodin nykytila, saatavilla olevat korjauskeinot ja kuinka luotettavia raportit sen olemassaolosta ovat.',
+    'EnvironmentalScoreMetricsDescription' => 'Miten tämän haavoittuvuuden riski riippuu ympäristöstäsi: todellisen vahingon mahdollisuudesta ja siitä, kuinka moneen järjestelmeesi se todellisuudessa vaikuttaa.',
+    'ImpactSubscoreModifiersDescription' => 'Painota peruspistemäärän vaikutusta sillä, kuinka paljon luottamuksellisuudella, eheydellä ja saatavuudella on todellista merkitystä tälle tietylle resurssille.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Jos uhkaa hyödynnetään, kuinka paljon vahinkoa aiheutuu?' . "\n" . '0 = Ei mitään' . "\n" . '5 = Yksittäisen käyttäjän tiedot ovat vaarantuneet tai niihin on vaikuttanut riski.' . "\n" . '10 = Täydellinen järjestelmän tai tietojen tuhoutuminen',
+    'ReproducibilityHelp' => 'Kuinka helppoa uhkaa on toistaa?' . "\n" . '0 = Erittäin vaikea tai mahdotonta jopa sovelluksen ylläpitäjille.' . "\n" . '5 = Vaaditaan yksi tai kaksi vaihetta, käyttäjän on ehkä oltava valtuutettu.' . "\n" . '10 = Pelkkä verkkoselain ja osoiterivi riittävät, ilman todennusta.',
+    'ExploitabilityHelp' => 'Mitä tarvitaan tämän uhkan hyödyntämiseksi?' . "\n" . '0 = Edistynyt ohjelmointi- ja verkostoitumisosaaminen sekä mukautetut tai edistyneet hyökkäystyökalut.' . "\n" . '5 = Internetissä on haittaohjelma, tai sen hyödyntäminen on helppoa saatavilla olevien hyökkäystyökalujen avulla.' . "\n" . '10 = Vain verkkoselain',
+    'AffectedUsersHelp' => 'Kuinka moneen käyttäjään tämä vaikuttaa?' . "\n" . '0 = Ei mitään' . "\n" . '5 = Jotkut käyttäjät, mutta eivät kaikki' . "\n" . '10 = Kaikki käyttäjät',
+    'DiscoverabilityHelp' => 'Kuinka helppoa tämän uhan havaitseminen on?' . "\n" . '0 = Hyvin vaikea tai mahdoton; vaatii lähdekoodia tai järjestelmänvalvojan oikeudet.' . "\n" . '5 = Pystyy selvittämään sen arvaamalla tai seuraamalla verkkojälkiä.' . "\n" . '9 = Tällaisten vikojen tiedot ovat jo julkisia ja ne löytyvät helposti hakukoneen avulla.' . "\n" . '10 = Tiedot näkyvät selaimen osoiterivillä tai lomakkeella.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'DREAD-pisteet',
+    'DreadMetrics' => 'DREAD-mittarit',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Kuinka teknisesti taitava tämä uhka-agenttiryhmä on?' . "\n" . '1 = Ei teknisiä taitoja' . "\n" . '3 = Joitakin teknisiä taitoja' . "\n" . '5 = Edistynyt tietokoneen käyttäjä' . "\n" . '6 = Verkko- ja ohjelmointitaidot' . "\n" . '9 = Tietoturvan tunkeutumistaidot',
+    'MotiveHelp' => 'Kuinka motivoitunut tämä uhka-agenttiryhmä on löytämään ja hyödyntämään tätä haavoittuvuutta?' . "\n" . '1 = Alhainen tai ei lainkaan palkkiota' . "\n" . '4 = Mahdollinen palkkio' . "\n" . '9 = Korkea palkinto',
+    'OpportunityHelp' => 'Mitä resursseja ja mahdollisuuksia tämä uhkaagenttiryhmä tarvitsee löytääkseen ja hyödyntääkseen tämän haavoittuvuuden?' . "\n" . '0 = Täydet käyttöoikeudet tai kalliita resursseja vaaditaan' . "\n" . '4 = Vaaditaan erityiskäyttöoikeus tai resurssit' . "\n" . '7 = Vaatii jonkin verran pääsyä tai resursseja' . "\n" . '9 = Ei pääsyä tai resursseja vaadita',
+    'SizeHelp' => 'Kuinka suuri tämä uhkaajien ryhmä on?' . "\n" . '2 = Kehittäjät' . "\n" . '2 = Järjestelmänvalvojat' . "\n" . '4 = Intranet-käyttäjät' . "\n" . '5 = Kumppanit' . "\n" . '6 = Todennetut käyttäjät' . "\n" . '9 = Anonyymit internetin käyttäjät',
+    'EaseOfDiscoveryHelp' => 'Kuinka helppoa tämän uhkaagenttiryhmän on havaita tämä haavoittuvuus?' . "\n" . '1 = Käytännössä mahdotonta' . "\n" . '3 = Vaikea' . "\n" . '7 = Helppo' . "\n" . '9 = Automatisoidut työkalut käytettävissä',
+    'EaseOfExploitHelp' => 'Kuinka helppoa tämän uhkaagenttiryhmän on todellisuudessa hyödyntää tätä haavoittuvuutta?' . "\n" . '1 = Teoreettinen' . "\n" . '3 = Vaikea' . "\n" . '5 = Helppo' . "\n" . '9 = Automatisoidut työkalut käytettävissä',
+    'AwarenessHelp' => 'Kuinka hyvin tunnettu tämä haavoittuvuus on tälle uhkaagenttiryhmälle?' . "\n" . '1 = Tuntematon' . "\n" . '4 = Piilotettu' . "\n" . '6 = Ilmeinen' . "\n" . '9 = Julkinen tieto',
+    'IntrusionDetectionHelp' => 'Kuinka todennäköisesti hyökkäys havaitaan?' . "\n" . '1 = Aktiivinen tunnistus sovelluksessa' . "\n" . '3 = Kirjattu ja tarkistettu' . "\n" . '8 = Kirjattu ilman tarkistusta' . "\n" . '9 = Ei kirjattu',
+    'LossOfConfidentialityHelp' => 'Kuinka paljon tietoja voidaan luovuttaa ja kuinka arkaluonteisia ne ovat?' . "\n" . '2 = Minimaalisesti luovutettavat ei-arkaluonteiset tiedot' . "\n" . '6 = Vähäiset kriittiset tiedot paljastetaan' . "\n" . '6 = Laajat ei-arkaluonteiset tiedot luovutettu' . "\n" . '7 = Laaja kriittisen datan paljastus' . "\n" . '9 = Kaikki tiedot luovutetaan',
+    'LossOfIntegrityHelp' => 'Kuinka paljon dataa voi vioittua ja kuinka vaurioitunut se on?' . "\n" . '1 = Minimaalisesti hieman korruptoitunut data' . "\n" . '3 = Vähäisen määrän vakavasti vioittuneita tietoja' . "\n" . '5 = Laaja, hieman korruptoitunut data' . "\n" . '7 = Laaja ja vakavasti korruptoitunut data' . "\n" . '9 = Kaikki tiedot täysin korruptoituneita',
+    'LossOfAvailabilityHelp' => 'Kuinka paljon palvelua voidaan menettää ja kuinka tärkeä se on?' . "\n" . '1 = Minimaaliset toissijaiset palvelut keskeytetty' . "\n" . '5 = Minimaaliset ensisijaiset palvelut keskeytetty' . "\n" . '5 = Laajat toissijaiset palvelut keskeytetty' . "\n" . '7 = Laajat ensisijaiset palvelut keskeytetty' . "\n" . '9 = Kaikki palvelut täysin menetetty',
+    'LossOfAccountabilityHelp' => 'Voidaanko uhkaajien toimia jäljittää yksilöön?' . "\n" . '1 = Täysin jäljitettävä' . "\n" . '7 = Mahdollisesti jäljitettävissä' . "\n" . '9 = Täysin anonyymi',
+    'FinancialDamageHelp' => 'Kuinka paljon taloudellista vahinkoa hyväksikäytöstä aiheutuu?' . "\n" . '1 = Vähemmän kuin haavoittuvuuden korjaaminen' . "\n" . '3 = Vähäinen vaikutus vuositulokseen' . "\n" . '7 = Merkittävä vaikutus vuositulokseen' . "\n" . '9 = Konkurssi',
+    'ReputationDamageHelp' => 'Johtuisiko hyväksikäyttö mainevahinkosta, joka vahingoittaisi liiketoimintaa?' . "\n" . '1 = Vähäinen vahinko' . "\n" . '4 = Suurten tilien menetys' . "\n" . '5 = Liikearvon menetys' . "\n" . '9 = Brändivahinko',
+    'NonComplianceHelp' => 'Kuinka paljon altistumista vaatimusten noudattamatta jättäminen aiheuttaa?' . "\n" . '2 = Lievä rikkomus' . "\n" . '5 = Selvä rikkomus' . "\n" . '7 = Korkean profiilin rikkomus',
+    'PrivacyViolationHelp' => 'Kuinka paljon henkilötietoja voidaan luovuttaa?' . "\n" . '3 = Yksi henkilö' . "\n" . '5 = Satoja ihmisiä' . "\n" . '7 = Tuhansia ihmisiä' . "\n" . '9 = Miljoonia ihmisiä',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP-pisteet',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Arvioi tämän uhka-agenttiryhmän onnistuneen hyökkäyksen todennäköisyyttä.',
+    'VulnerabilityFactorsDescription' => 'Arvioi todennäköisyyttä, että tämä haavoittuvuus löydetään ja sitä hyödynnetään.',
+    'TechnicalImpactDescription' => 'Jakaa vaikutuksen luottamuksellisuuden, eheyden, saatavuuden ja vastuuvelvollisuuden mukaan.',
+    'BusinessImpactDescription' => 'Heijastaa liiketoiminnan kannalta tärkeitä asioita pelkän teknisen vaikutuksen lisäksi.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Hyökkäystekniikoiden tai koodin saatavuuden nykytila.\n• Todentamaton: hyväksikäyttökoodia ei ole saatavilla tai hyväksikäyttö on teoreettinen.\n• Konseptin todistaminen: hyväksikäyttökoodia on olemassa, mutta se ei ole käytännöllinen useimmille hyökkääjille.\n• Toiminnallinen: toimiva hyväksikäyttökoodi toimii useimmissa tilanteissa.\n• Korkea: hyväksikäyttö on luotettavaa ja joko automatisoitua (esim. mato) tai ei vaadi hyväksikäyttökoodia ollenkaan.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Klassinen pisteytys',
+    'ClassicLikelihoodDescription' => 'Kuinka todennäköistä tämä riski on.',
+    'ClassicImpactDescription' => 'Kuinka vakavia seurauksia tällä riskillä olisi, jos se toteutuisi.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Mukautettu pisteytys',
+    'CustomValueDescription' => 'Mukautettu arvo voi olla desimaaliluku väliltä 0–10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Kuinka todennäköistä tämä riski on.',
+    'ContributingRiskDescription' => 'Kutakin alla olevaa tekijää painotetaan sen suhteellisen tärkeyden mukaan – valitse, kuinka paljon kukin tekijä vaikuttaa tähän riskiin.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'OWASP-riskiluokitusmenetelmän täydelliset tiedot löytyvät',
+    'Here' => 'tässä',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Summa (Paino x Vaikutus x 5 / Maks.)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Lataa kuvana',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'CVSS-version 2.0 pisteytyksen täydelliset tiedot löytyvät',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Virheellinen kontrollin tunnus.',
+    'ValidationOwner' => 'Vahvistuksen omistaja',
+    'ValidationStatus' => 'Vahvistustila',
+    'NotStarted' => 'Ei aloitettu',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Etsimäsi riski on ehkä poistettu tai linkki voi olla virheellinen.',
+    'MitigationControlsRequiresGovernance' => 'Katselu vaatii hallintoluvan.',
+    'ViewControlValidation' => 'Näkymän hallinnan validointi',
+    'EditControlValidation' => 'Muokkauskontrollin validointi',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Edellyttää Lähetä riski -luvan tiedostojen lataamiseen.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Edellyttää Muokkaa riskejä -oikeuden tiedostojen hallintaan.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Edellyttää Plan Mitigations -käyttöoikeuden tiedostojen hallintaan.',
+    'MitigationSubmittedBy' => 'Lieventämisen lähettäjä',
+    'UseADifferentDate' => 'Käytä eri päivämäärää',
+    'AssetGroup' => 'Omaisuusryhmä',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Virheellinen f-ryhmä.',
+    'CustomizationCardsLayoutApiScopeError' => 'Mukautuskorttien asettelun API on käytettävissä vain fgroup=risk-, tab_index=1-, tab_index=2- tai tab_index=3-arvoille.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Tutustu resursseihin',
+    'DiscoveryRuns' => 'Löytöjuoksut',
+    'DiscoveryRangeHint' => 'Yksi osoite, alku-loppu-alue tai IPv4 CIDR',
+    'DiscoveryResolveNames' => 'Etsi isäntänimiä',
+    'DiscoveryAddAs' => 'Lisää uusia resursseja nimellä',
+    'DiscoveryStart' => 'Aloita etsintä',
+    'DiscoveryBackgroundNote' => 'Toimii taustalla. Jo olemassa olevat osoitteet ohitetaan.',
+    'DiscoveryRangeInvalid' => 'Anna kelvollinen IPv4-osoite, alue tai CIDR-lohko.',
+    'DiscoveryRangeTooLarge' => 'Tuo alue on liian suuri. Raja on {$max} osoitetta.',
+    'DiscoveryRunQueued' => 'Etsintä käynnistyi.',
+    'DiscoveryRunCompleted' => 'Löytö valmis: {$new} uutta omaisuutta.',
+    'AssetBulkSelectAll' => 'Valitse kaikki {$count} resurssit',
+    'AssetBulkAssignTeams' => 'Määritä tiimit…',
+    'AssetBulkAddToGroup' => 'Lisää ryhmään…',
+    'AssetBulkDeleteConfirmTitle' => 'Poistetaanko {$count} resurssia?',
+    'AbleToEditAssets' => 'Pystyy muokkaamaan resursseja',
+    'AbleToDeleteAssets' => 'Pystyy poistamaan resursseja',
+    'AbleToVerifyAssets' => 'Pystyy varmentamaan omaisuutta',
+    'AbleToRunAssetDiscovery' => 'Pystyy suorittamaan omaisuuden etsintää',
+    'AbleToCreateAssetGroups' => 'Pystyy luomaan omaisuusryhmiä',
+    'AbleToEditAssetGroups' => 'Voi muokata resurssiryhmiä',
+    'AbleToDeleteAssetGroups' => 'Voi poistaa resurssiryhmiä',
+    'ViewAsset' => 'Näytä resurssi',
+    'AssetUnverifiedByEditLog' => 'Resurssi "{$name}" palautettiin vahvistamattomaksi, koska käyttäjä "{$user}" muutti nimeään tai IP-osoitettaan ilman lupaa vahvistaa resursseja.',
+    'AssetTeamsAssignedLog' => 'Käyttäjä "{$user} " on määrännyt resurssin "{$name}" tiimille/tiimeille "{$teams}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Lisää resurssi',
+    'SearchAssetsPlaceholder' => 'Hae nimellä tai IP-osoitteella',
+    'AllLocations' => 'Kaikki sijainnit',
+    'AllTags' => 'Kaikki tunnisteet',
+    'AllAssetGroups' => 'Kaikki omaisuusryhmät',
+    'AssetFields' => 'Resurssikentät',
+    'AssetBulkAllSelected' => 'Kaikki {$count} vastaavat resurssit valittu',
+    'AssetDeleteConfirmTitle' => 'Poistetaanko resurssi "{$name}"?',
+    'DeleteAsset' => 'Poista resurssi',
+    'DeleteAssets' => 'Poista resurssit',
+    'AssetBulkAssignTeamsTitle' => 'Määritä tiimit {$count} resursseille',
+    'AssetAssignTeamsHint' => 'Valitut joukkueet lisätään. Jo resurssilla olevat joukkueet pysyvät.',
+    'AssetAddToGroupTitle' => 'Lisää {$count} resurssia ryhmään',
+    'AssetChooseTeams' => 'Valitse joukkueet',
+    'AssetChooseGroup' => 'Valitse ryhmä',
+    'Assign' => 'Määritä',
+    'AssetBulkVerifiedSummary' => '{$ok} vahvistettu, {$failed} ohitettu',
+    'AssetBulkDeletedSummary' => '{$ok} poistettu, {$failed} ohitettu',
+    'AssetBulkTeamsSummary' => 'Joukkueet, jotka on liitetty {$ok} resursseihin, {$failed} ohitettu',
+    'AssetBulkGroupSummary' => '{$ok} lisätty ryhmään, {$failed} ohitettu',
+    'AssetBulkSkippedList' => 'Ohitettu: {$list}',
+    'AssetBulkReasonNotFound' => 'ei löydy',
+    'NoAssetsYet' => 'Ei vielä resursseja',
+    'NoAssetsYetHint' => 'Lisäämäsi tai löytämäsi resurssit näkyvät tässä.',
+    'NoAssetsMatchFilters' => 'Mikään omaisuuserä ei vastaa suodattimiasi',
+    'CouldNotLoadAssets' => 'Resurssien lataaminen epäonnistui. Tietosi ovat turvassa.',
+    'AllValuations' => 'Kaikki arvioinnit',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Lisää ryhmä',
+    'EditAssetGroup' => 'Muokkaa ryhmää',
+    'DeleteAssetGroup' => 'Poista ryhmä',
+    'ViewGroupMembers' => 'Näytä jäsenet',
+    'SearchAssetGroupsPlaceholder' => 'Hae ryhmiä nimen perusteella',
+    'HighestValuation' => 'Korkein arvostus',
+    'LinkedRisks' => 'Liittyvät riskit',
+    'RemoveFromGroup' => 'Poista ryhmästä',
+    'AssetGroupMoreMembers' => '+ {$count} lisää',
+    'ViewAllInAssetsTab' => 'Näytä kaikki Resurssit-välilehdellä',
+    'NoAssetsInGroup' => 'Ei omaisuutta tässä ryhmässä.',
+    'CouldNotLoadGroupMembers' => 'Tämän ryhmän jäsenten lataaminen epäonnistui.',
+    'AssetGroupMembers' => 'Jäsenet',
+    'AssetGroupMembersHint' => 'Vain ne resurssit, jotka sinä näet, näkyvät. Jäsenet, jotka et näe, pysyvät ryhmässä.',
+    'ChooseAssets' => 'Valitse resurssit',
+    'AddOrRemoveAssets' => 'Lisää tai poista resursseja…',
+    'UseTheseAssets' => 'Käytä näitä resursseja',
+    'AllAssets' => 'Kaikki resurssit',
+    'Valuation' => 'Arvostus',
+    'PickerShowingFirstN' => 'Näytetään ensimmäinen {$count} / {$total}. Hae tai rajaa löytääksesi loput.',
+    'AssetGroupDeleteConfirmTitle' => 'Poistetaanko ryhmä "{$name}"?',
+    'AssetGroupDeleteKeepsAssets' => 'Tämän ryhmän resursseja ei poisteta. Vain ryhmä poistetaan.',
+    'NoAssetGroupsYet' => 'Ei vielä omaisuusryhmiä',
+    'NoAssetGroupsYetHint' => 'Ryhmittele resurssit, jotta voit kartoittaa ja raportoida niistä yhdessä.',
+    'NoAssetGroupsMatchSearch' => 'Yksikään omaisuusryhmä ei vastaa hakuasi',
+    'CouldNotLoadAssetGroups' => 'Resurssiryhmiä ei voitu ladata. Tietosi ovat turvassa.',
+    'DiscoveryAssignTeams' => 'Määritä tiimeille',
+    'DiscoveryAssignTeamsHint' => 'Valinnainen. Jokainen uusi resurssi lisätään näihin tiimeihin.',
+    'DiscoveryAddAsHint' => 'Asetettu omaisuuden vahvistamiseen antamallasi luvalla.',
+    'DiscoveryTeamsInvalid' => 'Valitse olemassa olevia joukkueita, joihin kuulut.',
+    'DiscoveryResolveNamesInvalid' => 'Isäntänimien haun on oltava päällä tai pois päältä.',
+    'DiscoveryTooManyActiveRuns' => 'Sinulla on jo {$max} etsintäajoa käynnissä. Odota yhden valmistumista tai peruuta se.',
+    'DiscoveryRunNotFound' => 'Etsintäajoa ei löytynyt.',
+    'DiscoveryRunAlreadyFinished' => 'Tämä etsintäajo on jo päättynyt.',
+    'DiscoveryRunCancelled' => 'Löytöajo peruttu.',
+    'DiscoveryRunFailedToast' => 'Kohteen {$range} löytäminen epäonnistui.',
+    'DiscoveryStatusQueued' => 'Jonossa',
+    'DiscoveryProgress' => '{$scanned} / {$total}',
+    'DiscoveryLiveHosts' => 'Live-isännät',
+    'DiscoveryNewAssets' => 'Uudet resurssit',
+    'DiscoveryStartedAt' => 'Aloitettu',
+    'DiscoveryCancelRun' => 'Peruuta ajo',
+    'CouldNotLoadDiscoveryRuns' => 'Etsintäajojen lataaminen epäonnistui.',
+    'DiscoveryRangeReserved' => 'Tämä alue sisältää varattuja osoitteita (loopback, link-local, multicast tai 0.0.0.0/8), joita ei voida skannata.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Käynnissä on jo {$max} etsintäajoa. Yritä uudelleen, kun yksi on valmis.',
+    'DiscoveryErrorScan' => 'Skannaus pysähtyi virheen vuoksi. Tarkista lisätietoja järjestelmälokeista.',
+    'DiscoveryErrorWorkerLost' => 'Taustajono lopetti tämän suorituksen käsittelyn.',
+    'DiscoveryErrorRequesterInactive' => 'Tämän suorituksen aloittanut käyttäjä ei ole enää aktiivinen.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Lähetä joukkotoiminto JSON-rungona.',
+    'AssetBulkActionRequired' => 'Valitse joukkotoiminto.',
+    'AssetBulkUnknownAction' => 'Tuo joukkotoiminto ei ole käytettävissä.',
+    'AssetBulkSelectionRequired' => 'Valitse resurssit joko tunnuksen tai suodattimen perusteella.',
+    'AssetBulkIdsRequired' => 'Valitse vähintään yksi resurssi.',
+    'AssetBulkIdsInvalid' => 'Resurssitunnusten on oltava kokonaislukuja.',
+    'AssetBulkTooManyAssets' => 'Voit käsitellä kerrallaan enintään {$max} kohdetta. Rajaa valintaasi ja yritä uudelleen.',
+    'AssetBulkFilterInvalid' => 'Suodatin ei ole kelvollinen. Lataa sivu uudelleen ja yritä uudelleen.',
+    'AssetBulkFilterUnknownKey' => 'Suodatinta "{$key}" ei tunnisteta.',
+    'AssetBulkFilterBadValue' => 'Suodattimella "{$key}" on virheellinen arvo.',
+    'AssetBulkFilterTooManyValues' => 'Suodatin "{$key}" voi listata enintään {$max} arvoa.',
+    'AssetBulkFilterAllAlone' => 'Kaikkien resurssien valitsemista ei voi yhdistää muihin suodattimiin.',
+    'AssetBulkFilterEmpty' => 'Valitse suodatin tai valitse kaikki resurssit ennen joukkotoiminnon suorittamista.',
+    'AssetBulkExpectedCountInvalid' => 'Odotetun omaisuuserien lukumäärän on oltava kokonaisluku.',
+    'AssetBulkParamsInvalid' => 'Tämän joukkotoiminnon asetukset eivät ole kelvollisia.',
+    'AssetBulkTeamsRequired' => 'Valitse ainakin yksi joukkue.',
+    'AssetBulkTeamsNotFound' => 'Yksi tai useampi näistä joukkueista ei ole enää olemassa.',
+    'AssetBulkTeamsNotMember' => 'Voit liittää vain tiimejä, joihin itse kuulut.',
+    'AssetBulkGroupNotFound' => 'Kyseistä omaisuusryhmää ei enää ole olemassa.',
+    'AssetBulkNoMatch' => 'Mikään omaisuuserä ei vastaa valintaasi.',
+    'AssetBulkCountMismatch' => 'Vastaavat resurssit muuttuivat arvosta {$expected} arvoon {$actual} sen jälkeen, kun valitsit ne. Tarkista lista ja yritä uudelleen.',
+    'AssetColumnSettingsBodyInvalid' => 'Lähetä sarakeasetukset JSON-runkona sarakkeineen tai järjestyksen mukaan.',
+    'AssetColumnSettingsSaveFailed' => 'Sarakkeitasi ei voitu tallentaa. Pyydä järjestelmänvalvojaa viimeistelemään SimpleRisk-päivitys.',
+    'DiscoveryRunQueueFailed' => 'Etsintäajoa ei voitu jonoon asettaa. Yritä uudelleen.',
+    'DiscoveryRunStartedLog' => 'Käyttäjä "{$user} " käynnisti resurssien etsintäajon #{$id} , jonka kohderyhmä on {$range} ({$count} osoitetta).',
+    'DiscoveryRunCancelledLog' => 'Käyttäjä "{$user} " keskeytti resurssien etsintäajon #{$id} kohteesta {$range}.',
+    'AssetBulkTooManyToDelete' => 'Voit poistaa kerrallaan enintään {$max} kohdetta. Rajaa valintaasi ja yritä uudelleen.',
+    'AssetBulkFilterNotApplied' => 'Suodatinta "{$key}" ei voitu käyttää lähetetyssä muodossa, joten mitään ei muutettu.',
+    'AssetBulkExpectedCountRequired' => 'Omaisuuserien poistaminen suodattimella edellyttää poistettavaksi odottamiesi omaisuuserien määrää.',
+    'AssetBulkReasonNotAttempted' => 'ei yritetty',
+    'MoreActions' => 'Lisää toimintoja',
+    'AssetCreateNewGroupOption' => 'Luo uusi ryhmä…',
+    'AssetNewGroupName' => 'Uuden ryhmän nimi',
+    'AssetFilterByTeam' => 'Suodata tiimin mukaan {$name}',
+    'AssetFilterByValuation' => 'Suodata arvon mukaan {$name}',
+    'AssetFilterByTag' => 'Suodata tunnisteen {$name} mukaan',
+    'AssetFilterByLocation' => 'Suodata sivuston/sijainnin mukaan {$name}',
+    'AssetFilteringByTeam' => 'Suodatus tiimin mukaan {$name}',
+    'AssetFilteringByValuation' => 'Suodatus arvostuksen mukaan {$name}',
+    'AssetFilteringByTag' => 'Suodatus tunnisteen {$name} mukaan',
+    'AssetFilteringByLocation' => 'Suodatus sivuston/sijainnin mukaan {$name}',
+    'AssetShowOnlyVerified' => 'Näytä vain vahvistetut resurssit',
+    'AssetShowOnlyUnverified' => 'Näytä vain vahvistamattomat resurssit',
+    'AssetShowingVerified' => 'Näytetään vahvistetut resurssit',
+    'AssetShowingUnverified' => 'Näytetään vahvistamattomat resurssit',
+    'CustomizationLayoutPayloadRejected' => 'Asettelua ei voitu tallentaa, koska se sisältää kenttiä tai kortteja, jotka eivät kuulu tähän mallipohjaan. Mitään ei muutettu.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Tätä mallipohjan laajuutta ei voida tallentaa asettelueditorista. Mitään ei muutettu.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Asettelussa ei ole kelvollisia kenttiä, joten sitä ei tallennettu. Mitään ei muutettu.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Tämän asettelun tallentaminen poistaisi kaikki kentät mallista, joten sitä ei tallennettu. Lataa sivu uudelleen ja yritä uudelleen.',
+    'CustomizationLayoutRejectedRequiredField' => 'Pakollista kenttää ei voi poistaa asettelusta. Mitään ei muutettu.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Tämän asettelun tallentaminen poistaisi suurimman osan mallipohjan kentistä ilman, että poistaisit niitä täältä. Lataa sivu uudelleen ja yritä uudelleen. Mikään ei muuttunut.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Mallipohjaryhmää ei ole olemassa tai se kuuluu erityyppiseen tietueeseen. Mitään ei muutettu.',
+    'CustomizationLayoutLegacySaveRefused' => 'Tätä mallipohjaa muokataan asettelueditorilla, eikä sitä voida tallentaa vanhan paneelin päätepisteen kautta.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Syötä enintään {$max} TCP-porttia väliltä 1–65535 pilkuilla erotettuna.',
+    'DiscoveryErrorProbeUnavailable' => 'Tämän ajon aloituskoemenetelmä ei ole enää taustatyöntekijän käytettävissä. Aloita uusi ajo.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP-ping (ei-etuoikeutettu soketti)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP-ping (raaka soketti)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (ping-komento)',
+    'DiscoveryProbeTcpConnect' => 'TCP-yhteys',
+    'DiscoveryProbeMethod' => 'Luotainmenetelmä: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Verkkopalvelin havaitsi. Taustatyöntekijä saattaa käyttää eri menetelmää.',
+    'DiscoveryTcpProbeWarning' => 'Palvelimet löytyvät vain, jos ne vastaavat johonkin skannatuista TCP-porteista, joten näitä portteja estäviä palvelimia ei löydy. Täydellisten tulosten saamiseksi anna palvelimen lähettää ICMP-ping-komento: salli etuoikeudettomat ping-socketit tai NET_RAW-ominaisuus tai asenna ping.',
+    'DiscoveryTcpPortsForRun' => 'TCP-portit tälle suoritukselle',
+    'DiscoveryTcpPortsHint' => 'Pilkuilla erotettuna, enintään {$max} porttia. Jätä tyhjäksi käyttääksesi oletusporttia: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'Resurssien etsinnän TCP-portit',
+    'DiscoveryDefaultTcpPortsHint' => 'Käytetään, kun taustatyöntekijä ei voi lähettää ICMP ping -komentoa. Pilkuilla erotettuna, enintään {$max} porttia.',
+    'DiscoveryErrorTcpUnreliable' => 'Skannaus pysähtyi, koska verkko vastaa TCP-yhteyksiin osoitteista, jotka eivät voi olla oikeita isäntiä (välityspalvelin tai palomuuri tiellä), joten jokainen osoite näyttäisi aktiiviselta. Pyydä järjestelmänvalvojaasi antamaan palvelimelle lupa lähettää ICMP-ping-kutsu.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'Käyttäjä "{$user}" palautti resurssien etsinnän TCP-portit oletusasetuksiin.',
+    'DiscoveryNotConfigured' => 'Etsintää ei ole määritetty. Pyydä järjestelmänvalvojaa asettamaan sallitut alueet config.php-tiedostossa.',
+    'DiscoveryRangeNotAllowed' => 'Tuo alue on niiden alueiden ulkopuolella, joihin etsintä voi skannata.',
+    'DiscoveryAllowedRangesList' => 'Sallitut alueet: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Tämä resurssi ei ole käytettävissä. Se on ehkä poistettu tai sinulla ei ehkä ole siihen pääsyä.',
+    'AssetCustomFieldNotInTemplate' => 'Yksi tai useampi mukautettu kenttä ei kuulu tämän resurssin mallipohjaan. Mitään ei muutettu.',
+    'AssetMappedControlsInvalid' => 'Yhdistettyjä ohjausobjekteja ei voitu tallentaa. Jokaisella rivillä on oltava kypsyysaste ja vähintään yksi olemassa oleva ohjausobjekti. Mitään ei muutettu.',
+    'AssetMappedControlsTooMany' => 'Resurssi voidaan yhdistää enintään {$max} kontrolliin. Mitään ei muutettu.',
+    'AddControlsAtAnotherMaturity' => 'Lisää kontrollit toisella kypsyysasteella',
+    'ChoosingControlsNeedsGovernancePermission' => 'Kontrollien valitseminen edellyttää Governance-käyttöoikeutta.',
+    'NControls' => '{n} ohjausobjektit',
+    'SavingKeepsTheCurrentControlMappings' => 'Tallentaminen säilyttää nykyiset kontrollien yhdistämiset.',
+    'LoadingControls' => 'Ladataan kontrolleja…',
+    'ControlListCouldNotBeLoaded' => 'Kontrolliluetteloa ei voitu ladata, joten yhdistettyjä kontrolleja ei voida muuttaa juuri nyt.',
+    'RemoveControlsAtMaturity' => 'Poista kontrollit kypsyyden saavuttamiseksi {maturity}',
+    'ControlIdUnavailable' => '#{id} (ei saatavilla)',
+    'AssetRecordEdit' => 'Muokkaa resurssia',
+    'AssetRecordIdN' => 'Omaisuus #{$id}',
+    'AssetRecordCopyLink' => 'Kopioi linkki tähän resurssiin',
+    'AssetRecordLinkCopied' => 'Linkki kopioitu.',
+    'AssetRecordLinkCopyFailed' => 'Linkkiä ei voitu kopioida. Kopioi se sen sijaan osoiteriviltä.',
+    'AssetRecordMarkUnverified' => 'Merkitse vahvistamattomaksi',
+    'AssetRecordViewAuditTrail' => 'Tarkastele tarkastusketjua',
+    'AssetRecordAuditTrailTitle' => 'Auditointiketju',
+    'AssetRecordAuditTrailEmpty' => 'Tälle omaisuuserälle ei kirjattu toimintaa tällä ajanjaksolla.',
+    'AssetRecordAuditTrailFailed' => 'Tarkastuslokitiedostoa ei voitu ladata.',
+    'AssetRecordBackToAsset' => 'Takaisin resurssiin',
+    'AssetRecordSave' => 'Tallenna resurssi',
+    'AssetRecordProvenanceVerified' => 'Vahvistettu · lisätty {$date}',
+    'AssetRecordProvenanceUnverified' => 'Vahvistamaton: ei ole vielä vahvistanut kukaan, joka voi vahvistaa omaisuutta · lisätty {$date}',
+    'AssetRecordUnsavedHint' => 'Jos suljet tallentamattomilla muutoksilla, sinulta pyydetään ensin vahvistusta.',
+    'AssetRecordDiscardQuestion' => 'Hylätäänkö tallentamattomat muutokset?',
+    'AssetRecordKeepEditing' => 'Jatka muokkaamista',
+    'AssetRecordDiscardChanges' => 'Hylkää muutokset',
+    'AssetRecordVerificationCard' => 'Vahvistus',
+    'AssetRecordVerificationTag' => 'Tarvitsee resurssien vahvistusluvan',
+    'AssetRecordVerifiedHint' => 'Vastuullinen henkilö on tarkistanut tämän resurssin. Sen nimen tai IP-osoitteen muuttaminen ilman resurssien tarkistuslupaa palauttaa sen vahvistamattomaksi.',
+    'AssetRecordLoadFailed' => 'Resurssia ei voitu ladata. Yritä uudelleen.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'Mukautuskorttien asettelun API on käytettävissä vain fgroup=risk (tab_index 1, 2 tai 3) ja fgroup=asset (tab_index 1) -muuttujalle.',
+    'DiscoveryErrorRequesterNotPermitted' => 'Tämän suorituksen aloittaneella käyttäjällä ei ole enää oikeutta suorittaa resurssien etsintää.',
+    'AssetRecordEditField' => 'Muokkaa {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Luottamuksellisuus',
+    'Integrity' => 'Eheys',
+    'Availability' => 'Saatavuus',
+    'AssetScoringLevelLow' => 'Matala',
+    'AssetScoringLevelModerate' => 'Kohtalainen',
+    'AssetScoringLevelHigh' => 'Korkea',
+    'AssetScoringValueInvalid' => 'Luottamuksellisuuden, eheyden ja saatavuuden osalta hyväksytään vaihtoehdot matala, kohtalainen tai korkea (luottamuksellisuuden osalta hyväksytään myös vaihtoehdot "ei sovelleta").',
+    'AssetScoringChangedLog' => 'Omaisuuserän "{$name}" {$objective} muutettiin arvosta {$from} arvoon {$to} käyttäjän "{$user}" toimesta.',
+    'FIPSCategorization' => 'FIPS-luokittelu',
+    'WeightedScore' => 'Painotettu pistemäärä',
+    'WeightedBand' => 'Painotettu kaista',
+    'AllCategorizations' => 'Kaikki luokittelut',
+    'AllBands' => 'Kaikki bändit',
+    'AssetFilterByCategorization' => 'Suodata FIPS-luokituksen mukaan {$name}',
+    'AssetFilteringByCategorization' => 'Suodatus FIPS-luokituksen mukaan {$name}',
+    'AssetFilterByBand' => 'Suodata painotetun alueen mukaan {$name}',
+    'AssetFilteringByBand' => 'Suodatus painotetun kaistan {$name} mukaan',
+    'AssetScoring' => 'Resurssien pisteytys',
+    'AssetScoringSettingsHint' => 'Jokainen resurssi luokitellaan luottamuksellisuuden, eheyden ja saatavuuden osalta luokituksella Matala, Kohtalainen tai Korkea, ja luottamuksellisuus voi sen sijaan olla Ei sovelleta, jolloin se jää pois molemmista tuloksista. Sen FIPS-luokittelu on korkein kolmesta luokituksesta. Sen painotettu pistemäärä on kolmen tasoarvon painotettu keskiarvo, ja kynnysarvot muuttavat pistemäärän luokitukseksi Matala, Kohtalainen tai Korkea. Näiden asetusten muuttaminen pisteyttää jokaisen resurssin välittömästi uudelleen.',
+    'Weights' => 'Painot',
+    'AssetScoringWeightsHint' => 'Kuinka paljon kukin tavoite vaikuttaa painotettuun pisteytykseen: 0–100, enintään kahden desimaalin tarkkuudella. Painotusarvo 0 jättää kyseisen tavoitteen pois. Eheys ja saatavuus eivät voi molemmat olla 0, koska luottamuksellisuus, jonka arvo on ”Ei sovelleta”, jätetään aina pois.',
+    'LevelValues' => 'Tasoarvot',
+    'AssetScoringLevelValuesHint' => 'Kunkin luokituksen vaikutus painotettuun pistemäärään: yli 0:n ja enintään 100:aan, enintään kahden desimaalin tarkkuudella, ja Matala alle Kohtalainen alle Korkean. Oletusarvot ovat Matala 1, Kohtalainen 2 ja Korkea 3.',
+    'BandThresholds' => 'Kaistan kynnysarvot',
+    'AssetScoringBandThresholdsHint' => 'Kynnysarvolla tai sen yläpuolella oleva painotettu pistemäärä on kyseisellä alueella, ja kohtalaisen kynnysarvon alapuolella oleva pistemäärä on matala. Kohtalainen-arvon on alettava matalan arvon yläpuolelta, ja Korkea-arvon on alettava keskitasoa korkeammalta, mutta ei korkeammalta kuin Korkea-arvo.',
+    'ModerateStartsAt' => 'Kohtalainen alkaa arvosta',
+    'HighStartsAt' => 'Korkea alkaa arvosta',
+    'DefaultScoringForNewAssets' => 'Uusien resurssien oletuspisteytys',
+    'AssetScoringDefaultsHint' => 'Esivalitsee nämä luokitukset, kun joku lisää resurssin resurssilomakkeeseen. Löytämisen, tuonnin tai API:n luomat resurssit pysyvät pisteyttämättöminä, elleivät he anna omia luokituksiaan. Jätä kaikki kolme pois päältä jättämällä Ei asetettu -tilaan.',
+    'AssetScoringWeightsInvalid' => 'Resurssien pisteytyspainoarvojen on oltava lukuja väliltä 0–100, joissa on enintään kaksi desimaalia, eivätkä sekä eheys että saatavuus voi olla 0.',
+    'AssetScoringValuesInvalid' => 'Resurssien pisteytystason arvojen on oltava lukuja yli 0:n ja enintään 100:n välillä, enintään kahdella desimaalilla, Matala-arvon ollessa alle Keskitaso-arvon ja Korkea-arvon alle.',
+    'AssetScoringThresholdsInvalid' => 'Resurssien pisteytysalueen kynnysarvoissa saa olla enintään kaksi desimaalia, Kohtalainen alkaa Matala-arvon yläpuolella, Korkea alkaa Keskitaso-arvon yläpuolella ja Korkea ei saa alkaa Korkea-arvon yläpuolella.',
+    'AssetScoringDefaultsInvalid' => 'Uusien resurssien oletuspisteytyksen on oltava taso, jonka kukin tavoite tarjoaa.',
+    'AssetScoringSettingsNotSaved' => 'Resurssien pisteytysasetuksia ei voitu tallentaa. Mitään ei muutettu.',
+    'AssetScoringSettingsChangedLog' => 'Käyttäjä "{$user} " muutti resurssien pisteytysasetuksia.',
+    'AssetScoringNotSet' => 'Ei asetettu',
+    'NotScored' => 'Ei pisteytetty',
+    'AssetScoringNotScoredHint' => 'Vastaa kaikkiin kolmeen tavoitteeseen pisteyttääksesi tämän resurssin.',
+    'ImportAssetScoringValueIgnored' => 'Kohteen "{$asset_name}" {$objective} arvo "{$value}" ei ole kelvollinen luokitus ja se jätettiin huomiotta.',
+    'AssetScoringSecurityObjectives' => 'Turvallisuustavoitteet',
+    'AssetScoringConfidentialityHelp' => 'Mitä vaikutuksia sillä voi olla, jos tämän omaisuuden tietoja paljastetaan luvattomasti?',
+    'AssetScoringIntegrityHelp' => 'Mitä vaikutuksia voi olla, jos tämän resurssin tietoja muutetaan tai tuhotaan luvattomasti?',
+    'AssetScoringAvailabilityHelp' => 'Mitä vaikutuksia sillä voi olla, jos tämän resurssin saatavuus tai käyttö keskeytyy?',
+    'AssetScoringHelpHigh' => 'Vakava tai katastrofaalinen haittavaikutus',
+    'AssetScoringHelpModerate' => 'Vakava haittavaikutus',
+    'AssetScoringHelpLow' => 'Rajallinen tai ei lainkaan haitallista vaikutusta',
+    'AssetScoringHelpNotApplicable' => 'Luottamuksellisuus ei ole tämän omaisuuden (esimerkiksi julkisten tietojen) kannalta huolenaihe.',
+    'AssetScoringHelpLabel' => '{$objective} luokitusohje',
+    'AssetScoringMeterValue' => '{$score}, {$band} kaista',
+    'AssetScoringNoWeightedScore' => 'Ei painotettua pisteytystä',
+    'AssetScoringNoWeightedScoreNote' => 'Ei painotettua pisteytystä: jokaisella huomioon otettavalla tavoitteella on painoarvo 0.',
+    'AssetScoringUpgradePending' => 'Resurssien pisteytystä ei voida tallentaa ennen kuin SimpleRisk-tietokannan päivitys on suoritettu. Mitään ei ole muutettu.',
+    'AssetScoringResultHelpLabel' => '{$result} selitys',
+    'AssetScoringScoreHelp' => 'Painotettu pistemäärä yhdistää kolme arviota yhdeksi luvuksi väliltä {$low} – {$high}. Jokaisesta arvioinnista tulee sen asetusarvo, ja jokainen kerrotaan sen tavoitteen painotuksella. Tulokset lasketaan yhteen ja jaetaan painojen summalla. Luottamuksellisuusmerkintä ”Ei sovelleta” jätetään pois, samoin kuin sen paino. Asetetut arvot ja painot määritetään asetuksissa. Kaikki kolme tavoitetta on arvioitava ennen kuin pistemäärä näytetään.',
+    'AssetScoringCategorizationHelp' => 'FIPS 199 -tietoturvaluokitus on korkein luokitus soveltuvien tavoitteiden joukossa. Yksittäinen korkea luokitus tekee omaisuudesta korkean riippumatta muista luokituksista. Ei sovelleta -luokitus jätetään huomiotta.',
+    'AssetScoringBandHelp' => 'Painotettu pistemäärä sijoittuu asteikolle Matala, Kohtalainen tai Korkea. Alle {$moderate} oleva pistemäärä on Matala, {$moderate} – {$highAt} on Kohtalainen ja {$highAt} tai enemmän on Korkea. Kynnysarvot määritetään asetuksissa.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Kaikki luottamuksellisuusluokitukset',
+    'AllIntegrityRatings' => 'Kaikki eheysluokitukset',
+    'AllAvailabilityRatings' => 'Kaikki saatavuusluokitukset',
+    'AssetFilterByConfidentiality' => 'Suodata luottamuksellisuuden mukaan {$name}',
+    'AssetFilteringByConfidentiality' => 'Suodatus luottamuksellisuuden mukaan {$name}',
+    'AssetFilterByIntegrity' => 'Suodata eheyden mukaan {$name}',
+    'AssetFilteringByIntegrity' => 'Suodatus eheyden perusteella {$name}',
+    'AssetFilterByAvailability' => 'Suodata saatavuuden mukaan {$name}',
+    'AssetFilteringByAvailability' => 'Suodatus saatavuuden mukaan {$name}',
+    'HighestFIPSCategorization' => 'Korkein FIPS-luokitus',
+    'HighestWeightedScore' => 'Korkein painotettu pistemäärä',
+    'HighestWeightedBand' => 'Korkeimman painotuksen omaava kaista',
+    'AssetGroupFields' => 'Resurssiryhmän kentät',
+    'NoAssetGroupsMatchFilters' => 'Yksikään resurssiryhmä ei vastaa suodattimiasi',
+    'AssetGroupFilterByHighestCategorization' => 'Suodata korkeimman FIPS-luokituksen mukaan {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Suodatus korkeimman FIPS-luokituksen mukaan {$name}',
+    'AssetGroupFilterByHighestBand' => 'Suodata korkeimman painotetun kaistan mukaan {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Suodatus painotetuimman kaistan {$name} mukaan',
+    'AssetGroupBulkSelectionRequired' => 'Valitse resurssiryhmät joko tunnuksen tai suodattimen perusteella.',
+    'AssetGroupBulkIdsRequired' => 'Valitse vähintään yksi omaisuusryhmä.',
+    'AssetGroupBulkIdsInvalid' => 'Resurssiryhmien tunnusten on oltava kokonaislukuja.',
+    'AssetGroupBulkFilterAllAlone' => 'Kaikkien resurssiryhmien valitsemista ei voi yhdistää muihin suodattimiin.',
+    'AssetGroupBulkFilterEmpty' => 'Valitse suodatin tai valitse kaikki resurssiryhmät ennen poistamista.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Omaisuusryhmien odotetun lukumäärän on oltava kokonaisluku.',
+    'AssetGroupBulkExpectedCountRequired' => 'Resurssiryhmien poistaminen suodattimen avulla edellyttää poistettavien ryhmien määrän.',
+    'AssetGroupBulkNoMatch' => 'Yksikään omaisuuseräryhmä ei vastaa valintaasi.',
+    'AssetGroupBulkCountMismatch' => 'Vastaavat resurssiryhmät muuttuivat arvosta {$expected} arvoon {$actual} sen jälkeen, kun valitsit ne. Tarkista lista ja yritä uudelleen.',
+    'AssetGroupBulkTooManyToDelete' => 'Voit poistaa kerrallaan enintään {$max} omaisuusryhmää. Rajaa valintaasi ja yritä uudelleen.',
+    'AssetGroupBulkSelectAll' => 'Valitse kaikki {$count} omaisuusryhmät',
+    'AssetGroupBulkAllSelected' => 'Kaikki vastaavat {$count} omaisuusryhmät valittu',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Poistetaanko {$count} omaisuusryhmää?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Näiden ryhmien resursseja ei poisteta. Vain ryhmät poistetaan.',
+    'DeleteAssetGroups' => 'Poista ryhmät',
+    'AssetGroupBulkDeletedSummary' => '{$ok} ryhmää poistettu, {$failed} ohitettu',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Liittyvien riskien valintaan tarvitaan riskienhallinnan lupa.',
+    'NAssociatedRisks' => '{n} liittyvä(t) riski(t)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Tallentaminen säilyttää nykyiset liitetyt riskit.',
+    'UpgradePhpPartialTarget' => 'Päivitetään versioon {$target}, joka on uusin PHP {$php} tukema julkaisu. Julkaisu {$blocked} ja sitä uudemmat vaativat PHP {$needed} tai uudemman.',
+    'UpgradeNoPhpCli' => 'Päivitys vaatii PHP-komentorivikäyttöliittymän pdo_mysql-laajennuksella tietokannan päivittämiseen, eikä sellaista löytynyt tältä palvelimelta. Mitään ei muutettu. Asenna se (SimpleRiskin ajoitetut työt tarvitsevat sitä myös) ja suorita päivitys sitten uudelleen.',
+    'UpgradeDatabaseStepFailed' => 'Tietokannan päivitys epäonnistui. Tietokannan versio on {$reached}. Katso yllä olevat viestit ja SimpleRisk-loki ja suorita sitten päivitys uudelleen.',
+    'UpgradeReplacingVendorDirectory' => 'Kolmannen osapuolen kirjastohakemiston korvaaminen.',
+    'AdvancedSearchLockedPlaceholder' => 'Hae koko ohjelmastasi',
+    'AdvancedSearchLockedAria' => 'Hae koko ohjelmasta. Lukittu: vaatii Laajennettu haku -lisätoiminnon.',
+    'AdvancedSearchLockedPitch' => 'Etsi riski, kontrolli, asiakirja tai omaisuus yhdestä laatikosta ja siirry siihen liittyviin tietueisiin.',
+    'AdvancedSearchUnlocksLabel' => 'Avaa haun seuraaviin:',
+    'RequiresAdvancedSearchExtra' => 'Vaatii Laajennettu haku -lisätoiminnon.',
+    'UnlockAdvancedSearchLink' => 'Katso, mitä se lisää',
+    'UnlockActivateAdvancedSearchNote' => 'Laajennettu haku -lisätoiminto on asennettu, mutta sitä ei ole otettu käyttöön.',
+    'UnlockActivateAdvancedSearchLink' => 'Käynnistä se',
+    'AdvancedSearchControlCount' => 'Kontrollit: {$count}',
+    'AdvancedSearchAssetCount' => 'Omaisuuserät: {$count}',
+    'AdvancedSearchValuationRange' => '{$min}–{$max}',
+    'AdvancedSearchTypes' => 'Tyypit',
+    'AdvancedSearchTypesToggle' => 'Tyypit · {$count}',
+    'AdvancedSearchViewAll' => 'Näytä kaikki',
+    'AdvancedSearchMatchedIn' => 'Löydetty kohdassa {$field}:',
+    'AdvancedSearchMatchedInFilter' => 'Osuma kentässä',
+    'AdvancedSearchAnyField' => 'Mikä tahansa kenttä',
+    'AdvancedSearchSortBest' => 'Paras osuma',
+    'AdvancedSearchSummary' => 'Tulokset: {$count}',
+    'AdvancedSearchSummaryTypes' => 'Haetut tyypit: {$types}',
+    'AdvancedSearchNoResultsTitle' => 'Ei tuloksia haulle “{$q}”',
+    'AdvancedSearchNoResultsTip' => 'Tarkista oikeinkirjoitus tai kokeile vähemmän sanoja.',
+    'AdvancedSearchFailedTitle' => 'Haku ei onnistunut juuri nyt',
+    'AdvancedSearchFailedBody' => 'Tietosi ovat turvassa. Yritä uudelleen hetken kuluttua.',
+    'AdvancedSearchIncompleteTitle' => 'Tulokset voivat olla epätäydellisiä.',
+    'AdvancedSearchIncompleteDetail' => 'Tämä tyyppi haki vain uusimpia tietoja. Rajaa hakuasi nähdäksesi lisää.',
+    'AdvancedSearchTimeLimitNote' => 'Haku keskeytettiin aikaisin pysyäkseen nopeana, joten joitakin tyyppejä ei haettu. Rajaa hakuasi ja sisällytä ne.',
+    'AdvancedSearchNotSearched' => 'Ei haettu',
+    'AdvancedSearchMinChars' => 'Kirjoita vähintään {$count} merkkiä hakeaksesi.',
+    'AdvancedSearchEmptyPrompt' => 'Hae riskejä, kontrolleja, asiakirjoja, omaisuuseriä ja paljon muuta.',
+    'AdvancedSearchFirstPage' => 'Ensimmäinen sivu',
+    'AdvancedSearchNoAccess' => 'Tililläsi ei voi hakea mitään tietuetyyppejä. Pyydä järjestelmänvalvojalta käyttöoikeutta.',
+    'AdvancedSearchSort' => 'Järjestellä',
+    'AdvancedSearchConnectedRecords' => 'Yhdistetyt tietueet',
+    'AdvancedSearchConnectedRecordsNote' => 'Näyttää vain ne tietueet, joihin sinulla on käyttöoikeus.',
+    'AdvancedSearchNoConnections' => 'Ei nähtävissä olevia yhdistettyjä tietueita.',
+    'AdvancedSearchConnectionsFailed' => 'Yhdistettyjen tietueiden lataaminen epäonnistui.',
+    'AdvancedSearchShowConnections' => 'Näytä yhdistetyt tietueet haulle {$title}',
+    'AdvancedSearchExploreConnections' => 'Tutustu yhteyksiin',
+    'AdvancedSearchCopyLink' => 'Kopioi linkki',
+    'AdvancedSearchMoreCount' => '+{$count} lisää',
+    'AdvancedSearchCopyLinkFailed' => 'Linkin kopiointi epäonnistui.',
+    'AdvancedSearchOpenRecord' => 'Avaa',
+    'ControlDeepLinkUnavailable' => 'Tuo kontrolli ei ole käytettävissä. Se on ehkä poistettu tai sinulla ei ehkä ole siihen pääsyä.',
+    'ExceptionDeepLinkUnavailable' => 'Tätä poikkeusta ei voida avata täällä. Sinulla ei ehkä ole pääsyä sen käytäntöasiakirjaan.',
+    // Advanced Search: the topbar typeahead
+    'AdvancedSearchSeeAll' => 'Katso kaikki tulokset haulle “{$q}”',
+    'AdvancedSearchTopHit' => 'Huippuhitti',
+    'AdvancedSearchKeyMove' => 'Liikkua',
+    'AdvancedSearchKeyEsc' => 'esc',
+    'AdvancedSearchSuggestions' => 'Hakuehdotukset',
+    'AdvancedSearchAssessmentSubtitle' => '{$contact} · {$percent}% valmiina',
+    'AdvancedSearchScannerId' => 'Skannerin tunnus',
+    'AdvancedSearchVendor' => 'Toimittaja',
+    'AdvancedSearchProduct' => 'Tuote',
+    'AdvancedSearchSeverityLevel' => 'Vakavuusaste {$level}',
+    'AdvancedSearchFromYourExtras' => 'Lisäpalveluistasi',
+    'UpdateAnExistingUser' => 'Päivitä olemassa oleva käyttäjä',
+    'UserImportProgressTitle' => 'Käyttäjien tuominen',
+    'UserImportQueued' => 'Jonossa. Tuonti alkaa hetken kuluttua…',
+    'UserImportProgressCount' => '{$processed} / {$total} riviä käsitelty…',
+    'UserImportComplete' => 'Tuonti valmis.',
+    'UserImportFailed' => 'Tuontia ei voitu suorittaa loppuun.',
+    'UserImportSummary' => '{$created} luotu, {$updated} päivitetty, {$failed} ei tuotu.',
+    'UserImportRowInvalid' => 'Rivi {$row}: ei tuotu. Käyttäjätunnus, koko nimi ja kelvollinen sähköpostiosoite vaaditaan.',
+    'UserImportRowError' => 'Rivi {$row}: ei tuotu odottamattoman virheen vuoksi.',
+    'UserImportRevealPasswords' => 'Näytä väliaikaiset salasanat',
+    'UserImportPasswordsOnce' => 'Uusien käyttäjien väliaikaiset salasanat näytetään kerran ja poistetaan sitten. Kopioi ne nyt ja anna jokaiselle käyttäjälle omansa turvallisesti. Jokaisen käyttäjän on vaihdettava se ensimmäisen kirjautumisen yhteydessä.',
+    'UserImportPasswordsShownOnce' => 'Nämä väliaikaiset salasanat on poistettu SimpleRiskistä, eikä niitä voida näyttää uudelleen. Kopioi ne nyt. Jokaisen käyttäjän on vaihdettava omansa ensimmäisen kirjautumisen yhteydessä.',
+    'UserImportPasswordsUnavailable' => 'Väliaikaisia salasanoja ei voida enää näyttää. Ne näytetään kerran, vain tuonnin aloittaneelle järjestelmänvalvojalle ja vain siinä selainvälilehdessä, joka sen aloitti, eikä SimpleRisk säilytä mitään, mikä voisi näyttää ne uudelleen. Aseta uusi salasana jokaiselle uudelle käyttäjälle muokkaamalla käyttäjää.',
+    'UserImportBackgroundNote' => 'Tämä sivu päivittyy itsestään ja tuonti jatkuu, jos poistut sivulta. Avaa sivu uudelleen nähdäksesi tuloksen.',
+    'AuditAdditionalStakeholdersSetOnTest' => 'Testiin on asetettu lisää sidosryhmiä. Voit muuttaa niitä muokkaamalla testiä kohdassa {$page}; muutos tulee voimaan tässä auditoinnissa heti.',
+    'QuestionnaireDraftSomeFilesNotSaved' => 'Vastauksesi tallennettiin, mutta yhtä tai useampaa liitettä ei tallennettu. Tiedosto saattaa olla liian suuri tai tyyppiä, jota ei sallita.',
+    'UploadFileTooBigForDatabase' => 'Ladattu tiedosto on liian suuri tietokantaan tallennettavaksi. SimpleRisk-ylläpitäjä voi nostaa max_allowed_packet- ja innodb_log_file_size-arvoja MySQL-kokoonpanossa.',
+    'UploadErrorIniSize' => 'Ladattu tiedosto ylittää php.ini-tiedoston upload_max_filesize-direktiivin arvon.',
+    'UploadErrorFormSize' => 'Ladattu tiedosto ylittää HTML-lomakkeessa määritetyn MAX_FILE_SIZE-käskyn.',
+    'UploadErrorPartial' => 'Ladattu tiedosto ladattiin vain osittain.',
+    'UploadErrorNoFile' => 'Tiedostoa ei ladattu.',
+    'UploadErrorNoTmpDir' => 'Väliaikainen kansio puuttuu.',
+    'UploadErrorCantWrite' => 'Tiedoston kirjoittaminen levylle epäonnistui.',
+    'UploadErrorExtension' => 'PHP-laajennus pysäytti tiedoston latauksen.',
+    'MaxUploadSizeNeedsInteger' => 'Ladattavan tiedoston enimmäiskoon on oltava kokonaisluku tavuina suurempi kuin nolla.',
+    'MaxUploadSizeUpdated' => 'Ladattavan tiedoston enimmäiskoko päivitettiin onnistuneesti.',
+    'MaxUploadSizeCapped' => 'Tallennettu arvo on suurempi kuin tämä palvelin sallii, joten suurempia tiedostoja ei hyväksytä, kunnes PHP- ja MySQL-rajoituksia nostetaan tai tätä arvoa lasketaan. Suurin tällä hetkellä hyväksytty tiedosto tavuina:',
+    'PleaseEnterAValidEmailAddress' => 'Anna kelvollinen sähköpostiosoite.',
+    'RiskImportedClosedWithoutCloseReason' => 'Riski {$risk_id} ("{$subject}") tuotiin tilassa Suljettu, mutta sulkemisen syytä ei ole määritetty, joten sen sulkemistiedot ovat puutteelliset. Lisää tiedostoon sulkemisen syy ja tuo se uudelleen tai suorita sulkeminen loppuun riskisivulta.',
+    // SR-115: HTTP Strict Transport Security (HSTS)
+    'EnableHSTS' => 'Ota käyttöön HTTP Strict Transport Security (HSTS)',
+    'EnableHSTSHelp' => 'Ohjaa selaimia muodostamaan yhteyden SimpleRiskiin HTTPS:n kautta vain alla olevan enimmäisajan puitteissa. Ota tämä käyttöön vasta, kun HTTPS toimii luotettavasti tällä sivustolla: selaimet, jotka ovat nähneet otsikon, hylkäävät tavallisen HTTP:n, eikä rikkinäistä varmennetta voida ohittaa ennen kuin enimmäisaika on umpeutunut. Aloita lyhyellä enimmäisajalla, kuten 300 sekuntia, ja nosta sitä, kun HTTPS on vahvistettu.',
+    'HSTSMaxAge' => 'HSTS:n enimmäisikä (sekunteina)',
+    'HSTSMaxAgeInvalid' => 'HSTS:n enimmäisajan on oltava kokonaisluku sekunteina välillä 0–63072000.',
+    'HSTSIncludeSubdomains' => 'Käytä HSTS:ää kaikkiin aliverkkotunnuksiin',
+    'HSTSIncludeSubdomainsHelp' => 'Pakottaa myös HTTPS:n tämän isännän jokaiselle aliverkkotunnukselle. Jätä pois päältä, jos jokin aliverkkotunnus on palveltu pelkän HTTP:n kautta.',
     '' => '',
 );
 ?>

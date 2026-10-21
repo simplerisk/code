@@ -5403,7 +5403,9 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             // If the encryption extra is enabled, sort by order_by_subject field
             if (encryption_extra())
             {
-                $sort_name = " a.order_by_subject {$orderDir} ";
+                // id breaks ties, so equal ranks (a just-saved risk placed last
+                // before the rebuild job runs) cannot repeat or skip rows across pages.
+                $sort_name = " a.order_by_subject {$orderDir}, a.id ASC ";
             }
             else
             {
@@ -7880,7 +7882,7 @@ function get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir, 
             " . ($type === 'out' ? "residual_risk > :risk_appetite" : "residual_risk <= :risk_appetite") . "
             {$having_query}
         ORDER BY
-           {$orderColumn} {$orderDir} 
+           {$orderColumn} {$orderDir}, a.id ASC
         ";
 
     $limitQuery = $length == -1 ? "" : "Limit {$start}, {$length}";
@@ -10894,10 +10896,12 @@ function home_series_delta(array $series, $up_is_good = true)
 // deterministic under test.
 function kpi_build_day_axis($days = 30, $today = null)
 {
-    $end = ($today !== null) ? strtotime($today) : strtotime(date('Y-m-d'));
+    $end = date('Y-m-d', ($today !== null) ? strtotime($today) : time());
     $axis = [];
     for ($i = $days - 1; $i >= 0; $i--) {
-        $axis[] = date('Y-m-d', $end - $i * 86400);
+        // Calendar arithmetic: subtracting $i * 86400 seconds lands an hour off,
+        // so on a DST transition the axis would repeat or skip a date.
+        $axis[] = (new \DateTimeImmutable($end, new \DateTimeZone('UTC')))->modify("-{$i} days")->format('Y-m-d');
     }
     return $axis;
 }
@@ -11551,13 +11555,21 @@ function review_risk_evaluate_row(array $risk, array $ctx)
     }
     $passes_multi_and_search = $filter_ok;
 
+    // 'all' is deliberately not a branch here: it means no status/actionability
+    // restriction at all (every risk, open or closed, actionable or not), so
+    // $passes_status_scope's 'true' default already expresses it correctly.
+    // SR-2255: an earlier version of this code re-applied the 'open' branch's
+    // "must be closed or actionable" restriction under 'all' too, silently
+    // dropping open risks with no outstanding need (e.g. mitigation already
+    // planned and review already recorded) from a scope whose entire point is
+    // "no filter" -- visible as a mismatch between the "Opened This Month" KPI
+    // tile's count and the row count its own status_scope=all drill-through
+    // link actually returned.
     $status_scope = $ctx['status_scope'] ?? 'open';
     $passes_status_scope = true;
     if ($status_scope === 'open' && ($is_closed_row || !$is_actionable)) {
         $passes_status_scope = false;
     } elseif ($status_scope === 'closed' && !$is_closed_row) {
-        $passes_status_scope = false;
-    } elseif ($status_scope === 'all' && !$is_closed_row && !$is_actionable) {
         $passes_status_scope = false;
     }
 
@@ -11894,7 +11906,7 @@ function kpi_compute_review_risk_series(array $rows, array $reviews_by_risk, arr
                 }
                 if ($resolved < $d) {
                     $bucket = 'past_due';
-                } elseif (strtotime($resolved) <= strtotime($d) + $due_soon_days * 86400) {
+                } elseif ($resolved <= date('Y-m-d', strtotime($d . " +" . (int) $due_soon_days . " days"))) {
                     $bucket = 'due_soon';
                 } else {
                     $bucket = 'on_track';
@@ -12409,7 +12421,7 @@ function getting_started_catalog() {
         'risk_review'      => ['area'=>'risk',       'gate'=>'review_any',       'cta'=>'../management/review_risk.php',               'title'=>'GSReviewTitle',        'desc'=>'GSReviewDesc',        'cta_label'=>'GSReviewCta',        'doc'=>'https://www.simplerisk.com/support/review'],
         'define_tests'     => ['area'=>'compliance', 'gate'=>'define_tests',     'cta'=>'../compliance/index.php',                     'title'=>'GSDefineTestTitle',    'desc'=>'GSDefineTestDesc',    'cta_label'=>'GSDefineTestCta',    'doc'=>'https://www.simplerisk.com/support/test'],
         'initiate_audits'  => ['area'=>'compliance', 'gate'=>'initiate_audits',  'cta'=>'../compliance/audit_initiation.php',          'title'=>'GSInitiateAuditTitle', 'desc'=>'GSInitiateAuditDesc', 'cta_label'=>'GSInitiateAuditCta', 'doc'=>'https://www.simplerisk.com/support/audit'],
-        'asset'            => ['area'=>'assets',     'gate'=>'asset',            'cta'=>'../assets/index.php',                         'title'=>'GSAssetTitle',         'desc'=>'GSAssetDesc',         'cta_label'=>'GSAssetCta',         'doc'=>'https://www.simplerisk.com/support/assets'],
+        'asset'            => ['area'=>'assets',     'gate'=>'asset',            'cta'=>'../assets/manage_assets.php',                 'title'=>'GSAssetTitle',         'desc'=>'GSAssetDesc',         'cta_label'=>'GSAssetCta',         'doc'=>'https://www.simplerisk.com/support/assets'],
         // Configure AI is intentionally last (its own 'ai' area, ordered after
         // everything else).
         'ai'               => ['area'=>'ai',         'gate'=>'admin',            'cta'=>'../admin/artificial_intelligence_core.php',   'title'=>'GSAiTitle',            'desc'=>'GSAiDesc',            'cta_label'=>'GSAiCta',            'doc'=>'https://www.simplerisk.com/support/ai'],
@@ -12550,7 +12562,7 @@ function getting_started_explore_links() {
     if (check_permission('riskmanagement')) $links[] = ['label'=>'RiskManagement',  'url'=>'../management/index.php',  'icon'=>'fa-solid fa-triangle-exclamation'];
     if (check_permission('compliance'))     $links[] = ['label'=>'Compliance',      'url'=>'../compliance/index.php',  'icon'=>'fa-solid fa-clipboard-check'];
     if (check_permission('governance'))     $links[] = ['label'=>'Governance',      'url'=>'../governance/index.php',  'icon'=>'fa-solid fa-scale-balanced'];
-    if (check_permission('asset'))          $links[] = ['label'=>'AssetManagement', 'url'=>'../assets/index.php',      'icon'=>'fa-solid fa-server'];
+    if (check_permission('asset'))          $links[] = ['label'=>'AssetManagement', 'url'=>'../assets/manage_assets.php', 'icon'=>'fa-solid fa-server'];
     return $links;
 }
 
@@ -12694,6 +12706,18 @@ function get_home_highest_risks_items($limit = 6)
     return $items;
 }
 
+/**
+ * Whole calendar days from today until a Y-m-d date: 0 on the day itself,
+ * negative once it has passed. The home-widget pills show this as "Nd".
+ * calendar_days_between() rather than floor(seconds / 86400) against the
+ * current time, which reads an item due tomorrow as 0 days and one due today
+ * as 1 day overdue, and is an hour out across a DST transition.
+ */
+function home_days_until(string $date, ?string $today = null): int
+{
+    return calendar_days_between($today ?? date('Y-m-d'), $date);
+}
+
 // Open risks whose latest management review is past its next-review date
 // (team-separation aware) → list items with a days-overdue danger pill.
 function get_home_pastdue_reviews_items($limit = 6)
@@ -12722,7 +12746,7 @@ function get_home_pastdue_reviews_items($limit = 6)
 
     $items = [];
     foreach ($rows as $r) {
-        $days = (int) floor((time() - strtotime($r['next_review'] . ' 00:00:00')) / 86400);
+        $days = -home_days_until($r['next_review']);
         $items[] = [
             'name' => try_decrypt($r['subject']),
             'href' => '../management/view.php?id=' . convert_to_risk_id($r['id']) . '&type=2&action=editreview#review',
@@ -12850,7 +12874,7 @@ function get_home_upcoming_tests_items($limit = 6, $framework_ids = null)
 
     $items = [];
     foreach ($rows as $r) {
-        $days = (int) floor((strtotime($r['next_date'] . ' 00:00:00') - time()) / 86400);
+        $days = home_days_until($r['next_date']);
         $item = [
             'name' => (string) ($r['name'] ?? ''),
             // The control the test belongs to, shown as a muted sub-label so the
@@ -13080,7 +13104,7 @@ function get_home_policies_review_items($limit = 6, $framework_ids = null)
 
     $items = [];
     foreach ($rows as $r) {
-        $days = (int) floor((strtotime($r['next_review_date'] . ' 00:00:00') - time()) / 86400);
+        $days = home_days_until($r['next_review_date']);
         $items[] = [
             'name' => $r['document_name'],
             'href' => '../governance/documentation.php?document_id=' . (int) $r['id'],
@@ -13134,7 +13158,7 @@ function get_home_expiring_exceptions_items($limit = 6, $framework_ids = null)
 
     $items = [];
     foreach ($rows as $r) {
-        $days = (int) floor((strtotime($r['next_review_date'] . ' 00:00:00') - time()) / 86400);
+        $days = home_days_until($r['next_review_date']);
         $items[] = [
             'name' => $r['name'],
             'href' => '../governance/document_exceptions.php?exception_id=' . (int) $r['value'],

@@ -9,18 +9,20 @@ require_once(realpath(__DIR__ . '/../queues.php'));
 require_once(realpath(__DIR__ . '/../data_integrity.php'));
 require_once(realpath(__DIR__ . '/../notifications.php'));
 
-/**
- * Runs every registered detector, upserts findings (dedup on
- * upsert_data_integrity_issue()'s natural key: issue_type, table_name,
- * column_name, record_id), auto-resolves open issues a detector's recheck_fn
- * confirms are no longer broken, purges old resolved issues, and reconciles
- * the admin notification: creates one the first time open issues appear,
- * resolves it for every recipient the moment the queue empties. Called by
- * queue_check (weekly/scheduled) and directly by the on-demand scan-trigger
- * API endpoint -- both paths share this single implementation.
- */
-function run_data_integrity_scan(PDO $db): void
-{
+// Declared as a closure (not a top-level function) because load_all_jobs()
+// include()s this file more than once per process -- a named function would
+// fatally redeclare on the second include (matches the convention in
+// core_document_update.php and governance_review_due.php). Exposed on the
+// returned array under 'run_scan' so queue_check and tests can both invoke it
+// without depending on a global function existing.
+//
+// Runs every registered detector, upserts findings (dedup on
+// upsert_data_integrity_issue()'s natural key: issue_type, table_name,
+// column_name, record_id), auto-resolves open issues a detector's recheck_fn
+// confirms are no longer broken, purges old resolved issues, and reconciles
+// the admin notification: creates one the first time open issues appear,
+// resolves it for every recipient the moment the queue empties.
+$run_data_integrity_scan = function (PDO $db): void {
     $had_open_issues_before = data_integrity_has_open_issues($db);
 
     foreach (data_integrity_detectors() as $issue_type => $detector) {
@@ -94,10 +96,12 @@ function run_data_integrity_scan(PDO $db): void
         $stmt->bindValue(':guid', 'data_integrity_open_issues', PDO::PARAM_STR);
         $stmt->execute();
     }
-}
+};
 
 return [
     'type' => 'core_data_integrity_scan',
+
+    'run_scan' => $run_data_integrity_scan,
 
     'task_check' => function (PDO $db) {
         $last = get_setting('queue_timestamp_last_data_integrity_scan', false, false, db: $db);
@@ -110,14 +114,14 @@ return [
         return queue_task($db, 'core_data_integrity_scan', ['triggered_at' => time()], 50, 5, 3600);
     },
 
-    'queue_check' => function (array $task, PDO $db) {
+    'queue_check' => function (array $task, PDO $db) use ($run_data_integrity_scan) {
         return run_timestamped_queue_check(
             $task,
             $db,
             'queue_timestamp_last_data_integrity_scan',
             'core_data_integrity_scan',
-            function () use ($db) {
-                run_data_integrity_scan($db);
+            function () use ($db, $run_data_integrity_scan) {
+                $run_data_integrity_scan($db);
                 return true;
             }
         );

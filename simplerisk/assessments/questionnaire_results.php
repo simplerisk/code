@@ -155,7 +155,7 @@
                             <div class='file-uploader'>
                                 <label for='file-upload' class='btn btn-dark'><?= $escaper->escapeHtml($lang['ChooseFile']); ?></label>
                                 <span class='file-count-html'><span class='file-count me-2'>0</span><?= $escaper->escapeHtml($lang['FileAdded']); ?></span>
-                                <p class='mb-0'><strong>Max <?= $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)) ?> Mb</strong></p>
+                                <p class='mb-0'><strong>Max <?= $escaper->escapeHtml(max_upload_size_label()) ?> Mb</strong></p>
                                 <input type='file' id='file-upload' name='file[]' class='hidden-file-upload hide active' />
                             </div>
                         </div>

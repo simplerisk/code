@@ -16,6 +16,11 @@ abstract class AbstractAttribute implements AttributeInterface
     protected ?SourceLocation $sourceLocation = null;
 
     /**
+     * @var array<string,mixed>
+     */
+    protected array $meta = [];
+
+    /**
      * @param array<string,mixed>|null $x
      * @param list<Attachable>|null    $attachables Reusable custom attachable attributes
      */
@@ -69,6 +74,9 @@ abstract class AbstractAttribute implements AttributeInterface
         return null;
     }
 
+    /**
+     * @return class-string|null
+     */
     public function getClassName(): ?string
     {
         return $this->getClassReflector()?->getName();
@@ -83,6 +91,18 @@ abstract class AbstractAttribute implements AttributeInterface
     {
         $this->reflector = $reflector;
         $this->sourceLocation = null;
+
+        return $this;
+    }
+
+    public function getMeta(string $key, mixed $default = null): mixed
+    {
+        return array_key_exists($key, $this->meta) ? $this->meta[$key] : $default;
+    }
+
+    public function setMeta(string $key, mixed $value): static
+    {
+        $this->meta[$key] = $value;
 
         return $this;
     }
@@ -111,6 +131,13 @@ abstract class AbstractAttribute implements AttributeInterface
             return null;
         }
 
-        return is_array($value) ? $value : [$value];
+        if (!is_array($value)) {
+            return [$value];
+        }
+
+        /** @var list<T> $list array_values() guarantees the list shape the return type declares */
+        $list = array_values($value);
+
+        return $list;
     }
 }

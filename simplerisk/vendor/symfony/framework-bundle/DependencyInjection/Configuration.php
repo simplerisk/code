@@ -386,7 +386,7 @@ class Configuration implements ConfigurationInterface
                                     $workflows = [];
                                 }
 
-                                if (1 === \count($workflows) && isset($workflows['workflows']) && !array_is_list($workflows['workflows']) && array_diff_key($workflows['workflows'], ['audit_trail' => 1, 'type' => 1, 'marking_store' => 1, 'supports' => 1, 'support_strategy' => 1, 'initial_marking' => 1, 'places' => 1, 'transitions' => 1])) {
+                                if (1 === \count($workflows) && isset($workflows['workflows']) && !array_is_list($workflows['workflows']) && array_diff_key($workflows['workflows'], ['audit_trail' => 1, 'type' => 1, 'marking_store' => 1, 'supports' => 1, 'definition_validators' => 1, 'support_strategy' => 1, 'initial_marking' => 1, 'events_to_dispatch' => 1, 'places' => 1, 'transitions' => 1, 'metadata' => 1])) {
                                     $workflows = $workflows['workflows'];
                                 }
 
@@ -395,7 +395,9 @@ class Configuration implements ConfigurationInterface
                                         throw new LogicException(\sprintf('Cannot disable a single workflow. Remove the configuration for the workflow "%s" instead.', $key));
                                     }
 
-                                    unset($workflows[$key]['enabled']);
+                                    if (\is_array($workflow)) {
+                                        unset($workflows[$key]['enabled']);
+                                    }
                                 }
 
                                 $v = [
@@ -1337,7 +1339,7 @@ class Configuration implements ConfigurationInterface
                 ->then(static function ($v) {
                     $v['property_info']['with_constructor_extractor'] = false;
 
-                    trigger_deprecation('symfony/framework-bundle', '7.3', 'Not setting the "property_info.with_constructor_extractor" option explicitly is deprecated because its default value will change in version 8.0.');
+                    trigger_deprecation('symfony/framework-bundle', '7.3', 'Not setting the "framework.property_info.with_constructor_extractor" option explicitly is deprecated because its default value will change in version 8.0.');
 
                     return $v;
                 })
@@ -2525,7 +2527,7 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                                 ->scalarNode('secret')
                                     ->defaultValue('')
-                                    ->info('The secret used to verify incoming request signatures. It must be set in production: with an empty value, requests from any sender are accepted.')
+                                    ->info('The secret used to verify incoming request signatures. It must be set in production: with an empty value, depending on the parser, requests from any sender are accepted or every request is rejected.')
                                 ->end()
                             ->end()
                         ->end()

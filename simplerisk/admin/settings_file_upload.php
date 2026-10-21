@@ -103,31 +103,11 @@
 
     // Check if the maximum file upload size was updated
     if (isset($_POST['update_max_upload_size'])) {
-        // Verify value is a numeric value
-        if (is_numeric($_POST['size'])) {
-            update_setting('max_upload_size', $_POST['size']);
+        // A value above what PHP or MySQL can take is refused, not stored with a warning
+        [$saved, $message_key] = update_max_upload_size($_POST['size'] ?? '');
 
-            // Get the currently set max upload size for SimpleRisk
-            $simplerisk_max_upload_size = get_setting('max_upload_size');
-
-            // If the max upload size for SimpleRisk is bigger than the PHP max upload size
-            if ($simplerisk_max_upload_size > php_max_allowed_values()) {
-
-                // Display an alert
-                set_alert(true, "bad", $escaper->escapeHtml($lang['WarnPHPUploadSize']));
-
-            // If the max upload size for SimpleRisk is bigger than the MySQL max_allowed_packet
-            } else if ($simplerisk_max_upload_size > mysql_max_allowed_values()) {
-                // Display an alert
-                set_alert(true, "bad", $escaper->escapeHtml($lang['WarnMySQLUploadSize']));
-            } else {
-                // Display an alert
-                set_alert(true, "good", "The maximum upload file size was updated successfully.");
-            }
-        } else {
-            // Display an alert
-            set_alert(true, "bad", "The maximum upload file size needs to be an integer value.");
-        }
+        // The text is escaped once, when the alert is read
+        set_alert(true, $saved ? "good" : "bad", $lang[$message_key]);
     }
 
     // Get the max upload size setting
@@ -218,16 +198,17 @@
                 <div class="row">
                     <div class="col-12">
 <?php
-    // If the max upload size for SimpleRisk is bigger than the PHP max upload size
-    if($simplerisk_max_upload_size > php_max_allowed_values()) {
+    // A value saved before the check existed, or one that PHP or MySQL has since fallen below
+    $effective_max_upload_size = max_upload_size_effective();
+    if ($effective_max_upload_size < (int)$simplerisk_max_upload_size) {
         echo "
-                        <p class='text-danger'>{$escaper->escapeHtml($lang['WarnPHPUploadSize'])}</p>
+                        <p class='text-danger'>{$escaper->escapeHtml($lang['MaxUploadSizeCapped'])} {$escaper->escapeHtml(number_format($effective_max_upload_size))}</p>
         ";
     }
-    // If the max upload size for SimpleRisk is bigger than the MySQL max upload size
-    if ($simplerisk_max_upload_size > mysql_max_allowed_values()) {
+    // The limits the saved value is above, by the same rule that refuses a new value
+    foreach (max_upload_size_exceeded_limits($simplerisk_max_upload_size) as $warning_key) {
         echo "
-                        <p class='text-danger'>{$escaper->escapeHtml($lang['WarnMySQLUploadSize'])}</p>
+                        <p class='text-danger'>{$escaper->escapeHtml($lang[$warning_key])}</p>
         ";
     }
 ?>

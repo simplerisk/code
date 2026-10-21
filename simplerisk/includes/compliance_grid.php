@@ -6,9 +6,10 @@
 
 /**
  * Grid data helpers for the Define Tests redesign (§7 state pill, last-result
- * column). This file is intentionally small and focused: it holds only the
- * last-result derivation used by the Define Tests grid, not the full
- * compliance.php surface.
+ * column), plus the Enterprise-control-status sync (SR-2255-followup) that
+ * derives from the same last-result data these helpers already compute. This
+ * file is intentionally small and focused on last-result-derived logic, not
+ * the full compliance.php surface.
  *
  * NOTE: this file deliberately does NOT require_once includes/functions.php
  * at the top so that last_result_state_family() stays loadable standalone
@@ -332,6 +333,223 @@ function get_tests_last_results(array $test_ids): array
     db_close($db);
 
     return $last_results;
+}
+
+/******************************************************************
+ * FUNCTION: CONTROL HAS ENTERPRISE TYPE                             *
+ * SR-2255-followup: control-status auto-sync (below) is scoped to   *
+ * Enterprise-type controls only -- Standalone/Project controls keep *
+ * the existing manual-only Status field. Resolves the 'Enterprise'  *
+ * control_type id by name (get_value_by_name()) rather than          *
+ * hardcoding the seeded value, matching the is_valid_test_result_    *
+ * name() convention for other lookup tables. Cached per request --   *
+ * the id can't change mid-request and this is called once per       *
+ * control touched by a test-result write.                            *
+ ******************************************************************/
+function control_has_enterprise_type(int $control_id): bool
+{
+    static $enterprise_type_id = null;
+    if ($enterprise_type_id === null) {
+        $enterprise_type_id = (int) get_value_by_name('control_type', 'Enterprise');
+    }
+    if ($enterprise_type_id <= 0) {
+        return false;
+    }
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT 1 FROM `framework_control_type_mappings`
+        WHERE `control_id` = :control_id AND `control_type_id` = :control_type_id
+        LIMIT 1
+    ");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->bindParam(":control_type_id", $enterprise_type_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $found = (bool) $stmt->fetchColumn();
+    db_close($db);
+
+    return $found;
+}
+
+/******************************************************************
+ * FUNCTION: GET CONTROLS MAPPED TO TEST                             *
+ * Resolves the framework_control_id(s) a test currently maps to,    *
+ * via the junction+scalar-fallback in test_control_pairs_sql()      *
+ * (Phase 4a common tests) -- the same pairing every other "which     *
+ * controls does this test cover" caller in this file uses.          *
+ * Excludes soft-deleted controls: a status recompute has nothing to  *
+ * write for a control that no longer exists.                        *
+ ******************************************************************/
+function get_controls_mapped_to_test(int $test_id): array
+{
+    $db = db_open();
+    $pairs_sql = test_control_pairs_sql();
+    $stmt = $db->prepare("
+        SELECT DISTINCT p.`framework_control_id`
+        FROM {$pairs_sql} p
+            JOIN `framework_controls` fc ON fc.`id` = p.`framework_control_id` AND fc.`deleted` = 0
+        WHERE p.`test_id` = :test_id
+    ");
+    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $control_ids = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+    db_close($db);
+
+    return $control_ids;
+}
+
+/******************************************************************
+ * FUNCTION: COMPUTE CONTROL STATUS FROM TESTS                       *
+ * Derives what framework_controls.control_status SHOULD be for a    *
+ * control, from the last RECORDED result (get_tests_last_results())  *
+ * of every test currently mapped to it (test_control_pairs_sql()).  *
+ *                                                                    *
+ * Worst-case aggregation: any mapped test whose last result is       *
+ * 'Fail' makes the control Fail, regardless of what other mapped     *
+ * tests show -- a control is only as strong as its weakest test.     *
+ * 'Inconclusive' results are ignored (neither Pass nor Fail           *
+ * evidence); a control with only Inconclusive results, or with no    *
+ * recorded results at all (including no mapped tests), is Not        *
+ * Tested.                                                             *
+ *                                                                    *
+ * Read-only -- no writes. sync_control_status_from_tests() below is  *
+ * the side-effecting caller that decides whether/when to persist     *
+ * this.                                                               *
+ *                                                                    *
+ * Retired tests are excluded: a retired test can never produce a new *
+ * result, so its stale last result must not keep pinning the        *
+ * control's status once the test itself is no longer active -- the  *
+ * same active-only convention every other test-status query in this *
+ * file follows (tests_grid_retired_predicate()'s 'active' default).  *
+ *                                                                    *
+ * @return int 0=Fail, 1=Pass, 2=Not Tested (control_status_token_map())
+ ******************************************************************/
+function compute_control_status_from_tests(int $control_id): int
+{
+    $db = db_open();
+    $pairs_sql = test_control_pairs_sql();
+    $stmt = $db->prepare("
+        SELECT DISTINCT p.`test_id`
+        FROM {$pairs_sql} p
+            JOIN `framework_control_tests` ft ON ft.`id` = p.`test_id` AND ft.`retired_at` IS NULL
+        WHERE p.`framework_control_id` = :control_id
+    ");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $test_ids = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+    db_close($db);
+
+    if (empty($test_ids)) {
+        return 2;
+    }
+
+    $last_results = get_tests_last_results($test_ids);
+
+    $any_fail = false;
+    $any_pass = false;
+    foreach ($last_results as $row) {
+        if ($row['result'] === 'Fail') {
+            $any_fail = true;
+        } elseif ($row['result'] === 'Pass') {
+            $any_pass = true;
+        }
+    }
+
+    if ($any_fail) {
+        return 0;
+    }
+    if ($any_pass) {
+        return 1;
+    }
+    return 2;
+}
+
+/******************************************************************
+ * FUNCTION: SYNC CONTROL STATUS FROM TESTS                          *
+ * Writes compute_control_status_from_tests()'s answer to             *
+ * framework_controls.control_status when it differs from the        *
+ * control's current value -- but ONLY for an Enterprise-type control *
+ * (control_has_enterprise_type()). Standalone/Project controls are    *
+ * left alone; their Status field stays the existing manual-only      *
+ * field. No-op for a missing/soft-deleted control.                   *
+ *                                                                    *
+ * Logs and fires 'control.updated' only on an actual value change --  *
+ * callers may invoke this speculatively (e.g. once per control        *
+ * touched by a deleted audit) without spamming the audit trail.       *
+ *                                                                    *
+ * $_SESSION['uid']/['user'] fall back to 0/"" so this is safe to      *
+ * call from the one-time upgrade backfill, which has no session.      *
+ *                                                                    *
+ * @return bool true if the status changed (and was written)
+ ******************************************************************/
+function sync_control_status_from_tests(int $control_id): bool
+{
+    global $lang;
+
+    if (!control_has_enterprise_type($control_id)) {
+        return false;
+    }
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT `short_name`, `control_owner`, `control_status`
+        FROM `framework_controls`
+        WHERE `id` = :control_id AND `deleted` = 0
+    ");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $control = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$control) {
+        db_close($db);
+        return false;
+    }
+
+    $new_status = compute_control_status_from_tests($control_id);
+    $old_status = isset($control['control_status']) ? (int) $control['control_status'] : 2;
+
+    if ($new_status === $old_status) {
+        db_close($db);
+        return false;
+    }
+
+    $stmt = $db->prepare("UPDATE `framework_controls` SET `control_status` = :control_status WHERE `id` = :control_id");
+    $stmt->bindParam(":control_status", $new_status, PDO::PARAM_INT);
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    db_close($db);
+
+    $status_text = [1 => $lang["Pass"], 0 => $lang["Fail"], 2 => $lang["NotTested"]];
+    $uid = $_SESSION['uid'] ?? 0;
+    // _lang_raw(), not _lang(): get_audit_trail_html() escapes the whole
+    // stored message once at render, matching every other write_log() call
+    // site in this file (e.g. AuditLog_TestAuditApproved).
+    $message = _lang_raw('AuditLog_ControlStatusAutoSynced', ['short_name' => $control['short_name'], 'status_text' => $status_text[$new_status]]);
+    write_log((int) $control_id + 1000, $uid, $message, "control");
+
+    trigger_workflow_event('control.updated', [
+        'control_id'    => $control_id,
+        'short_name'    => $control['short_name'],
+        'control_owner' => $control['control_owner'],
+    ]);
+
+    return true;
+}
+
+/******************************************************************
+ * FUNCTION: SYNC CONTROL STATUS FOR TEST                            *
+ * Convenience wrapper: recomputes status for every control a given   *
+ * test currently maps to (each individually gated by                 *
+ * control_has_enterprise_type() inside sync_control_status_from_     *
+ * tests()). Called whenever a test's recorded-result set can change   *
+ * -- a result is saved/edited, or an audit/test is deleted.           *
+ ******************************************************************/
+function sync_control_status_for_test(int $test_id): void
+{
+    foreach (get_controls_mapped_to_test($test_id) as $control_id) {
+        sync_control_status_from_tests($control_id);
+    }
 }
 
 /******************************************************************

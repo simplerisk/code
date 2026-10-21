@@ -35,7 +35,7 @@
         "ext-libxml": "*",
         "ext-mbstring": "*",
         "ext-xmlwriter": "*",
-        "myclabs/deep-copy": "^1.13.4",
+        "myclabs/deep-copy": "^1.14.0",
         "phar-io/manifest": "^2.0.4",
         "phar-io/version": "^3.2.1",
         "phpunit/php-code-coverage": "^10.1.16",
@@ -51,7 +51,7 @@
         "sebastian/exporter": "^5.1.4",
         "sebastian/global-state": "^6.0.2",
         "sebastian/object-enumerator": "^5.0.0",
-        "sebastian/recursion-context": "^5.0.1",
+        "sebastian/recursion-context": "^5.0.2",
         "sebastian/type": "^4.0.0",
         "sebastian/version": "^4.0.1"
     },

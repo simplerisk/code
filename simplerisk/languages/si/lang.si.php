@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'පරිශීලක සැසි',
     'SessionActivityTimeout' => 'සැසි ක්‍රියාකාරකම් කල් ඉකුත්වීම',
     'Security' => 'ආරක්ෂක',
-    'EnableCSP' => 'අන්තර්ගත ආරක්ෂණ ප්‍රතිපත්තිය සක්‍රීය කරන්න (මෙය අතීතයේ ක්‍රෝම් බිඳ දමා ඇත)',
+    'EnableCSP' => 'අන්තර්ගත ආරක්ෂක ප්‍රතිපත්තිය සබල කරන්න (නිර්දේශිතයි)',
     'EnableDebugLogging' => 'දෝශ නිරාකරණ සක්‍රීය කරන්න',
     'seconds' => 'තත්පර',
     'FieldSample' => 'ක්ෂේත්‍ර නියැදිය',
@@ -1965,8 +1965,8 @@ $lang = array(
     'IncidentAddPermissionMessage' => 'ඔබට නව සිදුවීම් ඉදිරිපත් කිරීමට අවසර නැත. ඔබ ඉදිරිපත් කිරීමට උත්සාහ කරන ඕනෑම සිදුවීමක් වාර්තා නොකෙරේ. ඔබට මෙම පණිවිඩය වැරදීමකින් ලැබී ඇති බව ඔබට හැඟේ නම් කරුණාකර පරිපාලකවරයෙකු අමතන්න.',
     'IncidentUpdatePermissionMessage' => 'සිදුවීම් වෙනස් කිරීමට ඔබට අවසර නැත. ඔබ වෙනස් කිරීමට උත්සාහ කරන ඕනෑම සිදුවීමක් වාර්තා නොකෙරේ. ඔබට මෙම පණිවිඩය වැරදීමකින් ලැබී ඇති බව ඔබට හැඟේ නම් කරුණාකර පරිපාලක අමතන්න.',
     'IncidentPreparationPermissionMessage' => 'සිදුවීම් සූදානම් කිරීමේ අයිතම තෝරා ගැනීමට ඔබට අවසර නැත. ඔබ තෝරා ගැනීමට උත්සාහ කරන ඕනෑම අයිතමයක් පටිගත නොකෙරේ. ඔබට මෙම පණිවිඩය වැරදීමකින් ලැබී ඇති බව ඔබට හැඟේ නම් කරුණාකර පරිපාලකවරයෙකු අමතන්න.',
-    'IncidentPlaybookSelectPermissionMessage' => 'සීමා කිරීම, තුරන් කිරීම සහ ප්‍රතිසාධන පියවර තීරණය කිරීම සඳහා සිදුවීම් ප්‍රතිචාර ක්‍රීඩා පොතක් තෝරා ගැනීමට ඔබට අවසර නැත. ඔබට මෙම පණිවිඩය වැරදීමකින් ලැබී ඇති බව ඔබට හැඟේ නම් කරුණාකර පරිපාලකවරයෙකු අමතන්න.',
-    'IncidentResponseSelectPermissionMessage' => 'ඔබට සීමා කිරීම, මුලිනුපුටා දැමීම සහ ප්‍රතිසාධන පියවරයන්ගෙන් සිදුවීම් ප්‍රතිචාර ක්‍රීඩා පොත් අයිතම තෝරා ගැනීමට අවසර නැත. ඔබ තෝරා ගැනීමට උත්සාහ කරන ඕනෑම අයිතමයක් පටිගත නොකෙරේ. ඔබට මෙම පණිවිඩය වැරදීමකින් ලැබී ඇති බව ඔබට හැඟේ නම් කරුණාකර පරිපාලකවරයෙකු අමතන්න.',
+    'IncidentPlaybookSelectPermissionMessage' => 'සීමා කිරීම, තුරන් කිරීම සහ ප්‍රතිසාධන පියවර තීරණය කිරීම සඳහා සිදුවීම් ප්‍රතිචාර මාර්ගෝපදේශයක් තෝරා ගැනීමට ඔබට අවසර නැත. ඔබට මෙම පණිවිඩය වැරදීමකින් ලැබී ඇති බව ඔබට හැඟේ නම් කරුණාකර පරිපාලකවරයෙකු අමතන්න.',
+    'IncidentResponseSelectPermissionMessage' => 'ඔබට සීමා කිරීම, මුලිනුපුටා දැමීම සහ ප්‍රතිසාධන පියවරයන්ගෙන් සිදුවීම් ප්‍රතිචාර ප්ලේබුක් අයිතම තෝරා ගැනීමට අවසර නැත. ඔබ තෝරා ගැනීමට උත්සාහ කරන ඕනෑම අයිතමයක් පටිගත නොකෙරේ. ඔබට මෙම පණිවිඩය වැරදීමකින් ලැබී ඇති බව ඔබට හැඟේ නම් කරුණාකර පරිපාලකවරයෙකු අමතන්න.',
     'IncidentResponseEvidenceAddPermissionMessage' => 'සිදුවීමකට සාක්ෂි එකතු කිරීමට ඔබට අවසර නැත. එකතු කරන ලද කිසිදු සාක්ෂියක් වාර්තා නොකෙරේ. ඔබට මෙම පණිවිඩය වැරදීමකින් ලැබී ඇති බව ඔබට හැඟේ නම් කරුණාකර පරිපාලකවරයෙකු අමතන්න.',
     'IncidentResponseEvidenceDeletePermissionMessage' => 'සිදුවීමක සාක්ෂි මකා දැමීමට ඔබට අවසර නැත. මෙම පණිවිඩය වැරදීමකින් ලැබී ඇති බව ඔබට හැඟේ නම් කරුණාකර පරිපාලකවරයෙකු අමතන්න.',
     'IncidentResponseNoteAddPermissionMessage' => 'සිදුවීමකට සටහන් එක් කිරීමට ඔබට අවසර නැත. එකතු කරන ලද ඕනෑම සටහනක් පටිගත නොකෙරේ. ඔබට මෙම පණිවිඩය වැරදීමකින් ලැබී ඇති බව ඔබට හැඟේ නම් කරුණාකර පරිපාලකවරයෙකු අමතන්න.',
@@ -1990,7 +1990,7 @@ $lang = array(
     'ControlDetails' => 'පාලන විස්තර',
     'CannotDeleteLastItem' => 'අවසාන අයිතමය මකා දැමිය නොහැක.',
     'FieldChangeTemplate' => '`{$field_name}` (`{$before}` => `{$after}`)',
-    'AuditLog_TestAuditReopen' => '"{$test_audit_name}" (ID: {$test_audit_id}) "{$user_name}" පරිශීලකයා විසින් විගණනය " {$test_audit_name}" නැවත විවෘත කරන ලදී.',
+    'AuditLog_TestAuditReopen' => 'විගණනය "{$test_audit_name}" (ID: {$test_audit_id}) "{$user_name}" පරිශීලකයා විසින් නැවත විවෘත කරන ලදී.',
     'AuditLog_TestAuditClosed' => '"{$test_audit_name}" විගණනය (ID: {$test_audit_id}) "{$user_name}" පරිශීලකයා විසින් වසා දමන ලදී. වෙනස්කම්: {$changes}.',
     'AuditLog_TestAuditUpdated' => '"{$test_audit_name}" (ID: {$test_audit_id}) පරිශීලකයා විසින් "{$user_name}" විගණනය යාවත්කාලීන කරන ලදී. වෙනස්කම්: {$changes}.',
     'AuditLog_TestUpdated' => '"{$test_name}" (ID: {$test_id}) පරීක්ෂණය "{$user_name}" පරිශීලකයා විසින් යාවත්කාලීන කරන ලදී. වෙනස්කම්: {$changes}.',
@@ -2023,15 +2023,15 @@ $lang = array(
     'AssessmentContact' => 'තක්සේරු සම්බන්ධතා',
     'User' => 'පරිශීලක',
     'QuestionnaireResultShareAuditLog' => 'පරිශීලක "{$user_name}" බෙදාගත් ප්‍රශ්නාවලිය "{$questionnaire_name}"("{$contact_name}" වෙත යවන ලදී, "{$date}" හි) ප්‍රතිඵලය "{$comment}". "{$shared_with_contacts} " සමඟ බෙදා ගන්නා ලදී.',
-    'QuestionnaireResultStopSharingAuditLog' => 'User "{$user_name}" stopped sharing questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") result. Stopped sharing with "{$stopped_sharing_with_contacts}".',
+    'QuestionnaireResultStopSharingAuditLog' => 'පරිශීලක "{$user_name}" විසින් "{$questionnaire_name}" ප්‍රශ්නාවලියේ ප්‍රතිඵලය ("{$contact_name}" සම්බන්ධතාවට "{$date}" දින යවන ලද) බෙදා ගැනීම නවත්වන ලදී. "{$stopped_sharing_with_contacts}" සමඟ බෙදා ගැනීම නවත්වන ලදී.',
     'QuestionnaireResultShareOpenedAuditLog' => 'Shared questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}", shared with "{$shared_with_contact_name}") result was opened.',
     'Pending' => 'පොරොත්තුයි',
     'PasswordResetRequestsExceeded' => 'මෙම පරිශීලකයා සඳහා මුරපද යළි පිහිටුවීමක් දැනටමත් ඉල්ලා ඇත. තවත් මුරපද යළි පිහිටුවීමක් ඉල්ලා සිටීමට පෙර කරුණාකර විනාඩි 10ක් රැඳී සිටින්න.',
     'Backups' => 'උපස්ථ',
-    'AutomaticallyBackupThisSimpleRiskInstance' => 'මෙම සරල අවදානම් අවස්ථාව ස්වයංක්‍රීයව උපස්ථ කරන්න',
+    'AutomaticallyBackupThisSimpleRiskInstance' => 'මෙම simplerisk ස්ථාපනය ස්වයංක්‍රීයව උපස්ථ කරන්න',
     'BackupSchedule' => 'උපස්ථ කාලසටහන',
     'Hourly' => 'පැයෙන් පැයට',
-    'RemoveBackupsAfter' => 'උපස්ථ ඉවත් කරන්න',
+    'RemoveBackupsAfter' => 'මෙයින් පසු උපස්ථ ඉවත් කරන්න',
     'AnswerOrdering' => 'පිළිතුරු ඇණවුම් කිරීම',
     'BackupDate' => 'උපස්ථ දිනය',
     'ApplicationBackup' => 'යෙදුම් උපස්ථය',
@@ -2049,7 +2049,7 @@ $lang = array(
     'NoFrameworksFromGithub' => 'github වෙතින් ආනයනය කරන ලද නිශ්චිත රාමුවක් නොමැත.',
     'AllowDocumentOwnerToSeeDocuments' => 'ලේඛන හිමිකරුට ලේඛන බැලීමට ඉඩ දෙන්න',
     'AllowApproverToSeeDocuments' => 'අනුමත කරන්නාට ලේඛන බැලීමට ඉඩ දෙන්න',
-    'AllowAdditionalStakeholdersToSeeDocuments' => 'අතිරේක කොටස්කරුවන්ට ලේඛන බැලීමට ඉඩ දෙන්න',
+    'AllowAdditionalStakeholdersToSeeDocuments' => 'අතිරේක පාර්ශ්වකරුවන්ට ලේඛන බැලීමට ඉඩ දෙන්න',
     'AllowAllUsersToSeeDocumentsNotAssignedToTeam' => 'කණ්ඩායමකට පවරා නොමැති ලේඛන බැලීමට සියලුම පරිශීලකයින්ට ඉඩ දෙන්න.',
     'AllowAllUsersToSeeAllDocuments' => 'සියලුම පරිශීලකයින්ට සියලුම ලේඛන බැලීමට ඉඩ දෙන්න.',
     'AllowAllUsersToSeeAssetsNotAssignedToTeam' => 'කණ්ඩායමකට පවරා නොමැති වත්කම් බැලීමට සියලුම පරිශීලකයින්ට ඉඩ දෙන්න.',
@@ -2520,12 +2520,12 @@ $lang = array(
     'PleaseSelectARoleBeforeDeleting' => 'මකා දැමීමට පෙර කරුණාකර භූමිකාවක් තෝරන්න.',
     'DocumentInstallation' => 'ලේඛන ස්ථාපනය',
     'DocumentControlMapping' => 'සිතියම්ගත කිරීම පාලනය කිරීම සඳහා ලේඛනය',
-    'DocumentControlMappingHelp'=>'සිතියම්ගත කිරීම් පාලනය කිරීම සඳහා මෙම වාර්තාවේ සියලුම ලේඛන පෙන්වයි.',
+    'DocumentControlMappingHelp'=>'මෙම වාර්තාව සියලුම ලේඛන-පාලන සිතියම්ගත කිරීම් පෙන්වයි.',
     'DocumentID' => 'ලේඛන හැඳුනුම්පත',
     'Score' => 'ස්කෝර්',
     'TFIDFSimilarity' => 'TF-IDF සමානතාවය',
     'MatchingKeywords' => 'ගැළපෙන මූල පද',
-    'AIMatch' => 'AI තරගය',
+    'AIMatch' => 'AI ගැලපීම',
     'AIConfidence' => 'AI විශ්වාසය',
     'AIReasoning' => 'AI තර්කනය',
     'DocumentColumns' => 'ලේඛන තීරු',
@@ -2618,19 +2618,19 @@ $lang = array(
     'DragAndDropToReorder' => 'තීරු නැවත සකස් කිරීමට ඇද දමන්න.',
     'NoColumnsSelected' => 'තීරු කිසිවක් තෝරාගෙන නැත. පළමු පටිත්තෙහි තීරු තෝරන්න.',
     'Remove' => 'ඉවත් කරන්න',
-    'Apply' => 'අයදුම් කරන්න',
+    'Apply' => 'යොදන්න',
     'RiskScoring' => 'අවදානම් ලකුණු කිරීම',
     'AreYouSureYouWantToDeleteThisUser' => 'ඔබට මෙම පරිශීලකයා මකා දැමීමට අවශ්‍ය බව විශ්වාසද?',
     'NoPermissionAddSavedRiskReports' => 'සුරකින ලද අවදානම් වාර්තා එක් කිරීමට ඔබට අවසර නැත.',
     'NoPermissionDeleteSavedRiskReports' => 'සුරකින ලද අවදානම් වාර්තා මැකීමට ඔබට අවසර නැත.',
     'LimitedPeriodTestmailMessage' => 'මෑතකදී පරීක්ෂණ විද්‍යුත් තැපෑලක් යවා ඇත. ඔබට පැයකට පරීක්ෂණ විද්‍යුත් තැපෑල 5ක් දක්වා යැවිය හැක.',
     'ATestEmailHasBeenSentUsingTheCurrentSettings' => 'වත්මන් සැකසුම් භාවිතයෙන් පරීක්ෂණ විද්‍යුත් තැපෑලක් යවා ඇත.',
-    'ControlPassFailStatus' => 'පාලන අවසර පත්‍රය/අසමත් තත්ත්වය',
+    'ControlPassFailStatus' => 'පාලන සමත්/අසමත් තත්ත්වය',
     'GovernanceDashboard' => 'පාලන උපකරණ පුවරුව',
     'GovernanceDashboardDescription' => 'මෙම ප්‍රස්ථාරය සියලු පාලනවල වත්මන් පරිණතභාවය පෙන්වයි.',
     'GovernanceControlsByFrameworkMaturityStacked' => 'රාමුව සහ වත්මන් පරිණතභාවය අනුව පාලනයන්',
     'Custom' => 'අභිරුචි',
-    'SimpleRiskCustomScheduledNotifications' => 'සරල අවදානම් අභිරුචි කාලසටහන්ගත දැනුම්දීම්',
+    'SimpleRiskCustomScheduledNotifications' => 'SimpleRisk අභිරුචි කාලසටහන්ගත දැනුම්දීම්',
     'AddCustomScheduledNotification' => 'අභිරුචි කාලසටහන්ගත දැනුම්දීමක් එක් කරන්න',
     'ReportName' => 'වාර්තාවේ නම',
     'SelectPeriod' => 'කාල සීමාව තෝරන්න',
@@ -2746,7 +2746,7 @@ $lang = array(
     'HealthCheckDesc'                     => 'පද්ධති තත්ත්වය හඳුනා ගන්න: PHP අනුවාදය, දිගු, ගොනු අවසර, දත්ත සමුදා සම්බන්ධතාවය, ක්‍රෝන් කාලසටහන සහ අමතර සක්‍රිය කිරීම්.',
     'AnnouncementsDesc'                   => 'සියලුම පරිශීලකයින්ට දෘශ්‍යමාන වන බැනර් නිවේදන රචනා කර කළමනාකරණය කරන්න.',
     'RegisterAndUpgradeDesc'              => 'ඔබගේ SimpleRisk ස්ථාපනය ලියාපදිංචි කරන්න, දායකත්ව යතුරක් ඇතුළත් කරන්න හෝ අලුත් කරන්න, සහ එක්-ක්ලික් Core/Extra උත්ශ්‍රේණි කිරීම් ක්‍රියාත්මක කරන්න.',
-    'QueueMonitorDesc'                    => 'පසුබිම් රැකියා පෝලිම පරීක්ෂා කරන්න: අපේක්ෂිත, ගුවන් ගමනේ සහ අසාර්ථක රැකියා.',
+    'QueueMonitorDesc'                    => 'පසුබිම් කාර්ය පෝලිම පරීක්ෂා කරන්න: රැඳී සිටින, ක්‍රියාත්මක වන සහ අසාර්ථක කාර්ය.',
     'ExtrasDesc'                          => 'SimpleRisk Extras (ගෙවූ ඇඩෝන) සක්‍රිය කරන්න, අක්‍රිය කරන්න සහ වින්‍යාස කරන්න.',
     'ArtificialIntelligenceExtraDesc'     => 'කෘත්‍රිම බුද්ධි අමතර තොරතුරු මඟින් වැඩිදියුණු කළ අවදානම් විශ්ලේෂණය (FAIR තක්සේරු කිරීම් ඇතුළුව) සහ අභිරුචිකරණය කළ ලියකියවිලි සපයයි.',
     'CustomizationExtraDesc'              => 'අභිරුචිකරණ අමතර විශේෂාංගය මඟින් විවිධ වර්ගයේ ක්ෂේත්‍ර එකතු කිරීමට සහ ඉවත් කිරීමට සහ ගතිකව අභිරුචි පිටු සැකිලි නිර්මාණය කිරීමට හැකියාව ලැබේ.',
@@ -2756,7 +2756,7 @@ $lang = array(
 
     // Configure Hub - tile descriptions (customization category)
     'RedefineNamingConventionsDesc'       => 'UI හරහා SimpleRisk පාරිභාෂිතය (අවදානම, වත්කම, රාමුව, ආදිය) නැවත නම් කරන්න.',
-    'RiskConfigurationDesc'               => 'අවදානම් ලකුණු කිරීමේ නීති වින්‍යාස කරන්න: මට්ටම්, ආහාර රුචිය, SLA සීමාවන් සහ සම්භාව්‍ය / දායක අවදානම් සූත්‍ර.',
+    'RiskConfigurationDesc'               => 'අවදානම් ලකුණු කිරීමේ නීති වින්‍යාස කරන්න: මට්ටම්, අවදානම් රුචිය, SLA සීමාවන් සහ සම්භාව්‍ය / දායක අවදානම් සූත්‍ර.',
     'RiskAndThreatCatalogDesc'            => 'පතන ලැයිස්තුවල භාවිතා වන අවදානම් සහ තර්ජන අගයන් නාමාවලිය පවත්වා ගන්න.',
     'AddAndRemoveValuesDesc'              => 'අවදානම් ක්ෂේත්‍ර සඳහා පතන අගයන් කළමනාකරණය කරන්න: ස්ථානය, මූලාශ්‍රය, කාණ්ඩය, කණ්ඩායම, තාක්ෂණය සහ තවත් දේ.',
     'AssetValuationDesc'                  => 'වත්කම් තක්සේරු පරිමාණය සහ වත්කම් තක්සේරු අභිබවා යාම වින්‍යාස කරන්න.',
@@ -2771,18 +2771,18 @@ $lang = array(
     'OrganizationManagementDesc'          => "සංවිධානාත්මක ධූරාවලියේ අමතර කොටස මඟින් කණ්ඩායම් කිහිපයක් ඇතුළත් කළ හැකි බහු ව්‍යාපාර ඒකක අර්ථ දැක්වීමේ හැකියාව ලබා දේ. ඉන්පසු පරිශීලකයින් විවිධ ව්‍යාපාර ඒකක යටතේ කණ්ඩායම් එකක් හෝ කිහිපයක් හරහා පැවරිය හැක. මෙය පරිශීලකයෙකුට ඔවුන් සම්බන්ධ නොවන කණ්ඩායම්, පරිශීලකයින් සහ වත්කම් දැකීමට සහ භාවිතා කිරීමට ඇති හැකියාවට බලපායි.",
 
     // Configure Hub - tile descriptions (data category)
-    'DeleteRisksDesc'                     => 'තොග වශයෙන් මකා දැමීමේ අවදානම්. අරපිරිමැස්මෙන් භාවිතා කරන්න - මකාදැමීම් ස්ථිරයි.',
+    'DeleteRisksDesc'                     => 'අවදානම් තොග වශයෙන් මකන්න. අරපිරිමැස්මෙන් භාවිතා කරන්න - මකාදැමීම් ස්ථිරයි.',
     'AuditTrailDesc'                      => 'පරිශීලක ක්‍රියාවන්හි පද්ධති විගණන ලොගය සොයන්න සහ අපනයනය කරන්න.',
     'ImportExportExtraDesc'               => 'Import-Export Extra මඟින් CSV ගොනුවක ඇති ක්ෂේත්‍ර SimpleRisk දත්ත සමුදායේ ක්ෂේත්‍ර වෙත සිතියම්ගත කිරීමෙන් SimpleRisk වෙත දත්ත ආයාත කිරීමේ හැකියාව ලබා දේ. එය තෙවන පාර්ශවීය පැතුරුම්පතකින් විගණන ප්‍රතිඵල, වෙනත් මෙවලමකින් අවදානම් ස්කෑන් ප්‍රතිඵල, ඔබේ CMDB වෙතින් වත්කම් සහ තවත් දේ ආයාත කිරීමට භාවිතා කළ හැක. අවදානම්, අවම කිරීම්, සමාලෝචන හෝ තුනේම ඒකාබද්ධ වාර්තාවක් අඩංගු SimpleRisk වෙතින් CSV ගොනු අපනයනය කිරීමේ හැකියාව ද ලබා දේ.',
     'JiraExtraDesc'                       => 'ජිරා ඒකාබද්ධ කිරීමේ අමතර ක්‍රමය මඟින් පරිශීලකයින්ට ජිරා අවස්ථාවක් සමඟ ද්වි-දිශානුගතව ඒකාබද්ධ වීමේ හැකියාව ලබා දේ. එය ජිරා ගැටළු වලට අවදානම් සම්බන්ධ කිරීමට මෙන්ම ඔවුන්ගේ දත්ත, තත්ත්වය සහ අදහස් සමමුහුර්ත කිරීමට හැකියාව ලබා දෙයි.',
     'APIExtraDesc'                        => 'API අමතර සේවාව මඟින් පාරිභෝගිකයින්ට RESTful API එකක් භාවිතා කර අනෙකුත් යෙදුම් සමඟ ස්ක්‍රිප්ට් කළ අන්තර්ක්‍රියා නිර්මාණය කිරීමට සහ පවතින යටිතල පහසුකම් උපයෝගී කර ගැනීමට ඉඩ සලසයි.',
-    'AdvancedSearchExtraDesc'             => "උසස් සෙවුම් අමතර කොටස ඉහළ තීරුවේ සෙවුම් කොටුවේ ක්‍රියාකාරිත්වය පුළුල් කරන අතර එමඟින් අවදානම් දත්තවල පෙළ සෙවීමක් කිරීමෙන් අවදානම් සොයා ගැනීමට හැකි වේ.",
+    'AdvancedSearchExtraDesc'             => "උසස් සෙවුම් අමතර කොටස ඉහළ තීරුවේ සෙවුම් කොටුව අවදානම්, රාමු, පාලන, ලේඛන, ව්‍යතිරේක, පරීක්ෂණ, විගණන, වත්කම් සහ වත්කම් කණ්ඩායම් හරහා එක් සෙවුමක් බවට පත් කරයි, ප්‍රතිඵල හරහා වැඩ කිරීම සඳහා සම්පූර්ණ සෙවුම් පිටුවක් ඇත. එය පරිශීලකයාට දැකීමට අවසර දී ඇති වාර්තා පමණක් පෙන්වයි.",
     'AssessmentsExtraDesc'                => 'අවදානම් තක්සේරු අතිරේකය මඟින් පරිශීලකයින්ට සම්බන්ධතා නිර්වචනය කිරීමට, ප්‍රශ්න (තර්කනය ඇතුළුව) නිර්මාණය කිරීමට, ප්‍රශ්නාවලියක් සහිත සැකිල්ලක් සමඟ බහු ප්‍රශ්න එකලස් කිරීමට, ප්‍රශ්නාවලියක් නිර්මාණය කර ඒවා සම්බන්ධතා වෙත යැවීමට, ප්‍රශ්නාවලියේ ප්‍රතිඵල බැලීමට, එම ප්‍රතිඵල මත පදනම්ව අවදානම් එකතු කිරීමට සහ කාලයත් සමඟ ප්‍රතිඵල සංසන්දනය කිරීමට, බාහිරව අභිරුචිකරණය කළ තක්සේරු ආනයනය සහ අපනයනය කිරීමට සහ අවදානම් තක්සේරු විගණන මංපෙත සමාලෝචනය කිරීමට හැකියාව ලබා දේ.',
-    'ActiveAssessmentsDesc'               => 'දැනට පියාසර කරන තක්සේරු බලන්න සහ කළමනාකරණය කරන්න.',
+    'ActiveAssessmentsDesc'               => 'දැනට සිදුවෙමින් පවතින තක්සේරු බලන්න සහ කළමනාකරණය කරන්න.',
     'WorkflowsExtraDesc'                  => 'Workflows Extra මඟින් SimpleRisk තුළ සිදුවීම් වලට ප්‍රතිචාර වශයෙන් අවදානම් කළමනාකරණ ක්‍රියා ස්වයංක්‍රීය කරන දෘශ්‍ය, සිදුවීම්-ධාවනය කරන ලද වැඩ ප්‍රවාහ එන්ජිමක් සපයයි. ඔබට වෙනස්කම් අවුලුවන වැඩ ප්‍රවාහ සැලසුම් කළ හැකිය - අවදානමක් ඉදිරිපත් කිරීම, යාවත්කාලීන කිරීම හෝ සමාලෝචනය කිරීම වැනි - අනුමැතීන් මෙහෙයවීම, වැඩ පැවරීම සහ අතින් මැදිහත්වීමකින් තොරව ඔබේ ක්‍රියාවලිය ඉදිරියට ගෙන යාම.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'ඒකාබද්ධ අනුකූලතා රාමුව (UCF) අමතර යනු ඒකාබද්ධ අනුකූලතා රාමුව සහ SimpleRisk අතර API මට්ටමේ ඒකාබද්ධ කිරීමකි. එය සක්‍රීය කිරීමෙන් ඔබට තෝරාගත් රාමු ආයාත කිරීමට සහ UCF වෙතින් සෘජුවම සිතියම්ගත කිරීම් පාලනය කිරීමට ඉඩ සලසයි.',
+    'UCFExtraDesc'                        => 'ඒකාබද්ධ අනුකූලතා රාමුව (UCF) අමතර යනු ඒකාබද්ධ අනුකූලතා රාමුව සහ SimpleRisk අතර API මට්ටමේ ඒකාබද්ධ කිරීමකි. එය සක්‍රීය කිරීමෙන් ඔබට තෝරාගත් රාමු සහ පාලන සිතියම්ගත කිරීම් UCF වෙතින් සෘජුවම ආයාත කිරීමට ඉඩ සලසයි.',
     'SCFExtraDesc'                        => "Secure Controls Framework (SCF) Extra යනු Secure Controls Framework සහ SimpleRisk අතර සෘජු ඒකාබද්ධතාවයකි. එය SCF හි පාලන නාමාවලිය සහ අනුකූලතා සහ සයිබර් ආරක්ෂණ රාමු පුළුල් පරාසයක් හරහා ඒවායේ සිතියම්ගත කිරීම් SimpleRisk හි පාලන ක්‍රියාකාරිත්වයට ආයාත කරයි, එබැවින් ඔබට අවශ්‍ය රාමු අනුගමනය කර අතින් ගොඩනඟා නොගෙන ඒවායේ පාලනයන් කළමනාකරණය කළ හැකිය.",
 
     // Configure Hub - tile descriptions (maintenance category)
@@ -2857,7 +2857,7 @@ $lang = array(
     'TimeSeconds'                          => 'එස්',
     'TimeMinutes'                          => 'එම්',
     'TimeHours'                            => 'එච්',
-    'TimeDayUnit'                          => 'ඈ',
+    'TimeDayUnit'                          => 'දින',
     'NothingInTrash'                       => 'කුණු කූඩයේ කිසිවක් නැත',
     'Promo'                                => 'ප්‍රවර්ධන',
     'Trash'                                => 'කුණු කූඩය',
@@ -2878,7 +2878,7 @@ $lang = array(
     'AssetValuationMode' => 'වත්කම් තක්සේරුකරණ මාදිලිය',
     'AutomaticLinearRange' => 'ස්වයංක්‍රීය රේඛීය පරාසය',
     'AutomaticExponentialRange' => 'ස්වයංක්‍රීය ඝාතීය පරාසය',
-    'ManualValuation' => 'අත්පොත',
+    'ManualValuation' => 'අතින්',
     'AssetValuationMinMustBeNonNegative' => 'ස්වයංක්‍රීය ඝාතීය පරාසය සඳහා වත්කම් තක්සේරු කිරීමේ අවම අගය ශුන්‍ය හෝ ඊට වැඩි විය යුතුය.',
     'CrossDomain' => 'හරස්-වසම්',
     'Preferences' => 'මනාපයන්',
@@ -2888,7 +2888,7 @@ $lang = array(
     'Profile' => 'පැතිකඩ',
     'Scoring' => 'ලකුණු ලබා ගැනීම',
     'EncryptionMissingLockTablesPrivilege'   => 'SimpleRisk දත්ත සමුදා පරිශීලකයාට දත්ත සමුදාය ආරක්ෂිතව සංකේතනය කිරීමට අවශ්‍ය වන LOCK TABLES වරප්‍රසාදය නොමැත. දත්ත සමුදා පරිපාලකයෙකුගෙන් ප්‍රතිචාරයෙන් ලබා දුන් GRANT ප්‍රකාශය ක්‍රියාත්මක කර නැවත උත්සාහ කරන්න.',
-    'EncryptionMissingLockTablesPrivilegeUi' => 'SimpleRisk දත්ත සමුදා පරිශීලකයාට සංකේතනය සඳහා අවශ්‍ය LOCK TABLES වරප්‍රසාදය නොමැත. දත්ත සමුදා පරිපාලකයෙකු ධාවනය කළ යුත්තේ: LOCK TABLES ON {$db}.* TO {$user}; ඉන්පසු නැවත උත්සාහ කරන්න.',
+    'EncryptionMissingLockTablesPrivilegeUi' => 'SimpleRisk දත්ත සමුදා පරිශීලකයාට සංකේතනය සඳහා අවශ්‍ය LOCK TABLES වරප්‍රසාදය නොමැත. දත්ත සමුදා පරිපාලකයෙකු ධාවනය කළ යුත්තේ: GRANT LOCK TABLES ON {$db}.* TO {$user}; ඉන්පසු නැවත උත්සාහ කරන්න.',
     'EncryptionRequiredGrantLabel' => 'අවශ්‍ය GRANT ප්‍රකාශය:',
     'EncryptionActivationAlreadyRunning' => 'සංකේතන සක්‍රිය කිරීමක් දැනටමත් සිදුවෙමින් පවතී. එය සම්පූර්ණ වන තෙක් රැඳී සිටින්න නැතහොත් ප්‍රතිසාධනය කිරීමට උපස්ථයෙන් ප්‍රතිසාධනය භාවිතා කරන්න.',
     'EncryptionActivationEnqueued'           => 'සංකේතනය අමතර සක්‍රිය කිරීම පෝලිම්ගත කර ඇත. දත්ත සමුදාය සංකේතනය කර ඇති අතරතුර පරිපාලක UI ප්‍රගතිය නිරීක්ෂණය කරනු ඇත.',
@@ -2901,8 +2901,8 @@ $lang = array(
     'EncryptionInFlightBody'             => 'සංකේතන සක්‍රිය, අක්‍රිය හෝ ප්‍රතිසාධන නල මාර්ගයක් දැනට ක්‍රියාත්මක වේ. එය අවසන් වන තෙක් රැඳී සිටින්න - මෙහෙයුම අවසන් වූ විට පිටුව ස්වයංක්‍රීයව නැවුම් වනු ඇත - නැවත උත්සාහ කිරීමට පෙර.',
     'OK'                                 => 'හරි',
     'ActivationGuardFailed'                 => 'සක්‍රිය කිරීම ආරම්භ කළ නොහැකි විය. විස්තර සඳහා පිටු ශීර්ෂයේ ඇඟවීම බලන්න.',
-    'EncryptionStageStarting'               => '… ආරම්භ කරමින්',
-    'EncryptionStageProgress'               => '{current} හි {total}අදියර: {name}',
+    'EncryptionStageStarting'               => 'ආරම්භ කරමින්…',
+    'EncryptionStageProgress'               => 'අදියර {current} / {total}: {name}',
     'EncryptionStageAllDone'                => 'සියලුම අදියර සම්පූර්ණයි.',
     'EncryptionStageEncryptTable'           => 'වගුව සංකේතනය කරන්න: {table}',
     'EncryptionStageDecryptTable'           => 'වගුව විකේතනය කරන්න: {table}',
@@ -2917,7 +2917,7 @@ $lang = array(
     'EncryptionRestoreInProgress'           => 'ඔබගේ SimpleRisk දත්ත සමුදාය උපස්ථයෙන් ප්‍රතිසාධනය කරමින්. මෙයට මිනිත්තු කිහිපයක් ගත විය හැක.',
     'EncryptionRestoreEnqueueFailed'        => 'ප්‍රතිසාධනය ආරම්භ කිරීමට අසමත් විය. SimpleRisk ලොග් පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
     'EncryptionStatusActive'                => 'සංකේතාත්මක දත්ත සමුදා අමතර කොටස සක්‍රීයයි.',
-    'EncryptionStatusVersion'               => 'පිටපත',
+    'EncryptionStatusVersion'               => 'අනුවාදය',
     'EncryptionDeactivateCta'               => 'සංකේතාත්මක දත්ත සමුදා අතිරේකය අක්‍රිය කරන්න',
     'EncryptionDeactivateCtaHelp'           => 'සංකේතනය කළ සෑම තීරුවක්ම සාමාන්‍ය පෙළට නැවත විකේතනය කරන්න. ජනාකීර්ණ දත්ත සමුදායක මෙය මිනිත්තු කිහිපයක් ගතවේ.',
     'EncryptionBackupPanelHeading'          => 'පූර්ව-සක්‍රිය කිරීමේ උපස්ථය',
@@ -3006,7 +3006,7 @@ $lang = array(
     'ByRiskLevel' => 'අවදානම් මට්ටම අනුව',
     'MeanTimeToRemediateDescription' => 'කණ්ඩායම, කාණ්ඩය සහ අවදානම් මට්ටම අනුව කාණ්ඩගත කර ඇති අවදානම් වසා දැමීමට ගතවන සාමාන්‍ය දින ගණන. සංවෘත අවදානම් පමණක් ඇතුළත් වේ.',
     'AverageDaysToClose' => 'වසා දැමීමට සාමාන්‍ය දින',
-    'ControlPassRateTrend' => 'සමත් අනුපාත ප්‍රවණතාවය පාලනය කරන්න',
+    'ControlPassRateTrend' => 'පාලන සමත් අනුපාත ප්‍රවණතාව',
     'ControlPassRateTrendDescription' => 'පසුගිය මාස 12 තුළ රාමුවකට මාසික සමත් අනුපාතය (%). කාල සීමාව තුළ අවම වශයෙන් එක් පරීක්ෂණ ප්‍රතිඵලයක් සහිත රාමු පමණක් පෙන්වනු ලැබේ.',
     'PassRatePercent' => 'සමත් අනුපාතය (%)',
     'ExposureByTeam' => 'කණ්ඩායම විසින් අවදානම් නිරාවරණය',
@@ -3015,7 +3015,7 @@ $lang = array(
     'TotalRiskScore' => 'මුළු අවදානම් ලකුණු',
     'SLABreachStatus' => 'SLA කඩ කිරීමේ තත්ත්වය',
     'SLABreachDescription' => 'අවදානම් මට්ටම අනුව ඒවායේ SLA සීමාව තුළ හෝ ඉන් ඔබ්බට විවෘත අවදානම්. පෙරනිමි සීමාවන්: ඉතා ඉහළ=30d, ඉහළ=60d, මධ්‍යම=90d, අඩු=180d.',
-    'WithinSLA' => 'ශ්‍රී ලංකා ගුවන් හමුදාව තුළ',
+    'WithinSLA' => 'SLA තුළ',
     'SLABreached' => 'SLA උල්ලංඝනය විය',
     'NumberOfRisks' => 'අවදානම් ගණන',
     'ExposureByBusinessUnit' => 'ව්‍යාපාර ඒකකය මගින් අවදානම් නිරාවරණය',
@@ -3053,7 +3053,7 @@ $lang = array(
     'Free' => 'නොමිලේ',
     'License' => 'බලපත්‍රය',
     'NoLicensedExtras' => 'බලපත්‍රලාභී අමතර කිසිවක් නැත.',
-    'NoExpiredExtras' => 'කල් ඉකුත් වූ අමතර දීමනා නැත.',
+    'NoExpiredExtras' => 'කල් ඉකුත් වූ අමතර මොඩියුල නැත.',
     'NoUnlicensedExtras' => 'බලපත්‍ර රහිත අමතර දේවල් නැත.',
     'Unlimited' => 'අසීමිත',
     'LicenseStateLockMessage' => 'ඔබගේ බලපත්‍ර තත්ත්වය අනුව අමතර ස්ථාපනය සහ උත්ශ්‍රේණි කිරීමේ ක්‍රියා දැනට අබල කර ඇත. පවතින ස්ථාපිත අමතර ඒවා දිගටම ක්‍රියා කරයි.',
@@ -3097,7 +3097,7 @@ $lang = array(
     'BypassPendingRisksDescription' => 'තක්සේරුව අවසන් වූ වහාම අවදානම් නිර්මාණය කර ඒවා සමාලෝචනය සඳහා තබා ගැනීම වෙනුවට.',
     'AutomaticallySendResultsLabel' => 'ස්වයංක්‍රීයව ප්‍රතිඵල යවන්න',
     'AutomaticallySendResultsDescription' => 'තක්සේරු ප්‍රතිඵල සම්පූර්ණ වූ පසු සියලුම තක්සේරු සම්බන්ධතා වෙත යවන්න.',
-    'QuestionnaireMultiselectPlaceholder' => '… තෝරන්න හෝ සොයන්න',
+    'QuestionnaireMultiselectPlaceholder' => 'තෝරන්න හෝ සොයන්න…',
     'QuestionnaireNamePlaceholder' => 'උදා: විකුණුම්කරුවන්ගේ ආරක්ෂක සමාලෝචනය 2026',
     'AddTeamPlaceholder' => 'කණ්ඩායම එක් කරන්න…',
     'AddStakeholderPlaceholder' => 'කොටස්කරු එකතු කරන්න…',
@@ -3150,7 +3150,7 @@ $lang = array(
     'ConfirmPushSelectedPendingRisks' => '{n} තෝරාගත් අපේක්ෂිත අවදානම්(ය) අවදානම් වෙත තල්ලු කරන්නද?',
     'ConfirmDeleteSelectedPendingRisks' => '{n} තෝරාගත් පොරොත්තු අවදානම්(ය) මකන්නද? මෙය අහෝසි කළ නොහැක.',
     'ConfirmDeleteSelectedSelfAssessments' => '{n} තෝරාගත් ස්වයං තක්සේරුව(ය) මකන්නද? මෙය අහෝසි කළ නොහැක.',
-    'BulkPartialFailure' => '{n} {total} අයිතම සාර්ථක විය; ඉතිරිය අසාර්ථක විය. වත්මන් තත්ත්වය බැලීමට නැවුම් කරන්න.',
+    'BulkPartialFailure' => '{total} අයිතම අතරින් {n} ක් සාර්ථක විය; ඉතිරිය අසාර්ථක විය. වත්මන් තත්ත්වය බැලීමට නැවුම් කරන්න.',
 
     // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
     'WorkflowsExtraDeactivateConfirm' => 'වැඩ ප්‍රවාහ අමතර අක්‍රිය කරන්නද? පෙරනිමි පද්ධති වැඩ ප්‍රවාහ ඇතුළුව සියලුම වැඩ ප්‍රවාහ නිර්වචන ස්ථිරවම මකා දැමෙනු ඇත. අමතර නැවත සක්‍රිය කිරීමෙන් පෙරනිමි පද්ධති වැඩ ප්‍රවාහ නැවත නිර්මාණය වනු ඇත, නමුත් ඒවාට ඇති ඕනෑම අභිරුචිකරණයක් නැති වී යනු ඇත.',
@@ -3158,7 +3158,7 @@ $lang = array(
     'HomeKpiNeedsReview' => 'සමාලෝචනයක් අවශ්‍යයි',
     'HomeKpiUnmitigated' => 'අනුමත නොකළ',
     'HomeKpiClosedRisks' => 'සංවෘත අවදානම්',
-    'HomeKpiControlPassRate' => 'සමත් අනුපාතය පාලනය කරන්න',
+    'HomeKpiControlPassRate' => 'පාලන සමත් අනුපාතය',
     'HomeKpiFailingControls' => 'අසාර්ථක පාලන',
     'HomeKpiOpenAudits' => 'විවෘත විගණන',
     'HomeKpiTestsDueSoon' => 'පරීක්ෂණ ඉක්මනින් අවසන් වේ',
@@ -3200,7 +3200,7 @@ $lang = array(
     'ImChartByStatus' => 'තත්ත්වය අනුව',
     'ImListRecent' => 'මෑත සිදුවීම්',
     'ImListUnassigned' => 'පවරා නොදුන් සිදුවීම්',
-    'HomeKpiOpenExceptions' => 'ව්‍යතිරේක විවෘත කරන්න',
+    'HomeKpiOpenExceptions' => 'විවෘත ව්‍යතිරේක',
     'HomeKpiPolicies' => 'පිලිවෙත්',
     'ResolutionTargets' => 'විභේදන ඉලක්ක (දින)',
     'ResolutionTargetsHelp' => 'සිදුවීමක් කල් ඉකුත් වූවක් ලෙස ගණන් ගැනීමට පෙර විවෘතව පැවතිය හැකි දින ගණන.',
@@ -3231,7 +3231,7 @@ $lang = array(
     'GSHide' => 'ආරම්භ කිරීම සඟවන්න',
     'GSDismissStep' => 'මෙම පියවර ඉවතලන්න',
     'GSAllSet' => 'ඔයා ඔක්කොම සූදානම් — හොඳ වැඩක්!',
-    'GSWalkthrough' => 'මිනිත්තු 30 ක ඇවිදීමේ මාර්ගය',
+    'GSWalkthrough' => 'මිනිත්තු 30 ක මඟ පෙන්වීම',
     'Explore' => 'ගවේෂණය කරන්න',
     'Learn' => 'ඉගෙන ගන්න',
     'AdminGuide' => 'පරිපාලන මාර්ගෝපදේශය',
@@ -3246,7 +3246,7 @@ $lang = array(
     'GSInviteDesc' => 'වැඩ පැවරීමට සහ සමාලෝචනය කිරීමට හැකි වන පරිදි සගයන් එක් කරන්න.',
     'GSInviteCta' => 'පරිශීලකයින් එක් කරන්න',
     'GSAiTitle' => 'AI වින්‍යාස කරන්න',
-    'GSAiDesc' => 'කෘත්‍රිම බුද්ධිය සමඟින් ඔබේ සරල අවදානම් අත්දැකීම වැඩි දියුණු කරගන්න.',
+    'GSAiDesc' => 'කෘත්‍රිම බුද්ධිය සමඟින් ඔබේ SimpleRisk අත්දැකීම වැඩි දියුණු කරගන්න.',
     'GSAiCta' => 'AI සකසන්න',
     'GSSubmitRiskTitle' => 'ඔබේ පළමු අවදානම ඉදිරිපත් කරන්න.',
     'GSSubmitRiskDesc' => 'ඔබේ සංවිධානය මුහුණ දෙන අවදානමක් ග්‍රහණය කරගන්න.',
@@ -3334,7 +3334,7 @@ $lang = array(
     'ImportExportGeneratedOn' => 'ජනනය කරන ලදී',
     'ImportExportPage' => 'පිටුව',
     'ImportExportPageOf' => 'වල',
-    'ResolutionTargetsUpdated' => 'දැඩි උත්සාහය විසඳීමේ ඉලක්ක යාවත්කාලීන කරන ලදී.',
+    'ResolutionTargetsUpdated' => 'බරපතලකම අනුව විසඳීමේ ඉලක්ක යාවත්කාලීන කරන ලදී.',
     'SeverityColorsUpdated' => 'බරපතලකමේ වර්ණ යාවත්කාලීන කරන ලදී.',
     // AI Capabilities Catalog + AI settings hub (unified AI settings)
     'AICapGrcRecommendations' => 'GRC රාමු නිර්දේශ',
@@ -3363,7 +3363,7 @@ $lang = array(
     'AICapSearchPlaceholder' => 'AI හැකියාවන් සොයන්න…',
     'AICapFilterDomain' => 'වසම',
     'AICapFilterTier' => 'ස්ථරය',
-    'AICapFilterState' => 'රජයේ',
+    'AICapFilterState' => 'තත්ත්වය',
     'AICapTierExtra' => 'AI අමතර',
     'AICapStateLocked' => 'අගුළු දමා ඇත',
     'AICapIncludedInExtra' => 'AI අමතර කොටසට ඇතුළත් කර ඇත',
@@ -3387,11 +3387,11 @@ $lang = array(
     'AICtxOrgLocation' => 'ඔබේ සංවිධානය ක්‍රියාත්මක වන්නේ කුමන රටවල හෝ කලාපවලද?',
     'AICtxOrgType' => 'ඔබ කුමන ආකාරයේ සංවිධානයක්ද?',
     'AICtxDataTypes' => 'ඔබේ සංවිධානය රැස් කරන්නේ, සකසන්නේ හෝ ගබඩා කරන්නේ කුමන ආකාරයේ දත්තද (උදා: පුද්ගලික දත්ත, මූල්‍ය දත්ත, සෞඛ්‍ය තොරතුරු)?',
-    'AICtxDataCustomers' => 'ඔබේ ප්‍රාථමික ගනුදෙනුකරුවන් හෝ කොටස්කරුවන් කවුද (උදා: පාරිභෝගිකයින්, ව්‍යාපාර, රජයේ ආයතන)?',
+    'AICtxDataCustomers' => 'ඔබේ ප්‍රාථමික ගනුදෙනුකරුවන් හෝ පාර්ශ්වකරුවන් කවුද (උදා: පාරිභෝගිකයින්, ව්‍යාපාර, රජයේ ආයතන)?',
     'AICtxDataRegulatory' => 'ඔබේ කර්මාන්තයේ කිසියම් නිශ්චිත නියාමන අවශ්‍යතාවයන්ට ඔබ යටත්ද?',
     'AICtxDataThirdParties' => 'අනුකූලතා අධීක්ෂණය අවශ්‍ය කරන තෙවන පාර්ශවීය සම්බන්ධතා හෝ බාහිරින් ලබාගත් සේවාවන් ඔබට තිබේද?',
     'AICtxMaturityIssues' => 'පසුගිය වසර 3-5 තුළ ඔබට කිසියම් සැලකිය යුතු අනුකූලතා ගැටළු, ආරක්ෂක කඩකිරීම් හෝ අවදානම් සිදුවීම් අත්විඳ තිබේද?',
-    'AICtxMaturityConcerns' => 'ඔබගේ වත්මන් සහන යෝජනා ක්‍රම ක්‍රියාවලීන් තුළ ඔබ හඳුනාගෙන ඇති කිසියම් විශේෂිත සැලකිලිමත් විය යුතු හෝ වැඩිදියුණු කළ යුතු ක්ෂේත්‍ර තිබේද?',
+    'AICtxMaturityConcerns' => 'ඔබගේ වත්මන් GRC ක්‍රියාවලීන් තුළ ඔබ හඳුනාගෙන ඇති කිසියම් විශේෂිත සැලකිලිමත් විය යුතු හෝ වැඩිදියුණු කළ යුතු ක්ෂේත්‍ර තිබේද?',
     'AICtxMaturityAppetite' => 'ඔබේ සංවිධානයේ අවදානම් රුචිය සහ ඉවසීමේ හැකියාව කුමක්ද?',
     'AICtxMaturityLevel' => 'පාලනය, අවදානම් කළමනාකරණය සහ අනුකූලතා පිළිවෙත් අනුව ඔබේ වර්තමාන පරිණත මට්ටම කුමක්ද?',
     'AICtxImplementationChanges' => 'ඔබේ ව්‍යාපාර ආකෘතියේ, තාක්ෂණ යටිතල පහසුකම්වල හෝ වෙළඳපොළේ ඉදිරියේදී සිදුවීමට නියමිත වෙනස්කම් මොනවාද, ඒවා ඔබේ අනුකූලතා අවශ්‍යතාවලට බලපෑ හැකිද?',
@@ -3409,7 +3409,7 @@ $lang = array(
     'AICtxCardSubtitle' => 'ක්ෂේත්‍ර හතරක් හරහා ප්‍රශ්න 21ක්. ඔබ වැඩි වැඩියෙන් පිළිතුරු දෙන තරමට, සෑම නිර්දේශයක්ම තියුණු වේ.',
     'AICtxAnswered' => '%1$d න් %2$d පිළිතුරු දුන්',
     'AICtxAllOptional' => 'විකල්ප',
-    'AIContextSaving' => '… සුරකිමින්',
+    'AIContextSaving' => 'සුරකිමින්…',
     'AIContextSaveFailed' => 'ඔබගේ වෙනස්කම් සුරැකීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
     'AISettingsSavedNotReachable' => 'AI සැකසුම් සුරකින ලදී, නමුත් සැපයුම්කරු වෙත ළඟා වීමට නොහැකි විය. එය ක්‍රියාත්මක වන බවත් URL නිවැරදි බවත් සහතික කර ගන්න.',
     'AISettingsSavedKeyRequired' => 'AI සැකසුම් සුරකින ලදී, නමුත් මෙම සැපයුම්කරුට එහි විශේෂාංග භාවිතා කිරීමට පෙර API යතුරක් අවශ්‍ය වේ.',
@@ -3434,7 +3434,7 @@ $lang = array(
     // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
     // an asset-valuation label. Pointing a schedule mode at it would couple two
     // unrelated domains for translators and break the moment either reworded.
-    'ScheduleManual' => 'අත්පොත',
+    'ScheduleManual' => 'අතින්',
     'ScheduleInterval' => 'පරතරය',
     'ScheduleCalendar' => 'දින දර්ශනය',
     'Cadence' => 'අවරෝහය',
@@ -3459,11 +3459,11 @@ $lang = array(
     'LastResult' => 'අවසාන ප්‍රතිඵලය',
     'NextDue' => 'ඊළඟ නියමිත දිනය',
     'DueSoon' => 'ඉක්මනින් නියමිතයි',
-    'Retired' => 'විශ්‍රාමික',
+    'Retired' => 'භාවිතයෙන් ඉවත් කළ',
     'MyTests' => 'මගේ පරීක්ෂණ',
     'Failing' => 'අසමත් වීම',
     'Untested' => 'පරීක්ෂා නොකළ',
-    'ShowRetired' => 'විශ්‍රාමික පෙන්වන්න',
+    'ShowRetired' => 'අක්‍රිය කළ ඒවා පෙන්වන්න',
     'Tests' => 'පරීක්ෂණ',
     'NoTestsForThisControl' => 'මෙම පාලනය සඳහා තවමත් පරීක්ෂණ නොමැත.',
     'NoControlsDefinedYet' => 'තවමත් පාලනයන් අර්ථ දක්වා නැත.',
@@ -3477,7 +3477,7 @@ $lang = array(
     'Reference' => 'යොමුව',
     'NoFrameworksMapped' => 'මෙම පාලනයට කිසිදු රාමුවක් සිතියම්ගත කර නොමැත.',
     // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
-    'Retire' => 'විශ්‍රාම යන්න',
+    'Retire' => 'අක්‍රිය කරන්න',
     'ReassignTester' => 'පරීක්ෂක නැවත පවරන්න',
     'SetSchedule' => 'කාලසටහන සකසන්න',
     'ConfirmRetireSelectedTests' => '{n} තෝරාගත් පරීක්ෂණ(ය) විශ්‍රාම ගන්නද?',
@@ -3563,7 +3563,7 @@ $lang = array(
     'CommonTestEditScopeHint' => 'මෙම පොදු පරීක්ෂණය භාවිතා කරන සෑම තැනකම වෙනස්කම් අදාළ වේ.',
     'Mode' => 'මාදිලිය',
     'AddOrRemove' => '… එකතු කරන්න හෝ ඉවත් කරන්න',
-    'AddOrSearchTags' => '… ටැග් එකතු කරන්න හෝ සොයන්න',
+    'AddOrSearchTags' => 'ටැග් එකතු කරන්න හෝ සොයන්න…',
     'CreateTagX' => '“{tag}” සාදන්න',
     'Archived' => 'සංරක්ෂණය කරන ලදී',
     'ShowAllTests' => 'සියලුම පරීක්ෂණ',
@@ -3621,9 +3621,9 @@ $lang = array(
     // App shell — collapsing sidebar / new base design (SR app-shell redesign)
     'AI' => 'AI',
     'CollapseSidebar' => 'පැති තීරුව හකුළන්න',
-    'FooterCopyright' => '© %s සරල අවදානම. සියලුම හිමිකම් ඇවිරිණි.',
+    'FooterCopyright' => '© %s SimpleRisk. සියලුම හිමිකම් ඇවිරිණි.',
     'ExpandSidebar' => 'පැති තීරුව දිග හරින්න',
-    'WorkflowsCloneConfirm' => '\'{$name}\' යන ක්ලෝන වැඩ ප්‍රවාහය?',
+    'WorkflowsCloneConfirm' => '\'{$name}\' වැඩ ප්‍රවාහය ක්ලෝන කරන්නද?',
     'WorkflowsDeleteConfirm' => '\'{$name}\' වැඩ ප්‍රවාහය මකන්නද? මෙය අහෝසි කළ නොහැක.',
     'WorkflowActionFailed' => 'ක්‍රියාව අසාර්ථක විය: {$msg}',
     'ClickToDisable' => 'අබල කිරීමට ක්ලික් කරන්න',
@@ -3690,7 +3690,7 @@ $lang = array(
     'NoConnectionsFound' => 'තෝරාගත් ආයතනය සඳහා සම්බන්ධතා හමු නොවීය.',
     'CouldNotLoadGraph' => 'සම්බන්ධතා ප්‍රස්තාරය පූරණය කළ නොහැකි විය.',
     'CouldNotSearchEntities' => 'ආයතන සෙවීමට නොහැකි විය.',
-    'ShowingTopNOfM' => '{0} හි {1} ඉහළ <[⌇⌇⌇0⌇⌇]> පෙන්වමින්',
+    'ShowingTopNOfM' => '{1} න් ඉහළ {0} පෙන්වමින්',
     'RankedByMaturityGap' => 'පරිණත පරතරය අනුව ශ්‍රේණිගත කර ඇත',
     'RankedByRiskScore' => 'අවදානම් ලකුණු අනුව ශ්‍රේණිගත කර ඇත',
     'RankedByRecentFailure' => 'මෑත කාලීන අසාර්ථකත්වය අනුව ශ්‍රේණිගත කර ඇත',
@@ -3731,7 +3731,7 @@ $lang = array(
     'FilterEntitiesPlaceholder' => '… පෙරහන කරන්න',
     'NoMatchingEntities' => 'ඔබගේ පෙරහනට ගැලපෙන ආයතන කිසිවක් නොමැත.',
     'LoadMore' => 'තවත් පූරණය කරන්න',
-    'Loading' => '… පූරණය වෙමින්',
+    'Loading' => 'පූරණය වෙමින්…',
     'CouldNotLoadEntityCounts' => 'ආයතන ගණන පූරණය කළ නොහැකි විය.',
     'CouldNotLoadEntities' => 'ආයතන පූරණය කළ නොහැකි විය.',
     'ClearGraph' => 'ප්‍රස්තාරය හිස් කරන්න',
@@ -3922,7 +3922,7 @@ $lang = array(
     // caller: 39 locales carry them, and this file is append-only precisely so a
     // customer running a custom lang.<locale>.php can reconcile it with a tail
     // diff.
-    'SoaPdf' => 'PDF 옹호의',
+    'SoaPdf' => 'PDF',
 
     // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
     //
@@ -3973,7 +3973,7 @@ $lang = array(
     // Import-Export is a paid Extra, so "not installed" is an upsell rather
     // than a registration prompt. Deliberately a bare capability sentence: it
     // has to sit under a menu row and next to an export button equally well.
-    'RequiresImportExportExtra' => 'ආනයන-අපනයන අමතර ගාස්තුව අවශ්‍ය වේ.',
+    'RequiresImportExportExtra' => 'ආනයන-අපනයන Extra අවශ්‍ය වේ.',
     'UnlockImportExportLink' => 'එය එකතු කරන දේ බලන්න.',
     'UnlockActivateImportExportNote' => 'ආනයන-අපනයන අමතර කොටස ස්ථාපනය කර ඇත, නමුත් සක්‍රිය කර නොමැත.',
     'UnlockActivateImportExportLink' => 'එය ක්‍රියාත්මක කරන්න',
@@ -3989,7 +3989,7 @@ $lang = array(
     // shape but names a day that does not exist (February 31st, month 13).
     // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
     // {$value} is the submitted value, echoed back truncated.
-    'ImpossibleSubmittedDate' => '" {$field} අගය "{$value}" සැබෑ දින දර්ශන දිනයක් නොවේ. දිනය සහ මාසය පරීක්ෂා කරන්න — මෙම අවස්ථාව දින {$format} ලෙස කියවයි.',
+    'ImpossibleSubmittedDate' => '{$field} අගය "{$value}" සැබෑ දින දර්ශන දිනයක් නොවේ. දිනය සහ මාසය පරීක්ෂා කරන්න — මෙම අවස්ථාව දින {$format} ලෙස කියවයි.',
     // The Statement of Applicability's merged verification column. Replaces three
     // separate headings (Implemented / Evidence / Review Cadence) with the one
     // question all three answer: how do we know this control is working?
@@ -4046,7 +4046,7 @@ $lang = array(
     // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
     // soa_export_sheet_name() truncates rather than failing the export, so a long
     // translation loses its tail on the tab.
-    'SoaSheetCover' => 'ආවරණය කරන්න',
+    'SoaSheetCover' => 'කවරය',
 
     'SearchFrameworks' => 'රාමු සොයන්න',
     'SearchControls' => 'සෙවුම් පාලන',
@@ -4099,7 +4099,7 @@ $lang = array(
     'FwLastTestPassed' => 'අවසාන පරීක්ෂණය සමත් විය',
     'FwLastTestFailed' => 'අවසාන පරීක්ෂණය අසාර්ථකයි',
     'FwNoEvidence' => 'අදාළයි, සාක්ෂි නැහැ.',
-    'FwMaturityUnderDesired' => 'අපේක්ෂිත කාලය යටතේ පරිණතභාවය',
+    'FwMaturityUnderDesired' => 'අපේක්ෂිතයට වඩා අඩු පරිණතභාවය',
     'FwScopeAFramework' => 'තීරණය කිරීමට රාමුවක් විෂය පථයට ගන්න',
     'FwNotApplicableOrInherited' => 'අදාළ නොවේ හෝ උරුම වී ඇත',
     // Task 22: framework rail search (governance/index.php's #sr-fw-search,
@@ -4519,7 +4519,7 @@ $lang = array(
     // alerts, and the batched submitted/created/updated summaries)
     'ControlIdOrShortNameFieldRequired' => 'පාලන හැඳුනුම්පත හෝ පාලන කෙටි නාම ක්ෂේත්‍රය සිතියම්ගත කළ යුතුය -- ඒවායින් එකක් නොමැතිව පේළියක් හඳුනාගත නොහැක.',
     'RiskImportSubjectNull' => 'අවදානම් හැඳුනුම්පත {$risk_id}: විෂය ක්ෂේත්‍රය හිස් හෝ අස්ථානගත වී ඇති නිසා යාවත්කාලීන කර නොමැත.',
-    'RiskImportSummary' => '{$submitted} අවදානම්(ය) ඉදිරිපත් කරන ලද අතර යාවත්කාලීන කරන ලද {$updated} අවදානම්(ය) ඉදිරිපත් කරන ලදී.',
+    'RiskImportSummary' => '{$submitted} අවදානම්(ය) ඉදිරිපත් කරන ලද අතර {$updated} අවදානම්(ය) යාවත්කාලීන කරන ලදී.',
     'ControlImportSummary' => '{$created} පාලන(ය) නිර්මාණය කර {$updated} පාලන(ය) යාවත්කාලීන කරන ලදී.',
     'ImportAdditionalIssuesSuppressed' => '{$count} අමතර පේළි(ය) වල ගැටළු ඇති වූ අතර ඒවා මෙහි තනි තනිව නොපෙන්වයි.',
     'EncryptionPipelineStalledTask' => 'සංකේතන නල මාර්ගයක් (කාර්යය #{$id}, {$type}) ඇනහිට ඇති බව පෙනේ — එය අසාමාන්‍ය ලෙස දිගු කාලයක් තිස්සේ ප්‍රගතියක් නොමැතිව {$status} පැවතුනි. මෙයින් සාමාන්‍යයෙන් අදහස් වන්නේ පසුබිම් පෝලිම් සේවකයා ක්‍රියාත්මක නොවන බවයි; එය කාලසටහන්ගත කර ඇත්දැයි පරීක්ෂා කර, එය ඇනහිට ඇති කාර්යය සැකසූ පසු නැවත උත්සාහ කරන්න.',
@@ -4553,7 +4553,7 @@ $lang = array(
     'UpgradeDownloadLog' => 'බාගැනීම් ලොගය',
     'UpgradeStatementsApplied' => 'ආරම්භ කරන ලදී {started} · {count} ප්‍රකාශ යොදන ලදී',
     // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
-    'UpgradeCheckingInstance' => 'මෙම අවස්ථාව පරීක්ෂා කරමින්',
+    'UpgradeCheckingInstance' => 'මෙම ස්ථාපනය පරීක්ෂා කරමින්',
     'UpgradeInstanceChecked' => 'අවස්ථාව පරීක්ෂා කරන ලදී, නිවැරදි කිරීම් අවශ්‍ය නොවේ.',
     'UpgradeBlockedByCorrections' => 'මෙම අවස්ථාවට ස්වයංක්‍රීයව යෙදිය නොහැකි නිවැරදි කිරීමක් අවශ්‍ය වන බැවින් උත්ශ්‍රේණි කිරීම නතර විය. ඉහත උපදෙස් අනුගමනය කරන්න, ඉන්පසු උත්ශ්‍රේණි කිරීම නැවත ක්‍රියාත්මක කරන්න. වෙනත් කිසිවක් වෙනස් කර නැත.',
     // Shown when an upgrade replaced the instance's configuration file and could not put the original back
@@ -4564,7 +4564,7 @@ $lang = array(
     'UpgradeStatusUnreachable' => 'උත්ශ්‍රේණි කිරීම ක්‍රියාත්මක වන අතරතුර සේවාදායකය සමඟ සම්බන්ධතාව නැති විය. SimpleRisk ලොගය පරීක්ෂා කරන්න; උත්ශ්‍රේණි කිරීම තවමත් සිදුවෙමින් පැවතිය හැකිය.',
     'UpgradeJobUnwritable' => 'එහි ප්‍රගති වාර්තාව ලිවිය නොහැකි වූ නිසා උත්ශ්‍රේණි කිරීම ආරම්භ කළ නොහැකි විය. පද්ධති තාවකාලික නාමාවලිය වෙබ් පරිශීලකයාට ලිවිය හැකිදැයි පරීක්ෂා කරන්න.',
     'UpgradeStepCheckingVersions' => 'අනුවාද පරීක්ෂා කිරීම',
-    'UpgradeStepUpgradingDatabase' => 'දත්ත සමුදා ක්‍රමලේඛනය උත්ශ්‍රේණි කිරීම',
+    'UpgradeStepUpgradingDatabase' => 'දත්ත සමුදා ස්කීමාව උත්ශ්‍රේණි කිරීම',
     'UpgradeStepFinalising' => 'උත්ශ්‍රේණි කිරීමෙන් පසු පරිවර්තන යෙදීම',
     'UpgradeDatabaseHeading' => 'දත්ත සමුදාය උත්ශ්‍රේණි කිරීම',
     'UpgradeDatabaseComplete' => 'දත්ත සමුදාය උත්ශ්‍රේණි කිරීම සම්පූර්ණයි.',
@@ -4585,7 +4585,7 @@ $lang = array(
     'UpgradeCorrectionUnknownVersionTitle' => 'පටිගත කරන ලද දත්ත සමුදා අනුවාදය සැබෑ නිකුතුවක් නම් නොකරයි.',
     'UpgradeCorrectionNoRecordedVersion' => 'දත්ත සමුදායේ පටිගත කළ අනුවාදයක් නොමැත.',
     'UpgradeCorrectionUnknownVersionFinding' => 'දත්ත සමුදාය \'{$version}\' අනුවාදය වාර්තා කරයි, එය SimpleRisk නිකුතුවක් නම් නොකරයි. උත්ශ්‍රේණි කිරීමට එයින් ආරම්භක ස්ථානයක් තෝරා ගත නොහැක.',
-    'UpgradeCorrectionUnknownVersionGuidance' => 'db_version සැකසුම මෙම දත්ත සමුදායේ ඇත්ත වශයෙන්ම ඇති යෝජනා ක්‍රමයට සකසන්න, ඉන්පසු උත්ශ්‍රේණි කිරීම නැවත ක්‍රියාත්මක කරන්න: UPDATE සැකසුම් SET value=\'<release>\' WHERE name=\'db_version\'. අගය 2026XXXX-001 වැනි ස්ථාන දරන්නා නම්, නිවැරදි අගය සෑම විටම පාහේ උත්ශ්‍රේණි කිරීම ක්‍රියාත්මක වීමට පෙර ස්ථාපනය කරන ලද වඩාත්ම මෑත කාලීන සැබෑ නිකුතුව වේ.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'db_version සැකසුම මෙම දත්ත සමුදායේ ඇත්ත වශයෙන්ම ඇති යෝජනා ක්‍රමයට සකසන්න, ඉන්පසු උත්ශ්‍රේණි කිරීම නැවත ක්‍රියාත්මක කරන්න: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. අගය 2026XXXX-001 වැනි ස්ථාන දරන්නා නම්, නිවැරදි අගය සෑම විටම පාහේ උත්ශ්‍රේණි කිරීම ක්‍රියාත්මක වීමට පෙර ස්ථාපනය කරන ලද වඩාත්ම මෑත කාලීන සැබෑ නිකුතුව වේ.',
     'UpgradeCorrectionLegacySessionsTitle' => 'සැසි වගුවට උත්ශ්‍රේණි කිරීමේ අක්ෂර කට්ටල පරිවර්තනයෙන් බේරිය නොහැක.',
     'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` යනු MyISAM වගුවක VARCHAR({$width}) වේ. එය 20230106-001 සිට නිකුත් කරන utf8mb4 බවට පරිවර්තනය කිරීම, MyISAM හි 1000-byte දර්ශක සීමාව ඉක්මවා යන අතර උත්ශ්‍රේණි කිරීම අසාර්ථක වනු ඇත.',
     'UpgradeCorrectionLegacySessionsGuidance' => 'ක්‍රියාකාරී සැසි එකක් හෝ කිහිපයක් අක්ෂර 128 ට වඩා දිගු හැඳුනුම්පතක් භාවිතා කරයි. දැන් තීරුව පටු කිරීමෙන් එම පරිශීලකයින් ලොග් අවුට් වනු ඇත, එබැවින් එය තනිවම ඉතිරි විය. එම සැසි කල් ඉකුත් වූ විට උත්ශ්‍රේණි කිරීම නැවත උත්සාහ කරන්න.',
@@ -4691,7 +4691,7 @@ $lang = array(
     'OtherSessionsNotCleared' => 'අනෙකුත් ක්‍රියාකාරී සැසි හිස් කළ නොහැකි අතර ඒවා කල් ඉකුත් වන තෙක් පුරනය වී පවතිනු ඇත.',
     'BackupCannotResolveInstallDir' => 'උපස්ථය සඳහා SimpleRisk ස්ථාපන නාමාවලිය විසඳීමට නොහැකි විය.',
     'BackupTargetChangedOrExists' => '"{$dir}" වෙත උපස්ථය ලිවීම ප්‍රතික්ෂේප කිරීම: ඉලක්කය අනපේක්ෂිත ලෙස වෙනස් වී ඇත නැතහොත් දැනටමත් පවතී.',
-    'BackupDirectoryUnsafe' => '"{$location}" උපස්ථ නාමාවලිය භාවිතා කිරීම ප්‍රතික්ෂේප කිරීම: එය සමමුහුර්ත සබැඳියක් හෝ වෙනත් ගිණුමකට අයත් වේ.',
+    'BackupDirectoryUnsafe' => '"{$location}" උපස්ථ නාමාවලිය භාවිතා කිරීම ප්‍රතික්ෂේප කිරීම: එය සංකේතාත්මක සබැඳියක් හෝ වෙනත් ගිණුමකට අයත් වේ.',
     'DocumentAuditLogApprove' => '"{$document_name}" ලේඛනය {$user} විසින් අනුමත කරන ලදී.',
     'DocumentAuditLogUnapprove' => '"{$document_name}" ලේඛනය {$user} විසින් අනුමත නොකළේය.',
     'NoApproveDocumentationPermission' => 'ලේඛන අනුමත කිරීමට ඔබට අවසර නැත.',
@@ -4857,7 +4857,7 @@ $lang = array(
     'BulkReassignMitigationOwnerTitle' => 'තෝරාගත් අවදානම් සඳහා %s අවම කිරීමේ හිමිකරු නැවත පවරන්න',
     'BulkAddCommentTitle' => '%s තෝරාගත් අවදානම් වලට අදහසක් එක් කරන්න',
     'BulkCloseRiskTitle' => 'තෝරාගත් අවදානම් %s වසන්න',
-    'BulkActionPartialSuccess' => 'යාවත්කාලීන කරන ලද %s අවදානම් %s කින් %s.',
+    'BulkActionPartialSuccess' => 'අවදානම් %s ක් යාවත්කාලීන කරන ලදී (මුළු %s කින්).',
     'PerformReview' => 'සමාලෝචනය සිදු කරන්න',
     'BulkActionSuccess' => '%s අවදානම් යාවත්කාලීන කරන ලදී.',
     'SomeRowsSkippedNoMitigation' => 'තෝරාගත් සමහර අවදානම් මඟ හැරුණේ ඒවා අවම කිරීම සඳහා තවමත් සැලසුම් කර නොමැති බැවිනි.',
@@ -4878,7 +4878,7 @@ $lang = array(
     // user-facing string still needs to flow through a lookup per CLAUDE.md,
     // even one where the English and translated value would typically match.
     'CVSS' => 'සීවීඑස්එස්',
-    'DREAD' => 'බිය',
+    'DREAD' => 'DREAD',
     'OWASP' => 'ඕඩබ්ලිව්ඒඑස්පී',
     'MyActionItems' => 'මගේ ක්‍රියා අයිතම',
     'AddRisk' => 'අවදානම එකතු කරන්න',
@@ -4901,8 +4901,8 @@ $lang = array(
     // and the derived highest-risk column label shared by the grid's
     // Columns picker and the drawer. The sibling 'Risks' column label
     // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
-    'PlanProjectsReorderMismatch' => 'ඔබ නැවත ඇණවුම් කරන අතරතුර ව්‍යාපෘති ලැයිස්තුව වෙනස් විය. නැවත පූරණය කර නැවත උත්සාහ කරන්න.',
-    'PlanProjectsOrderSaved' => 'ව්‍යාපෘති ඇණවුම සුරකින ලදී.',
+    'PlanProjectsReorderMismatch' => 'ඔබ ව්‍යාපෘති නැවත පෙළගස්වන අතරතුර ව්‍යාපෘති ලැයිස්තුව වෙනස් විය. නැවත පූරණය කර නැවත උත්සාහ කරන්න.',
+    'PlanProjectsOrderSaved' => 'ව්‍යාපෘති අනුපිළිවෙල සුරකින ලදී.',
     'HighestRisk' => 'වැඩිම අවදානම',
     // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
     'OnHold' => 'රඳවා ගත්',
@@ -4928,7 +4928,7 @@ $lang = array(
     'ChangeStatusReopensRisks' => 'මෙම ව්‍යාපෘතිය අවසන් වූ ස්ථානයෙන් පිටතට ගෙන යාමෙන් එය අවසන් වූ විට වසා දැමූ අවදානම් නැවත විවෘත වේ.',
     'ChangeStatusNoCloseRightsHint' => 'අවදානම් වැසීමට හෝ නැවත විවෘත කිරීමට ඔබට අවසර නැත, එබැවින් ව්‍යාපෘති තත්ත්වය පමණක් වෙනස් වේ.',
     'DeleteProjectReturnsRisks' => 'එහි {n} අවදානම් පවරා නොමැති පෝලිමට නැවත පැමිණෙනු ඇත.',
-    'ReorderNeedsPrioritySort' => 'ලැයිස්තුව එක් තත්වයක් තුළ ප්‍රමුඛතාවය අනුව වර්ග කළ විට නැවත ඇණවුම් කිරීම ලබා ගත හැකිය.',
+    'ReorderNeedsPrioritySort' => 'ලැයිස්තුව එක් තත්වයක් තුළ ප්‍රමුඛතාවය අනුව වර්ග කළ විට නැවත පිළිවෙළ කිරීම ලබා ගත හැකිය.',
     'CouldNotLoadProjects' => 'ව්‍යාපෘති පූරණය කළ නොහැකි විය. ඔබගේ දත්ත ආරක්ෂිතයි.',
     'MitigationNotPlanned' => 'සැලසුම් කර නැත',
     'MitigationStatePlanned' => 'සැලසුම් කර ඇත',
@@ -4967,6 +4967,669 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'අවදානම් වසා දැමීමට ඔබට අවසර නැත.',
     'QuestionnaireRequiredQuestionUnanswered' => 'තක්සේරුව සම්පූර්ණ කිරීමට පෙර අවශ්‍ය සියලුම ප්‍රශ්නවලට පිළිතුරු සපයන්න.',
+    'AuditLog_ControlStatusAutoSynced' => '"{$short_name}" පාලනයේ තත්ත්වය එහි මෑත කාලීන පරීක්ෂණ ප්‍රතිඵල මත පදනම්ව "{$status_text}" ලෙස ස්වයංක්‍රීයව යාවත්කාලීන කරන ලදී.',
+    'EnableCSPHelp' => 'අන්තර්ගත ආරක්ෂණ ප්‍රතිපත්තිය (CSP) බ්‍රවුසරය SimpleRisk වෙතින් පමණක් ස්ක්‍රිප්ට්, මෝස්තර, රූප සහ අකුරු පූරණය කිරීමට සීමා කරන අතර, පිටු රාමු කිරීම සහ හරස්-මූලාශ්‍ර පෝරම ඉදිරිපත් කිරීම් අවහිර කරයි. එය හරස්-අඩවි ස්ක්‍රිප්ටින් වලට එරෙහිව ඇති ශක්තිමත්ම බිල්ට්-ඉන් ආරක්ෂාවයි. එය ඔබේ පරිසරයේ ප්‍රොක්සි, බ්‍රව්සර් දිගුවක් හෝ තෙවන පාර්ශවීය ඒකාබද්ධ කිරීමක් සමඟ ගැටෙන්නේ නම් මිස සක්‍රීය කර තබන්න.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'සම්මත ක්ෂේත්‍ර',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'පරිපාලක',
+    'AccountDetails' => 'ගිණුම් විස්තර',
+    'YourPermissions' => 'ඔබේ අවසර',
+    'RoleAndTeamsGrantAccess' => 'ඔබේ භූමිකාව සහ කණ්ඩායම් ඔබට ප්‍රවේශය ලබා දෙන දේ',
+    'AllGranted' => 'සියල්ල ලබා දී ඇත',
+    'PermissionsCountLabel' => '$count අවසර',
+    'ManagedByYourAdministrator' => 'මෙම විස්තර ඔබගේ පරිපාලක විසින් කළමනාකරණය කරනු ලැබේ. මෙහි යමක් වෙනස් කිරීමට අවශ්‍ය නම් ඔවුන් අමතන්න.',
+    'MultiFactorAuthenticationHint' => 'ඔබේ ගිණුම ආරක්ෂිතව තබා ගැනීමට ඔබේ පුරනයට දෙවන පියවරක් එක් කරන්න.',
+    'ChangingPasswordSignsOutEverywhere' => 'ඔබගේ මුරපදය වෙනස් කිරීමෙන් ඔබ අනෙක් සෑම තැනකම ලොග් අවුට් වේ.',
+    'APIKeyHint' => 'SimpleRisk API වලට එරෙහිව ඔබේම ස්ක්‍රිප්ට් සහ ඒකාබද්ධ කිරීම් සත්‍යාපනය කිරීමට භාවිතා කරයි.',
+    'ResetDisplaySettingsHint' => 'ඔබගේ අභිරුචි තීරු තේරීම් පෙරනිමියට නැවත සකසයි.',
+    'CardGeneral' => 'ජනරාල්',
+    'CardClassification' => 'වර්ගීකරණය',
+    'CardScoring' => 'ලකුණු ලබා ගැනීම',
+    'CardAdditionalInformation' => 'අමතර තොරතුරු',
+    'CardCustomFields' => 'අභිරුචි ක්ෂේත්‍ර',
+    'CardCustomFieldsHint' => 'මෙම ක්ෂේත්‍ර කාඩ්පතකට වර්ග කළ යුතුය.',
+    'LayoutEditorHint' => 'නැවත පැවරීම සඳහා ක්ෂේත්‍රයක් වෙනත් කාඩ්පතකට ඇදගෙන යන්න, එය නැවත සකස් කිරීමට හෝ ප්‍රමාණය වෙනස් කිරීමට කාඩ්පතක් තුළට ඇදගෙන යන්න, සහ පිටුවේ එහි පිහිටීම වෙනස් කිරීමට කාඩ්පතක් ඇදගෙන යන්න හෝ ප්‍රමාණය වෙනස් කරන්න.',
+    'ScoringNotYetAvailableInThisView' => 'මෙම දර්ශනයේ ලකුණු වින්‍යාසය තවමත් ලබා ගත නොහැක.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'ප්‍රමාණය වෙනස් කිරීමට අදින්න',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} ක්ෂේත්‍ර(ය) මෙම කාඩ්පතට නොගැලපේ. ඒවා පෙන්වීමට කාඩ්පත ප්‍රමාණය වෙනස් කරන්න.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'අවම කිරීමේ උපාය මාර්ගය',
+    'CardMitigationSolution' => 'අවම කිරීමේ විසඳුම',
+    'CardMitigationControls' => 'අවම කිරීමේ පාලනය',
+    'CardReview' => 'සමාලෝචනය',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'පෝරමය නැවත සකසන්න',
+    'SaveAndNew' => 'සුරකින්න සහ අලුත්',
+    'SaveAndView' => 'සුරකින්න සහ බලන්න',
+    'ResetFormConfirmTitle' => 'මෙම අවදානම් ඉදිරිපත් කිරීම ඉවත දමන්නද?',
+    'ResetFormConfirmBody' => 'ඔබ ඇතුළත් කළ ඕනෑම තොරතුරක් නැති වී යනු ඇත.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'පෙරනිමි පිරිසැලසුම ප්‍රතිසාධනය කරන්න?',
+    'RestoreTemplateConfirmBodyRisk' => 'මෙය විස්තර, අවම කිරීම සහ සමාලෝචන ටැබ්වල ඇති සෑම ක්ෂේත්‍රයක්ම මෙම සැකිලි කණ්ඩායම සඳහා ඒවායේ පෙරනිමි අගයන් වෙත නැවත සකසයි. අනෙකුත් සැකිලි කණ්ඩායම් වලට බලපෑමක් සිදු නොවේ.',
+    'RestoreTemplateConfirmBody' => 'මෙය මෙම සැකිල්ලේ සෑම ක්ෂේත්‍රයක්ම මෙම සැකිලි කණ්ඩායම සඳහා එහි පෙරනිමි අගයන් වෙත නැවත සකසයි. අනෙකුත් සැකිලි කණ්ඩායම් වලට බලපෑමක් සිදු නොවේ.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'උසස් මිනුම්',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'මූලික ලකුණු සූරාකෑමේ මිනුම්',
+    'BaseScoreImpactMetrics' => 'මූලික ලකුණු බලපෑම් මිණුම්',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "අවදානමට ප්‍රවේශ විය හැකි ආකාරය.\n• දේශීය: කොන්සෝලයක් හෝ කවචයක් වැනි දේශීය ප්‍රවේශය අවශ්‍ය වේ.\n• යාබද ජාලය: ප්‍රහාරකයා එකම භෞතික හෝ තාර්කික ජාල කොටසක සිටිය යුතුය.\n• ජාලය: ජාලයක් හරහා දුරස්ථව සූරාකෑමට හැකි අතර, දේශීය හෝ යාබද ප්‍රවේශයක් අවශ්‍ය නොවේ.",
+    "AttackComplexityHelp" => "ප්‍රහාරකයෙකුට ඉලක්කයට ප්‍රවේශය ලැබුණු පසු ප්‍රහාරය කෙතරම් සංකීර්ණද.\n• ඉහළ: සකස් කිරීමට අපහසු විශේෂිත කොන්දේසි අවශ්‍ය වේ.\n• මධ්‍යම: සමහර කොන්දේසි සපුරාලිය යුතුය, නමුත් ඒවා සපුරා ගත් පසු සූරාකෑම අපහසු නොවේ.\n• අඩු: විශේෂ කොන්දේසි අවශ්‍ය නොවේ.",
+    "AuthenticationHelp" => "ප්‍රහාරකයෙකු ඉලක්කය සූරාකෑම සඳහා සත්‍යාපනය කළ යුතු වාර ගණන.\n• බහු: සත්‍යාපනය දෙවරක් හෝ වැඩි ගණනක් අවශ්‍ය වේ, එකම අක්තපත්‍ර සමඟ වුවද.\n• තනි: සත්‍යාපනය එක් වරක් අවශ්‍ය වේ.\n• කිසිවක් නැත: සත්‍යාපනය අවශ්‍ය නොවේ.",
+    "ConfidentialityImpactHelp" => "පද්ධතිය සූරාකෑමට ලක් කළහොත් දත්තවල රහස්‍යභාවයට ඇති බලපෑම.\n• කිසිවක් නැත: බලපෑමක් නැත.\n• අර්ධ: යම් තොරතුරු හෙළිදරව් කිරීම, නමුත් ප්‍රහාරකයාට යමක් පාලනය කළ නොහැක, නැතහොත් පාඩුව සීමිතය.\n• සම්පූර්ණයි: පද්ධතියේ සියලුම තොරතුරු සම්පූර්ණයෙන් හෙළිදරව් කිරීම.",
+    "IntegrityImpactHelp" => "සූරාකෑමේදී පද්ධතියේ අඛණ්ඩතාවයට ඇති බලපෑම.\n• කිසිවක් නැත: බලපෑමක් නැත.\n• අර්ධ: සමහර දත්ත වෙනස් කළ හැකි නමුත්, ප්‍රහාරකයාට කිසිවක් පාලනය කළ නොහැක, නැතහොත් විෂය පථය සීමිතය.\n• සම්පූර්ණයි: පද්ධති අඛණ්ඩතාවයේ සම්පූර්ණ සම්මුතිය; ප්‍රහාරකයාට ඕනෑම ගොනුවක් වෙනස් කළ හැකිය.",
+    "AvailabilityImpactHelp" => "සූරාකෑමේදී පද්ධතියේ ලබා ගැනීමේ හැකියාවට ඇති බලපෑම.\n• කිසිවක් නැත: බලපෑමක් නැත.\n• අර්ධ: අඩු කළ කාර්ය සාධනය හෝ ලබා ගැනීමේ බාධා.\n• සම්පූර්ණයි: බලපෑමට ලක් වූ සම්පත සම්පූර්ණයෙන්ම වසා දැමීම.",
+    "RemediationLevelHelp" => "අවදානම සඳහා ලබා ගත හැකි ප්‍රතිකර්ම මට්ටම.\n• නිල නිවැරදි කිරීම: සම්පූර්ණ වෙළෙන්දා විසඳුමක් තිබේ.\n• තාවකාලික නිවැරදි කිරීම: නිල නමුත් තාවකාලික නිවැරදි කිරීමක් තිබේ.\n• විසඳුම: නිල නොවන, වෙළෙන්දා නොවන විසඳුමක් පවතී.\n• ලබා ගත නොහැක: විසඳුමක් නොමැත, නැතහොත් කිසිවක් යෙදිය නොහැක.",
+    "ReportConfidenceHelp" => "අවදානමේ පැවැත්ම පිළිබඳ විශ්වාසයේ තරම සහ එහි තාක්ෂණික විස්තරවල විශ්වසනීයත්වය.\n• තහවුරු නොකළ: තනි, තහවුරු නොකළ මූලාශ්‍ර වාර්තාවක්; යටින් පවතින ගැටළුව සමපේක්ෂනයකි.\n• තහවුරු නොකළ: බහු ස්වාධීන මූලාශ්‍ර එකම හැසිරීම වාර්තා කරයි, නමුත් මූල හේතුව තහවුරු කර නොමැත.\n• තහවුරු කරන ලදී: වෙළෙන්දා ගැටලුව පිළිගෙන ඇත, නැතහොත් එය මූලාශ්‍ර-කේත හෝ සූරාකෑමේ විශ්ලේෂණය මගින් තහවුරු කර ඇත.",
+    "CollateralDamagePotentialHelp" => "අවදානම ප්‍රයෝජනයට ගන්නේ නම් ජීවිත හානි, භෞතික වත්කම් හෝ මූල්‍යමය අලාභයක් සිදුවීමේ විභවය.\n• කිසිවක් නැත: එවැනි අලාභයක් සිදුවිය නොහැක.\n• අඩු සිට මධ්‍යම: මධ්‍යස්ථ අලාභයක් සිදුවිය හැකිය.\n• ඉහළ: සංවිධානයේ වත්කම්, ආදායම හෝ ආරක්ෂාව කෙරෙහි විනාශකාරී බලපෑමක්.",
+    "TargetDistributionHelp" => "ඔබේ පරිසරයේ අවදානමට ලක්විය හැකි පද්ධතිවල අනුපාතය.\n• කිසිවක් නැත: ඉලක්කගත පද්ධති නොමැත.\n• අඩු: පද්ධති වලින් 1-25% ක් අවදානමට ලක්විය හැකිය.\n• මධ්‍යම: 26-75% ක් අවදානමට ලක්විය හැකිය.\n• ඉහළ: 76-100% ක් අවදානමට ලක්විය හැකිය.",
+    "ConfidentialityRequirementHelp" => "බලපෑමට ලක් වූ වත්කමේ රහස්‍යභාවය ඔබේ සංවිධානයට කොතරම් වැදගත්ද.\n• අඩු: රහස්‍යභාවය නැතිවීම සීමිත බලපෑමක් ඇති කරයි.\n• මධ්‍යම: එය බරපතල බලපෑමක් ඇති කරයි.\n• ඉහළ: එය විනාශකාරී බලපෑමක් ඇති කරයි.",
+    "IntegrityRequirementHelp" => "බලපෑමට ලක් වූ වත්කමේ අඛණ්ඩතාව ඔබේ සංවිධානයට කොතරම් වැදගත්ද.\n• අඩු: අඛණ්ඩතාව නැතිවීම සීමිත බලපෑමක් ඇති කරයි.\n• මධ්‍යම: එය බරපතල බලපෑමක් ඇති කරයි.\n• ඉහළ: එය විනාශකාරී බලපෑමක් ඇති කරයි.",
+    "AvailabilityRequirementHelp" => "බලපෑමට ලක් වූ වත්කමේ ලබා ගැනීමේ හැකියාව ඔබේ සංවිධානයට කොතරම් වැදගත්ද.\n• අඩු: ලබා ගැනීමේ හැකියාව අහිමි වීම සීමිත බලපෑමක් ඇති කරයි.\n• මධ්‍යම: එය බරපතල බලපෑමක් ඇති කරයි.\n• ඉහළ: එය විනාශකාරී බලපෑමක් ඇති කරයි.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'ප්‍රහාරකයෙකුට මෙම අවදානමට ළඟා වීමට සහ එය අවුලුවාලීමට අවශ්‍ය වන්නේ කෙසේද: ඔවුන් සිටිය යුත්තේ කොතැනද, ප්‍රහාරය කෙතරම් සංකීර්ණද සහ ඔවුන් මුලින්ම සත්‍යාපනය කළ යුතුද යන්න.',
+    'BaseScoreImpactMetricsDescription' => 'අවදානම සාර්ථකව ප්‍රයෝජනයට ගතහොත් සිදුවන්නේ කුමක්ද: බලපෑමට ලක් වූ පද්ධතියේ රහස්‍යභාවය, අඛණ්ඩතාව සහ ලබා ගත හැකි බව කෙරෙහි බලපෑම.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'මෙම අවදානමේ සැබෑ ලෝක තර්ජනය කාලයත් සමඟ වෙනස් වන ආකාරය: සූරාකෑමේ කේතයේ වත්මන් තත්ත්වය, ලබා ගත හැකි ප්‍රතිකර්ම මොනවාද සහ එය පවතින බවට වාර්තා කෙතරම් විශ්වාසදායකද.',
+    'EnvironmentalScoreMetricsDescription' => 'මෙම අවදානමේ අවදානම ඔබේ පරිසරය මත රඳා පවතින ආකාරය: සැබෑ ලෝකයේ හානි සඳහා ඇති හැකියාව සහ ඔබේ පද්ධතිවලින් කොපමණ සංඛ්‍යාවක් සැබවින්ම බලපෑමට ලක්ව ඇත්ද යන්න.',
+    'ImpactSubscoreModifiersDescription' => 'මෙම නිශ්චිත වත්කම සඳහා රහස්‍යභාවය, අඛණ්ඩතාව සහ ලබා ගැනීමේ හැකියාව කොතරම් වැදගත් දැයි මූලික ලකුණු වල බලපෑම කිරා මැන බලන්න.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'තර්ජන සූරාකෑමක් සිදුවුවහොත්, කොපමණ හානියක් සිදුවේද?' . "\n" . '0 = කිසිවක් නැත' . "\n" . '5 = තනි පරිශීලක දත්ත අවදානමට ලක්ව හෝ බලපෑමට ලක්ව ඇත.' . "\n" . '10 = සම්පූර්ණ පද්ධතිය හෝ දත්ත විනාශය',
+    'ReproducibilityHelp' => 'තර්ජන සූරාකෑම ප්‍රතිනිෂ්පාදනය කිරීම කොතරම් පහසුද?' . "\n" . '0 = යෙදුමේ පරිපාලකයින්ට පවා ඉතා අපහසු හෝ කළ නොහැකි ය.' . "\n" . '5 = පියවර එකක් හෝ දෙකක් අවශ්‍ය වේ, බලයලත් පරිශීලකයෙකු වීමට අවශ්‍ය විය හැකිය.' . "\n" . '10 = සත්‍යාපනයකින් තොරව, වෙබ් බ්‍රව්සරයක් සහ ලිපින තීරුව පමණක් ප්‍රමාණවත් වේ.',
+    'ExploitabilityHelp' => 'මෙම තර්ජනයෙන් ප්‍රයෝජන ගැනීමට අවශ්‍ය වන්නේ කුමක්ද?' . "\n" . '0 = අභිරුචි හෝ උසස් ප්‍රහාරක මෙවලම් සමඟ උසස් ක්‍රමලේඛන සහ ජාලකරණ දැනුම.' . "\n" . '5 = අන්තර්ජාලයේ අනිෂ්ට මෘදුකාංග පවතී, නැතහොත් පවතින ප්‍රහාරක මෙවලම් භාවිතයෙන් සූරාකෑමක් පහසුවෙන් සිදු කළ හැකිය.' . "\n" . '10 = වෙබ් බ්‍රව්සරයක් පමණි',
+    'AffectedUsersHelp' => 'කොපමණ පරිශීලකයින්ට බලපෑමක් ඇති වේද?' . "\n" . '0 = කිසිවක් නැත' . "\n" . '5 = සමහර පරිශීලකයින්, නමුත් සියල්ලන්ම නොවේ' . "\n" . '10 = සියලුම පරිශීලකයින්',
+    'DiscoverabilityHelp' => 'මෙම තර්ජනය සොයා ගැනීම කොතරම් පහසුද?' . "\n" . '0 = ඉතා දුෂ්කර සිට කළ නොහැකි දක්වා; මූලාශ්‍ර කේතය හෝ පරිපාලන ප්‍රවේශය අවශ්‍ය වේ.' . "\n" . '5 = අනුමාන කිරීමෙන් හෝ ජාල සලකුණු නිරීක්ෂණය කිරීමෙන් එය සොයාගත හැකිය.' . "\n" . '9 = මෙවැනි දෝෂ පිළිබඳ විස්තර දැනටමත් පොදු වසමෙහි ඇති අතර සෙවුම් යන්ත්‍රයක් භාවිතයෙන් පහසුවෙන් සොයාගත හැකිය.' . "\n" . '10 = තොරතුරු වෙබ් බ්‍රවුසර ලිපින තීරුවේ හෝ පෝරමයක දෘශ්‍යමාන වේ.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'DREAD ලකුණු',
+    'DreadMetrics' => 'DREAD මිනුම්',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'මෙම තර්ජනාත්මක නියෝජිතයන් කණ්ඩායම කෙතරම් තාක්ෂණික වශයෙන් දක්ෂද?' . "\n" . '1 = තාක්ෂණික කුසලතා නැත' . "\n" . '3 = සමහර තාක්ෂණික කුසලතා' . "\n" . '5 = උසස් පරිගණක පරිශීලකයා' . "\n" . '6 = ජාලකරණ සහ ක්‍රමලේඛන කුසලතා' . "\n" . '9 = ආරක්ෂක විනිවිද යාමේ කුසලතා',
+    'MotiveHelp' => 'මෙම අවදානම් තත්ත්වය සොයා ගැනීමට සහ ගසාකෑමට මෙම තර්ජන නියෝජිත කණ්ඩායම කෙතරම් පෙළඹී තිබේද?' . "\n" . '1 = අඩු හෝ ප්‍රතිලාභයක් නැත' . "\n" . '4 = ලැබිය හැකි ත්‍යාගය' . "\n" . '9 = ඉහළ ත්‍යාගය',
+    'OpportunityHelp' => 'මෙම අවදානම් කණ්ඩායමට මෙම අවදානම සොයා ගැනීමට සහ ගසාකෑමට අවශ්‍ය සම්පත් සහ අවස්ථා මොනවාද?' . "\n" . '0 = සම්පූර්ණ ප්‍රවේශය හෝ අවශ්‍ය මිල අධික සම්පත්' . "\n" . '4 = විශේෂ ප්‍රවේශය හෝ සම්පත් අවශ්‍යයි' . "\n" . '7 = සමහර ප්‍රවේශයන් හෝ සම්පත් අවශ්‍යයි' . "\n" . '9 = ප්‍රවේශය හෝ සම්පත් අවශ්‍ය නොවේ',
+    'SizeHelp' => 'මෙම තර්ජනාත්මක නියෝජිතයන් කණ්ඩායම කොතරම් විශාලද?' . "\n" . '2 = සංවර්ධකයින්' . "\n" . '2 = පද්ධති පරිපාලකයින්' . "\n" . '4 = අන්තර් ජාල පරිශීලකයින්' . "\n" . '5 = හවුල්කරුවන්' . "\n" . '6 = සත්‍යාපනය කළ පරිශීලකයින්' . "\n" . '9 = නිර්නාමික අන්තර්ජාල පරිශීලකයින්',
+    'EaseOfDiscoveryHelp' => 'මෙම අවදානම් කණ්ඩායමට මෙම අවදානම සොයා ගැනීම කොතරම් පහසුද?' . "\n" . '1 = ප්‍රායෝගිකව කළ නොහැකි දෙයක්' . "\n" . '3 = අපහසුයි' . "\n" . '7 = පහසුය' . "\n" . '9 = ස්වයංක්‍රීය මෙවලම් තිබේ',
+    'EaseOfExploitHelp' => 'මෙම අවදානම් කණ්ඩායමට මෙම අවදානමෙන් ප්‍රයෝජන ගැනීම කොතරම් පහසුද?' . "\n" . '1 = න්‍යායාත්මක' . "\n" . '3 = අපහසුයි' . "\n" . '5 = පහසුය' . "\n" . '9 = ස්වයංක්‍රීය මෙවලම් තිබේ',
+    'AwarenessHelp' => 'මෙම තර්ජනාත්මක නියෝජිතයන් කණ්ඩායමට මෙම අවදානම කොතරම් ප්‍රසිද්ධද?' . "\n" . '1 = නොදන්නා' . "\n" . '4 = සැඟවුණු' . "\n" . '6 = පැහැදිලිය' . "\n" . '9 = මහජන දැනුම',
+    'IntrusionDetectionHelp' => 'සූරාකෑමක් අනාවරණය වීමට කොපමණ ඉඩ තිබේද?' . "\n" . '1 = යෙදුමේ ක්‍රියාකාරී අනාවරණය' . "\n" . '3 = ලොග් කර සමාලෝචනය කරන ලදී' . "\n" . '8 = සමාලෝචනයකින් තොරව ලොග් කර ඇත' . "\n" . '9 = ලොග් වී නැත',
+    'LossOfConfidentialityHelp' => 'කොපමණ දත්ත ප්‍රමාණයක් හෙළිදරව් කළ හැකිද සහ එය කෙතරම් සංවේදීද?' . "\n" . '2 = අවම සංවේදී නොවන දත්ත අනාවරණය කිරීම' . "\n" . '6 = අවම තීරණාත්මක දත්ත හෙළිදරව් කිරීම' . "\n" . '6 = පුළුල් සංවේදී නොවන දත්ත හෙළිදරව් කිරීම' . "\n" . '7 = පුළුල් විවේචනාත්මක දත්ත හෙළිදරව් කිරීම' . "\n" . '9 = සියලු දත්ත හෙළිදරව් කර ඇත',
+    'LossOfIntegrityHelp' => 'කොපමණ දත්ත දූෂිත විය හැකිද සහ එය කෙතරම් හානි වී තිබේද?' . "\n" . '1 = අවම වශයෙන් තරමක් දූෂිත දත්ත' . "\n" . '3 = අවම බරපතල දූෂිත දත්ත' . "\n" . '5 = පුළුල් තරමක් දූෂිත දත්ත' . "\n" . '7 = පුළුල් බරපතල ලෙස දූෂිත දත්ත' . "\n" . '9 = සියලු දත්ත සම්පූර්ණයෙන්ම දූෂිතයි',
+    'LossOfAvailabilityHelp' => 'කොපමණ සේවාවක් අහිමි විය හැකිද සහ එය කෙතරම් වැදගත්ද?' . "\n" . '1 = බාධා කළ අවම ද්විතීයික සේවා' . "\n" . '5 = බාධා ඇති අවම ප්‍රාථමික සේවාවන්' . "\n" . '5 = පුළුල් ද්විතීයික සේවාවන්ට බාධා ඇති විය' . "\n" . '7 = පුළුල් ප්‍රාථමික සේවාවන්ට බාධා එල්ල විය' . "\n" . '9 = සියලුම සේවාවන් සම්පූර්ණයෙන්ම අහිමි වීම',
+    'LossOfAccountabilityHelp' => 'තර්ජන නියෝජිතයින්ගේ ක්‍රියාවන් පුද්ගලයෙකුට සොයාගත හැකිද?' . "\n" . '1 = සම්පූර්ණයෙන්ම සොයා ගත හැකි' . "\n" . '7 = සොයා ගත හැකි විය හැකිය' . "\n" . '9 = සම්පූර්ණයෙන්ම නිර්නාමික',
+    'FinancialDamageHelp' => 'සූරාකෑමකින් කොපමණ මූල්‍යමය හානියක් සිදුවේද?' . "\n" . '1 = අවදානම නිවැරදි කිරීමට යන පිරිවැයට වඩා අඩුය' . "\n" . '3 = වාර්ෂික ලාභයට සුළු බලපෑමක්' . "\n" . '7 = වාර්ෂික ලාභයට සැලකිය යුතු බලපෑමක්' . "\n" . '9 = බංකොලොත්භාවය',
+    'ReputationDamageHelp' => 'සූරාකෑමකින් ව්‍යාපාරයට හානි වන කීර්ති නාමයට හානි සිදුවේද?' . "\n" . '1 = අවම හානිය' . "\n" . '4 = ප්‍රධාන ගිණුම් අහිමි වීම' . "\n" . '5 = හොඳ හිත නැතිවීම' . "\n" . '9 = වෙළඳ නාම හානිය',
+    'NonComplianceHelp' => 'අනුකූල නොවීම නිසා කොපමණ නිරාවරණයක් ඇති වේද?' . "\n" . '2 = සුළු උල්ලංඝනය' . "\n" . '5 = පැහැදිලි උල්ලංඝනය' . "\n" . '7 = ඉහළ පැතිකඩ උල්ලංඝනය',
+    'PrivacyViolationHelp' => 'පුද්ගලිකව හඳුනාගත හැකි තොරතුරු කොපමණ ප්‍රමාණයක් හෙළිදරව් කළ හැකිද?' . "\n" . '3 = එක් පුද්ගලයෙක්' . "\n" . '5 = සිය ගණනක් ජනතාව' . "\n" . '7 = දහස් ගණනක් ජනතාව' . "\n" . '9 = මිලියන ගණනක් ජනතාව',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP ලකුණු',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'මෙම තර්ජන නියෝජිත කණ්ඩායම විසින් සාර්ථක ප්‍රහාරයක් එල්ල කිරීමේ සම්භාවිතාව ඇස්තමේන්තු කරයි.',
+    'VulnerabilityFactorsDescription' => 'මෙම අවදානම සොයාගෙන සූරාකෑමට ඇති සම්භාවිතාව ඇස්තමේන්තු කරයි.',
+    'TechnicalImpactDescription' => 'රහස්‍යභාවය, අඛණ්ඩතාව, ලබා ගත හැකි බව සහ වගවීම මගින් බලපෑම බිඳ දමයි.',
+    'BusinessImpactDescription' => 'අමු තාක්ෂණික බලපෑමට අමතරව ව්‍යාපාරයට වැදගත් වන දේ පිළිබිඹු කරයි.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "සූරාකෑමේ ශිල්පීය ක්‍රම හෝ කේත ලබා ගැනීමේ වත්මන් තත්ත්වය.\n• ඔප්පු නොකළ: සූරාකෑමේ කේතයක් නොමැත, නැතහොත් සූරාකෑම න්‍යායාත්මක ය.\n• සංකල්පයේ සාධනය: සූරාකෑමේ කේතය පවතින නමුත් බොහෝ ප්‍රහාරකයින් සඳහා ප්‍රායෝගික නොවේ.\n• ක්‍රියාකාරී: ක්‍රියාකාරී සූරාකෑමේ කේතය බොහෝ අවස්ථාවන්හිදී ක්‍රියා කරයි.\n• ඉහළ: සූරාකෑම විශ්වාසදායක වන අතර ස්වයංක්‍රීය (උදා: පණුවෙකු) හෝ කිසිසේත්ම සූරාකෑමේ කේතයක් අවශ්‍ය නොවේ.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'සම්භාව්‍ය ලකුණු',
+    'ClassicLikelihoodDescription' => 'මෙම අවදානම සිදුවීමට ඇති ඉඩකඩ කෙතරම්ද යන්න.',
+    'ClassicImpactDescription' => 'මෙම අවදානම ඇති වුවහොත් ප්‍රතිවිපාක කෙතරම් දරුණු වනු ඇත්ද?',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'අභිරුචි ලකුණු',
+    'CustomValueDescription' => 'අභිරුචි අගයක් 0 සහ 10 අතර දශම අගයක් විය හැක.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'මෙම අවදානම සිදුවීමට ඇති ඉඩකඩ කෙතරම්ද යන්න.',
+    'ContributingRiskDescription' => 'පහත සෑම සාධකයක්ම එහි සාපේක්ෂ වැදගත්කම අනුව බර කර ඇත - මෙම අවදානම එක් එක් සාධකය මගින් කොපමණ බලපෑමක් ඇති කරන්නේද යන්න තෝරන්න.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'OWASP අවදානම් ශ්‍රේණිගත කිරීමේ ක්‍රමවේදය පිළිබඳ සම්පූර්ණ විස්තර සොයාගත හැකිය.',
+    'Here' => 'මෙතන',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= එකතුව (බර x බලපෑම x 5 / උපරිම)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'රූපයක් ලෙස බාගන්න',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'CVSS අනුවාදය 2.0 ලකුණු කිරීම පිළිබඳ සම්පූර්ණ විස්තර සොයාගත හැකිය.',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'අවලංගු පාලන හැඳුනුම්පත.',
+    'ValidationOwner' => 'වලංගුකරණ හිමිකරු',
+    'ValidationStatus' => 'වලංගුකරණ තත්ත්වය',
+    'NotStarted' => 'ආරම්භ කර නැත',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'ඔබ සොයන අවදානම මකා දමා තිබිය හැකිය, නැතහොත් සබැඳිය වැරදි විය හැකිය.',
+    'MitigationControlsRequiresGovernance' => 'නැරඹීමට පාලන අවසරය අවශ්‍යයි.',
+    'ViewControlValidation' => 'පාලන වලංගුකරණය බලන්න',
+    'EditControlValidation' => 'පාලන වලංගුකරණය සංස්කරණය කරන්න',
+    'SupportingDocumentationRequiresSubmitRisk' => 'ගොනු උඩුගත කිරීමට අවදානම් ඉදිරිපත් කිරීමේ අවසරය අවශ්‍ය වේ.',
+    'SupportingDocumentationRequiresModifyRisks' => 'ගොනු කළමනාකරණය කිරීමට අවදානම් සංශෝධන අවසරය අවශ්‍ය වේ.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'ගොනු කළමනාකරණය කිරීමට සැලසුම් අවම කිරීමේ අවසරය අවශ්‍ය වේ.',
+    'MitigationSubmittedBy' => 'අවම කිරීම ඉදිරිපත් කළේ',
+    'UseADifferentDate' => 'වෙනස් දිනයක් භාවිතා කරන්න',
+    'AssetGroup' => 'වත්කම් සමූහය',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'වලංගු නොවන fgroup.',
+    'CustomizationCardsLayoutApiScopeError' => 'අභිරුචිකරණ කාඩ්පත් පිරිසැලසුම් API එක fgroup=risk, tab_index=1, tab_index=2, හෝ tab_index=3 සඳහා පමණක් ලබා ගත හැකිය.',
+    // Asset management redesign
+    'DiscoverAssets' => 'වත්කම් සොයා ගන්න',
+    'DiscoveryRuns' => 'ඩිස්කවරි ධාවනය',
+    'DiscoveryRangeHint' => 'එක් ලිපිනයක්, ආරම්භක-අවසන් පරාසයක්, හෝ IPv4 CIDR',
+    'DiscoveryResolveNames' => 'සත්කාරක නම් සොයන්න',
+    'DiscoveryAddAs' => 'නව වත්කම් එකතු කරන්න',
+    'DiscoveryStart' => 'සොයා ගැනීම ආරම්භ කරන්න',
+    'DiscoveryBackgroundNote' => 'පසුබිමේ ධාවනය වේ. දැනටමත් පවතින ලිපින මඟ හරිනු ලැබේ.',
+    'DiscoveryRangeInvalid' => 'වලංගු IPv4 ලිපිනයක්, පරාසයක් හෝ CIDR බ්ලොක් එකක් ඇතුළත් කරන්න.',
+    'DiscoveryRangeTooLarge' => 'ඒ පරාසය ඉතා විශාලයි. සීමාව {$max} ලිපින වේ.',
+    'DiscoveryRunQueued' => 'සොයාගැනීම ආරම්භ විය.',
+    'DiscoveryRunCompleted' => 'සොයා ගැනීම අවසන්: {$new} නව වත්කම්.',
+    'AssetBulkSelectAll' => 'සියලුම {$count} වත්කම් තෝරන්න',
+    'AssetBulkAssignTeams' => 'කණ්ඩායම් පවරන්න…',
+    'AssetBulkAddToGroup' => '… කණ්ඩායමට එක් කරන්න',
+    'AssetBulkDeleteConfirmTitle' => '{$count} වත්කම් මකන්නද?',
+    'AbleToEditAssets' => 'වත්කම් සංස්කරණය කිරීමට හැකියාව ඇත',
+    'AbleToDeleteAssets' => 'වත්කම් මකා දැමීමට හැකියාව ඇත',
+    'AbleToVerifyAssets' => 'වත්කම් සත්‍යාපනය කිරීමට හැකියාව ඇත',
+    'AbleToRunAssetDiscovery' => 'වත්කම් සොයාගැනීම ක්‍රියාත්මක කිරීමට හැකියාව ඇත',
+    'AbleToCreateAssetGroups' => 'වත්කම් කණ්ඩායම් නිර්මාණය කිරීමට හැකියාව ඇත',
+    'AbleToEditAssetGroups' => 'වත්කම් කණ්ඩායම් සංස්කරණය කිරීමට හැකියාව ඇත',
+    'AbleToDeleteAssetGroups' => 'වත්කම් කණ්ඩායම් මකා දැමීමට හැකියාව ඇත',
+    'ViewAsset' => 'වත්කම බලන්න',
+    'AssetUnverifiedByEditLog' => '"{$name}" වත්කම සත්‍යාපනය කිරීමට අවසරයකින් තොරව "{$user}" පරිශීලකයා එහි නම හෝ IP ලිපිනය වෙනස් කළ නිසා " {$name}" වත්කම සත්‍යාපනය නොකළ ලෙස ආපසු යවන ලදී.',
+    'AssetTeamsAssignedLog' => '"{$name}" වත්කම "{$teams}" කණ්ඩායමට පවරන ලද්දේ "{$user}" පරිශීලකයා විසිනි.',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'වත්කම එක් කරන්න',
+    'SearchAssetsPlaceholder' => 'නම හෝ IP ලිපිනය අනුව සොයන්න',
+    'AllLocations' => 'සියලුම ස්ථාන',
+    'AllTags' => 'සියලුම ටැග්',
+    'AllAssetGroups' => 'සියලු වත්කම් කාණ්ඩ',
+    'AssetFields' => 'වත්කම් ක්ෂේත්‍ර',
+    'AssetBulkAllSelected' => '{$count} ගැළපෙන වත්කම් සියල්ල තෝරා ඇත',
+    'AssetDeleteConfirmTitle' => '"{$name}" වත්කම මකන්නද?',
+    'DeleteAsset' => 'වත්කම මකන්න',
+    'DeleteAssets' => 'වත්කම් මකන්න',
+    'AssetBulkAssignTeamsTitle' => 'කණ්ඩායම් {$count} වත්කම් වලට පවරන්න',
+    'AssetAssignTeamsHint' => 'තෝරාගත් කණ්ඩායම් එකතු කරනු ලැබේ. දැනටමත් වත්කමක් ඇති කණ්ඩායම් රැඳී සිටිති.',
+    'AssetAddToGroupTitle' => '{$count} වත්කම් සමූහයකට එක් කරන්න',
+    'AssetChooseTeams' => 'කණ්ඩායම් තෝරන්න',
+    'AssetChooseGroup' => 'කණ්ඩායමක් තෝරන්න',
+    'Assign' => 'පවරන්න',
+    'AssetBulkVerifiedSummary' => '{$ok} සත්‍යාපනය කරන ලදී, {$failed} මඟ හරින ලදී',
+    'AssetBulkDeletedSummary' => '{$ok} මකා දමන ලදී, {$failed} මඟ හරින ලදී',
+    'AssetBulkTeamsSummary' => '{$ok} වත්කම් සඳහා පවරා ඇති කණ්ඩායම්, {$failed} මඟ හැරුණි',
+    'AssetBulkGroupSummary' => '{$ok} කණ්ඩායමට එක් කරන ලදී, {$failed} මඟ හරින ලදී',
+    'AssetBulkSkippedList' => 'මඟ හැරුණි: {$list}',
+    'AssetBulkReasonNotFound' => 'හමු වුණේ නැහැ',
+    'NoAssetsYet' => 'තවමත් වත්කම් නැත.',
+    'NoAssetsYetHint' => 'ඔබ එකතු කරන හෝ සොයා ගන්නා වත්කම් මෙහි දිස්වේ.',
+    'NoAssetsMatchFilters' => 'ඔබේ පෙරහන්වලට ගැළපෙන වත්කම් නොමැත.',
+    'CouldNotLoadAssets' => 'වත්කම් පූරණය කළ නොහැකි විය. ඔබේ දත්ත ආරක්ෂිතයි.',
+    'AllValuations' => 'සියලුම තක්සේරු කිරීම්',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'කණ්ඩායම එක් කරන්න',
+    'EditAssetGroup' => 'කණ්ඩායම සංස්කරණය කරන්න',
+    'DeleteAssetGroup' => 'සමූහය මකන්න',
+    'ViewGroupMembers' => 'සාමාජිකයින් බලන්න',
+    'SearchAssetGroupsPlaceholder' => 'නමින් කණ්ඩායම් සොයන්න',
+    'HighestValuation' => 'ඉහළම තක්සේරුව',
+    'LinkedRisks' => 'සම්බන්ධිත අවදානම්',
+    'RemoveFromGroup' => 'කණ්ඩායමෙන් ඉවත් කරන්න',
+    'AssetGroupMoreMembers' => '+ {$count} තවත්',
+    'ViewAllInAssetsTab' => 'වත්කම් පටිත්තෙහි සියල්ල බලන්න',
+    'NoAssetsInGroup' => 'මෙම කණ්ඩායමේ වත්කම් නොමැත.',
+    'CouldNotLoadGroupMembers' => 'මෙම කණ්ඩායමේ සාමාජිකයින් පූරණය කිරීමට නොහැකි විය.',
+    'AssetGroupMembers' => 'සාමාජිකයින්',
+    'AssetGroupMembersHint' => 'ඔබට දැකිය හැකි වත්කම් පමණක් ලැයිස්තුගත කර ඇත. ඔබට දැකිය නොහැකි සාමාජිකයින් සමූහය තුළ රැඳී සිටිති.',
+    'ChooseAssets' => 'වත්කම් තෝරන්න',
+    'AddOrRemoveAssets' => 'වත්කම් එකතු කරන්න හෝ ඉවත් කරන්න…',
+    'UseTheseAssets' => 'මෙම වත්කම් භාවිතා කරන්න',
+    'AllAssets' => 'සියලු වත්කම්',
+    'Valuation' => 'තක්සේරු කිරීම',
+    'PickerShowingFirstN' => '{$total}හි පළමු {$count} පෙන්වීම. ඉතිරිය සොයා ගැනීමට සොයන්න හෝ පටු කරන්න.',
+    'AssetGroupDeleteConfirmTitle' => '"{$name}" කණ්ඩායම මකන්නද?',
+    'AssetGroupDeleteKeepsAssets' => 'මෙම කණ්ඩායමේ වත්කම් මකා නොදමනු ලැබේ. කණ්ඩායම පමණක් ඉවත් කරනු ලැබේ.',
+    'NoAssetGroupsYet' => 'තවමත් වත්කම් කණ්ඩායම් නොමැත.',
+    'NoAssetGroupsYetHint' => 'ඔබට ඒවා එකට සිතියම්ගත කර වාර්තා කළ හැකි වන පරිදි වත්කම් සමූහගත කරන්න.',
+    'NoAssetGroupsMatchSearch' => 'ඔබගේ සෙවුමට ගැලපෙන වත්කම් කණ්ඩායම් නොමැත.',
+    'CouldNotLoadAssetGroups' => 'වත්කම් කණ්ඩායම් පූරණය කළ නොහැකි විය. ඔබේ දත්ත ආරක්ෂිතයි.',
+    'DiscoveryAssignTeams' => 'කණ්ඩායම් වලට පවරන්න',
+    'DiscoveryAssignTeamsHint' => 'විකල්පමය. සෑම නව වත්කමක්ම මෙම කණ්ඩායම් වලට එකතු වේ.',
+    'DiscoveryAddAsHint' => 'වත්කම් සත්‍යාපනය කිරීමට ඔබේ අවසරය අනුව සකසන්න.',
+    'DiscoveryTeamsInvalid' => 'පවතින සහ ඔබ අයත් කණ්ඩායම් තෝරන්න.',
+    'DiscoveryResolveNamesInvalid' => 'බලන්න සත්කාරක නම් සක්‍රිය හෝ අක්‍රිය විය යුතුයි.',
+    'DiscoveryTooManyActiveRuns' => 'ඔබට දැනටමත් {$max} සොයාගැනීමේ ධාවනයන් සිදුවෙමින් පවතී. එකක් අවසන් වන තෙක් රැඳී සිටින්න නැතහොත් එය අවලංගු කරන්න.',
+    'DiscoveryRunNotFound' => 'සොයාගැනීමේ ධාවනය හමු නොවීය.',
+    'DiscoveryRunAlreadyFinished' => 'මෙම සොයාගැනීමේ ධාවනය දැනටමත් අවසන් වී ඇත.',
+    'DiscoveryRunCancelled' => 'සොයාගැනීමේ ධාවනය අවලංගු කරන ලදී.',
+    'DiscoveryRunFailedToast' => '{$range} සොයා ගැනීම අසාර්ථක විය.',
+    'DiscoveryStatusQueued' => 'පෝලිමේ ඇත',
+    'DiscoveryProgress' => '{$scanned} න් {$total}',
+    'DiscoveryLiveHosts' => 'සජීවී සත්කාරකයින්',
+    'DiscoveryNewAssets' => 'නව වත්කම්',
+    'DiscoveryStartedAt' => 'ආරම්භ කරන ලදී',
+    'DiscoveryCancelRun' => 'ධාවනය අවලංගු කරන්න',
+    'CouldNotLoadDiscoveryRuns' => 'සොයාගැනීම් ධාවන පූරණය කළ නොහැකි විය.',
+    'DiscoveryRangeReserved' => 'එම පරාසය තුළ ස්කෑන් කළ නොහැකි වෙන් කළ ලිපින (ලූප්බැක්, සබැඳි-දේශීය, බහු විකාශන හෝ 0.0.0.0/8) ඇතුළත් වේ.',
+    'DiscoveryTooManyActiveRunsInstance' => 'දැනටමත් {$max} සොයාගැනීම් ක්‍රියාත්මක වෙමින් පවතී. එකක් අවසන් වූ පසු නැවත උත්සාහ කරන්න.',
+    'DiscoveryErrorScan' => 'දෝෂයක් නිසා ස්කෑන් කිරීම නතර විය. විස්තර සඳහා පද්ධති ලොග් පරීක්ෂා කරන්න.',
+    'DiscoveryErrorWorkerLost' => 'පසුබිම් පෝලිම මෙම ධාවනය සැකසීම නැවැත්වීය.',
+    'DiscoveryErrorRequesterInactive' => 'මෙම ධාවනය ආරම්භ කළ පරිශීලකයා තවදුරටත් ක්‍රියාකාරී නොවේ.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'තොග ක්‍රියාව JSON ශරීරයක් ලෙස යවන්න.',
+    'AssetBulkActionRequired' => 'තොග ක්‍රියාවක් තෝරන්න.',
+    'AssetBulkUnknownAction' => 'එම තොග ක්‍රියාව ලබා ගත නොහැක.',
+    'AssetBulkSelectionRequired' => 'හැඳුනුම්පත හෝ පෙරහන මගින් වත්කම් තෝරන්න.',
+    'AssetBulkIdsRequired' => 'අවම වශයෙන් එක් වත්කමක් තෝරන්න.',
+    'AssetBulkIdsInvalid' => 'වත්කම් හැඳුනුම්පත් පූර්ණ සංඛ්‍යා විය යුතුය.',
+    'AssetBulkTooManyAssets' => 'ඔබට එකවර උපරිම {$max} වත්කම් මත ක්‍රියා කළ හැකිය. ඔබේ තේරීම පටු කර නැවත උත්සාහ කරන්න.',
+    'AssetBulkFilterInvalid' => 'පෙරහන වලංගු නැත. පිටුව නැවත පූරණය කර නැවත උත්සාහ කරන්න.',
+    'AssetBulkFilterUnknownKey' => '"{$key}" පෙරහන හඳුනාගෙන නොමැත.',
+    'AssetBulkFilterBadValue' => '"{$key}" පෙරහනෙහි වලංගු නොවන අගයක් ඇත.',
+    'AssetBulkFilterTooManyValues' => '"{$key}" පෙරහනට උපරිම {$max} අගයන් ලැයිස්තුගත කළ හැක.',
+    'AssetBulkFilterAllAlone' => 'සියලුම වත්කම් තේරීම අනෙකුත් පෙරහන් සමඟ ඒකාබද්ධ කළ නොහැක.',
+    'AssetBulkFilterEmpty' => 'තොග ක්‍රියාවක් ක්‍රියාත්මක කිරීමට පෙර පෙරහනක් තෝරන්න, නැතහොත් සියලු වත්කම් තෝරන්න.',
+    'AssetBulkExpectedCountInvalid' => 'අපේක්ෂිත වත්කම් සංඛ්‍යාව පූර්ණ සංඛ්‍යාවක් විය යුතුය.',
+    'AssetBulkParamsInvalid' => 'මෙම තොග ක්‍රියාව සඳහා විකල්ප වලංගු නොවේ.',
+    'AssetBulkTeamsRequired' => 'අවම වශයෙන් එක් කණ්ඩායමක්වත් තෝරන්න.',
+    'AssetBulkTeamsNotFound' => 'එම කණ්ඩායම් එකක් හෝ කිහිපයක් තවදුරටත් නොපවතී.',
+    'AssetBulkTeamsNotMember' => 'ඔබට පැවරිය හැක්කේ ඔබ අයත් කණ්ඩායම් පමණි.',
+    'AssetBulkGroupNotFound' => 'එම වත්කම් කණ්ඩායම තවදුරටත් නොපවතී.',
+    'AssetBulkNoMatch' => 'ඔබේ තේරීමට ගැලපෙන වත්කම් නොමැත.',
+    'AssetBulkCountMismatch' => 'ඔබ ඒවා තෝරාගත් දා සිට ගැළපෙන වත්කම් {$expected} සිට {$actual} දක්වා වෙනස් විය. ලැයිස්තුව සමාලෝචනය කර නැවත උත්සාහ කරන්න.',
+    'AssetColumnSettingsBodyInvalid' => 'තීරු සැකසුම් තීරු හෝ අනුපිළිවෙලක් සහිත JSON ශරීරයක් ලෙස යවන්න.',
+    'AssetColumnSettingsSaveFailed' => 'ඔබගේ තීරු සුරැකීමට නොහැකි විය. SimpleRisk උත්ශ්‍රේණි කිරීම අවසන් කිරීමට පරිපාලකයෙකුගෙන් ඉල්ලා සිටින්න.',
+    'DiscoveryRunQueueFailed' => 'සොයාගැනීමේ ධාවනය පෙළගැස්වීමට නොහැකි විය. නැවත උත්සාහ කරන්න.',
+    'DiscoveryRunStartedLog' => '"{$user}" පරිශීලකයා විසින් වත්කම් සොයාගැනීමේ ධාවනය #{$id} හි {$range} ({$count} ලිපින) ආරම්භ කරන ලදී.',
+    'DiscoveryRunCancelledLog' => '"{$user}" පරිශීලකයා විසින් වත්කම් සොයාගැනීමේ ධාවනය #{$id} හි {$range} අවලංගු කරන ලදී.',
+    'AssetBulkTooManyToDelete' => 'ඔබට එක් වරකට උපරිම {$max} වත්කම් මකා දැමිය හැකිය. ඔබේ තේරීම පටු කර නැවත උත්සාහ කරන්න.',
+    'AssetBulkFilterNotApplied' => '"{$key}" පෙරහන යැවූ ලෙස යෙදිය නොහැකි වූ බැවින් කිසිවක් වෙනස් නොවීය.',
+    'AssetBulkExpectedCountRequired' => 'පෙරහන මඟින් වත්කම් මැකීමට ඔබ මැකීමට බලාපොරොත්තු වන වත්කම් ගණන අවශ්‍ය වේ.',
+    'AssetBulkReasonNotAttempted' => 'උත්සාහ කර නැත',
+    'MoreActions' => 'තවත් ක්‍රියාමාර්ග',
+    'AssetCreateNewGroupOption' => '… නව කණ්ඩායමක් සාදන්න',
+    'AssetNewGroupName' => 'නව කණ්ඩායම් නම',
+    'AssetFilterByTeam' => 'කණ්ඩායම අනුව පෙරහන් කරන්න {$name}',
+    'AssetFilterByValuation' => 'තක්සේරුව අනුව පෙරහන් කරන්න {$name}',
+    'AssetFilterByTag' => 'ටැගය අනුව පෙරහන් කරන්න {$name}',
+    'AssetFilterByLocation' => 'අඩවිය/ස්ථානය අනුව පෙරහන් කරන්න {$name}',
+    'AssetFilteringByTeam' => 'කණ්ඩායම අනුව පෙරහන් කිරීම {$name}',
+    'AssetFilteringByValuation' => 'තක්සේරුව අනුව පෙරීම {$name}',
+    'AssetFilteringByTag' => 'ටැගය අනුව පෙරීම {$name}',
+    'AssetFilteringByLocation' => 'අඩවිය/ස්ථානය අනුව පෙරීම {$name}',
+    'AssetShowOnlyVerified' => 'සත්‍යාපිත වත්කම් පමණක් පෙන්වන්න',
+    'AssetShowOnlyUnverified' => 'සත්‍යාපනය නොකළ වත්කම් පමණක් පෙන්වන්න',
+    'AssetShowingVerified' => 'සත්‍යාපිත වත්කම් පෙන්වමින්',
+    'AssetShowingUnverified' => 'සත්‍යාපනය නොකළ වත්කම් පෙන්වමින්',
+    'CustomizationLayoutPayloadRejected' => 'මෙම සැකිල්ලට අයත් නොවන ක්ෂේත්‍ර හෝ කාඩ්පත් එහි අඩංගු බැවින් පිරිසැලසුම සුරැකිය නොහැකි විය. කිසිවක් වෙනස් කර නැත.',
+    'CustomizationLayoutRejectedUnknownScope' => 'මෙම අච්චු විෂය පථය පිරිසැලසුම් සංස්කාරකයෙන් සුරැකිය නොහැක. කිසිවක් වෙනස් කර නැත.',
+    'CustomizationLayoutRejectedEmptyFields' => 'පිරිසැලසුමෙහි වලංගු ක්ෂේත්‍ර නොමැත, එබැවින් එය සුරැකුනේ නැත. කිසිවක් වෙනස් කර නැත.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'මෙම පිරිසැලසුම සුරැකීමෙන් සෑම ක්ෂේත්‍රයක්ම අච්චුවෙන් ඉවත් කරනු ඇත, එබැවින් එය සුරැකුණේ නැත. පිටුව නැවත පූරණය කර නැවත උත්සාහ කරන්න.',
+    'CustomizationLayoutRejectedRequiredField' => 'අවශ්‍ය ක්ෂේත්‍රයක් පිරිසැලසුමෙන් ඉවත් කළ නොහැක. කිසිවක් වෙනස් කර නැත.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'මෙම පිරිසැලසුම සුරැකීමෙන් ඔබ ඒවා මෙතැනින් ඉවත් නොකරම බොහෝ අච්චු ක්ෂේත්‍ර ඉවත් කරනු ඇත. පිටුව නැවත පූරණය කර නැවත උත්සාහ කරන්න. කිසිවක් වෙනස් කර නැත.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'සැකිලි කණ්ඩායම නොපවතී හෝ වෙනත් ආකාරයේ වාර්තාවකට අයත් වේ. කිසිවක් වෙනස් කර නැත.',
+    'CustomizationLayoutLegacySaveRefused' => 'මෙම අච්චුව පිරිසැලසුම් සංස්කාරකය සමඟ සංස්කරණය කර ඇති අතර උරුම පැනල අන්ත ලක්ෂ්‍යය හරහා සුරැකිය නොහැක.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'කොමා වලින් වෙන් කරන ලද, 1 සහ 65535 අතර {$max} TCP ports දක්වා ඇතුළත් කරන්න.',
+    'DiscoveryErrorProbeUnavailable' => 'මෙම ධාවනය ආරම්භ කළ පරීක්ෂණ ක්‍රමය තවදුරටත් පසුබිම් සේවකයාට ලබා ගත නොහැක. නව ධාවනයක් ආරම්භ කරන්න.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP පිං (වරප්‍රසාද නොලත් සොකට්)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP පිං (අමු සොකට්)',
+    'DiscoveryProbePingCommand' => 'ICMP පිං (පිං විධානය)',
+    'DiscoveryProbeTcpConnect' => 'TCP සම්බන්ධතාවය',
+    'DiscoveryProbeMethod' => 'පරීක්ෂණ ක්‍රමය: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'වෙබ් සේවාදායකය විසින් අනාවරණය කර ගන්නා ලදී. පසුබිම් සේවකයා වෙනත් ක්‍රමයක් භාවිතා කළ හැකිය.',
+    'DiscoveryTcpProbeWarning' => 'ස්කෑන් කරන ලද TCP port එකකින් පිළිතුරු දෙන්නේ නම් පමණක් ධාරක සොයා ගත හැකි බැවින්, එම port අවහිර කරන ධාරක සොයාගත නොහැක. සම්පූර්ණ ප්‍රතිඵල සඳහා, සේවාදායකයට ICMP ping යැවීමට ඉඩ දෙන්න: වරප්‍රසාද නොලත් ping sockets හෝ NET_RAW හැකියාවට ඉඩ දෙන්න, නැතහොත් ping ස්ථාපනය කරන්න.',
+    'DiscoveryTcpPortsForRun' => 'මෙම ධාවනය සඳහා TCP තොටවල්',
+    'DiscoveryTcpPortsHint' => 'කොමාවෙන් වෙන් කරන ලද, {$max} ports දක්වා. පෙරනිමිය භාවිතා කිරීමට හිස්ව තබන්න: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'වත්කම් සොයාගැනීමේ TCP තොට',
+    'DiscoveryDefaultTcpPortsHint' => 'පසුබිම් සේවකයාට ICMP ping යැවිය නොහැකි විට භාවිතා වේ. කොමාවෙන් වෙන් කර ඇත, {$max} ports දක්වා.',
+    'DiscoveryErrorTcpUnreliable' => 'ස්කෑන් කිරීම නතර වූයේ ජාලය සැබෑ සත්කාරක (ප්‍රොක්සි හෝ ෆයර්වෝලයක්) විය නොහැකි ලිපින සඳහා TCP සම්බන්ධතා වලට පිළිතුරු දෙන නිසා, සෑම ලිපිනයක්ම සජීවීව පෙනෙන බැවිනි. සේවාදායකයට ICMP පිං යැවීමට ඉඩ දෙන ලෙස ඔබේ පරිපාලකගෙන් ඉල්ලා සිටින්න.',
+    'DiscoveryDefaultTcpPortsResetLog' => '"{$user}" පරිශීලකයා විසින් වත්කම් සොයාගැනීමේ TCP ports පෙරනිමියට නැවත සකසන ලදී.',
+    'DiscoveryNotConfigured' => 'සොයාගැනීම වින්‍යාස කර නොමැත. config.php හි අවසර ලත් පරාසයන් සැකසීමට ඔබේ පද්ධති පරිපාලකගෙන් ඉල්ලා සිටින්න.',
+    'DiscoveryRangeNotAllowed' => 'එම පරාසය පරාසයන්ගෙන් පිටත ඇති බැවින් සොයාගැනීම ස්කෑන් කිරීමට අවසර ඇත.',
+    'DiscoveryAllowedRangesList' => 'අවසර ලත් පරාස: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'මෙම වත්කම ලබා ගත නොහැක. එය මකා දමා තිබිය හැකිය, නැතහොත් ඔබට එයට ප්‍රවේශය නොමැති විය හැකිය.',
+    'AssetCustomFieldNotInTemplate' => 'අභිරුචි ක්ෂේත්‍ර එකක් හෝ කිහිපයක් මෙම වත්කමේ අච්චුවට අයත් නොවේ. කිසිවක් වෙනස් කර නැත.',
+    'AssetMappedControlsInvalid' => 'සිතියම්ගත කළ පාලන සුරැකිය නොහැකි විය. සෑම පේළියකටම පරිණතභාවයක් සහ අවම වශයෙන් පවතින පාලනයක් අවශ්‍ය වේ. කිසිවක් වෙනස් කර නැත.',
+    'AssetMappedControlsTooMany' => 'වත්කමක් උපරිම {$max} පාලන වලට සිතියම්ගත කළ හැක. කිසිවක් වෙනස් කර නැත.',
+    'AddControlsAtAnotherMaturity' => 'තවත් පරිණතභාවයකදී පාලන එකතු කරන්න',
+    'ChoosingControlsNeedsGovernancePermission' => 'පාලන තෝරා ගැනීමට පාලන අධිකාරියේ අවසරය අවශ්‍ය වේ.',
+    'NControls' => '{n} පාලන(ය)',
+    'SavingKeepsTheCurrentControlMappings' => 'සුරැකීම වත්මන් පාලන සිතියම්ගත කිරීම් තබා ගනී.',
+    'LoadingControls' => 'පූරණ පාලන…',
+    'ControlListCouldNotBeLoaded' => 'පාලන ලැයිස්තුව පූරණය කළ නොහැකි විය, එබැවින් සිතියම්ගත කළ පාලන දැන් වෙනස් කළ නොහැක.',
+    'RemoveControlsAtMaturity' => 'පරිණතභාවයේදී පාලන ඉවත් කරන්න {maturity}',
+    'ControlIdUnavailable' => '#{id} (ලබා ගත නොහැක)',
+    'AssetRecordEdit' => 'වත්කම සංස්කරණය කරන්න',
+    'AssetRecordIdN' => 'වත්කම #{$id}',
+    'AssetRecordCopyLink' => 'මෙම වත්කමට සබැඳිය පිටපත් කරන්න',
+    'AssetRecordLinkCopied' => 'සබැඳිය පිටපත් කරන ලදී.',
+    'AssetRecordLinkCopyFailed' => 'සබැඳිය පිටපත් කළ නොහැකි විය. ඒ වෙනුවට ලිපින තීරුවෙන් එය පිටපත් කරන්න.',
+    'AssetRecordMarkUnverified' => 'සත්‍යාපනය නොකළ ලෙස සලකුණු කරන්න',
+    'AssetRecordViewAuditTrail' => 'විගණන මංපෙත බලන්න',
+    'AssetRecordAuditTrailTitle' => 'විගණන මංපෙත',
+    'AssetRecordAuditTrailEmpty' => 'මෙම කාල සීමාව තුළ මෙම වත්කම සඳහා කිසිදු ක්‍රියාකාරකමක් වාර්තා වී නොමැත.',
+    'AssetRecordAuditTrailFailed' => 'විගණන මංපෙත පූරණය කළ නොහැකි විය.',
+    'AssetRecordBackToAsset' => 'වත්කමට ආපසු',
+    'AssetRecordSave' => 'වත්කම සුරකින්න',
+    'AssetRecordProvenanceVerified' => 'සත්‍යාපනය කරන ලදී · එකතු කරන ලදී {$date}',
+    'AssetRecordProvenanceUnverified' => 'සත්‍යාපනය නොකළ: වත්කම් සත්‍යාපනය කළ හැකි කෙනෙකු විසින් තවමත් තහවුරු කර නොමැත · එකතු කරන ලදී {$date}',
+    'AssetRecordUnsavedHint' => 'සුරැකි නොකළ වෙනස්කම් සහිතව වසා දැමීමේදී පළමුව තහවුරු කිරීමට ඔබෙන් ඉල්ලා සිටී.',
+    'AssetRecordDiscardQuestion' => 'ඔබගේ නොසුරකින ලද වෙනස්කම් ඉවත දමන්නද?',
+    'AssetRecordKeepEditing' => 'සංස්කරණය කිරීම දිගටම කරගෙන යන්න',
+    'AssetRecordDiscardChanges' => 'වෙනස්කම් ඉවතලන්න',
+    'AssetRecordVerificationCard' => 'සත්‍යාපනය',
+    'AssetRecordVerificationTag' => 'වත්කම් සත්‍යාපන අවසරය අවශ්‍යයි',
+    'AssetRecordVerifiedHint' => 'වගකිව යුතු කෙනෙකු මෙම වත්කම සමාලෝචනය කර ඇත. සත්‍යාපන වත්කම් අවසරයකින් තොරව එහි නම හෝ IP ලිපිනය වෙනස් කිරීමෙන් එය සත්‍යාපනය නොකළ එකක් බවට පත්වේ.',
+    'AssetRecordLoadFailed' => 'වත්කම පූරණය කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'අභිරුචිකරණ කාඩ්පත් පිරිසැලසුම් API එක fgroup=risk (tab_index 1, 2 හෝ 3) සහ fgroup=asset (tab_index 1) සඳහා පමණක් ලබා ගත හැකිය.',
+    'DiscoveryErrorRequesterNotPermitted' => 'මෙම ධාවනය ආරම්භ කළ පරිශීලකයාට වත්කම් සොයාගැනීම ධාවනය කිරීමට තවදුරටත් අවසර නැත.',
+    'AssetRecordEditField' => 'සංස්කරණය කරන්න {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'රහස්‍යභාවය',
+    'Integrity' => 'අඛණ්ඩතාව',
+    'Availability' => 'උපයෝජ්‍යතාව',
+    'AssetScoringLevelLow' => 'අඩු',
+    'AssetScoringLevelModerate' => 'මධ්‍යස්ථ',
+    'AssetScoringLevelHigh' => 'ඉහළ',
+    'AssetScoringValueInvalid' => 'රහස්‍යභාවය, අඛණ්ඩතාව සහ ලබා ගත හැකි බව අඩු, මධ්‍යස්ථ හෝ ඉහළ බව පිළිගනී (රහස්‍යභාවය ද අදාළ නොවන බව පිළිගනී).',
+    'AssetScoringChangedLog' => '"{$name}" වත්කමේ {$objective} පරිශීලක "{$user}" විසින් {$from} සිට {$to} දක්වා වෙනස් කරන ලදී.',
+    'FIPSCategorization' => 'FIPS වර්ගීකරණය',
+    'WeightedScore' => 'බර තැබූ ලකුණු',
+    'WeightedBand' => 'බරිත පටිය',
+    'AllCategorizations' => 'සියලුම වර්ගීකරණයන්',
+    'AllBands' => 'සියලුම සංගීත කණ්ඩායම්',
+    'AssetFilterByCategorization' => 'FIPS වර්ගීකරණය අනුව පෙරහන් කරන්න {$name}',
+    'AssetFilteringByCategorization' => 'FIPS වර්ගීකරණය අනුව පෙරීම {$name}',
+    'AssetFilterByBand' => 'බරිත පටිය අනුව පෙරහන් කරන්න {$name}',
+    'AssetFilteringByBand' => 'බරිත පටිය අනුව පෙරීම {$name}',
+    'AssetScoring' => 'වත්කම් ලකුණු කිරීම',
+    'AssetScoringSettingsHint' => 'රහස්‍යභාවය, අඛණ්ඩතාව සහ ලබා ගත හැකි බව සඳහා සෑම වත්කමක්ම අඩු, මධ්‍යස්ථ හෝ ඉහළ ලෙස ශ්‍රේණිගත කර ඇති අතර, රහස්‍යභාවය ඒ වෙනුවට අදාළ නොවේ ලෙස ශ්‍රේණිගත කළ හැකි අතර, එමඟින් එය ප්‍රතිඵල දෙකෙන්ම බැහැර වේ. එහි FIPS වර්ගීකරණය ශ්‍රේණිගත කිරීම් තුනෙන් ඉහළම අගයයි. එහි බර තැබූ ලකුණු මට්ටම් තුනේ අගයන්හි බර තැබූ සාමාන්‍යය වන අතර, කලාප සීමාවන් එම ලකුණු අඩු, මධ්‍යස්ථ හෝ ඉහළ කලාපයක් බවට පත් කරයි. මෙම සැකසුම් වෙනස් කිරීම සෑම වත්කමක්ම වහාම නැවත ලකුණු කරයි.',
+    'Weights' => 'බර',
+    'AssetScoringWeightsHint' => 'බරිත ලකුණු වල එක් එක් අරමුණ කොපමණ ප්‍රමාණයක් ගණන් ගනීද: 0 සිට 100 දක්වා, දශම දෙකක් දක්වා. 0 ක බරක් එම අරමුණ ඉවත් කරයි. අඛණ්ඩතාව සහ ලබා ගත හැකි බව යන දෙකම 0 විය නොහැක, මන්ද අදාළ නොවන රහස්‍යභාවය සැමවිටම බැහැර කරනු ලැබේ.',
+    'LevelValues' => 'මට්ටම් අගයන්',
+    'AssetScoringLevelValuesHint' => 'බරිත ලකුණු සඳහා එක් එක් ශ්‍රේණිගත කිරීමේ අංකය දායක වේ: 0 ට වැඩි සහ 100 දක්වා, දශම දෙකක් දක්වා සහ අඩු මධ්‍යස්ථ ඉහළ පහළ. පෙරනිමි අගයන් වන්නේ අඩු 1, මධ්‍යස්ථ 2 සහ ඉහළ 3 ය.',
+    'BandThresholds' => 'කලාප සීමාවන්',
+    'AssetScoringBandThresholdsHint' => 'සීමාවක හෝ ඊට ඉහළින් බරිත ලකුණු එම කලාපයේ ඇති අතර, මධ්‍යස්ථ සීමාවට පහළින් ඇති ලකුණු අඩු වේ. මධ්‍යස්ථ අගය අඩු අගයට ඉහළින් ආරම්භ විය යුතු අතර, ඉහළ අගය මධ්‍යස්ථ අගයට වඩා ඉහළින් ආරම්භ විය යුතු අතර ඉහළ අගයට වඩා වැඩි නොවිය යුතුය.',
+    'ModerateStartsAt' => 'මධ්‍යස්ථ ආරම්භය',
+    'HighStartsAt' => 'ඉහළ ආරම්භ වන්නේ',
+    'DefaultScoringForNewAssets' => 'නව වත්කම් සඳහා පෙරනිමි ලකුණු කිරීම',
+    'AssetScoringDefaultsHint' => 'වත්කම් පෝරමයේ වත්කමක් එකතු කරන විට මෙම ශ්‍රේණිගත කිරීම් පූර්ව-තෝරා ගනී. සොයාගැනීම, ආයාත කිරීම හෝ API මගින් නිර්මාණය කරන ලද වත්කම් තමන්ගේම ශ්‍රේණිගත කිරීම් සපයන්නේ නම් මිස ලකුණු ලබා නොගනී. තුනම තබන්න මෙය අක්‍රිය කිරීමට සකසා නැත.',
+    'AssetScoringWeightsInvalid' => 'වත්කම් ලකුණු කිරීමේ බර 0 සිට 100 දක්වා සංඛ්‍යා විය යුතු අතර උපරිම වශයෙන් දශම දෙකක් තිබිය යුතු අතර, අඛණ්ඩතාව සහ ලබා ගත හැකි බව යන දෙකම 0 විය නොහැක.',
+    'AssetScoringValuesInvalid' => 'වත්කම් ලකුණු කිරීමේ මට්ටමේ අගයන් 0 ට වැඩි සහ 100 දක්වා සංඛ්‍යා විය යුතු අතර උපරිම වශයෙන් දශම දෙකක් තිබිය යුතු අතර, අඩු මධ්‍යස්ථ ඉහළ පහළ තිබිය යුතුය.',
+    'AssetScoringThresholdsInvalid' => 'වත්කම් ලකුණු කලාප සීමාවන්ට උපරිම වශයෙන් දශම දෙකක් තිබිය යුතු අතර, මධ්‍යස්ථ අගය අඩු අගයට ඉහළින් ආරම්භ වන අතර, ඉහළ අගය මධ්‍යස්ථ අගයට ඉහළින් ආරම්භ වන අතර ඉහළ අගය ඉහළ අගයට වඩා වැඩි නොවිය යුතුය.',
+    'AssetScoringDefaultsInvalid' => 'නව වත්කම් සඳහා පෙරනිමි ලකුණු කිරීම එක් එක් අරමුණ ලබා දෙන මට්ටමක් විය යුතුය.',
+    'AssetScoringSettingsNotSaved' => 'වත්කම් ලකුණු කිරීමේ සැකසුම් සුරැකිය නොහැකි විය. කිසිවක් වෙනස් කර නැත.',
+    'AssetScoringSettingsChangedLog' => '"{$user}" පරිශීලකයා විසින් වත්කම් ලකුණු කිරීමේ සැකසුම් වෙනස් කරන ලදී.',
+    'AssetScoringNotSet' => 'සකසා නැත',
+    'NotScored' => 'ලකුණු ලබා නැත',
+    'AssetScoringNotScoredHint' => 'මෙම වත්කම ලකුණු කිරීමේ අරමුණු තුනටම පිළිතුරු සපයන්න.',
+    'ImportAssetScoringValueIgnored' => '"{$asset_name}" වත්කම සඳහා {$objective} අගය "{$value}" වලංගු ශ්‍රේණිගත කිරීමක් නොවන අතර නොසලකා හරින ලදී.',
+    'AssetScoringSecurityObjectives' => 'ආරක්ෂක අරමුණු',
+    'AssetScoringConfidentialityHelp' => 'මෙම වත්කම පිළිබඳ තොරතුරු අනවසරයෙන් හෙළිදරව් කිරීමක් සිදුවුවහොත් ඇති විය හැකි බලපෑම කුමක්ද?',
+    'AssetScoringIntegrityHelp' => 'මෙම වත්කමේ තොරතුරු අනවසරයෙන් වෙනස් කිරීමක් හෝ විනාශ කිරීමක් සිදුවුවහොත් ඇති විය හැකි බලපෑම කුමක්ද?',
+    'AssetScoringAvailabilityHelp' => 'මෙම වත්කමට ප්‍රවේශ වීම හෝ භාවිතයට බාධාවක් සිදුවුවහොත් ඇති විය හැකි බලපෑම කුමක්ද?',
+    'AssetScoringHelpHigh' => 'දරුණු හෝ විනාශකාරී අහිතකර බලපෑම',
+    'AssetScoringHelpModerate' => 'බරපතල අහිතකර බලපෑම',
+    'AssetScoringHelpLow' => 'සීමිත හෝ අහිතකර බලපෑමක් නැත',
+    'AssetScoringHelpNotApplicable' => 'මෙම වත්කම සඳහා රහස්‍යභාවය ගැටළුවක් නොවේ (උදාහරණයක් ලෙස, පොදු තොරතුරු)',
+    'AssetScoringHelpLabel' => '{$objective} ශ්‍රේණිගත කිරීමේ මාර්ගෝපදේශය',
+    'AssetScoringMeterValue' => '{$score}, {$band} පරාසය',
+    'AssetScoringNoWeightedScore' => 'බර තැබූ ලකුණු නැත',
+    'AssetScoringNoWeightedScoreNote' => 'බරිත ලකුණු නොමැත: ගණන් ගන්නා සෑම අරමුණකම බර 0 කි.',
+    'AssetScoringUpgradePending' => 'SimpleRisk දත්ත සමුදා උත්ශ්‍රේණි කිරීම ක්‍රියාත්මක වන තුරු වත්කම් ලකුණු කිරීම සුරැකිය නොහැක. කිසිවක් වෙනස් කර නැත.',
+    'AssetScoringResultHelpLabel' => '{$result} පැහැදිලි කිරීම',
+    'AssetScoringScoreHelp' => 'බර තැබූ ලකුණු මඟින් ශ්‍රේණිගත කිරීම් තුන {$low} සිට {$high}දක්වා එක් අංකයකට මිශ්‍ර කරයි. සෑම ශ්‍රේණිගත කිරීමක් එහි කුලක අගය බවට පත්වන අතර, ඒ සෑම එකක්ම එහි අරමුණෙහි බරින් ගුණ කරනු ලැබේ. ප්‍රතිඵල එකට එකතු කර බරෙහි එකතුවෙන් බෙදනු ලැබේ. අදාළ නොවන බවට රහස්‍යභාවයක් එහි බර සමඟ ඉතිරි වේ. කුලක අගයන් සහ බර මනාපයන් තුළ වින්‍යාස කර ඇත. ලකුණු පෙන්වීමට පෙර අරමුණු තුනම ශ්‍රේණිගත කළ යුතුය.',
+    'AssetScoringCategorizationHelp' => 'FIPS 199 ආරක්ෂක වර්ගීකරණය යනු ඉහළ ජල සලකුණයි: අදාළ වන අරමුණු අතර ඉහළම ශ්‍රේණිගත කිරීම. අනෙක් ඒවා කුමක් වුවත්, තනි ඉහළ ශ්‍රේණිගත කිරීමක් වත්කම ඉහළ කරයි. අදාළ නොවන දේ නොසලකා හරිනු ලැබේ.',
+    'AssetScoringBandHelp' => 'මෙම පටිය බර තැබූ ලකුණු අඩු, මධ්‍යස්ථ හෝ ඉහළ පරිමාණයක තබයි. {$moderate} ට අඩු ලකුණු අඩු වන අතර, {$moderate} සිට {$highAt} දක්වා ලකුණු මධ්‍යස්ථ වන අතර, {$highAt} හෝ ඊට වැඩි ලකුණු ඉහළ වේ. සීමාවන් මනාපයන් තුළ වින්‍යාස කර ඇත.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'සියලුම රහස්‍යතා ශ්‍රේණිගත කිරීම්',
+    'AllIntegrityRatings' => 'සියලුම අඛණ්ඩතා ශ්‍රේණිගත කිරීම්',
+    'AllAvailabilityRatings' => 'සියලුම ලබා ගත හැකිතා ශ්‍රේණිගත කිරීම්',
+    'AssetFilterByConfidentiality' => 'රහස්‍යභාවය අනුව පෙරහන් කරන්න {$name}',
+    'AssetFilteringByConfidentiality' => 'රහස්‍යභාවය අනුව පෙරීම {$name}',
+    'AssetFilterByIntegrity' => 'අඛණ්ඩතාව අනුව පෙරහන් කරන්න {$name}',
+    'AssetFilteringByIntegrity' => 'අඛණ්ඩතාව අනුව පෙරීම {$name}',
+    'AssetFilterByAvailability' => 'ලබා ගත හැකි බව අනුව පෙරහන් කරන්න {$name}',
+    'AssetFilteringByAvailability' => 'ලබා ගත හැකි බව අනුව පෙරීම {$name}',
+    'HighestFIPSCategorization' => 'ඉහළම FIPS වර්ගීකරණය',
+    'HighestWeightedScore' => 'වැඩිම බරිත ලකුණු',
+    'HighestWeightedBand' => 'වැඩිම බරැති පටිය',
+    'AssetGroupFields' => 'වත්කම් කණ්ඩායම් ක්ෂේත්‍ර',
+    'NoAssetGroupsMatchFilters' => 'ඔබේ පෙරහන්වලට ගැලපෙන වත්කම් කාණ්ඩ නොමැත.',
+    'AssetGroupFilterByHighestCategorization' => 'ඉහළම FIPS වර්ගීකරණය අනුව පෙරහන් කරන්න {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'ඉහළම FIPS වර්ගීකරණය අනුව පෙරීම {$name}',
+    'AssetGroupFilterByHighestBand' => 'වැඩිම බරිත පටිය අනුව පෙරහන් කරන්න {$name}',
+    'AssetGroupFilteringByHighestBand' => 'ඉහළම බරිත කලාපය අනුව පෙරීම {$name}',
+    'AssetGroupBulkSelectionRequired' => 'ID හෝ පෙරහන අනුව වත්කම් කණ්ඩායම් තෝරන්න.',
+    'AssetGroupBulkIdsRequired' => 'අවම වශයෙන් එක් වත්කම් කණ්ඩායමක් තෝරන්න.',
+    'AssetGroupBulkIdsInvalid' => 'වත්කම් කණ්ඩායම් IDs පූර්ණ සංඛ්‍යා විය යුතුය.',
+    'AssetGroupBulkFilterAllAlone' => 'සියලුම වත්කම් කණ්ඩායම් තේරීම අනෙකුත් පෙරහන් සමඟ ඒකාබද්ධ කළ නොහැක.',
+    'AssetGroupBulkFilterEmpty' => 'මැකීමට පෙර, පෙරහනක් තෝරන්න, නැතහොත් සියලු වත්කම් කණ්ඩායම් තෝරන්න.',
+    'AssetGroupBulkExpectedCountInvalid' => 'අපේක්ෂිත වත්කම් කාණ්ඩ ගණන පූර්ණ සංඛ්‍යාවක් විය යුතුය.',
+    'AssetGroupBulkExpectedCountRequired' => 'පෙරහන මඟින් වත්කම් කණ්ඩායම් මැකීමට ඔබ මැකීමට බලාපොරොත්තු වන කණ්ඩායම් ගණන අවශ්‍ය වේ.',
+    'AssetGroupBulkNoMatch' => 'ඔබේ තේරීමට ගැලපෙන වත්කම් කාණ්ඩ නොමැත.',
+    'AssetGroupBulkCountMismatch' => 'ඔබ ඒවා තෝරාගත් දා සිට ගැලපෙන වත්කම් කාණ්ඩ {$expected} සිට {$actual} දක්වා වෙනස් විය. ලැයිස්තුව සමාලෝචනය කර නැවත උත්සාහ කරන්න.',
+    'AssetGroupBulkTooManyToDelete' => 'ඔබට එකවර උපරිම වශයෙන් {$max} වත්කම් කාණ්ඩ මකා දැමිය හැකිය. ඔබේ තේරීම පටු කර නැවත උත්සාහ කරන්න.',
+    'AssetGroupBulkSelectAll' => 'සියලුම {$count} වත්කම් කාණ්ඩ තෝරන්න',
+    'AssetGroupBulkAllSelected' => '{$count} ගැළපෙන වත්කම් කාණ්ඩ සියල්ල තෝරා ඇත',
+    'AssetGroupBulkDeleteConfirmTitle' => '{$count} වත්කම් කාණ්ඩ මකන්නද?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'මෙම කණ්ඩායම්වල වත්කම් මකා නොදමනු ලැබේ. කණ්ඩායම් පමණක් ඉවත් කරනු ලැබේ.',
+    'DeleteAssetGroups' => 'කණ්ඩායම් මකන්න',
+    'AssetGroupBulkDeletedSummary' => '{$ok} කණ්ඩායම් මකා දමන ලදී, {$failed} මඟ හරින ලදී',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'අදාළ අවදානම් තෝරා ගැනීමට අවදානම් කළමනාකරණ අවසරය අවශ්‍ය වේ.',
+    'NAssociatedRisks' => '{n} ආශ්‍රිත අවදානම්(ය)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'සුරකින විට වත්මන් ආශ්‍රිත අවදානම් තබා ගනී.',
+    'UpgradePhpPartialTarget' => '{$target} වෙත උත්‍ශ්‍රේණි කිරීම, PHP {$php} සඳහා සහය දක්වන නවතම නිකුතුව. {$blocked} සහ ඊට පසු නිකුතු PHP {$needed} හෝ නව අවශ්‍ය වේ.',
+    'UpgradeNoPhpCli' => 'දත්ත සමුදාය උත්ශ්‍රේණි කිරීම සඳහා උත්ශ්‍රේණි කිරීමට pdo_mysql දිගුව සහිත PHP විධාන රේඛා අතුරුමුහුණත අවශ්‍ය වන අතර, මෙම සේවාදායකයේ කිසිවක් හමු නොවීය. කිසිවක් වෙනස් කර නැත. එය ස්ථාපනය කරන්න (SimpleRisk හි කාලසටහන්ගත කාර්යයන් සඳහාද එය අවශ්‍ය වේ), පසුව උත්ශ්‍රේණි කිරීම නැවත ක්‍රියාත්මක කරන්න.',
+    'UpgradeDatabaseStepFailed' => 'දත්ත සමුදාය උත්ශ්‍රේණි කිරීම අසාර්ථක විය. දත්ත සමුදාය {$reached}අනුවාදයේ ඇත. ඉහත පණිවිඩ සහ SimpleRisk ලොගය බලන්න, ඉන්පසු උත්ශ්‍රේණි කිරීම නැවත ක්‍රියාත්මක කරන්න.',
+    'UpgradeReplacingVendorDirectory' => 'vendor නාමාවලිය ප්‍රතිස්ථාපනය කිරීම.',
+    'AdvancedSearchLockedPlaceholder' => 'ඔබේ මුළු වැඩසටහනම සොයන්න',
+    'AdvancedSearchLockedAria' => 'ඔබගේ මුළු වැඩසටහනම සොයන්න. අගුළු දමා ඇත: උසස් සෙවුම් අමතර අවශ්‍ය වේ.',
+    'AdvancedSearchLockedPitch' => 'එක් කොටුවකින් අවදානමක්, පාලනයක්, ලේඛනයක් හෝ වත්කමක් සොයාගෙන, එයට සම්බන්ධ වාර්තා වෙත පනින්න.',
+    'AdvancedSearchUnlocksLabel' => 'සෙවීම අගුළු හරියි',
+    'RequiresAdvancedSearchExtra' => 'උසස් සෙවුම් අමතර අවශ්‍ය වේ.',
+    'UnlockAdvancedSearchLink' => 'එය එකතු කරන දේ බලන්න.',
+    'UnlockActivateAdvancedSearchNote' => 'උසස් සෙවුම් අමතර ස්ථාපනය කර ඇත, නමුත් සක්‍රිය කර නොමැත.',
+    'UnlockActivateAdvancedSearchLink' => 'එය ක්‍රියාත්මක කරන්න',
+    'AdvancedSearchControlCount' => 'පාලනයන්: {$count}',
+    'AdvancedSearchAssetCount' => 'වත්කම්: {$count}',
+    'AdvancedSearchValuationRange' => '{$min} සිට {$max} දක්වා',
+    'AdvancedSearchTypes' => 'වර්ග',
+    'AdvancedSearchTypesToggle' => 'වර්ග · {$count}',
+    'AdvancedSearchViewAll' => 'සියල්ල බලන්න',
+    'AdvancedSearchMatchedIn' => '{$field} හි ගැළපුණු:',
+    'AdvancedSearchMatchedInFilter' => 'ගැලපෙන්නේ',
+    'AdvancedSearchAnyField' => 'ඕනෑම ක්ෂේත්‍රයක්',
+    'AdvancedSearchSortBest' => 'හොඳම ගැළපීම',
+    'AdvancedSearchSummary' => 'ප්‍රතිඵල: {$count}',
+    'AdvancedSearchSummaryTypes' => 'සෙවූ වර්ග: {$types}',
+    'AdvancedSearchNoResultsTitle' => '“{$q}” සඳහා ප්‍රතිඵල නොමැත.',
+    'AdvancedSearchNoResultsTip' => 'අක්ෂර වින්‍යාසය පරීක්ෂා කරන්න, නැතහොත් අඩු වචන උත්සාහ කරන්න.',
+    'AdvancedSearchFailedTitle' => 'දැන් සෙවිය නොහැකි විය.',
+    'AdvancedSearchFailedBody' => 'ඔබගේ දත්ත ආරක්ෂිතයි. මොහොතකින් නැවත උත්සාහ කරන්න.',
+    'AdvancedSearchIncompleteTitle' => 'ප්‍රතිඵල අසම්පූර්ණ විය හැකිය.',
+    'AdvancedSearchIncompleteDetail' => 'මෙම වර්ගය එහි මෑත කාලීන වාර්තා පමණක් සෙව්වේය. තවත් බැලීමට ඔබේ සෙවීම පටු කරන්න.',
+    'AdvancedSearchTimeLimitNote' => 'වේගවත්ව තබා ගැනීමට සෙවීම කලින්ම නතර කළ බැවින්, සමහර වර්ග සෙවුමක් සිදු නොවීය. ඒවා ඇතුළත් කිරීමට ඔබේ සෙවීම පටු කරන්න.',
+    'AdvancedSearchNotSearched' => 'සෙවුමක් නැත',
+    'AdvancedSearchMinChars' => 'සෙවීමට අවම වශයෙන් {$count} අක්ෂර ටයිප් කරන්න.',
+    'AdvancedSearchEmptyPrompt' => 'අවදානම්, පාලන, ලේඛන, වත්කම් සහ තවත් දේ සොයන්න.',
+    'AdvancedSearchFirstPage' => 'පළමු පිටුව',
+    'AdvancedSearchNoAccess' => 'ඔබගේ ගිණුමට කිසිදු වාර්තා වර්ගයක් සෙවිය නොහැක. ප්‍රවේශය සඳහා පරිපාලකයෙකුගෙන් විමසන්න.',
+    'AdvancedSearchSort' => 'වර්ග කරන්න',
+    'AdvancedSearchConnectedRecords' => 'සම්බන්ධිත වාර්තා',
+    'AdvancedSearchConnectedRecordsNote' => 'ඔබට ප්‍රවේශය ඇති වාර්තා පමණක් පෙන්වයි.',
+    'AdvancedSearchNoConnections' => 'ඔබට දැකිය හැකි සම්බන්ධිත වාර්තා නොමැත.',
+    'AdvancedSearchConnectionsFailed' => 'සම්බන්ධිත වාර්තා පූරණය කළ නොහැකි විය.',
+    'AdvancedSearchShowConnections' => '{$title} සඳහා සම්බන්ධිත වාර්තා පෙන්වන්න',
+    'AdvancedSearchExploreConnections' => 'සම්බන්ධතා ගවේෂණය කරන්න',
+    'AdvancedSearchCopyLink' => 'සබැඳිය පිටපත් කරන්න',
+    'AdvancedSearchMoreCount' => '+{$count} තවත්',
+    'AdvancedSearchCopyLinkFailed' => 'සබැඳිය පිටපත් කිරීමට නොහැකි විය.',
+    'AdvancedSearchOpenRecord' => 'විවෘත කරන්න',
+    'ControlDeepLinkUnavailable' => 'එම පාලනය ලබා ගත නොහැකිය. එය මකා දමා තිබිය හැකිය, නැතහොත් ඔබට එයට ප්‍රවේශය නොමැති විය හැකිය.',
+    'ExceptionDeepLinkUnavailable' => 'එම ව්‍යතිරේකය මෙහි විවෘත කළ නොහැක. ඔබට එහි ප්‍රතිපත්ති ලේඛනයට ප්‍රවේශය නොමැති විය හැක.',
+    // Advanced Search: the topbar typeahead
+    'AdvancedSearchSeeAll' => '“{$q}” සඳහා සියලුම ප්‍රතිඵල බලන්න.',
+    'AdvancedSearchTopHit' => 'හොඳම ප්‍රතිඵලය',
+    'AdvancedSearchKeyMove' => 'චලනය කරන්න',
+    'AdvancedSearchKeyEsc' => 'පිට වීම',
+    'AdvancedSearchSuggestions' => 'සෙවුම් යෝජනා',
+    'AdvancedSearchAssessmentSubtitle' => '{$contact} · {$percent}% සම්පූර්ණයි',
+    'AdvancedSearchScannerId' => 'ස්කෑනර් හැඳුනුම්කය',
+    'AdvancedSearchVendor' => 'වෙළෙන්දා',
+    'AdvancedSearchProduct' => 'නිෂ්පාදන',
+    'AdvancedSearchSeverityLevel' => 'බරපතලකම {$level}',
+    'AdvancedSearchFromYourExtras' => 'ඔබගේ අමතර දේවල් වලින්',
+    'UpdateAnExistingUser' => 'පවතින පරිශීලකයෙකු යාවත්කාලීන කරන්න',
+    'UserImportProgressTitle' => 'පරිශීලකයින් ආයාත කිරීම',
+    'UserImportQueued' => 'පෝලිමේ ඇත. ආයාත කිරීම මොහොතකින් ආරම්භ වනු ඇත…',
+    'UserImportProgressCount' => '{$processed} {$total} පේළි… සකසන ලදී',
+    'UserImportComplete' => 'ආයාත කිරීම සම්පූර්ණයි.',
+    'UserImportFailed' => 'ආයාතය සම්පූර්ණ කළ නොහැකි විය.',
+    'UserImportSummary' => '{$created} නිර්මාණය කරන ලදී, {$updated} යාවත්කාලීන කරන ලදී, {$failed} ආයාත කර නැත.',
+    'UserImportRowInvalid' => 'පේළිය {$row}: ආයාත කර නැත. පරිශීලක නාමයක්, සම්පූර්ණ නමක් සහ වලංගු විද්‍යුත් තැපැල් ලිපිනයක් අවශ්‍ය වේ.',
+    'UserImportRowError' => 'පේළිය {$row}: අනපේක්ෂිත දෝෂයක් නිසා ආයාත කර නැත.',
+    'UserImportRevealPasswords' => 'තාවකාලික මුරපද පෙන්වන්න',
+    'UserImportPasswordsOnce' => 'නව පරිශීලකයින්ගේ තාවකාලික මුරපද එක් වරක් පෙන්වනු ලබන අතර පසුව මකා දමනු ලැබේ. දැන් ඒවා පිටපත් කර සෑම පරිශීලකයෙකුටම ආරක්ෂිතව ලබා දෙන්න. සෑම පරිශීලකයෙකුම පළමු පිවිසුමේදී එය වෙනස් කළ යුතුය.',
+    'UserImportPasswordsShownOnce' => 'මෙම තාවකාලික මුරපද SimpleRisk වෙතින් මකා දමා ඇති අතර නැවත පෙන්විය නොහැක. දැන් ඒවා පිටපත් කරන්න. සෑම පරිශීලකයෙකුම පළමු පිවිසුමේදී ඔවුන්ගේ මුරපද වෙනස් කළ යුතුය.',
+    'UserImportPasswordsUnavailable' => 'තාවකාලික මුරපද තවදුරටත් පෙන්විය නොහැක. ඒවා එක් වරක් පෙන්වනු ලැබේ, ආයාත කිරීම ආරම්භ කළ පරිපාලකයාට සහ එය ආරම්භ කළ බ්‍රව්සර් පටිත්තෙහි පමණි, සහ SimpleRisk ඒවා නැවත පෙන්විය හැකි කිසිවක් තබා නොගනී. පරිශීලකයා සංස්කරණය කිරීමෙන් සෑම නව පරිශීලකයෙකුටම නව මුරපදයක් සකසන්න.',
+    'UserImportBackgroundNote' => 'මෙම පිටුව තනිවම යාවත්කාලීන වන අතර ඔබ ඉවත් වුවහොත් ආයාත කිරීම දිගටම ක්‍රියාත්මක වේ. ප්‍රතිඵලය බැලීමට පිටුව නැවත විවෘත කරන්න.',
+    'AuditAdditionalStakeholdersSetOnTest' => 'පරීක්ෂණයට අමතර කොටස්කරුවන් සකසා ඇත. ඒවා වෙනස් කිරීමට, {$page}යටතේ පරීක්ෂණය සංස්කරණය කරන්න; වෙනස මෙම විගණනයට වහාම අදාළ වේ.',
+    'QuestionnaireDraftSomeFilesNotSaved' => 'ඔබගේ පිළිතුරු සුරකින ලදී, නමුත් ඇමුණුම් එකක් හෝ කිහිපයක් ගබඩා කර නොමැත. ගොනුවක් ඉතා විශාල හෝ අවසර නැති වර්ගයක විය හැකිය.',
+    'UploadFileTooBigForDatabase' => 'උඩුගත කරන ලද ගොනුව දත්ත සමුදාය ගබඩා කිරීමට ඉතා විශාලය. SimpleRisk පරිපාලකයෙකුට MySQL වින්‍යාසය තුළ max_allowed_packet සහ innodb_log_file_size අගයන් ඉහළ නැංවිය හැක.',
+    'UploadErrorIniSize' => 'උඩුගත කරන ලද ගොනුව php.ini හි upload_max_filesize විධානය ඉක්මවා යයි.',
+    'UploadErrorFormSize' => 'උඩුගත කරන ලද ගොනුව HTML පෝරමයේ නිශ්චිතව දක්වා ඇති MAX_FILE_SIZE විධානය ඉක්මවා යයි.',
+    'UploadErrorPartial' => 'උඩුගත කරන ලද ගොනුව අර්ධ වශයෙන් පමණක් උඩුගත කර ඇත.',
+    'UploadErrorNoFile' => 'ගොනුවක් උඩුගත කර නැත.',
+    'UploadErrorNoTmpDir' => 'තාවකාලික ෆෝල්ඩරයක් අතුරුදහන්.',
+    'UploadErrorCantWrite' => 'ගොනුව තැටියට ලිවීමට අසමත් විය.',
+    'UploadErrorExtension' => 'PHP දිගුවක් ගොනු උඩුගත කිරීම නැවැත්වීය.',
+    'MaxUploadSizeNeedsInteger' => 'උපරිම උඩුගත කිරීමේ ගොනු ප්‍රමාණය බිංදුවට වඩා වැඩි බයිට් සංඛ්‍යාවක් විය යුතුය.',
+    'MaxUploadSizeUpdated' => 'උපරිම උඩුගත කිරීමේ ගොනු ප්‍රමාණය සාර්ථකව යාවත්කාලීන කරන ලදී.',
+    'MaxUploadSizeCapped' => 'සුරකින ලද අගය මෙම සේවාදායකය ඉඩ දෙන ප්‍රමාණයට වඩා වැඩි බැවින්, PHP සහ MySQL සීමාවන් ඉහළ නංවන තෙක් හෝ මෙම අගය අඩු කරන තෙක් විශාල ගොනු ප්‍රතික්ෂේප කරනු ලැබේ. දැනට පිළිගත් විශාලතම ගොනුව බයිට් වලින්:',
+    'PleaseEnterAValidEmailAddress' => 'කරුණාකර වලංගු ඊතැපැල් ලිපිනයක් ඇතුළු කරන්න.',
+    'RiskImportedClosedWithoutCloseReason' => 'අවදානම් {$risk_id} ("{$subject}") ආයාත කරන ලද්දේ වසා දැමූ තත්ත්වය සමඟ නමුත් වසා දැමීමේ හේතුව නොමැතිව ය, එබැවින් එහි වසා දැමීමේ තොරතුරු අසම්පූර්ණයි. ගොනුවට වසා දැමීමේ හේතුවක් එකතු කර එය නැවත ආයාත කරන්න, නැතහොත් අවදානම් පිටුවෙන් වසා දැමීම සම්පූර්ණ කරන්න.',
+    // SR-115: HTTP Strict Transport Security (HSTS)
+    'EnableHSTS' => 'HTTP දැඩි ප්‍රවාහන ආරක්ෂාව (HSTS) සබල කරන්න',
+    'EnableHSTSHelp' => 'පහත උපරිම වයස සඳහා HTTPS හරහා SimpleRisk වෙත පමණක් සම්බන්ධ වීමට බ්‍රව්සර් වලට කියයි. මෙම අඩවියේ HTTPS විශ්වාසදායක ලෙස ක්‍රියා කළ පසු පමණක් මෙය සක්‍රීය කරන්න: ශීර්ෂය දැක ඇති බ්‍රව්සර් සරල HTTP ප්‍රතික්ෂේප කරනු ඇති අතර, උපරිම වයස කල් ඉකුත් වන තෙක් කැඩුණු සහතිකයක් මඟ හැරිය නොහැක. තත්පර 300ක් වැනි කෙටි උපරිම වයසකින් ආරම්භ කර HTTPS සත්‍යාපනය කළ පසු එය ඉහළ නංවන්න.',
+    'HSTSMaxAge' => 'HSTS උපරිම වයස (තත්පර)',
+    'HSTSMaxAgeInvalid' => 'HSTS උපරිම වයස 0 සහ 63072000 අතර සම්පූර්ණ තත්පර ගණනක් විය යුතුය.',
+    'HSTSIncludeSubdomains' => 'සියලුම උපවසම් වලට HSTS යොදන්න.',
+    'HSTSIncludeSubdomainsHelp' => 'මෙම සත්කාරකයේ සෑම උප වසමකම HTTPS බල කරයි. ඕනෑම උප වසමක් සරල HTTP හරහා සේවය කරන්නේ නම් එය නවත්වන්න.',
     '' => '',
 );
 ?>

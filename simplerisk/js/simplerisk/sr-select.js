@@ -103,7 +103,76 @@
         api.$button.find('.sr-select-value').text(label);
     }
 
+    var srSelectUid = 0;
+
+    // Inside a modal the absolutely-positioned menu would be clipped by the
+    // scrolling .modal-body (overflow-y:auto) and force an inner scrollbar. So
+    // there the menu is laid out position:fixed, placed under -- or, when there
+    // is no room, over -- the button, and re-placed on scroll/resize. It stays a
+    // DOM child of the wrapper so Bootstrap's focus trap and the keydown
+    // handlers keep working. The menu's z-index only orders it inside the
+    // modal's own stacking context (.modal forms one), which is all it needs.
+    //
+    // position:fixed resolves against the viewport ONLY when no ancestor
+    // establishes a containing block for fixed descendants (transform, filter,
+    // will-change, contain:layout|paint, container-type, or the modal's fade
+    // transform while it animates in). Rather than enumerate those, we place
+    // using viewport coordinates, then measure where the menu actually landed
+    // and shift by the difference (one correction pass). That is correct for
+    // any containing block and is re-run on every re-place.
+    function srSelectPlace(api) {
+        var btn = api.$button[0].getBoundingClientRect();
+        var menu = api.$menu[0];
+        var vw = document.documentElement.clientWidth;
+        var vh = window.innerHeight;
+        var gap = 4;
+        var margin = 8;
+        var below = vh - btn.bottom - gap - margin;
+        var above = btn.top - gap - margin;
+        var openUp = below < 200 && above > below;
+        var room = Math.max(120, openUp ? above : below);
+        var width = Math.min(Math.max(btn.width, 0), vw - 2 * margin);
+        menu.style.position = 'fixed';
+        menu.style.minWidth = width + 'px';
+        menu.style.maxHeight = Math.min(320, room) + 'px';
+        var w = menu.offsetWidth;
+        var wantLeft = Math.max(margin, Math.min(btn.left, vw - w - margin));
+        var wantTop;
+        menu.style.left = wantLeft + 'px';
+        menu.style.bottom = 'auto';
+        if (openUp) {
+            wantTop = btn.top - gap - menu.offsetHeight;
+        } else {
+            wantTop = btn.bottom + gap;
+        }
+        menu.style.top = wantTop + 'px';
+        // Correction pass: compare the desired viewport position with the
+        // actual one and shift by the delta.
+        var actual = menu.getBoundingClientRect();
+        var dx = wantLeft - actual.left;
+        var dy = wantTop - actual.top;
+        if (Math.abs(dx) > 0.5) { menu.style.left = (wantLeft + dx) + 'px'; }
+        if (Math.abs(dy) > 0.5) { menu.style.top = (wantTop + dy) + 'px'; }
+    }
+
+    function srSelectDetachFloat(api) {
+        $(window).off('.srselectfloat' + api.uid);
+        if (api.onScroll) {
+            document.removeEventListener('scroll', api.onScroll, true);
+            api.onScroll = null;
+        }
+        if (api.vv && api.onVvResize) {
+            api.vv.removeEventListener('resize', api.onVvResize);
+        }
+        api.vv = null;
+        api.onVvResize = null;
+    }
+
     function srSelectClose(api, refocus) {
+        if (api.floating) {
+            srSelectDetachFloat(api);
+            api.$menu.css({ position: '', left: '', top: '', bottom: '', minWidth: '', maxHeight: '' });
+        }
         api.$menu.attr('hidden', 'hidden');
         api.$button.attr('aria-expanded', 'false');
         // Every reopen starts from the full list -- a search left over from
@@ -117,8 +186,40 @@
     }
 
     function srSelectOpen(api) {
+        // Idempotent: re-opening an open menu must not stack listeners.
+        if (!api.$menu.attr('hidden')) {
+            return;
+        }
         api.$menu.removeAttr('hidden');
         api.$button.attr('aria-expanded', 'true');
+        if (api.floating) {
+            srSelectDetachFloat(api);
+            srSelectPlace(api);
+            var ns = '.srselectfloat' + api.uid;
+            var startW = window.innerWidth;
+            // A real width change (or rotation) closes the menu. A height-only
+            // resize -- the on-screen keyboard appearing because the search
+            // input took focus -- must not.
+            $(window).on('resize' + ns, function () {
+                var searchFocused = document.activeElement === api.$search[0];
+                if (window.innerWidth === startW && searchFocused) {
+                    srSelectPlace(api);
+                    return;
+                }
+                srSelectClose(api, false);
+            });
+            // Capture phase: scroll does not bubble. A scroll inside the menu's
+            // own option list is not a reason to move or close it.
+            api.onScroll = function (e) {
+                if (!api.$menu[0].contains(e.target)) { srSelectPlace(api); }
+            };
+            document.addEventListener('scroll', api.onScroll, true);
+            if (window.visualViewport) {
+                api.vv = window.visualViewport;
+                api.onVvResize = function () { srSelectPlace(api); };
+                api.vv.addEventListener('resize', api.onVvResize);
+            }
+        }
         api.$search.trigger('focus');
         // Land on the current selection so arrow keys continue from where the
         // value already is, not from the top of the list.
@@ -251,6 +352,8 @@
             $menu: $menu,
             $search: $search,
             $options: $options,
+            uid: ++srSelectUid,
+            floating: !!$native.closest('.modal').length,
             multiple: !!$native.prop('multiple'),
             placeholder: placeholder || $native.attr('data-placeholder') || $native.attr('title') || '',
         };
@@ -312,8 +415,19 @@
             }
         });
 
+        // Per-instance namespaces so a re-bind replaces rather than stacks,
+        // and destroy can unbind exactly this instance's handlers.
+        var evNs = '.srselect' + api.uid;
+        api.evNs = evNs;
+        if (api.floating) {
+            api.$modal = $native.closest('.modal');
+            api.$modal.off('hide.bs.modal' + evNs).on('hide.bs.modal' + evNs, function () {
+                if (!$menu.attr('hidden')) { srSelectClose(api, false); }
+            });
+        }
+
         // Clicking anywhere else dismisses it, like any other menu.
-        $(document).on('mousedown.srselect', function (e) {
+        $(document).off('mousedown' + evNs).on('mousedown' + evNs, function (e) {
             if (!$wrapper[0].contains(e.target) && !$menu.attr('hidden')) {
                 srSelectClose(api, false);
             }
@@ -325,7 +439,17 @@
     // srSelectRender is also exposed: callers that rebuild a select's
     // <option> list at runtime (e.g. from an AJAX response) need to
     // re-render the enhanced widget without re-enhancing it.
+    // Unbinds every document/window/modal handler an instance owns.
+    function srSelectDestroy($native) {
+        var api = $native.data('srSelect');
+        if (!api) { return; }
+        srSelectDetachFloat(api);
+        $(document).off('mousedown' + api.evNs);
+        if (api.$modal) { api.$modal.off('hide.bs.modal' + api.evNs); }
+    }
+
     window.srSelectEnhance = srSelectEnhance;
+    window.srSelectDestroy = srSelectDestroy;
     window.srSelectRender = srSelectRender;
 
 }(jQuery));

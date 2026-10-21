@@ -7,6 +7,7 @@
 require_once(realpath(__DIR__ . '/includes/api.php'));
 require_once(realpath(__DIR__ . '/includes/simplerisk.php'));
 require_once(realpath(__DIR__ . '/includes/assets.php'));
+require_once(realpath(__DIR__ . '/includes/assets_discovery.php'));
 require_once(realpath(__DIR__ . '/includes/governance.php'));
 require_once(realpath(__DIR__ . '/includes/governance_controls.php'));
 require_once(realpath(__DIR__ . '/includes/applicability.php'));
@@ -17,6 +18,7 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
 require_once(realpath(__DIR__ . '/includes/reporting.php'));
 require_once(realpath(__DIR__ . '/includes/self_assessments.php'));
 require_once(realpath(__DIR__ . '/includes/data_integrity.php'));
+require_once(realpath(__DIR__ . '/includes/profile.php'));
 require_once(realpath(__DIR__ . '/../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../../includes/governance.php'));
@@ -84,6 +86,17 @@ if (api_v2_is_authenticated())
     // 400 from getAssetById's non-integer-id check. Same constraint applies
     // to any future literal GET /assets/<word> route.
     app()->get('/assets/options', 'get_asset_options');
+    app()->get('/assets/column-settings', 'assets_column_settings_get');
+    app()->put('/assets/column-settings', 'assets_column_settings_put');
+    // POST /assets/bulk must stay ahead of any /assets/{id} route.
+    app()->post('/assets/bulk', 'assets_bulk_API');
+    // Background discovery runs -- also ahead of the /assets/{id} wildcard.
+    app()->post('/assets/discovery-runs', 'assets_discovery_runs_create_API');
+    app()->get('/assets/discovery-runs', 'assets_discovery_runs_list_API');
+    // Literal segment ahead of the /assets/discovery-runs/{id} wildcard.
+    app()->get('/assets/discovery-runs/capabilities', 'assets_discovery_capabilities_API');
+    app()->get('/assets/discovery-runs/{id}', 'assets_discovery_run_get_API');
+    app()->delete('/assets/discovery-runs/{id}', 'assets_discovery_run_cancel_API');
 
     /************************** ASSETS CRUD API *******************************/
     app()->get('/assets/{id}', 'getAssetById');
@@ -91,7 +104,13 @@ if (api_v2_is_authenticated())
     app()->patch('/assets/{id}', 'updateAssetById');
     app()->delete('/assets/{id}', 'deleteAssetById');
     app()->get('/assets/{id}/associations', 'getAssetAssociations');
+    app()->get('/assets/{id}/audit-trail', 'getAssetAuditTrail');
     app()->get('/asset-groups', 'listAssetGroups');
+    // Literal /asset-groups/<word> routes must be registered before the
+    // /asset-groups/{id} wildcard below (Leaf matches in registration order).
+    app()->get('/asset-groups/column-settings', 'asset_groups_column_settings_get');
+    app()->put('/asset-groups/column-settings', 'asset_groups_column_settings_put');
+    app()->post('/asset-groups/bulk', 'asset_groups_bulk_API');
     app()->post('/asset-groups', 'createAssetGroupCrud');
     app()->get('/asset-groups/{id}', 'getAssetGroupById');
     app()->patch('/asset-groups/{id}', 'updateAssetGroupById');
@@ -137,6 +156,13 @@ if (api_v2_is_authenticated())
     // `confirm` flag in the body is the interlock: without it the endpoint
     // resolves the set and reports the soft/hard split without writing anything.
     app()->post('/governance/controls/bulk-delete', 'api_v2_governance_controls_bulk_delete');
+    // Columns picker persistence (Task: Columns picker + saved layout/
+    // filters) -- same {"columns":[...], "filters":{...}} shape and RPC
+    // framing as /management/projects/display_settings below; there is no
+    // addressable resource, only the requesting user's own display
+    // preferences. Literal path, registered before the /governance/controls/
+    // {id} wildcards below, same reasoning as /governance/controls/table above.
+    app()->post('/governance/controls/display_settings', 'saveControlFrameworksDisplaySettingsApi');
     // /governance/documents is the v2-native flat-list endpoint. The legacy
     // treegrid view (used by the Document Hierarchy tab) lives at
     // /governance/documents/treegrid further down in this file — the two
@@ -334,6 +360,13 @@ if (api_v2_is_authenticated())
     app()->get('/risks/{id}/mitigations', 'viewmitigation');
     app()->post('/risks/{id}/mitigations', 'saveMitigation');
     app()->patch('/risks/{id}/mitigations', 'saveMitigation');
+    app()->get('/risks/{id}/mitigations/controls', 'getMitigationControlsList');
+    app()->get('/risks/{id}/mitigations/controls/{control_id}/validation', 'getMitigationControlValidation');
+    app()->post('/risks/{id}/mitigations/controls/{control_id}/validation', 'saveMitigationControlValidation');
+    app()->get('/risks/{id}/supporting-documentation', 'getSupportingDocumentation');
+    app()->post('/risks/{id}/supporting-documentation', 'saveSupportingDocumentation');
+    app()->get('/risks/{id}/mitigations/supporting-documentation', 'getMitigationSupportingDocumentation');
+    app()->post('/risks/{id}/mitigations/supporting-documentation', 'saveMitigationSupportingDocumentation');
     app()->get('/risks/{id}/reviews', 'viewreview');
     app()->post('/risks/{id}/reviews', 'saveReview');
     app()->get('/risks/{id}/scoring-history', 'scoringHistory');
@@ -405,6 +438,7 @@ if (api_v2_is_authenticated())
     app()->post('/management/risk/saveScore', 'saveScoreForm');
 
     app()->post('/management/risk/saveSubject', 'saveSubjectForm');
+    app()->get('/management/risk/auditLog', 'get_risk_audit_log_api');
 
     app()->post('/management/risk/saveComment', 'saveCommentForm');
     app()->post('/management/risk/accept_mitigation', 'acceptMitigationForm');
@@ -517,6 +551,7 @@ if (api_v2_is_authenticated())
     app()->post('/riskformula/delete_likelihood', 'delete_likelihood_api');
     app()->post('/riskformula/update_impact_or_likelihood_name', 'update_impact_or_likelihood_name_api');
     app()->post('/riskformula/update_custom_score', 'update_custom_score_api');
+    app()->get('/riskformula/config', 'api_get_risk_formula_config');
     /******************************************************************/
 
     /********************* RISK LEVEL API **************************/
@@ -662,12 +697,31 @@ if (api_v2_is_authenticated())
     app()->get('/ui/widget', 'api_get_ui_widget');
     app()->post('/ui/default_layout', 'api_update_default_status');
     app()->post('/ui/column_settings', 'saveColumnSelectionSettingsAPI');
+    app()->get('/ui/risk/template_groups', 'api_get_ui_risk_template_groups');
+    app()->get('/ui/risk/fields', 'api_get_ui_risk_fields');
+    app()->get('/ui/risk/layout', 'api_get_ui_risk_layout');
+    app()->get('/ui/risk/{id}/values', 'api_get_ui_risk_values');
+    app()->get('/ui/risk/{id}/mitigation-values', 'api_get_ui_risk_mitigation_values');
+    app()->get('/ui/risk/{id}/review-values', 'api_get_ui_risk_review_values');
+    app()->get('/ui/risk/{id}/review-history', 'api_get_ui_risk_review_history');
+    // Asset record modal (Cards). Literal segments ahead of the {id} route.
+    app()->get('/ui/asset/template_groups', 'api_get_ui_asset_template_groups');
+    app()->get('/ui/asset/fields', 'api_get_ui_asset_fields');
+    app()->get('/ui/asset/layout', 'api_get_ui_asset_layout');
+    app()->get('/ui/asset/{id}/values', 'api_get_ui_asset_values');
     // Getting Started widget — per-user step dismissals (dismissal is a resource,
     // so CRUD: PUT create / DELETE restore / GET list).
     app()->put('/ui/getting_started/dismissals/{step_key}', 'api_getting_started_dismiss');
     app()->delete('/ui/getting_started/dismissals/{step_key}', 'api_getting_started_restore');
     app()->get('/ui/getting_started/dismissals', 'api_getting_started_dismissals');
     /*************************** UI API END ********************************/
+
+    // SimpleRisk My Profile Routes -- every handler here is self-scoped to
+    // $_SESSION['uid']; none of them accept a target user id.
+    app()->get('/account/profile', 'api_v2_profile_get');
+    app()->patch('/account/profile', 'api_v2_profile_patch');
+    app()->post('/account/reset-display-settings', 'api_v2_profile_reset_display_settings');
+    app()->put('/account/password', 'api_v2_profile_password_update');
 
     /************************** SIMPLERISK EXTRAS APIS ************************************/
 
@@ -702,6 +756,21 @@ if (api_v2_is_authenticated())
 
             // Get the api routes
             get_api_routes();
+
+            // Self-service API key management for the caller's own profile.
+            // v2-only by design -- api/v1/index.php's matching api_extra()
+            // block does not call this. Guarded on function_exists(): the
+            // API Extra is versioned and distributed separately from Core
+            // (see the maintaining-simplerisk-upgrades skill), so a Core
+            // that has been upgraded ahead of its installed API Extra build
+            // (core_upgrade_extras() can fail and return 0, or the customer
+            // did a manual/tarball Core upgrade) must not fatal on EVERY
+            // authenticated v2 request just because this function doesn't
+            // exist yet in that older Extra code.
+            if (function_exists('get_api_key_routes'))
+            {
+                get_api_key_routes();
+            }
         }
     }
 

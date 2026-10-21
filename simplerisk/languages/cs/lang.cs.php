@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Uživatelské relace',
     'SessionActivityTimeout' => 'Časový limit aktivity relace',
     'Security' => 'Zabezpečení',
-    'EnableCSP' => 'Povolit zásady zabezpečení obsahu (v minulosti došlo k porušení Chromu)',
+    'EnableCSP' => 'Povolit zásady zabezpečení obsahu (doporučeno)',
     'EnableDebugLogging' => 'Povolit protokolování ladění',
     'seconds' => 'sekund',
     'FieldSample' => 'Ukázka pole',
@@ -1987,7 +1987,7 @@ $lang = array(
     'QuestionsLackingAubjectEdited' => 'Otázky bez předmětu byly upraveny tak, aby se nepokoušely o odeslání prázdného předmětu s rizikem.',
     'AdminSelfEditWarning' => 'Administrátoři si nemohou odebrat svá vlastní administrátorská oprávnění ani se sami zablokovat.',
     'Value' => 'Hodnota',
-    'ControlDetails' => 'Podrobnosti o ovládání',
+    'ControlDetails' => 'Podrobnosti o kontrole',
     'CannotDeleteLastItem' => 'Nelze smazat poslední položku.',
     'FieldChangeTemplate' => '`{$field_name}` (`{$before}` => `{$after}`)',
     'AuditLog_TestAuditReopen' => 'Audit „{$test_audit_name}„(ID: {$test_audit_id}) byl znovu otevřen uživatelem „{$user_name}„.',
@@ -2023,7 +2023,7 @@ $lang = array(
     'AssessmentContact' => 'Kontakt pro hodnocení',
     'User' => 'Uživatel',
     'QuestionnaireResultShareAuditLog' => 'Uživatel „{$user_name}“ sdílel dotazník „{$questionnaire_name}„(odesláno kontaktu „{$contact_name}„ na „{$date}„) výsledek s komentářem „{$comment}„. Sdíleno s „{$shared_with_contacts}„.',
-    'QuestionnaireResultStopSharingAuditLog' => 'Uživatel „{$user_name}“ ukončil sdílení dotazníku „{$questionnaire_name}„(odesláno kontaktu „{$contact_name}„ u výsledku „{$date}„). Sdílení s „{$stopped_sharing_with_contacts} „ bylo ukončeno.',
+    'QuestionnaireResultStopSharingAuditLog' => 'Uživatel „{$user_name}“ ukončil sdílení výsledku dotazníku „{$questionnaire_name}“ (odesláno kontaktu „{$contact_name}“ dne „{$date}“). Sdílení s „{$stopped_sharing_with_contacts}“ bylo ukončeno.',
     'QuestionnaireResultShareOpenedAuditLog' => 'Sdílený dotazník „{$questionnaire_name}“ (odeslán kontaktu „{$contact_name}“ dne „{$date}“, sdílen s „{$shared_with_contact_name}“), výsledek byl otevřen.',
     'Pending' => 'Čeká na vyřízení',
     'PasswordResetRequestsExceeded' => 'Pro tohoto uživatele již bylo požádáno o resetování hesla. Před dalším požadavkem na resetování hesla prosím počkejte 10 minut.',
@@ -2043,7 +2043,7 @@ $lang = array(
     'BackupSettingsUpdated' => 'Nastavení zálohování aktualizoval uživatel „{$user_name}“.',
     'BackupInitiatedByUser' => 'Zálohování zahájil uživatel „{$user_name}“.',
     'BackupInitiated' => 'Zálohování zahájeno. Dokončení může trvat několik minut.',
-    'NoControlsAvailable' => 'Žádné ovládací prvky nejsou k dispozici',
+    'NoControlsAvailable' => 'Žádné kontroly nejsou k dispozici',
     'AdminCantDisableItself' => 'Administrátor se nemůže sám deaktivovat.',
     'AdminCantDeleteItself' => 'Administrátor se nemůže smazat sám.',
     'NoFrameworksFromGithub' => 'Z GitHubu nebyly importovány žádné specifikované frameworky.',
@@ -2515,19 +2515,19 @@ $lang = array(
     'EnterAValuationLevelName' => 'Zadejte název úrovně ocenění.',
     'TheNameFieldCannotBeEmptyOrContainOnlySpaces' => 'Pole názvu nesmí být prázdné nebo obsahovat pouze mezery.',
     'EditAsset' => 'Upravit aktivum',
-    'TheSelectedControlsWereDeletedSuccessfully' => 'Vybrané ovládací prvky byly úspěšně smazány.',
-    'NothingControlsForDeletingWereSelected' => 'Nebyly vybrány žádné ovládací prvky pro smazání.',
+    'TheSelectedControlsWereDeletedSuccessfully' => 'Vybrané kontroly byly úspěšně smazány.',
+    'NothingControlsForDeletingWereSelected' => 'Nebyly vybrány žádné kontroly ke smazání.',
     'PleaseSelectARoleBeforeDeleting' => 'Před smazáním vyberte roli.',
     'DocumentInstallation' => 'Instalace dokumentu',
-    'DocumentControlMapping' => 'Mapování dokumentu na ovládací prvek',
-    'DocumentControlMappingHelp'=>'Tato sestava zobrazuje všechna mapování dokumentů na ovládací prvky',
+    'DocumentControlMapping' => 'Mapování dokumentu na kontrolu',
+    'DocumentControlMappingHelp'=>'Tato sestava zobrazuje všechna mapování dokumentů na kontrolní mechanismy',
     'DocumentID' => 'ID dokumentu',
     'Score' => 'Skóre',
     'TFIDFSimilarity' => 'Podobnost TF-IDF',
     'MatchingKeywords' => 'Odpovídající klíčová slova',
     'AIMatch' => 'Shoda s umělou inteligencí',
     'AIConfidence' => 'Důvěra v umělou inteligenci',
-    'AIReasoning' => 'Uvědomování si pomocí umělé inteligence',
+    'AIReasoning' => 'Uvažování umělé inteligence',
     'DocumentColumns' => 'Sloupce dokumentu',
     'ControlColumns' => 'Řídicí sloupce',
     'MatchingColumns' => 'Odpovídající sloupce',
@@ -2544,7 +2544,7 @@ $lang = array(
     'UnlikelyMatch' => 'Nepravděpodobná shoda',
     'NotAMatch' => 'Není shoda',
     'ReviewManually' => 'Ruční kontrola',
-    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Odpovědi na otázky s propojenými ovládacími prvky aktualizují typ ovládacího prvku na',
+    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Odpovědi na otázky s propojenými kontrolami aktualizují typ kontroly na',
     'AuditLog_IncidentUpdated' => 'Incident „{$incident_summary}“ (ID: {$incident_id}) byl aktualizován uživatelem „{$user_name}“. Změny: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'Odpovědi se budou automaticky ukládat do hodnocení',
     'SecondsAssessmentsAreAutoSaved' => 'Hodnocení sekund se ukládá automaticky',
@@ -2558,7 +2558,7 @@ $lang = array(
     'DeleteSelectedQuestions' => 'Smazat vybrané otázky',
     'PleaseSelectAtLeastOneItemToDelete' => 'Vyberte prosím alespoň jednu položku ke smazání.',
     'AreYouSureYouWantToDeleteTheSelectedQuestions' => 'Opravdu chcete smazat vybrané otázky?',
-    'AssetAuditLogUpdate' => 'Datový materiál „{$asset_name}“ byl aktualizován uživatelem „{$user}“. Provedené změny: {$changes}.',
+    'AssetAuditLogUpdate' => 'Aktivum „{$asset_name}“ bylo aktualizováno uživatelem „{$user}“. Provedené změny: {$changes}.',
     'AssetAuditLogUpdateChange' => 'Hodnota „{$key}“ byla změněna z „{$value}“ na „{$new_value}“',
     'AreYouSureYouWantToDiscardTheSelection' => 'Opravdu chcete výběr zahodit?',
     'AreYouSureYouWantToVerifyTheSelection' => 'Jste si jisti, že chcete ověřit výběr?',
@@ -2572,7 +2572,7 @@ $lang = array(
     'TabOrdering' => 'Řazení záložek',
     'AutoInitiateAudit' => 'Automaticky zahájit audit',
     'AuditInitiationOffset' => 'Offset zahájení auditu',
-    'AuditInitiationOffset_explanation' => 'dní od data splatnosti',
+    'AuditInitiationOffset_explanation' => 'dní od termínu',
     'AuditInitiationOffsetMustBeANonNegativeValue' => 'Hodnota Offset zahájení auditu musí být nezáporná.',
     'AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency' => 'Posun zahájení auditu musí být menší nebo roven frekvenci testů.',
     'BaseScore' => 'Základní skóre',
@@ -2583,7 +2583,7 @@ $lang = array(
     'ImpactMetrics' => 'Metriky dopadu',
     'ImpactSubscoreModifiers' => 'Modifikátory podskóre dopadu',
     'SaveCVSSScore' => 'Uložit skóre CVSS',
-    'ExploitabilityMetrics' => 'Metriky zneužitelné',
+    'ExploitabilityMetrics' => 'Metriky zneužitelnosti',
     'CVSSScore' => 'Skóre CVSS',
     'CVSS2Calculator' => 'Kalkulačka CVSS v2',
     'TheFileTypeWithThisExtensionAlreadyExists' => 'Typ souboru s touto příponou již existuje.',
@@ -2599,11 +2599,11 @@ $lang = array(
     'EnableLoggingDebug' => 'DEBUG: Podrobné diagnostické informace pro vývojáře.',
     'QueueMonitor' => 'Monitor fronty',
     'PleaseEnterAValidTimezone' => 'Zadejte prosím platné časové pásmo.',
-    'TFIDFMatch' => 'Zápas TF-IDF',
+    'TFIDFMatch' => 'Shoda TF-IDF',
     'CompletionDate' => 'Datum dokončení',
     'AssetsAndControls' => 'Aktiva a kontroly',
     'AssetsByControl' => 'Aktiva podle kontroly',
-    'ControlsByAsset' => 'Ovládací prvky podle aktiv',
+    'ControlsByAsset' => 'Kontrolní opatření podle aktiv',
     'NoIncidentDetectionDataAvailable' => 'Nebyly zaznamenány žádné incidenty s daty zahájení a detekce.',
     'IncidentDashboard' => 'Dashboard incidentů',
     'TimeToDetectByTeam' => 'Čas detekce týmem',
@@ -2690,7 +2690,7 @@ $lang = array(
     'RiskAdviceDesc'                          => 'Rozložení úrovně zbytkového rizika s prioritními doporučeními k jeho zmírnění na základě poměru úsilí k dopadu.',
     'RisksAndIssuesDesc'                      => 'Křížový odkaz na otevřená rizika a problémy, s nimiž se vztahují.',
     'AllOpenRisksAssignedToMeByRiskLevelDesc' => 'Rizika, u kterých jste vlastníkem, manažerem nebo zainteresovanou stranou, seřazená podle úrovně.',
-    'AllOpenRisksNeedingReviewDesc'           => 'Rizika, u kterých již poběží další datum kontroly nebo která nikdy nebyla kontrolována.',
+    'AllOpenRisksNeedingReviewDesc'           => 'Rizika, u nichž již uplynulo datum další kontroly nebo která nikdy nebyla kontrolována.',
     'AllOpenRisksByTeamByLevelDesc'           => 'Rizika seskupená podle týmu a poté podle úrovně rizika pro účely reportingu vlastnictví.',
     'HighRiskReportDesc'                      => 'Vysoká a velmi vysoká rizika napříč všemi týmy.',
     'SubmittedRisksByDateDesc'                => 'Předložená rizika seskupená podle časového období s trendem míry předložených hlášení.',
@@ -2710,7 +2710,7 @@ $lang = array(
     'DynamicAuditReportDesc'                  => 'Konfigurovatelná zpráva o průběhu auditu s filtry rámce a kontrol.',
     'AuditTimelineDesc'                       => 'Chronologický přehled auditních aktivit, změn stavu a zjištění.',
     'AuditRemediationCycleTimeDesc'           => 'Průměrná doba od zjištění auditu k nápravě podle rámce.',
-    'ControlGapAnalysisDesc'                  => 'Ovládací prvky, kterým chybí testy, vlastníci nebo jsou zastaralé.',
+    'ControlGapAnalysisDesc'                  => 'Kontroly, kterým chybí testy, vlastníci nebo jsou zastaralé.',
     'DocumentProgramReportDesc'               => 'Stav programu dokumentů: počty, schválení a čekající kontroly.',
     'ExceptionReportDesc'                     => 'Otevřené výjimky s daty vypršení platnosti a stavem schválení.',
     'ConnectivityVisualizerDesc'              => 'Interaktivní graf znázorňující, jak se rizika, aktiva, kontrolní mechanismy a rámce propojují.',
@@ -2776,13 +2776,13 @@ $lang = array(
     'ImportExportExtraDesc'               => 'Funkce Import-Export Extra umožňuje importovat data do SimpleRisk mapováním polí v souboru CSV na pole v databázi SimpleRisk. Lze ji použít k importu výsledků auditu z tabulky třetí strany, výsledků skenování zranitelností z jiného nástroje, dat z vaší CMDB a dalších. Funkce Extra také umožňuje exportovat soubory CSV ze SimpleRisk obsahující rizika, zmírnění rizik, kontroly nebo kombinovanou zprávu všech tří.',
     'JiraExtraDesc'                       => 'Modul Jira Integration Extra poskytuje uživatelům možnost obousměrné integrace s instancí Jira. Umožňuje propojení rizik s problémy Jira a také synchronizaci jejich dat, stavu a komentářů.',
     'APIExtraDesc'                        => 'Rozhraní API Extra umožňuje zákazníkům používat RESTful API k vytváření skriptovaných interakcí s jinými aplikacemi, a tím získat pokročilou automatizaci a využít stávající infrastrukturu.',
-    'AdvancedSearchExtraDesc'             => "Rozšířené vyhledávání rozšiřuje funkčnost vyhledávacího pole v horní liště tak, aby umožňovalo vyhledávat rizika textovým vyhledáváním v datech o rizicích.",
+    'AdvancedSearchExtraDesc'             => "Rozšířené vyhledávání promění vyhledávací pole v horní liště v jedno vyhledávání napříč riziky, rámcemi, kontrolními prvky, dokumenty, výjimkami, testy, audity, aktivy a skupinami aktiv s kompletní stránkou vyhledávání pro procházení výsledků. Zobrazuje pouze záznamy, které má uživatel povoleno zobrazit.",
     'AssessmentsExtraDesc'                => 'Modul Hodnocení rizik Extra poskytuje uživatelům možnost definovat kontakty, vytvářet otázky (včetně logiky), sestavovat více otázek pomocí šablony dotazníku, vytvářet dotazníky a odesílat je kontaktům, prohlížet výsledky dotazníku, přidávat rizika na základě těchto výsledků a porovnávat výsledky v čase, importovat a exportovat externě přizpůsobená hodnocení a kontrolovat auditní záznamy hodnocení rizik.',
     'ActiveAssessmentsDesc'               => 'Zobrazte a spravujte aktuálně probíhající hodnocení.',
     'WorkflowsExtraDesc'                  => 'Workflows Extra poskytuje vizuální, událostmi řízený nástroj pro řízení pracovních postupů, který automatizuje akce řízení rizik v reakci na události v rámci SimpleRisk. Můžete navrhnout pracovní postupy, které se spouštějí při změnách – například při odeslání, aktualizaci nebo kontrole rizika – pro směrování schválení, přidělování práce a udržování procesu v chodu bez manuálního zásahu.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'Unified Compliance Framework (UCF) Extra je integrace na úrovni API mezi Unified Compliance Framework a SimpleRisk. Její aktivace vám umožní importovat vybrané frameworky a řídit mapování přímo z UCF.',
+    'UCFExtraDesc'                        => 'Unified Compliance Framework (UCF) Extra je integrace na úrovni API mezi Unified Compliance Framework a SimpleRisk. Její aktivace vám umožní importovat vybrané frameworky a mapování kontrol přímo z UCF.',
     'SCFExtraDesc'                        => "Secure Controls Framework (SCF) Extra je přímou integrací mezi Secure Controls Framework a SimpleRisk. Importuje katalog kontrol SCF a jejich mapování napříč širokou škálou rámců pro dodržování předpisů a kybernetickou bezpečnost do funkce Governance SimpleRisk, takže si můžete osvojit potřebné rámce a spravovat jejich kontroly, aniž byste je museli vytvářet ručně.",
 
     // Configure Hub - tile descriptions (maintenance category)
@@ -2878,7 +2878,7 @@ $lang = array(
     'AssetValuationMode' => 'Režim oceňování aktiv',
     'AutomaticLinearRange' => 'Automatický lineární rozsah',
     'AutomaticExponentialRange' => 'Automatický exponenciální rozsah',
-    'ManualValuation' => 'Manuál',
+    'ManualValuation' => 'Ruční',
     'AssetValuationMinMustBeNonNegative' => 'Minimální hodnota ocenění aktiv musí být pro automatický exponenciální rozsah nula nebo vyšší.',
     'CrossDomain' => 'Napříč doménami',
     'Preferences' => 'Předvolby',
@@ -2893,7 +2893,7 @@ $lang = array(
     'EncryptionActivationAlreadyRunning' => 'Aktivace šifrování již probíhá. Počkejte na její dokončení nebo pro obnovení použijte obnovení ze zálohy.',
     'EncryptionActivationEnqueued'           => 'Aktivace šifrování Extra byla zařazena do fronty. Administrátorské rozhraní bude sledovat průběh šifrování databáze.',
     'EncryptionActivationEnqueueFailed'      => 'Zařazení úlohy aktivace šifrování se nezdařilo. Podrobnosti naleznete v protokolu ladění.',
-    'EncryptionDeactivationEnqueued'         => 'Šifrování. Deaktivace Extra byla zařazena do fronty. Administrátorské rozhraní bude sledovat průběh dešifrování databáze.',
+    'EncryptionDeactivationEnqueued'         => 'Deaktivace Encryption Extra byla zařazena do fronty. Administrátorské rozhraní bude sledovat průběh dešifrování databáze.',
     'EncryptionDeactivationEnqueueFailed'    => 'Zařazení úlohy deaktivace šifrování se nezdařilo. Podrobnosti naleznete v protokolu ladění.',
     'EncryptionPipelineInProgress'           => 'Právě probíhá šifrovací proces (aktivace, deaktivace nebo obnovení). Před dalším pokusem počkejte na jeho dokončení.',
     'EncryptionPipelineInProgressTask'       => 'Právě probíhá šifrovací proces (úloha #{id}, {type}). Před dalším pokusem počkejte na jeho dokončení.',
@@ -2901,7 +2901,7 @@ $lang = array(
     'EncryptionInFlightBody'             => 'Právě probíhá proces aktivace, deaktivace nebo obnovení šifrování. Před dalším pokusem počkejte na jeho dokončení – stránka se po dokončení operace automaticky obnoví.',
     'OK'                                 => 'OK',
     'ActivationGuardFailed'                 => 'Aktivaci se nepodařilo spustit. Podrobnosti naleznete v upozornění v záhlaví stránky.',
-    'EncryptionStageStarting'               => 'Počínaje…',
+    'EncryptionStageStarting'               => 'Spouštění…',
     'EncryptionStageProgress'               => 'Fáze {current} z {total}: {name}',
     'EncryptionStageAllDone'                => 'Všechny fáze dokončeny.',
     'EncryptionStageEncryptTable'           => 'Zašifrovat tabulku: {table}',
@@ -2966,25 +2966,25 @@ $lang = array(
     'EnableAPIv1Endpoints' => 'Povolit koncové body API v1 (zastaralé)',
     'EnableAPIv1EndpointsHelp' => 'API v1 je zastaralé. Nechte toto nastavení vypnuté, pokud nemáte integraci, která jej vyžaduje. /api/v2/ není tímto nastavením ovlivněno a je vždy k dispozici.',
     'AllowAPIKeyInURL' => 'Povolit klíč API v URL nebo těle POST požadavku',
-    'AllowAPIKeyInURLHelp' => 'Z bezpečnostních důvodů by měly být klíče API odesílány v záhlaví požadavku X-API-KEY. Pokud je tato možnost zakázána, klíče odeslané v řetězci dotazu URL (?key=) nebo v těle testu POST (key=) jsou odmítnuty, protože tato umístění jsou snáze odhalena v protokolech proxy a historii prohlížeče. Záhlaví X-API-KEY je vždy akceptováno. Pokud nemáte integraci, která záhlaví nemůže odeslat, nechte tuto možnost zakázána.',
-    'ArtificialIntelligenceDesc' => 'Nakonfigurujte připojení poskytovatele AI a kontextové otázky, které uzemňují odpovědi AI pro tuto instanci SimpleRisk.',
+    'AllowAPIKeyInURLHelp' => 'Z bezpečnostních důvodů by měly být klíče API odesílány v záhlaví požadavku X-API-KEY. Pokud je tato možnost zakázána, klíče odeslané v řetězci dotazu URL (?key=) nebo v těle požadavku POST (key=) jsou odmítnuty, protože tato umístění jsou snáze odhalena v protokolech proxy a historii prohlížeče. Záhlaví X-API-KEY je vždy akceptováno. Pokud nemáte integraci, která záhlaví nemůže odeslat, nechte tuto možnost zakázána.',
+    'ArtificialIntelligenceDesc' => 'Nakonfigurujte připojení poskytovatele AI a kontextové otázky, o které se opírají odpovědi AI pro tuto instanci SimpleRisk.',
     'ProviderConfiguration' => 'Konfigurace poskytovatele',
     'ContextQuestions' => 'Kontextové otázky',
     'AIProviderNotConfiguredWarning' => 'Poskytovatel AI není nakonfigurován. Nelze vytvořit živé výsledky, dokud nenastavíte poskytovatele a klíč API na kartě Konfigurace poskytovatele.',
     'AutoProcessSCFUpdates' => 'Automaticky zpracovávat nové verze Secure Controls Framework (SCF)',
-    'AddNewControls' => 'Přidat nové ovládací prvky SCF',
-    'UpdateExistingControls' => 'Aktualizace stávajících ovládacích prvků SCF',
-    'DeleteRemovedControls' => 'Odstranění odstraněných ovládacích prvků SCF',
+    'AddNewControls' => 'Přidat nové kontroly SCF',
+    'UpdateExistingControls' => 'Aktualizovat stávající kontroly SCF',
+    'DeleteRemovedControls' => 'Odstranit odstraněné kontroly SCF',
     'CreateEvidenceRequests' => 'Vytvořit žádosti o důkazy pro kontroly SCF',
     'SelectSCFFrameworks' => 'Vyberte rámce SCF',
     'SCFReleaseProcessing' => 'Zpracování vydání SCF',
     'NotFrameworkDescription' => 'Níže uvedený widget zobrazuje všechny záhlaví z tabulky Secure Controls Framework (SCF). Použijte ho k výběru sloupců obsahujících data z frameworků a dat mimo frameworky.',
     'Note' => 'Poznámka',
     'AISettingsNote' => 'Povolení asistence umělé inteligence odešle data společnosti Anthropic k analýze v jejich LLM s použitím vašeho klíče Anthropic API, aby vám poskytlo výsledky na míru.',
-    'EnableAIAssistanceForControlData' => 'Povolit asistenci umělé inteligence pro řídicí data',
+    'EnableAIAssistanceForControlData' => 'Povolit asistenci umělé inteligence pro data kontrol',
     'ReferenceText' => 'Referenční text',
     'FrameworkSelection' => 'Výběr rámce',
-    'Show' => 'Show',
+    'Show' => 'Zobrazit',
     'InProgress' => 'Probíhá',
     'Canceled' => 'Zrušeno',
     'Failed' => 'Selhalo',
@@ -2996,8 +2996,8 @@ $lang = array(
     'ComplianceDashboardDescription' => 'Tento graf zobrazuje počet kontrol v každém frameworku, přičemž úspěšné kontroly jsou zobrazeny zeleně a neúspěšné kontroly červeně.',
     'PassingControls' => 'Splněné kontroly',
     'FailingControls' => 'Selhávající kontroly',
-    'ControlsByFramework' => 'Ovládací prvky podle frameworku',
-    'NumberOfControls' => 'Počet ovládacích prvků',
+    'ControlsByFramework' => 'Kontroly podle frameworku',
+    'NumberOfControls' => 'Počet kontrolních opatření',
     'PasswordResetTokenExpirationPeriod' => 'Doba platnosti tokenu pro resetování hesla',
     'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'Doba platnosti tokenu pro resetování hesla by měla být delší než 5 minut.',
     'MeanTimeToRemediate' => 'Průměrná doba nápravy',
@@ -3053,7 +3053,7 @@ $lang = array(
     'Free' => 'Zdarma',
     'License' => 'Licence',
     'NoLicensedExtras' => 'Žádné licencované doplňky.',
-    'NoExpiredExtras' => 'Žádné prošlé bonusy.',
+    'NoExpiredExtras' => 'Žádná prošlá rozšíření.',
     'NoUnlicensedExtras' => 'Žádné nelicencované doplňky.',
     'Unlimited' => 'Neomezený',
     'LicenseStateLockMessage' => 'Další instalace a aktualizace jsou momentálně zakázány stavem vaší licence. Stávající nainstalované doplňky fungují i nadále.',
@@ -3132,7 +3132,7 @@ $lang = array(
     'AnsweredOfTotal' => 'zodpovězeno',
     'FailedSoFar' => 'zatím selhal',
     'StartedBy' => 'Zahájeno uživatelem',
-    'FailedControls' => 'Selhaly ovládací prvky',
+    'FailedControls' => 'Selhané kontroly',
     'PushToRisk' => 'Přesunout do rizik',
     'ConfirmDeleteSelfAssessment' => 'Smazat toto sebehodnocení? Tuto akci nelze vrátit zpět.',
     'ConfirmCompleteSelfAssessment' => 'Označit toto hodnocení jako dokončené? Selhání kontrolních mechanismů bude mít za následek vznik rizik.',
@@ -3144,7 +3144,7 @@ $lang = array(
     'GeneratedFromSelfAssessment' => 'Vygenerováno ze sebehodnocení',
     'SelfAssessmentMitigationSolution' => 'Zaveďte níže uvedené kontrolní mechanismy, které byly během tohoto sebehodnocení identifikovány jako selhávající, aby se toto riziko zmírnilo.',
     'NSelected' => '{n} vybráno',
-    'FilterByControl' => 'Filtrovat podle ovládacího prvku',
+    'FilterByControl' => 'Filtrovat podle kontroly',
     'Pushing' => 'Přesouvám…',
     'Deleting' => 'Mazání…',
     'ConfirmPushSelectedPendingRisks' => 'Přesunout {n} vybraných čekajících rizik do kategorie rizik?',
@@ -3161,12 +3161,12 @@ $lang = array(
     'HomeKpiControlPassRate' => 'Míra úspěšnosti kontroly',
     'HomeKpiFailingControls' => 'Selhávající kontroly',
     'HomeKpiOpenAudits' => 'Otevřené audity',
-    'HomeKpiTestsDueSoon' => 'Testy budou brzy odevzdány',
+    'HomeKpiTestsDueSoon' => 'Testy s blížícím se termínem',
     'HomeKpiActiveFrameworks' => 'Aktivní rámce',
     'HomeKpiTotalControls' => 'Celkový počet kontrol',
     // Home dashboard — What's Next feed
     'WhatsNext' => 'Co bude dál?',
-    'WhatsNextAllCaughtUp' => 'Všechno máte v plánu.',
+    'WhatsNextAllCaughtUp' => 'Máte vše hotovo.',
     'WhatsNextRegisterInstance' => 'Zaregistrujte si instanci SimpleRisk',
     'WhatsNextSubmitFirstRisk' => 'Odešlete své první riziko',
     'WhatsNextLoadFramework' => 'Načtení řídicího rámce',
@@ -3258,7 +3258,7 @@ $lang = array(
     'GSReviewDesc' => 'Prozkoumejte riziko a rozhodněte se o jeho dalším postupu.',
     'GSReviewCta' => 'Provést kontrolu',
     'GSDefineTestTitle' => 'Definujte kontrolní test',
-    'GSDefineTestDesc' => 'Nastavte, jak se bude kontrolní prvek testovat.',
+    'GSDefineTestDesc' => 'Nastavte, jak se bude kontrola testovat.',
     'GSDefineTestCta' => 'Definovat test',
     'GSInitiateAuditTitle' => 'Zahájit audit',
     'GSInitiateAuditDesc' => 'Zahajte testovací nebo auditní cyklus.',
@@ -3272,7 +3272,7 @@ $lang = array(
     'GSNextCards' => 'Zobrazit další kroky',
     'WhatsNextInstallSCF' => 'Instalace frameworku zabezpečených kontrol',
     'GSActivateScfTitle' => 'Aktivace rámce zabezpečených kontrol',
-    'GSActivateScfDesc' => 'Zapněte nainstalovaný SCF, abyste načetli jeho ovládací prvky do knihovny.',
+    'GSActivateScfDesc' => 'Zapněte nainstalovaný SCF, abyste načetli jeho kontroly do knihovny.',
     'GSActivateScfCta' => 'Aktivovat SCF',
     'WhatsNextActivateSCF' => 'Aktivace rámce zabezpečených kontrol',
     'GSEnableFrameworksTitle' => 'Povolit příslušné frameworky',
@@ -3285,10 +3285,10 @@ $lang = array(
     'WhatsNextTakeSelfAssessment' => 'Proveďte sebehodnocení',
     'WhatsNextConfigureAI' => 'Konfigurace umělé inteligence',
     'ListUnreviewedRisks' => 'Neprověřená rizika',
-    'ControlsByDomain' => 'Ovládací prvky podle domény',
-    'ControlsByClass' => 'Ovládací prvky podle třídy',
-    'ControlsByPhase' => 'Ovládání podle fáze',
-    'ControlsByPriority' => 'Ovládací prvky podle priority',
+    'ControlsByDomain' => 'Kontroly podle domény',
+    'ControlsByClass' => 'Opatření podle třídy',
+    'ControlsByPhase' => 'Kontrolní opatření podle fáze',
+    'ControlsByPriority' => 'Kontroly podle priority',
     'ControlsByCurrentMaturity' => 'Kontroly podle aktuální zralosti',
     'ControlStatusOverTime' => 'Stav kontroly v čase',
     'ComplianceTotalControls' => 'Celkový počet kontrol',
@@ -3298,7 +3298,7 @@ $lang = array(
     'TestStartsAutomatically' => 'Test se spustí automaticky',
     'GoToTest' => 'Přejít na test',
     'NotTested' => 'Netestováno',
-    'PassingPercent' => 'Procento úspěšnosti přihrávek',
+    'PassingPercent' => 'Procento úspěšnosti',
     'ListFailingControls' => 'Selhávající kontroly',
     'Exceptions' => 'Výjimky',
     'Documents' => 'Dokumenty',
@@ -3356,7 +3356,7 @@ $lang = array(
     'AICapSurfacedRecommendations' => 'Stránka s umělou inteligencí',
     'AICapSurfacedRiskView' => 'Pohled na rizika – Podrobnosti a zmírnění rizik',
     'AICapSurfacedFairTab' => 'Zobrazení rizik – záložka FAIR',
-    'AICapSurfacedDocuments' => 'Správa věcí veřejných – Dokumenty',
+    'AICapSurfacedDocuments' => 'Governance – Dokumenty',
     'AICapSurfacedControls' => 'Dodržování předpisů – Kontrolní mechanismy',
     'AICapSurfacedEveryPage' => 'Každá stránka – plovoucí asistent',
     'AICapabilitiesCatalog' => 'Schopnosti',
@@ -3466,8 +3466,8 @@ $lang = array(
     'ShowRetired' => 'Zobrazit vyřazené',
     'Tests' => 'Testy',
     'NoTestsForThisControl' => 'Pro tuto kontrolu zatím nejsou k dispozici žádné testy.',
-    'NoControlsDefinedYet' => 'Zatím nejsou definovány žádné ovládací prvky',
-    'NoControlsDefinedYetBody' => 'Před přidáním testů definujte ovládací prvky v systému Governance.',
+    'NoControlsDefinedYet' => 'Zatím nejsou definovány žádné kontroly',
+    'NoControlsDefinedYetBody' => 'Před přidáním testů definujte kontroly v části Governance.',
     'NoTestsMatchFilters' => 'Žádné testy neodpovídají vašim filtrům',
     'NoTestsMatchFiltersBody' => 'Zkuste upravit vyhledávání nebo filtry.',
     'CouldNotLoadTests' => 'Nepodařilo se načíst testy',
@@ -3475,7 +3475,7 @@ $lang = array(
     'ShowingXToYOfZ' => 'Zobrazeno {$start}–{$end} z {$total}',
     // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
     'Reference' => 'Odkaz',
-    'NoFrameworksMapped' => 'Na tento ovládací prvek nejsou namapovány žádné frameworky.',
+    'NoFrameworksMapped' => 'Na tuto kontrolu nejsou namapovány žádné frameworky.',
     // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
     'Retire' => 'Vyřadit',
     'ReassignTester' => 'Znovu přiřadit testera',
@@ -3485,14 +3485,14 @@ $lang = array(
     // Define Tests grid -- Coverage toolbar select (Issue 4)
     'Coverage' => 'Krytí',
     'CoverageWithTests' => 'Kontroly s testy',
-    'CoverageAllControls' => 'Všechny ovládací prvky',
+    'CoverageAllControls' => 'Všechny kontroly',
     'CoverageGaps' => 'Mezery',
     // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
     // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
     // chips above (identical text) rather than duplicated here.
     'DtTotalTests' => 'Celkový počet testů',
     'DtCoverageGaps' => 'Mezery v pokrytí',
-    'DtAcrossNControls' => 'Napříč ovládacími prvky {$n}',
+    'DtAcrossNControls' => 'Napříč {$n} kontrolami',
     'DtControlsWithNoTest' => 'Kontroly bez testu',
     'DtNeedInitiationNow' => 'Potřebuji iniciaci hned',
     'DtWithinLeadInWindow' => 'V rámci úvodního okna',
@@ -3527,8 +3527,8 @@ $lang = array(
     'ReturnedForReworkBannerText' => 'Tento audit byl zamítnut a vrácen k přepracování.',
     'RejectReason' => 'Důvod odmítnutí',
     'AreYouSureYouWantToApproveThisAudit' => 'Jste si jisti, že chcete tento audit schválit?',
-    'AtLeastOneControlRequired' => 'Je vyžadován alespoň jeden ovládací prvek.',
-    'DtNCommonAcrossNControls' => '{$common} běžné · {$n} ovládací prvky',
+    'AtLeastOneControlRequired' => 'Je vyžadována alespoň jedna kontrola.',
+    'DtNCommonAcrossNControls' => '{$common} společných · {$n} kontrol',
     'DtUntestedControls' => 'Netestované kontroly',
     'DtControlsInScopeNoCoverage' => 'Bez krytí',
     'Passing' => 'Prošlo',
@@ -3541,9 +3541,9 @@ $lang = array(
     'Common' => 'Společný',
     'ValidatesAcrossMappedFrameworks' => 'Ověřuje napříč mapovanými frameworky',
     'EditTest' => 'Upravit test',
-    'ControlHasNoTestCoverage' => 'Tento ovládací prvek v rámci rozsahu zatím nemá žádné testovací pokrytí.',
+    'ControlHasNoTestCoverage' => 'Tato kontrola v rámci rozsahu zatím nemá žádné testovací pokrytí.',
     'AddTheFirstTest' => 'Přidejte první test',
-    'ApplyCommonTestHint' => 'Na tento ovládací prvek použijte jeden nebo více existujících testů. Každý test si zachovává své aktuální ovládací prvky a stává se společným testem, který bude pokrývat i tento.',
+    'ApplyCommonTestHint' => 'Na tento kontrolní mechanismus použijte jeden nebo více existujících testů. Každý test si zachovává své aktuální kontrolní mechanismy a stává se společným testem, který bude pokrývat i tento.',
     'CommonTestApplied' => 'Test aplikovaný na tuto kontrolu.',
     'CouldNotApplyCommonTest' => 'Test se nepodařilo na tuto kontrolu aplikovat.',
     'SelectOneOrMoreTests' => 'Vyberte jeden nebo více testů',
@@ -3555,10 +3555,10 @@ $lang = array(
     'ThisTestHasNotBeenRunYet' => 'Tento test ještě nebyl proveden.',
     'CouldNotLoadTestHistory' => 'Nepodařilo se načíst historii tohoto testu.',
     'Identity' => 'Identita',
-    'IdentitySectionHint' => 'Jméno, tester a ovládací prvky, které ověřuje',
+    'IdentitySectionHint' => 'Jméno, tester a opatření, která ověřuje',
     'WhenTheAuditInitiates' => 'Kdy je audit zahájen',
     'ProcedureAndEvidence' => 'Postup a důkazy',
-    'CommonTestControlsHint' => 'Jeden test může ověřit mnoho ovládacích prvků – běžný test. Otevřením z nabídky „+ Přidat test“ ovládacího prvku jej zde předem vyberete.',
+    'CommonTestControlsHint' => 'Jeden test může ověřit mnoho opatření – běžný test. Otevřením z nabídky „+ Přidat test“ u opatření jej zde předem vyberete.',
     'SeparationOfDutiesNote' => 'Oddělení povinností – schvalovatel nemůže být zároveň testerem.',
     'CommonTestEditScopeHint' => 'Změny platí všude, kde se tento společný test používá.',
     'Mode' => 'Režim',
@@ -3583,20 +3583,20 @@ $lang = array(
     'DueStatus' => 'Stav splatnosti',
     'AllResults' => 'Všechny výsledky',
     // Remove a test from one control (Define Tests grid unlink row action)
-    'RemoveFromThisControl' => 'Odebrat z tohoto ovládacího prvku',
+    'RemoveFromThisControl' => 'Odebrat z této kontroly',
     'RemoveTestFromControl' => 'Odebrání testu z kontroly',
     'RemoveTestFromControlConfirm' => 'Odebrat „{test_name}“ z {control_name}?',
-    'RemoveTestFromControlStays' => 'Test zůstává na svých {n} dalších ovládacích prvcích. Nic se nesmaže.',
+    'RemoveTestFromControlStays' => 'Test zůstává na svých {n} dalších kontrolách. Nic se nesmaže.',
     'RemoveTestFromControlStaysOne' => 'Test zůstává na svém 1 dalším kontrolním prvku. Nic se nesmaže.',
     'CannotRemoveTestsOnlyControl' => 'Test musí patřit alespoň k jednomu ovládacímu prvku. Místo toho test zrušte nebo smažte.',
     'TestRemovedFromControl' => 'Test byl z kontroly vyřazen.',
     'CouldNotRemoveTestFromControl' => 'Test se nepodařilo odebrat z kontroly.',
     'TestRemovedFromControlAuditLogMessage' => 'Test „{$test_name}„(ID: {$test_id}) byl odstraněn z kontroly (ID: {$control_id}) uživatelem „{$user}„.',
-    'DeleteTestUsedByNControls' => 'Používají ho ovládací prvky {n} a bude ze všech z nich odstraněn.',
-    'BulkDeleteSharedTestsNote' => '{n} z nich používají jiné ovládací prvky a budou z nich také odstraněny.',
-    'BulkRetireSharedTestsNote' => '{n} z nich používají jiné ovládací prvky a budou i tam vyřazeny.',
-    'BulkDeleteOneSharedTestNote' => 'Jeden z nich je používán jinými ovládacími prvky a bude z nich také odstraněn.',
-    'BulkRetireOneSharedTestNote' => 'Jeden z nich používají jiné ovládací prvky a bude i tam vyřazen.',
+    'DeleteTestUsedByNControls' => 'Je používán v {n} kontrolách a bude ze všech odstraněn.',
+    'BulkDeleteSharedTestsNote' => '{n} z nich používají jiné kontroly a budou z nich také odstraněny.',
+    'BulkRetireSharedTestsNote' => '{n} z nich používají jiné kontroly a budou i tam vyřazeny.',
+    'BulkDeleteOneSharedTestNote' => 'Jeden z nich je používán jinými kontrolami a bude z nich také odstraněn.',
+    'BulkRetireOneSharedTestNote' => 'Jeden z nich používají jiné kontroly a bude i tam vyřazen.',
     'CouldNotLoadTest' => 'Tento test se nepodařilo načíst.',
     'Expand' => 'Rozšířit',
     'SearchMappings' => 'Vyhledávání frameworků a referencí',
@@ -3604,16 +3604,16 @@ $lang = array(
     'Insights' => 'Přehledy',
     'ShowInsights' => 'Zobrazit dlaždice s přehledy',
     'HideInsights' => 'Sbalení dlaždic s přehledy do souhrnného řádku',
-    'ChooseControls' => 'Vyberte ovládací prvky',
+    'ChooseControls' => 'Vyberte kontroly',
     'UseTheseControls' => 'Použijte tyto ovládací prvky',
     'SearchControlsPlaceholder' => 'Hledat podle čísla nebo jména',
     'PickerKeyboardHint' => 'Nahoru/dolů pro pohyb, Enter pro výběr, Esc pro zrušení',
     'NoControlsMatchFilters' => 'Nic se zde neshoduje. Rozšiřte vyhledávání o krok vlevo nebo vymažte vyhledávání.',
     'NoControlsSelectedYet' => 'Zatím nic nebylo vybráno.',
-    'AllControls' => 'Všechny ovládací prvky',
+    'AllControls' => 'Všechny kontroly',
     'AddOrRemoveControls' => 'Přidat nebo odebrat ovládací prvky…',
     'LastTested' => 'Naposledy testováno',
-    'LastTestDateAnchorHint' => 'Plánování intervalů kotev (toto datum plus frekvence). Jakmile test zaznamená výsledky, mřížka místo toho zobrazí datum nejnovějšího výsledku.',
+    'LastTestDateAnchorHint' => 'Určuje kotvu plánování intervalů (toto datum plus frekvence). Jakmile test zaznamená výsledky, mřížka místo toho zobrazí datum nejnovějšího výsledku.',
     'Filters' => 'Filtry',
     'ShowFilters' => 'Zobrazit filtry',
     'HideFilters' => 'Skrýt filtry',
@@ -3655,11 +3655,11 @@ $lang = array(
     'AICapSurfacedControlTestGeneration' => 'Shoda s předpisy – Definování testů',
     'AIControlTestGenUnavailable' => 'SLUŽBA NENÍ K DISPOZICI: Správce musí tuto funkci povolit v nastavení AI.',
     'AIControlTestGenInvalidId' => 'CHYBNÝ POŽADAVEK: Je vyžadováno ID pozitivní kontroly.',
-    'AIControlTestGenNotFound' => 'NENALEZEN: Zadaný ovládací prvek nebyl nalezen.',
-    'AIControlTestGenConflict' => 'KONFLIKT: Generování pro tento ovládací prvek je již zařazeno do fronty.',
+    'AIControlTestGenNotFound' => 'NENALEZENO: Zadaná kontrola nebyla nalezena.',
+    'AIControlTestGenConflict' => 'KONFLIKT: Generování pro tuto kontrolu je již zařazeno do fronty.',
     'AIControlTestGenQueued' => 'PŘIJATO: Generování kontrolního testu je zařazeno do fronty.',
     'AIControlTestGenFailed' => 'VNITŘNÍ CHYBA SERVERU: Nepodařilo se zařadit generování testu řízení do fronty.',
-    'AIControlTestGenCheckFailed' => 'CHYBA: Nelze ověřit ovládací prvek před zařazením do fronty.',
+    'AIControlTestGenCheckFailed' => 'CHYBA: Nelze ověřit kontrolní opatření před zařazením do fronty.',
     'GenerateTestsWithAI' => 'Generování testů pomocí umělé inteligence',
     'ShowAiSuggestedTests' => 'Testy navrhované umělou inteligencí',
     'AiSuggested' => 'AI navrhla',
@@ -3682,7 +3682,7 @@ $lang = array(
     'TestGenerationStillRunning' => 'Generování testů stále probíhá; koncepty se brzy objeví.',
     'TestGenerationNoNew' => 'Generování dokončeno – pro tuto kontrolu nebyly navrženy žádné nové testy.',
     'SearchEntities' => 'Vyhledávání entit',
-    'SearchEntitiesPlaceholder' => 'Rizika vyhledávání, kontroly, zásady, výjimky…',
+    'SearchEntitiesPlaceholder' => 'Hledat rizika, kontroly, zásady, výjimky…',
     'ShowTypes' => 'Zobrazit typy',
     'Depth' => 'Hloubka',
     'Inspector' => 'Inspektor',
@@ -3799,7 +3799,7 @@ $lang = array(
     // the whole set. With four tests defined and none run, the singular reads as
     // one omission rather than a wholesale one.
     'SoaImplementedNoTestDefined' => 'Žádné testy nejsou definovány',
-    'SoaImplementedNeverRun' => 'Testy se nikdy neběží',
+    'SoaImplementedNeverRun' => 'Testy se nikdy nespouštějí',
 
     // The Implemented column's fallback for a token neither sink recognizes.
     //
@@ -3842,7 +3842,7 @@ $lang = array(
     // the other answer -- the control is excluded, so no evidence is expected
     // and the absence is correct. Rendering both as an empty cell hides the
     // first, which is the one an auditor circles.
-    'SoaNoEvidenceLinked' => 'Žádné důkazy nesouvisejí',
+    'SoaNoEvidenceLinked' => 'Žádné propojené důkazy',
     // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
     // is expected. A language key rather than a hardcoded character for the same
     // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
@@ -3859,25 +3859,25 @@ $lang = array(
     // linked to no risk, so no treatment plan traces back to it. Dropping such a
     // row for want of a risk to join to would render it as a blank cell, which
     // reads as "nothing to report".
-    'SoaRemediationUnplanned' => 'Žádné riziko spojené s',
+    'SoaRemediationUnplanned' => 'Žádné propojené riziko',
 
     // THE LEGEND. Required in both variants and every export format, because six
     // implementation states plus three markers is more nuanced than the
     // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
     // reader to guess unfavourably.
     'SoaLegendTitle' => 'Jak číst toto prohlášení',
-    'SoaLegendYes' => 'Každý test definovaný pro tento ovládací prvek prošel při jeho posledním spuštění.',
-    'SoaLegendPartial' => 'Testy kontrolní skupiny se neshodují: alespoň jeden prošel a alespoň jeden selhal nebo nevedl k žádnému výsledku.',
+    'SoaLegendYes' => 'Každý test definovaný pro tuto kontrolu prošel při jejím posledním spuštění.',
+    'SoaLegendPartial' => 'Testy kontroly se neshodují: alespoň jeden prošel a alespoň jeden selhal nebo nevedl k žádnému výsledku.',
     'SoaLegendNo' => 'Žádný test této kontroly neprošel při jejím posledním spuštění a alespoň jeden selhal.',
     // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
     // and the labels alone do not quite carry that -- so the legend spells it
     // out. This is the distinction the whole six-state set exists for.
-    'SoaLegendNoTestDefined' => 'Pro tento ovládací prvek nebyl definován žádný test, takže jeho fungování nebylo nikdy ověřeno. Toto neznamená, že ovládací prvek chybí nebo že selhává – pouze to, že toto tvrzení to nedemonstruje. Mezera v řízení: nikdo nerozhodl, jak bude tento ovládací prvek kontrolován.',
-    'SoaLegendNeverRun' => 'Pro tento ovládací prvek existují testy, ale žádný z nich nebyl nikdy spuštěn, takže jeho fungování zde není demonstrováno. Toto neznamená, že ovládací prvek chybí nebo že selhává. Provozní mezera: kontroly byly rozhodnuty a nebyly provedeny.',
-    'SoaLegendNotApplicable' => 'Ovládací prvek je vyloučen z rozsahu tohoto frameworku, takže nemá žádný implementační stav.',
+    'SoaLegendNoTestDefined' => 'Pro toto kontrolní opatření nebyl definován žádný test, takže jeho fungování nebylo nikdy ověřeno. Neznamená to, že opatření chybí nebo že selhává – pouze to, že toto tvrzení to nedokládá. Mezera v řízení: nikdo nerozhodl, jak se toto opatření ověřuje.',
+    'SoaLegendNeverRun' => 'Pro toto kontrolní opatření existují testy, ale žádný z nich nebyl nikdy spuštěn, takže jeho fungování zde není demonstrováno. Toto neznamená, že kontrolní opatření chybí nebo že selhává. Provozní mezera: kontroly byly rozhodnuty a nebyly provedeny.',
+    'SoaLegendNotApplicable' => 'Kontrola je vyloučena z rozsahu tohoto frameworku, takže nemá žádný implementační stav.',
     // The one most in need of explaining: with nothing to define it, this reads
     // as an admission about the control rather than as what it is.
-    'SoaLegendUnknown' => 'SimpleRisk nedokázal označit zaznamenaný stav, takže implementace zde není demonstrována. Jedná se o softwarovou chybu a o ovládacím prvku to vůbec nic neříká – ani to, že funguje, ani to, že nefunguje.',
+    'SoaLegendUnknown' => 'SimpleRisk nedokázal označit zaznamenaný stav, takže implementace zde není demonstrována. Jedná se o softwarovou chybu a o kontrolním mechanismu to vůbec nic neříká – ani to, že funguje, ani to, že nefunguje.',
     'SoaLegendOverdue' => 'Uvedený výsledek stále platí, ale alespoň jeden z testů, které za ním stojí, už má za sebou další datum testování. Důkazy jsou zastaralé.',
     'SoaLegendNoEvidence' => 'Kontrola je v rozsahu a nic, co by ji dokládalo, nebylo propojeno: žádný potvrzený dokument ani žádný test, který by přinesl výsledek.',
     'SoaLegendEvidenceNotExpected' => 'Neočekávají se žádné důkazy, protože daná kontrola je z rozsahu zkoumání vyloučena.',
@@ -3984,7 +3984,7 @@ $lang = array(
     'UnlockNeedsAdministrator' => 'Toto může nastavit administrátor.',
     // API date parsing. {$field} is the request field name (next_date, last_date,
     // test_date); {$format} is this instance's configured display date format.
-    'InvalidSubmittedDate' => 'Hodnota {$field} není platné datum. Odešlete ji ve formátu RRRR-MM-DD nebo ve formátu data pro tento případ ({$format}).',
+    'InvalidSubmittedDate' => 'Hodnota {$field} není platné datum. Odešlete ji ve formátu RRRR-MM-DD nebo ve formátu data pro tuto instanci ({$format}).',
     // Companion to InvalidSubmittedDate, for a value that matches the expected
     // shape but names a day that does not exist (February 31st, month 13).
     // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
@@ -4025,12 +4025,12 @@ $lang = array(
     // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
     // in the Implementation Status column. This one is the DECISION to exclude;
     // that one is the consequence for the status.
-    'SoaLegendApplicabilityNotApplicable' => 'Ovládací prvek byl vyloučen z rozsahu působnosti tohoto rámce. Sloupec odůvodnění zaznamenává proč a kdo rozhodl.',
+    'SoaLegendApplicabilityNotApplicable' => 'Kontrola byla vyloučena z rozsahu působnosti tohoto rámce. Sloupec odůvodnění zaznamenává proč a kdo rozhodl.',
     'SoaLegendInherited' => 'Kontrola je v rozsahu působnosti, ale je provozována třetí stranou – poskytovatelem cloudových služeb, mateřskou organizací, externě zadanou funkcí – nikoli touto organizací. Jméno poskytovatele je uvedeno vedle odůvodnění.',
     // The Evidence column's four bullet glyphs. Load-bearing since the visible
     // result word was dropped from pass and fail bullets, and until now defined
     // nowhere at all.
-    'SoaLegendEvidencePass' => 'Test tohoto ovládacího prvku zaznamenal při posledním spuštění úspěšný výsledek. Datum vedle něj udává, kdy byl spuštěn.',
+    'SoaLegendEvidencePass' => 'Test tohoto kontrolního opatření zaznamenal při posledním spuštění úspěšný výsledek. Datum vedle něj udává, kdy byl spuštěn.',
     'SoaLegendEvidenceFail' => 'Test této kontroly při posledním spuštění zaznamenal selhání. Dodatek R obsahuje plán léčby, pokud existuje.',
     'SoaLegendEvidenceInconclusive' => 'Test této kontroly byl proveden a nedošel k žádnému výsledku. Stejná značka se používá pro výsledek, který tento dokument nerozpoznává, a v takovém případě je samotný výsledek vytištěn vedle něj.',
     // The TERM beside the § glyph. Not a document type -- the four types
@@ -4049,7 +4049,7 @@ $lang = array(
     'SoaSheetCover' => 'Titulní stránka',
 
     'SearchFrameworks' => 'Vyhledávací frameworky',
-    'SearchControls' => 'Ovládací prvky vyhledávání',
+    'SearchControls' => 'Vyhledávání kontrol',
     'AddFramework' => 'Přidat rámec',
     'Applicability' => 'Použitelnost',
     'AnyFamily' => 'Jakákoli rodina',
@@ -4065,21 +4065,21 @@ $lang = array(
     'OwnershipAndMaturity' => 'Vlastnictví a zralost',
     'MappingsAndGuidance' => 'Mapování a pokyny',
     'DeleteFrameworkTitle' => 'Smazat framework \'{$name}\'?',
-    'DeleteControlTitle' => 'Smazat ovládací prvek \'{$name}\'?',
-    'DeleteControlsTitle' => 'Smazat ovládací prvky {$n}?',
+    'DeleteControlTitle' => 'Smazat kontrolu \'{$name}\'?',
+    'DeleteControlsTitle' => 'Smazat {$n} kontrol?',
     'DeleteCannotBeUndone' => 'To se nedá vrátit zpět.',
-    'DeleteFrameworkConsequence' => 'Tím se odstraní framework a všechna jeho mapování ovládacích prvků.',
-    'DeleteControlConsequence' => 'Tím se odebere ovládací prvek z každého frameworku, na který je namapován.',
-    'DeleteControlsConsequence' => 'Tím se odstraní každý vybraný ovládací prvek z každého frameworku, na který je namapován.',
+    'DeleteFrameworkConsequence' => 'Tím se odstraní framework a všechna jeho mapování kontrol.',
+    'DeleteControlConsequence' => 'Tím se odebere kontrolní opatření z každého frameworku, na který je namapováno.',
+    'DeleteControlsConsequence' => 'Tím se odstraní každá vybraná kontrola z každého frameworku, na který je namapována.',
     // Task 9: empty states (design-system.md §10) -- the four intents on
     // Define Control Frameworks. Reuses existing keys where the copy already
     // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
     // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
     // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
     // with no existing match are added below.
-    'NoControlsMatch' => 'Žádné ovládací prvky neodpovídají vašim filtrům',
-    'CouldNotLoadControls' => 'Nepodařilo se načíst ovládací prvky',
-    'ControlsYouAddWillAppearHere' => 'Ovládací prvky, které přidáte, se zobrazí zde.',
+    'NoControlsMatch' => 'Žádné kontroly neodpovídají vašim filtrům',
+    'CouldNotLoadControls' => 'Nepodařilo se načíst kontroly',
+    'ControlsYouAddWillAppearHere' => 'Kontroly, které přidáte, se zobrazí zde.',
     'NoFrameworksYet' => 'Zatím žádné frameworky',
     'FrameworksYouAddWillAppearHere' => 'Zde se zobrazí frameworky, které přidáte nebo importujete.',
     'CouldNotLoadFrameworks' => 'Nepodařilo se načíst frameworky',
@@ -4220,9 +4220,9 @@ $lang = array(
     // while "Select all N" escalates to the whole filtered result set -- the two
     // genuinely differ once the table pages, and a note that blurred them would
     // let the user write 1,535 decisions believing they had written 25.
-    'ApplicabilityScopeNote' => 'Toto rozhodnutí platí pouze v rámci "{$framework}". Stejný ovládací prvek může zůstat použitelný i v jiném frameworku.',
-    'ApplicabilityAppliesToSelected' => 'Bude zaznamenáno pro ovládací prvek {$n} vybraný na této stránce.',
-    'ApplicabilityAppliesToAllFiltered' => 'Bude zaznamenáno pro všechny ovládací prvky {$n} odpovídající aktuálním filtrům, včetně těch na jiných stránkách.',
+    'ApplicabilityScopeNote' => 'Toto rozhodnutí platí pouze v rámci "{$framework}". Stejná kontrola může zůstat použitelná i v jiném frameworku.',
+    'ApplicabilityAppliesToSelected' => 'Bude zaznamenáno pro kontroly ({$n}) vybrané na této stránce.',
+    'ApplicabilityAppliesToAllFiltered' => 'Bude zaznamenáno pro všechna opatření {$n} odpovídající aktuálním filtrům, včetně těch na jiných stránkách.',
     // Per-state hints under the segmented control. The "applicable" one is the
     // load-bearing sentence of the whole modal, and the SoA audit-readiness work
     // rewrote it: an applicable control MAY now carry its own reasons and
@@ -4235,14 +4235,14 @@ $lang = array(
     'ApplicabilityNotApplicableHint' => 'Vyloučení kontroly z rozsahu tohoto rámce. Je vyžadován jak důvod, tak písemné odůvodnění.',
     'ApplicabilityInheritedHint' => 'Tuto kontrolu za vás provádí někdo jiný. Jmenujte ho a řekněte, co dělá.',
     'ApplicabilityNarrativeHint' => 'Uvádí se v Prohlášení o použitelnosti. Popište, co by auditor potřeboval k přijetí rozhodnutí.',
-    'ApplicabilityProviderHint' => 'Organizace, která provádí řízení: poskytovatel cloudových služeb, poskytovatel spravované služby, mateřská společnost.',
+    'ApplicabilityProviderHint' => 'Organizace, která provádí kontrolu: poskytovatel cloudových služeb, poskytovatel spravované služby, mateřská společnost.',
     'ChooseAReason' => 'Vyberte důvod',
     'ApplicabilityNoReason' => 'Žádný důvod',
     // Result toasts. Both interpolate a COUNT taken from the API response and
     // nothing else -- no submitted text is ever reflected into a toast, which
     // toastr renders as HTML.
-    'ApplicabilitySetResult' => 'Použitelnost aktualizována pro {$n} ovládacích prvků.',
-    'ApplicabilityClearResult' => 'Použitelnost resetována na použitelnou pro {$n} ovládacích prvků.',
+    'ApplicabilitySetResult' => 'Použitelnost aktualizována pro počet kontrol: {$n}.',
+    'ApplicabilityClearResult' => 'Použitelnost resetována na použitelnou pro {$n} kontrol(y).',
     // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
     // final either way the delete engine implements it: a control with test
     // history is soft-deleted (framework_controls.deleted = 1) to keep test
@@ -4259,10 +4259,10 @@ $lang = array(
     // text is ever interpolated, which matters because toastr renders HTML.
     'DeleteControlsPreviewChecking' => 'Kontrola, co bude smazáno...',
     'DeleteControlsPreviewSplit' => '{$n} kontrol bude smazáno. Tuto akci nelze vrátit zpět. Výsledky testů pro {$m} z nich jsou uchovány pro historii auditu.',
-    'DeleteControlsPreviewKeptOnly' => 'Všechny ovládací prvky {$n} budou smazány. Tuto akci nelze vrátit zpět. Výsledky testů jsou uchovávány pro historii auditu.',
-    'DeleteControlsPreviewRemovedOnly' => '{$n} ovládacích prvků bude smazáno. Tuto akci nelze vrátit zpět.',
-    'DeleteControlsPreviewNone' => 'Není co smazat: vybraný(é) ovládací prvek(y) již neexistuje(í).',
-    'ControlsDeletedResult' => '{$n} ovládacích prvků smazáno.',
+    'DeleteControlsPreviewKeptOnly' => 'Všechny kontroly ({$n}) budou smazány. Tuto akci nelze vrátit zpět. Výsledky testů jsou uchovávány pro historii auditu.',
+    'DeleteControlsPreviewRemovedOnly' => 'Bude smazáno {$n} kontrolních mechanismů. Tuto akci nelze vrátit zpět.',
+    'DeleteControlsPreviewNone' => 'Není co smazat: vybrané kontroly již neexistují.',
+    'ControlsDeletedResult' => 'Smazáno kontrol: {$n}.',
 
     // The Add/Edit framework modal's Status field. The label reuses the existing
     // 'Status' key -- the same word the rail's Active/Inactive/All filter already
@@ -4271,7 +4271,7 @@ $lang = array(
     // to retire a framework (unlike Delete, which cannot be undone), and that the
     // change cascades through the hierarchy, which is what update_framework_status()
     // has always done and is genuinely surprising when a parent is deactivated.
-    'FrameworkStatusHint' => 'Neaktivní frameworky si zachovávají všechny své ovládací prvky a mapování, ale jsou skryté ve výchozím seznamu frameworků a vynechány z řídicího panelu governance. Deaktivace frameworku deaktivuje také všechny frameworky pod ním; aktivace jednoho frameworku aktivuje také jeho nadřazené frameworky.',
+    'FrameworkStatusHint' => 'Neaktivní frameworky si zachovávají všechny své kontroly a mapování, ale jsou skryté ve výchozím seznamu frameworků a vynechány z řídicího panelu governance. Deaktivace frameworku deaktivuje také všechny frameworky pod ním; aktivace jednoho frameworku aktivuje také jeho nadřazené frameworky.',
 
     // Task 60: the same #applicability--set modal, opened from ONE control's row
     // action instead of the selection bulk bar. The button's own label reuses
@@ -4350,8 +4350,8 @@ $lang = array(
     // generic sentence is not the organization's own, and an auditor reading 1,500
     // identical rows of boilerplate is entitled to ask whose risk assessment it
     // refers to.
-    'SoaMissingFieldsTitle' => 'V tomto prohlášení chybí podrobnosti o obalu.',
-    'SoaMissingScopeStatement' => 'Pro tento rámec nebylo zaznamenáno žádné prohlášení o rozsahu. Prohlášení o ochraně osobních údajů (SoA) by mělo uvádět rozsah, pro který je vypracováno.',
+    'SoaMissingFieldsTitle' => 'V tomto prohlášení chybí údaje na titulní straně.',
+    'SoaMissingScopeStatement' => 'Pro tento rámec nebylo zaznamenáno žádné prohlášení o rozsahu. Prohlášení o aplikovatelnosti (SoA) by mělo uvádět rozsah, pro který je vypracováno.',
     'SoaMissingInclusionJustification' => 'Nebylo zaznamenáno žádné zdůvodnění pro zahrnutí ve výchozím nastavení. Příslušné kontroly bez souvisejících rizik se uplatní spíše jako obecné prohlášení než vaše vlastní.',
     'SoaEditFrameworkToAdd' => 'Přidejte je do rámce',
 
@@ -4383,8 +4383,8 @@ $lang = array(
 
     // A framework with no controls mapped into it. Not an error -- it is a real
     // and recoverable state, and saying so beats an empty table.
-    'SoaNoControls' => 'Tento rámec nemá žádné ovládací prvky',
-    'SoaNoControlsHint' => 'Namapujte ovládací prvky do frameworku a jeho prohlášení o použitelnosti je vypíše.',
+    'SoaNoControls' => 'Tento rámec nemá žádné kontroly',
+    'SoaNoControlsHint' => 'Namapujte kontroly do frameworku a jeho prohlášení o použitelnosti je vypíše.',
 
     // The second half of the statement-of-applicability launcher's affordance
     // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
@@ -4403,7 +4403,7 @@ $lang = array(
     // Placeholder/help text under that field, and the reason it is worth
     // filling in: without it the Statement of Applicability has nothing to
     // print but the source catalogue's name for its own control.
-    'ReferenceSubjectHint' => "Vlastní název frameworku pro tento ovládací prvek.",
+    'ReferenceSubjectHint' => "Vlastní název frameworku pro toto opatření.",
 
     // Task 63: the row-scoped population sentence in the Set applicability
     // modal, in the one situation where the plain
@@ -4416,7 +4416,7 @@ $lang = array(
     // about to overwrite it, and {$n} is the count of the OTHER selected
     // controls -- the target is excluded, because it is very often ticked too
     // and a promise that included it would be false.
-    'ApplicabilityAppliesToControlNotSelection' => 'Bude zaznamenáno pouze pro „{$name}“ – vybrané ovládací prvky {$n} tím nebudou ovlivněny.',
+    'ApplicabilityAppliesToControlNotSelection' => 'Bude zaznamenáno pouze pro „{$name}“ – vybrané kontroly ({$n}) tím nebudou ovlivněny.',
 
     // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
     // sentence ('GenerateStatementOfApplicability' above) stays as the button's
@@ -4453,7 +4453,7 @@ $lang = array(
     // under two clause numbers, and the rail excludes deleted controls), and the
     // number to promise is the one the user is looking at when they click and
     // the one the clone's own rail row will show afterwards.
-    'ClonedFromFrameworkNotice' => 'Naklonováno z „{$name}“. Jeho ovládací prvky {$n} budou zkopírovány do nového frameworku, přičemž každý z nich bude použitelný od začátku – žádná z jeho rozhodnutí o použitelnosti se nepřenesou. Prohlášení o rozsahu je záměrně prázdné: před generováním prohlášení o použitelnosti uveďte rozsah, který tento framework pokrývá.',
+    'ClonedFromFrameworkNotice' => 'Naklonováno z „{$name}“. Jeho {$n} kontrolních opatření bude zkopírováno do nového frameworku, přičemž každé z nich bude použitelné od začátku – žádná z jeho rozhodnutí o použitelnosti se nepřenesou. Prohlášení o rozsahu je záměrně prázdné: před generováním prohlášení o použitelnosti uveďte rozsah, který tento framework pokrývá.',
     // Seeds the name field so the clone can be saved without a rename --
     // framework names are unique, so a verbatim copy is refused on save.
     'CloneOfFrameworkName' => '{$name} (Klon)',
@@ -4470,14 +4470,14 @@ $lang = array(
     // someone who cannot take it.
     'HowDoYouWantToAddAFramework' => 'Jak chcete přidat framework?',
     'CreateFrameworkManually' => 'Vytvořte si ho ručně',
-    'CreateFrameworkManuallyHint' => 'Pojmenujte framework sami a poté přidejte nebo namapujte jeho ovládací prvky.',
+    'CreateFrameworkManuallyHint' => 'Pojmenujte framework sami a poté přidejte nebo namapujte jeho opatření.',
     // Named for the framework rather than for its vendor. The hint was reworded
     // at the same time: it used to end "...load its Secure Controls Framework
     // controls", which read as a stutter once the label carried those words.
     'GetFrameworkFromScf' => 'Získejte jeden z rámce Secure Controls Framework',
-    'GetFrameworkFromScfHint' => 'Vyberte publikovaný framework a načtěte jeho mapované ovládací prvky v jednom kroku.',
+    'GetFrameworkFromScfHint' => 'Vyberte publikovaný framework a načtěte jeho mapované kontroly v jednom kroku.',
     'ImportFrameworkFromCatalog' => 'Importovat jeden',
-    'ImportFrameworkFromCatalogHint' => 'Nainstalujte framework a jeho ovládací prvky z katalogu obsahu SimpleRisk.',
+    'ImportFrameworkFromCatalogHint' => 'Nainstalujte framework a jeho kontroly z katalogu obsahu SimpleRisk.',
 
     // The framework acquisition chooser's third route, which now offers the
     // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
@@ -4486,7 +4486,7 @@ $lang = array(
     // customer maintaining a custom lang.<locale>.php still reconciles by tail
     // diff.
     'ImportFrameworkFromSpreadsheet' => 'Importovat z tabulky',
-    'ImportFrameworkFromSpreadsheetHint' => 'Nahrajte tabulku s ovládacími prvky, která pojmenovává framework, a oba jsou vytvořeny.',
+    'ImportFrameworkFromSpreadsheetHint' => 'Nahrajte tabulku s kontrolami, která pojmenovává framework, a oba jsou vytvořeny.',
 
     // The Define Control Frameworks rail's second synthetic scope: the controls
     // mapped to no framework at all. Its first, "All controls", reuses the
@@ -4495,7 +4495,7 @@ $lang = array(
     // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
     // is left in place and unreferenced by that page: other surfaces still use
     // it, and every locale carries it.
-    'UnassignedControls' => 'Nepřiřazené ovládací prvky',
+    'UnassignedControls' => 'Nepřiřazené kontroly',
     // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
     // returns the exception's message as the API status message and the page
     // renders it in a toast, so a hardcoded English literal here would be
@@ -4509,7 +4509,7 @@ $lang = array(
     'ApplicabilityErrNarrativeRequired' => 'Pro \'{$state} \' je vyžadován popis.',
     'ApplicabilityErrNarrativeTooLong' => 'Popis je delší než {$bytes} bajtů.',
     'ApplicabilityErrReasonRequired' => 'Pro označení kontroly jako nepoužitelné je vyžadován důvod vyloučení.',
-    'ApplicabilityErrProviderRequired' => 'Poskytovatel je povinen označit ovládací prvek jako zděděný.',
+    'ApplicabilityErrProviderRequired' => 'Poskytovatel je povinen označit kontrolní mechanismus jako zděděný.',
     'ApplicabilityErrProviderTooLong' => 'Název poskytovatele je delší než {$bytes} bajtů.',
     'ApplicabilityErrReasonsNotFound' => 'Tyto důvody použitelnosti neexistují: {$ids}.',
     'ApplicabilityErrReasonsNotOffered' => 'Tyto důvody použitelnosti nejsou pro tento stav uvedeny: {$ids}.',
@@ -4517,10 +4517,10 @@ $lang = array(
     'ApplicabilityErrControlsNotFound' => 'Tato ID kontrol neexistují: {$ids}.',
     // Controls/Risks import result messages (validation gate, individual bad-row
     // alerts, and the batched submitted/created/updated summaries)
-    'ControlIdOrShortNameFieldRequired' => 'Musí být namapováno buď pole ID ovládacího prvku, nebo pole Krátký název ovládacího prvku – řádek nelze identifikovat bez jednoho z nich.',
+    'ControlIdOrShortNameFieldRequired' => 'Musí být namapováno buď pole ID kontroly, nebo pole Krátký název kontroly – řádek nelze identifikovat bez jednoho z nich.',
     'RiskImportSubjectNull' => 'ID rizika {$risk_id}: Nebylo aktualizováno, protože pole Předmět je prázdné nebo chybí.',
     'RiskImportSummary' => 'Odesláno {$submitted} rizik a aktualizováno {$updated} rizik.',
-    'ControlImportSummary' => 'Vytvořeno {$created} ovládacích prvků a aktualizováno {$updated} ovládacích prvků.',
+    'ControlImportSummary' => 'Vytvořeno {$created} kontrol a aktualizováno {$updated} kontrol.',
     'ImportAdditionalIssuesSuppressed' => '{$count} dalších řádků obsahovalo problémy, které zde nejsou jednotlivě zobrazeny.',
     'EncryptionPipelineStalledTask' => 'Šifrovací kanál (úloha #{$id}, {$type}) se jeví jako zablokovaný – byl {$status} neobvykle dlouhou dobu bez pokroku. To obvykle znamená, že pracovník fronty na pozadí neběží; zkontrolujte, zda je naplánován, a poté to zkuste znovu, jakmile zpracuje zablokovanou úlohu.',
     'EncryptionPipelineStalledState' => 'Šifrovací kanál se zdá být zastavený – je neobvykle dlouho označen jako rozpracovaný a neexistuje žádná odpovídající úloha na pozadí, na kterou by odkazovalo. To obvykle znamená, že proces fronty neběží nebo že předchozí kanál dokončil proces bez správné aktualizace. Před dalším pokusem zkontrolujte protokol ladění.',
@@ -4537,15 +4537,15 @@ $lang = array(
     // not put the original back
     // Shown when the database was brought up to date but the application files
     // could not be replaced, so the instance has NOT moved to the new release
-    'UpdateAppFailed' => 'Soubory aplikace nebyly aktualizovány, takže tato instance stále používá předchozí verzi. Zkontrolujte protokol SimpleRisk, zda se to týká důvodu, a poté spusťte aktualizaci znovu.',
+    'UpdateAppFailed' => 'Soubory aplikace nebyly aktualizovány, takže tato instance stále používá předchozí verzi. Zkontrolujte protokol SimpleRisk, abyste zjistili důvod, a poté spusťte aktualizaci znovu.',
     // The one-click upgrade progress screen
     'UpgradeInProgress' => 'Probíhá',
     'UpgradeStepNotNeeded' => 'Není potřeba',
     // Recovering an Upgrade Extra whose files are damaged
     'UpgradeExtraDamagedReinstalling' => 'Nainstalovaný upgrade Extra je poškozen. Stahování nové kopie.',
-    'UpgradeExtraDamagedRepaired' => 'Dodatečný upgrade byl nahrazen funkční kopií.',
+    'UpgradeExtraDamagedRepaired' => 'Upgrade Extra byl nahrazen funkční kopií.',
     'UpgradeExtraDamagedFailed' => 'Doplňkový modul Upgrade je poškozený a nelze jej automaticky nahradit. Znovu jej nainstalujte ze stránky Doplňky nebo obnovte soubor simplerisk/extras/upgrade/ ze zálohy a zkuste to znovu.',
-    'UpgradeAlreadyCurrent' => 'Tato instance je již na adrese {version}, což je nejnovější verze. Nic nebylo potřeba upgradovat.',
+    'UpgradeAlreadyCurrent' => 'Tato instance je již ve verzi {version}, což je nejnovější verze. Nic nebylo potřeba upgradovat.',
     'UpgradeShowWhatItDid' => 'Ukaž, co to udělalo',
     'UpgradeBackupsListed' => 'Tyto zálohy jsou uvedeny v části Konfigurovat > Zálohy.',
     'UpgradingTo' => 'Aktualizace na {version}',
@@ -4611,7 +4611,7 @@ $lang = array(
     'CustomLogoHint' => 'PNG, JPG, GIF nebo WebP, až do 1 MB a 2000x2000. Zobrazuje se v rozlišení až 260x64, takže pro obrazovky s vysokou hustotou obrazu použijte rozlišení přibližně 520x128. Horní lišta a přihlašovací panel jsou tmavé, proto nahrajte logo, které se čte na tmavém pozadí. Odstraňte logo a vraťte se k logu SimpleRisk.',
     'CurrentLogo' => 'Aktuální logo',
     'RemoveLogo' => 'Odstraňte logo',
-    'LoginTagline' => 'Přihlašovací heslo',
+    'LoginTagline' => 'Slogan na přihlašovací stránce',
     'LoginTaglineHint' => 'Nahrazuje slogan SimpleRisk na přihlašovací obrazovce. Nejlépe se čte jeden krátký řádek. Chcete-li zachovat slogan SimpleRisk, ponechte jej prázdný.',
     'LoginNotice' => 'Oznámení o používání systému',
     'LoginNoticeHint' => 'Zobrazuje se na přihlašovací obrazovce předtím, než se kdokoli přihlásí. Použijte jej pro oznámení o přijatelném použití nebo použití systému. Pokud nechcete zobrazovat žádné oznámení, ponechte jej prázdné. Odkazy a obrázky nejsou povoleny.',
@@ -4801,7 +4801,7 @@ $lang = array(
     'SomeExceptionsNotDeleted' => 'Některé z vybraných výjimek se nepodařilo smazat. Obnovte stránku a zkuste to znovu.',
     'SomeDocumentsNotDeleted' => 'Některé z vybraných dokumentů se nepodařilo smazat. Obnovte stránku a zkuste to znovu.',
     // Scheduled report "Run Now" success alerts (process_run_now_notification())
-    'AutomatedNotificationOfRisksSent' => 'Bylo odesláno automatické oznámení o neprověřených a po splatnosti splatných rizicích.',
+    'AutomatedNotificationOfRisksSent' => 'Bylo odesláno automatické oznámení o neprověřených rizicích a rizicích po termínu.',
     'AutomatedNotificationOfAuditsSent' => 'Automatické oznámení o auditech bylo odesláno.',
     'AutomatedNotificationOfMitigationsSent' => 'Bylo odesláno automatické oznámení o zmírnění problémů.',
     'AutomatedNotificationOfUnmitigatedRisksSent' => 'Automatické oznámení o nezmírněných rizicích bylo odesláno.',
@@ -4967,6 +4967,669 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Nemáte oprávnění k uzavření rizik.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Před dokončením hodnocení prosím odpovězte na všechny požadované otázky.',
+    'AuditLog_ControlStatusAutoSynced' => 'Stav kontroly „{$short_name}“ byl automaticky aktualizován na „{$status_text}“ na základě jejího/jejích posledního/posledních výsledku/výsledků testu/testů.',
+    'EnableCSPHelp' => 'Zásady zabezpečení obsahu (CSP) omezují prohlížeč na načítání skriptů, stylů, obrázků a písem pouze ze samotného SimpleRisk a blokují rámování stránek a odesílání formulářů z jiných zdrojů. Jedná se o nejsilnější vestavěnou ochranu proti cross-site scriptingu. Ponechte tuto možnost povolenou, pokud nekoliduje s proxy, rozšířením prohlížeče nebo integrací třetí strany ve vašem prostředí.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Standardní pole',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Správce',
+    'AccountDetails' => 'Údaje o účtu',
+    'YourPermissions' => 'Vaše oprávnění',
+    'RoleAndTeamsGrantAccess' => 'K čemu vám vaše role a týmy poskytují přístup',
+    'AllGranted' => 'Vše uděleno',
+    'PermissionsCountLabel' => '$count oprávnění',
+    'ManagedByYourAdministrator' => 'Tyto údaje spravuje váš administrátor. Pokud je zde potřeba cokoli změnit, kontaktujte ho.',
+    'MultiFactorAuthenticationHint' => 'Přidejte k přihlašování druhý krok, abyste zvýšili bezpečnost svého účtu.',
+    'ChangingPasswordSignsOutEverywhere' => 'Změnou hesla se odhlásíte ze všech ostatních systémů.',
+    'APIKeyHint' => 'Používá se k ověřování vašich vlastních skriptů a integrací v rozhraní SimpleRisk API.',
+    'ResetDisplaySettingsHint' => 'Obnoví výběr vlastních sloupců zpět na výchozí hodnoty.',
+    'CardGeneral' => 'Obecné',
+    'CardClassification' => 'Klasifikace',
+    'CardScoring' => 'Skórování',
+    'CardAdditionalInformation' => 'Další informace',
+    'CardCustomFields' => 'Vlastní pole',
+    'CardCustomFieldsHint' => 'Tato pole je třeba seřadit do karty',
+    'LayoutEditorHint' => 'Přetažením pole na jinou kartu jej můžete přiřadit, přetažením v rámci karty jej můžete uspořádat nebo změnit jeho velikost a přetažením nebo změnou velikosti karty můžete změnit její umístění na stránce.',
+    'ScoringNotYetAvailableInThisView' => 'Konfigurace bodování v tomto zobrazení zatím není k dispozici.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Přetažením změníte velikost',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} polí se na tuto kartu nevejde. Změňte velikost karty, aby se zobrazovala.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Strategie zmírňování',
+    'CardMitigationSolution' => 'Řešení pro zmírnění dopadů',
+    'CardMitigationControls' => 'Kontroly zmírňování rizik',
+    'CardReview' => 'Přezkoumání',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Obnovit formulář',
+    'SaveAndNew' => 'Uložit a vytvořit nový',
+    'SaveAndView' => 'Uložit a zobrazit',
+    'ResetFormConfirmTitle' => 'Zahodit toto odeslání rizika?',
+    'ResetFormConfirmBody' => 'Veškeré zadané informace budou ztraceny.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Obnovit výchozí rozložení?',
+    'RestoreTemplateConfirmBodyRisk' => 'Tím se všechna pole na kartách Podrobnosti, Zmírnění a Přezkoumání pro tuto skupinu šablon resetují zpět na jejich výchozí hodnoty. Ostatní skupiny šablon tím nejsou ovlivněny.',
+    'RestoreTemplateConfirmBody' => 'Tím se všechna pole v této šabloně pro tuto skupinu šablon resetují zpět na výchozí hodnoty. Ostatní skupiny šablon tím nejsou ovlivněny.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Pokročilé metriky',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Metriky zneužitelnosti základního skóre',
+    'BaseScoreImpactMetrics' => 'Metriky dopadu základního skóre',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Jak lze k této zranitelnosti přistupovat.\n• Lokální: vyžaduje lokální přístup, například konzoli nebo shell.\n• Sousední síť: útočník se musí nacházet ve stejném fyzickém nebo logickém segmentu sítě.\n• Síťová: zneužitelná vzdáleně přes síť, bez nutnosti lokálního nebo sousedního přístupu.",
+    "AttackComplexityHelp" => "Jak složitý je útok, jakmile má útočník přístup k cíli.\n• Vysoká: vyžaduje specializované podmínky, které je obtížné splnit.\n• Střední: musí být splněny určité podmínky, ale jakmile jsou splněny, zneužití není obtížné.\n• Nízká: nejsou potřeba žádné speciální podmínky.",
+    "AuthenticationHelp" => "Počet ověření, které musí útočník provést u cíle, aby jej mohl zneužít.\n• Vícenásobné: ověření je vyžadováno dvakrát nebo vícekrát, a to i se stejnými přihlašovacími údaji.\n• Jednoduché: ověření je vyžadováno jednou.\n• Žádné: ověření není vyžadováno.",
+    "ConfidentialityImpactHelp" => "Dopad na důvěrnost dat, která systém zpracovává v případě zneužití.\n• Žádný: žádný dopad.\n• Částečný: určité zveřejnění informací, ale útočník nekontroluje jaké, nebo je ztráta omezená.\n• Úplný: úplné zveřejnění všech informací v systému.",
+    "IntegrityImpactHelp" => "Dopad na integritu systému v případě zneužití.\n• Žádný: žádný dopad.\n• Částečný: některá data lze upravit, ale útočník nekontroluje jaká, nebo je rozsah omezený.\n• Úplný: úplné narušení integrity systému; útočník může upravit jakékoli soubory.",
+    "AvailabilityImpactHelp" => "Dopad na dostupnost systému v případě zneužití.\n• Žádný: žádný dopad.\n• Částečný: snížený výkon nebo přerušení dostupnosti.\n• Úplný: úplné vypnutí postiženého prostředku.",
+    "RemediationLevelHelp" => "Úroveň nápravy dostupné pro danou zranitelnost.\n• Oficiální oprava: Je k dispozici kompletní řešení od dodavatele.\n• Dočasná oprava: Je k dispozici oficiální, ale dočasná oprava.\n• Alternativní řešení: Existuje neoficiální řešení od jiného dodavatele.\n• Nedostupné: Není k dispozici žádné řešení nebo jej nelze použít.",
+    "ReportConfidenceHelp" => "Míra důvěry v existenci zranitelnosti a důvěryhodnost jejích technických detailů.\n• Nepotvrzené: hlášení z jednoho nepotvrzeného zdroje; základní problém je spekulativní.\n• Nepotvrzené: více nezávislých zdrojů hlásí stejné chování, ale hlavní příčina není potvrzena.\n• Potvrzené: dodavatel problém uznal nebo je potvrzen analýzou zdrojového kódu či zneužití.",
+    "CollateralDamagePotentialHelp" => "Potenciál ztráty života, fyzického majetku nebo finanční ztráty v případě zneužití zranitelnosti.\n• Žádná: taková ztráta není pravděpodobná.\n• Nízká až střední: mírná ztráta je možná.\n• Vysoká: katastrofální dopad na majetek, příjmy nebo bezpečnost organizace.",
+    "TargetDistributionHelp" => "Podíl zranitelných systémů ve vašem prostředí.\n• Žádné: neexistují žádné cílové systémy.\n• Nízké: 1–25 % systémů je zranitelných.\n• Střední: 26–75 % je zranitelných.\n• Vysoké: 76–100 % je zranitelných.",
+    "ConfidentialityRequirementHelp" => "Jak důležitá je pro vaši organizaci důvěrnost dotčeného aktiva.\n• Nízká: ztráta důvěrnosti má omezený dopad.\n• Střední: má vážný dopad.\n• Vysoká: má katastrofální dopad.",
+    "IntegrityRequirementHelp" => "Jak důležitá je pro vaši organizaci integrita dotčeného aktiva.\n• Nízká: ztráta integrity má omezený dopad.\n• Střední: má vážný dopad.\n• Vysoká: má katastrofální dopad.",
+    "AvailabilityRequirementHelp" => "Jak důležitá je pro vaši organizaci dostupnost dotčeného aktiva.\n• Nízká: ztráta dostupnosti má omezený dopad.\n• Střední: má vážný dopad.\n• Vysoká: má katastrofální dopad.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Jak by se útočník musel dostat k této zranitelnosti a aktivovat ji: kde se musí nacházet, jak složitý je útok a zda se musí nejprve ověřit.',
+    'BaseScoreImpactMetricsDescription' => 'Co se stane, pokud je zranitelnost úspěšně zneužita: dopad na důvěrnost, integritu a dostupnost postiženého systému.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Jak se v průběhu času mění reálná hrozba této zranitelnosti: aktuální stav kódu zneužití, dostupné nápravné opatření a jak spolehlivé jsou zprávy o její existenci.',
+    'EnvironmentalScoreMetricsDescription' => 'Jak závisí riziko této zranitelnosti na vašem prostředí: potenciál pro reálné poškození a kolik vašich systémů je skutečně ovlivněno.',
+    'ImpactSubscoreModifiersDescription' => 'Upravte dopad základního skóre podle toho, jak moc záleží na důvěrnosti, integritě a dostupnosti pro toto konkrétní aktivum.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Pokud dojde k zneužití hrozby, jak velké škody to způsobí?' . "\n" . '0 = Nic' . "\n" . '5 = Individuální uživatelská data jsou ohrožena nebo ovlivněna.' . "\n" . '10 = Úplné zničení systému nebo dat',
+    'ReproducibilityHelp' => 'Jak snadné je reprodukovat zneužití hrozby?' . "\n" . '0 = Velmi obtížné nebo nemožné, a to i pro administrátory aplikace.' . "\n" . '5 = Vyžadován jeden nebo dva kroky, může být vyžadován autorizovaný uživatel.' . "\n" . '10 = Stačí webový prohlížeč a adresní řádek, bez ověřování.',
+    'ExploitabilityHelp' => 'Co je potřeba k využití této hrozby?' . "\n" . '0 = Pokročilé znalosti programování a sítí s vlastními nebo pokročilými nástroji pro útoky.' . "\n" . '5 = Na internetu existuje malware nebo lze jeho zneužití snadno provést pomocí dostupných útočných nástrojů.' . "\n" . '10 = Pouze webový prohlížeč',
+    'AffectedUsersHelp' => 'Kolik uživatelů to ovlivní?' . "\n" . '0 = Žádné' . "\n" . '5 = Někteří uživatelé, ale ne všichni' . "\n" . '10 = Všichni uživatelé',
+    'DiscoverabilityHelp' => 'Jak snadné je tuto hrozbu odhalit?' . "\n" . '0 = Velmi obtížné až nemožné; vyžaduje zdrojový kód nebo přístup pro správce.' . "\n" . '5 = Lze to zjistit hádáním nebo sledováním síťových tras.' . "\n" . '9 = Podrobnosti o závadách, jako je tato, jsou již veřejně dostupné a lze je snadno najít pomocí vyhledávače.' . "\n" . '10 = Informace jsou viditelné v adresním řádku webového prohlížeče nebo ve formuláři.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'Skóre DREAD',
+    'DreadMetrics' => 'DREAD metriky',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Jak technicky zdatná je tato skupina hrozeb?' . "\n" . '1 = Žádné technické dovednosti' . "\n" . '3 = Některé technické dovednosti' . "\n" . '5 = Pokročilý uživatel počítače' . "\n" . '6 = Síťové a programátorské dovednosti' . "\n" . '9 = Dovednosti v oblasti penetrace zabezpečení',
+    'MotiveHelp' => 'Jak moc je tato skupina hrozeb motivována k nalezení a zneužití této zranitelnosti?' . "\n" . '1 = Nízká nebo žádná odměna' . "\n" . '4 = Možná odměna' . "\n" . '9 = Vysoká odměna',
+    'OpportunityHelp' => 'Jaké zdroje a příležitosti tato skupina hrozeb potřebuje k nalezení a zneužití této zranitelnosti?' . "\n" . '0 = Plný přístup nebo vyžadované drahé zdroje' . "\n" . '4 = Vyžadován zvláštní přístup nebo zdroje' . "\n" . '7 = Vyžaduje se určitý přístup nebo zdroje' . "\n" . '9 = Není vyžadován žádný přístup ani zdroje',
+    'SizeHelp' => 'Jak velká je tato skupina hrozebných agentů?' . "\n" . '2 = Vývojáři' . "\n" . '2 = Systémoví administrátoři' . "\n" . '4 = Uživatelé intranetu' . "\n" . '5 = Partneři' . "\n" . '6 = Ověření uživatelé' . "\n" . '9 = Anonymní uživatelé internetu',
+    'EaseOfDiscoveryHelp' => 'Jak snadné je pro tuto skupinu hrozeb objevit tuto zranitelnost?' . "\n" . '1 = Prakticky nemožné' . "\n" . '3 = Obtížné' . "\n" . '7 = Snadné' . "\n" . '9 = Dostupné automatizované nástroje',
+    'EaseOfExploitHelp' => 'Jak snadné je pro tuto skupinu hrozeb tuto zranitelnost skutečně zneužít?' . "\n" . '1 = Teoretická' . "\n" . '3 = Obtížné' . "\n" . '5 = Snadné' . "\n" . '9 = Dostupné automatizované nástroje',
+    'AwarenessHelp' => 'Jak dobře je tato zranitelnost známá pro tuto skupinu hrozeb?' . "\n" . '1 = Neznámé' . "\n" . '4 = Skryté' . "\n" . '6 = Zřejmé' . "\n" . '9 = Veřejné znalosti',
+    'IntrusionDetectionHelp' => 'Jaká je pravděpodobnost odhalení zneužití?' . "\n" . '1 = Aktivní detekce v aplikaci' . "\n" . '3 = Zaznamenáno a zkontrolováno' . "\n" . '8 = Zaznamenáno bez kontroly' . "\n" . '9 = Nezaznamenáno',
+    'LossOfConfidentialityHelp' => 'Kolik dat by mohlo být zveřejněno a jak citlivá jsou?' . "\n" . '2 = Minimální zveřejnění necitlivých údajů' . "\n" . '6 = Minimální zveřejnění kritických údajů' . "\n" . '6 = Zveřejněno rozsáhlé množství necitlivých údajů' . "\n" . '7 = Zveřejněny rozsáhlé kritické údaje' . "\n" . '9 = Všechna data zveřejněna',
+    'LossOfIntegrityHelp' => 'Kolik dat může být poškozeno a jak moc jsou poškozená?' . "\n" . '1 = Minimální mírně poškozená data' . "\n" . '3 = Minimální vážně poškozená data' . "\n" . '5 = Rozsáhlá a mírně poškozená data' . "\n" . '7 = Rozsáhlé a vážně poškozené údaje' . "\n" . '9 = Všechna data zcela poškozena',
+    'LossOfAvailabilityHelp' => 'Kolik služeb by mohlo být ztraceno a jak důležité jsou?' . "\n" . '1 = Minimální přerušení sekundárních služeb' . "\n" . '5 = Minimální přerušení primárních služeb' . "\n" . '5 = Rozsáhlé přerušení sekundárních služeb' . "\n" . '7 = Rozsáhlé přerušení primárních služeb' . "\n" . '9 = Všechny služby zcela ztraceny',
+    'LossOfAccountabilityHelp' => 'Lze vysledovat činy hrozebných agentů k určité osobě?' . "\n" . '1 = Plně sledovatelné' . "\n" . '7 = Možná sledovatelné' . "\n" . '9 = Zcela anonymní',
+    'FinancialDamageHelp' => 'Jak velká finanční škoda vznikne zneužitím?' . "\n" . '1 = Méně než náklady na opravu zranitelnosti' . "\n" . '3 = Malý vliv na roční zisk' . "\n" . '7 = Významný vliv na roční zisk' . "\n" . '9 = Bankrot',
+    'ReputationDamageHelp' => 'Vedlo by zneužití k poškození reputace, které by poškodilo podnikání?' . "\n" . '1 = Minimální poškození' . "\n" . '4 = Ztráta významných účtů' . "\n" . '5 = Ztráta dobré pověsti' . "\n" . '9 = Poškození značky',
+    'NonComplianceHelp' => 'Jak velkou expozici představuje nedodržování předpisů?' . "\n" . '2 = Drobné porušení' . "\n" . '5 = Jasné porušení' . "\n" . '7 = Porušení s vysokým profilem',
+    'PrivacyViolationHelp' => 'Kolik osobních údajů by mohlo být zveřejněno?' . "\n" . '3 = Jeden jednotlivec' . "\n" . '5 = Stovky lidí' . "\n" . '7 = Tisíce lidí' . "\n" . '9 = Miliony lidí',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'Skóre OWASP',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Odhaduje pravděpodobnost úspěšného útoku této skupiny hrozeb.',
+    'VulnerabilityFactorsDescription' => 'Odhaduje pravděpodobnost, že tato zranitelnost bude odhalena a zneužita.',
+    'TechnicalImpactDescription' => 'Rozkládá dopad podle důvěrnosti, integrity, dostupnosti a odpovědnosti.',
+    'BusinessImpactDescription' => 'Odráží to, co je pro podnikání důležité, a to nad rámec čistého technického dopadu.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Aktuální stav technik zneužití nebo dostupnosti kódu.\n• Neprokázané: není k dispozici žádný kód zneužití nebo je zneužití teoretické.\n• Proof-of-Concept: kód zneužití existuje, ale pro většinu útočníků není praktický.\n• Funkční: funkční kód zneužití funguje ve většině situací.\n• Vysoká: zneužití je spolehlivé a buď automatizované (např. červ), nebo kód zneužití vůbec nevyžaduje.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Klasické skóre',
+    'ClassicLikelihoodDescription' => 'Jak pravděpodobné je, že k tomuto riziku dojde.',
+    'ClassicImpactDescription' => 'Jak závažné by byly následky, kdyby k tomuto riziku došlo.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Vlastní skóre',
+    'CustomValueDescription' => 'Vlastní hodnota může být desetinná hodnota mezi 0 a 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Jak pravděpodobné je, že k tomuto riziku dojde.',
+    'ContributingRiskDescription' => 'Každý níže uvedený faktor je vážen podle své relativní důležitosti – vyberte, do jaké míry je toto riziko každým z nich ovlivněno.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Úplné podrobnosti o metodice hodnocení rizik OWASP naleznete',
+    'Here' => 'zde',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Součet (váha x dopad x 5 / max.)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Stáhnout jako obrázek',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Úplné podrobnosti o hodnocení CVSS verze 2.0 naleznete',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Neplatné ID kontroly.',
+    'ValidationOwner' => 'Vlastník ověření',
+    'ValidationStatus' => 'Stav ověření',
+    'NotStarted' => 'Nezahájeno',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Riziko, které hledáte, mohlo být smazáno nebo je odkaz nesprávný.',
+    'MitigationControlsRequiresGovernance' => 'Vyžaduje oprávnění Governance k zobrazení.',
+    'ViewControlValidation' => 'Zobrazit ověření kontroly',
+    'EditControlValidation' => 'Upravit ověření kontroly',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Pro nahrávání souborů je vyžadováno oprávnění k odeslání rizika.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Pro správu souborů je vyžadováno oprávnění Upravit rizika.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Pro správu souborů je vyžadováno oprávnění Plan Mitigations.',
+    'MitigationSubmittedBy' => 'Zmírnění odesláno kým',
+    'UseADifferentDate' => 'Použijte jiné datum',
+    'AssetGroup' => 'Skupina aktiv',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Neplatná fgroup.',
+    'CustomizationCardsLayoutApiScopeError' => 'Rozhraní API pro rozvržení karet přizpůsobení je k dispozici pouze pro fgroup=risk, tab_index=1, tab_index=2 nebo tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Objevte aktiva',
+    'DiscoveryRuns' => 'Objevovací běhy',
+    'DiscoveryRangeHint' => 'Jedna adresa, počáteční a koncový rozsah nebo IPv4 CIDR',
+    'DiscoveryResolveNames' => 'Vyhledat názvy hostitelů',
+    'DiscoveryAddAs' => 'Přidat nové aktiva jako',
+    'DiscoveryStart' => 'Zahájit objevování',
+    'DiscoveryBackgroundNote' => 'Běží na pozadí. Adresy, které již existují, jsou přeskočeny.',
+    'DiscoveryRangeInvalid' => 'Zadejte platnou IPv4 adresu, rozsah nebo blok CIDR.',
+    'DiscoveryRangeTooLarge' => 'Tento rozsah je příliš velký. Limit je {$max} adres.',
+    'DiscoveryRunQueued' => 'Objevování začalo.',
+    'DiscoveryRunCompleted' => 'Zjišťování dokončeno: {$new} nových aktiv.',
+    'AssetBulkSelectAll' => 'Vybrat všechna {$count} aktiv',
+    'AssetBulkAssignTeams' => 'Přiřadit týmy…',
+    'AssetBulkAddToGroup' => 'Přidat do skupiny…',
+    'AssetBulkDeleteConfirmTitle' => 'Smazat {$count} aktiv?',
+    'AbleToEditAssets' => 'Možnost upravovat aktiva',
+    'AbleToDeleteAssets' => 'Možnost mazat aktiva',
+    'AbleToVerifyAssets' => 'Schopen ověřit aktiva',
+    'AbleToRunAssetDiscovery' => 'Schopnost spustit vyhledávání aktiv',
+    'AbleToCreateAssetGroups' => 'Možnost vytvářet skupiny aktiv',
+    'AbleToEditAssetGroups' => 'Možnost upravovat skupiny aktiv',
+    'AbleToDeleteAssetGroups' => 'Možnost mazat skupiny aktiv',
+    'ViewAsset' => 'Zobrazit aktivum',
+    'AssetUnverifiedByEditLog' => 'Aktivum „{$name}“ bylo vráceno do kategorie neověřených, protože uživatel „{$user}“ změnil svůj název nebo IP adresu bez oprávnění k ověřování aktiv.',
+    'AssetTeamsAssignedLog' => 'Aktivum „{$name}“ bylo přiřazeno týmu (týmům) „{$teams}“ uživatelem „{$user}“.',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Přidat aktivum',
+    'SearchAssetsPlaceholder' => 'Hledat podle jména nebo IP adresy',
+    'AllLocations' => 'Všechna místa',
+    'AllTags' => 'Všechny štítky',
+    'AllAssetGroups' => 'Všechny skupiny aktiv',
+    'AssetFields' => 'Pole aktiv',
+    'AssetBulkAllSelected' => 'Vybráno všech {$count} odpovídajících aktiv',
+    'AssetDeleteConfirmTitle' => 'Smazat aktivum „{$name}“?',
+    'DeleteAsset' => 'Smazat aktivum',
+    'DeleteAssets' => 'Smazat aktiva',
+    'AssetBulkAssignTeamsTitle' => 'Přiřadit týmům {$count} aktiv',
+    'AssetAssignTeamsHint' => 'Vybrané týmy budou přidány. Týmy, které již jsou na aktivu, zůstanou.',
+    'AssetAddToGroupTitle' => 'Přidat {$count} aktiv do skupiny',
+    'AssetChooseTeams' => 'Vyberte týmy',
+    'AssetChooseGroup' => 'Vyberte skupinu',
+    'Assign' => 'Přiřadit',
+    'AssetBulkVerifiedSummary' => '{$ok} ověřeno, {$failed} přeskočeno',
+    'AssetBulkDeletedSummary' => '{$ok} smazáno, {$failed} přeskočeno',
+    'AssetBulkTeamsSummary' => 'Týmy přiřazené k {$ok} aktivům, {$failed} přeskočeno',
+    'AssetBulkGroupSummary' => '{$ok} přidáno do skupiny, {$failed} přeskočeno',
+    'AssetBulkSkippedList' => 'Přeskočeno: {$list}',
+    'AssetBulkReasonNotFound' => 'nenalezen',
+    'NoAssetsYet' => 'Zatím žádné aktiva',
+    'NoAssetsYetHint' => 'Zde se zobrazují aktiva, která přidáte nebo objevíte.',
+    'NoAssetsMatchFilters' => 'Žádná aktiva neodpovídají vašim filtrům',
+    'CouldNotLoadAssets' => 'Nepodařilo se načíst aktiva. Vaše data jsou v bezpečí.',
+    'AllValuations' => 'Všechna ocenění',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Přidat skupinu',
+    'EditAssetGroup' => 'Upravit skupinu',
+    'DeleteAssetGroup' => 'Smazat skupinu',
+    'ViewGroupMembers' => 'Zobrazit členy',
+    'SearchAssetGroupsPlaceholder' => 'Hledat skupiny podle názvu',
+    'HighestValuation' => 'Nejvyšší ocenění',
+    'LinkedRisks' => 'Související rizika',
+    'RemoveFromGroup' => 'Odebrat ze skupiny',
+    'AssetGroupMoreMembers' => '+ {$count} více',
+    'ViewAllInAssetsTab' => 'Zobrazit vše na kartě Aktiva',
+    'NoAssetsInGroup' => 'V této skupině nejsou žádná aktiva.',
+    'CouldNotLoadGroupMembers' => 'Nepodařilo se načíst členy této skupiny.',
+    'AssetGroupMembers' => 'Členové',
+    'AssetGroupMembersHint' => 'V seznamu jsou uvedena pouze aktiva, která vidíte. Členové, které nevidíte, ve skupině zůstávají.',
+    'ChooseAssets' => 'Vyberte aktiva',
+    'AddOrRemoveAssets' => 'Přidat nebo odebrat aktiva…',
+    'UseTheseAssets' => 'Použijte tato aktiva',
+    'AllAssets' => 'Všechna aktiva',
+    'Valuation' => 'Ocenění',
+    'PickerShowingFirstN' => 'Zobrazuje se prvních {$count} z {$total}. Zbytek najdete vyhledáním nebo zúžením vyhledávání.',
+    'AssetGroupDeleteConfirmTitle' => 'Smazat skupinu „{$name}“?',
+    'AssetGroupDeleteKeepsAssets' => 'Aktiva v této skupině nebudou smazána. Odstraní se pouze skupina.',
+    'NoAssetGroupsYet' => 'Zatím žádné skupiny aktiv',
+    'NoAssetGroupsYetHint' => 'Seskupte aktiva, abyste je mohli společně mapovat a vytvářet o nich reporty.',
+    'NoAssetGroupsMatchSearch' => 'Vašemu vyhledávání neodpovídají žádné skupiny aktiv',
+    'CouldNotLoadAssetGroups' => 'Skupiny aktiv se nepodařilo načíst. Vaše data jsou v bezpečí.',
+    'DiscoveryAssignTeams' => 'Přiřadit týmům',
+    'DiscoveryAssignTeamsHint' => 'Volitelné. Každé nové aktivum je přidáno do těchto týmů.',
+    'DiscoveryAddAsHint' => 'Nastaveno vaším svolením k ověření aktiv.',
+    'DiscoveryTeamsInvalid' => 'Vyberte si týmy, které existují a do kterých patříte.',
+    'DiscoveryResolveNamesInvalid' => 'Vyhledávání názvů hostitelů musí být zapnuto nebo vypnuto.',
+    'DiscoveryTooManyActiveRuns' => 'Již máte probíhajících {$max} zjišťovacích běhů. Počkejte na dokončení jednoho z nich nebo ho zrušte.',
+    'DiscoveryRunNotFound' => 'Běh vyhledávání nebyl nalezen.',
+    'DiscoveryRunAlreadyFinished' => 'Toto spuštění zjišťování již skončilo.',
+    'DiscoveryRunCancelled' => 'Zjišťovací běh zrušen.',
+    'DiscoveryRunFailedToast' => 'Objevení {$range} se nezdařilo.',
+    'DiscoveryStatusQueued' => 'Zařazeno do fronty',
+    'DiscoveryProgress' => '{$scanned} z {$total}',
+    'DiscoveryLiveHosts' => 'Aktivní hostitelé',
+    'DiscoveryNewAssets' => 'Nová aktiva',
+    'DiscoveryStartedAt' => 'Zahájeno',
+    'DiscoveryCancelRun' => 'Zrušit běh',
+    'CouldNotLoadDiscoveryRuns' => 'Nepodařilo se načíst běhy vyhledávání.',
+    'DiscoveryRangeReserved' => 'Tento rozsah zahrnuje rezervované adresy (loopback, link-local, multicast nebo 0.0.0.0/8), které nelze skenovat.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Již probíhá {$max} zjišťovacích běhů. Zkuste to znovu, až jeden z nich skončí.',
+    'DiscoveryErrorScan' => 'Skenování se zastavilo kvůli chybě. Podrobnosti naleznete v systémových protokolech.',
+    'DiscoveryErrorWorkerLost' => 'Fronta na pozadí přestala zpracovávat toto spuštění.',
+    'DiscoveryErrorRequesterInactive' => 'Uživatel, který toto spuštění spustil, již není aktivní.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Odešlete hromadnou akci jako tělo JSON.',
+    'AssetBulkActionRequired' => 'Vyberte hromadnou akci.',
+    'AssetBulkUnknownAction' => 'Tato hromadná akce není k dispozici.',
+    'AssetBulkSelectionRequired' => 'Vyberte aktiva buď podle ID, nebo podle filtru.',
+    'AssetBulkIdsRequired' => 'Vyberte alespoň jedno aktivum.',
+    'AssetBulkIdsInvalid' => 'ID aktiv musí být celá čísla.',
+    'AssetBulkTooManyAssets' => 'Můžete pracovat maximálně s {$max} aktivy najednou. Zúžte výběr a zkuste to znovu.',
+    'AssetBulkFilterInvalid' => 'Filtr není platný. Znovu načtěte stránku a zkuste to znovu.',
+    'AssetBulkFilterUnknownKey' => 'Filtr „{$key}“ nebyl rozpoznán.',
+    'AssetBulkFilterBadValue' => 'Filtr „{$key}“ má neplatnou hodnotu.',
+    'AssetBulkFilterTooManyValues' => 'Filtr „{$key}“ může zobrazit maximálně {$max} hodnot.',
+    'AssetBulkFilterAllAlone' => 'Výběr všech aktiv nelze kombinovat s jinými filtry.',
+    'AssetBulkFilterEmpty' => 'Před spuštěním hromadné akce vyberte filtr nebo všechna aktiva.',
+    'AssetBulkExpectedCountInvalid' => 'Očekávaný počet aktiv musí být celé číslo.',
+    'AssetBulkParamsInvalid' => 'Možnosti pro tuto hromadnou akci nejsou platné.',
+    'AssetBulkTeamsRequired' => 'Vyberte si alespoň jeden tým.',
+    'AssetBulkTeamsNotFound' => 'Jeden nebo více z těchto týmů již neexistuje.',
+    'AssetBulkTeamsNotMember' => 'Můžete přiřadit pouze týmy, do kterých patříte.',
+    'AssetBulkGroupNotFound' => 'Tato skupina aktiv již neexistuje.',
+    'AssetBulkNoMatch' => 'Vašemu výběru neodpovídají žádná aktiva.',
+    'AssetBulkCountMismatch' => 'Odpovídající aktiva se od vašeho výběru změnila z {$expected} na {$actual}. Zkontrolujte seznam a zkuste to znovu.',
+    'AssetColumnSettingsBodyInvalid' => 'Odešlete nastavení sloupců jako tělo JSON se sloupci nebo pořadím.',
+    'AssetColumnSettingsSaveFailed' => 'Nepodařilo se uložit sloupce. Požádejte administrátora o dokončení upgradu SimpleRisk.',
+    'DiscoveryRunQueueFailed' => 'Spuštění vyhledávání se nepodařilo zařadit do fronty. Zkuste to znovu.',
+    'DiscoveryRunStartedLog' => 'Uživatel „{$user}“ spustil vyhledávání aktiv #{$id} z {$range} ({$count} adres).',
+    'DiscoveryRunCancelledLog' => 'Běh vyhledávání aktiv #{$id} z {$range} byl zrušen uživatelem „{$user}“.',
+    'AssetBulkTooManyToDelete' => 'Najednou můžete smazat maximálně {$max} položek. Zúžte výběr a zkuste to znovu.',
+    'AssetBulkFilterNotApplied' => 'Filtr „{$key}“ se nepodařilo použít tak, jak byl odeslán, takže se nic nezměnilo.',
+    'AssetBulkExpectedCountRequired' => 'Mazání aktiv pomocí filtru vyžaduje počet aktiv, která chcete smazat.',
+    'AssetBulkReasonNotAttempted' => 'nepokoušel se',
+    'MoreActions' => 'Další akce',
+    'AssetCreateNewGroupOption' => 'Vytvořit novou skupinu…',
+    'AssetNewGroupName' => 'Nový název skupiny',
+    'AssetFilterByTeam' => 'Filtrovat podle týmu {$name}',
+    'AssetFilterByValuation' => 'Filtrovat podle ocenění {$name}',
+    'AssetFilterByTag' => 'Filtrovat podle štítku {$name}',
+    'AssetFilterByLocation' => 'Filtrovat podle lokality/místa {$name}',
+    'AssetFilteringByTeam' => 'Filtrování podle týmu {$name}',
+    'AssetFilteringByValuation' => 'Filtrování podle ocenění {$name}',
+    'AssetFilteringByTag' => 'Filtrování podle štítku {$name}',
+    'AssetFilteringByLocation' => 'Filtrování podle lokality/místa {$name}',
+    'AssetShowOnlyVerified' => 'Zobrazit pouze ověřená aktiva',
+    'AssetShowOnlyUnverified' => 'Zobrazit pouze neověřená aktiva',
+    'AssetShowingVerified' => 'Zobrazují se ověřená aktiva',
+    'AssetShowingUnverified' => 'Zobrazují se neověřená aktiva',
+    'CustomizationLayoutPayloadRejected' => 'Rozvržení se nepodařilo uložit, protože obsahuje pole nebo karty, které nepatří do této šablony. Nic nebylo změněno.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Tento rozsah šablony nelze uložit z editoru rozvržení. Nic nebylo změněno.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Rozvržení nemá žádná platná pole, takže nebylo uloženo. Nic nebylo změněno.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Uložením tohoto rozvržení by se z šablony odstranila všechna pole, takže šablona nebyla uložena. Znovu načtěte stránku a zkuste to znovu.',
+    'CustomizationLayoutRejectedRequiredField' => 'Povinné pole nelze z rozvržení odstranit. Nic se nezměnilo.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Uložením tohoto rozvržení by se odstranila většina polí šablony, aniž byste je zde odstranili. Znovu načtěte stránku a zkuste to znovu. Nic se nezměnilo.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Skupina šablon neexistuje nebo patří k jinému typu záznamu. Nic nebylo změněno.',
+    'CustomizationLayoutLegacySaveRefused' => 'Tato šablona se upravuje pomocí editoru rozvržení a nelze ji uložit prostřednictvím koncového bodu staršího panelu.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Zadejte maximálně {$max} TCP portů mezi 1 a 65535, oddělených čárkami.',
+    'DiscoveryErrorProbeUnavailable' => 'Metoda sondy, se kterou byl tento běh spuštěn, již není pro pracovníka na pozadí k dispozici. Spusťte nový běh.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping (neprivilegovaný socket)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping (neupravený soket)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (příkaz ping)',
+    'DiscoveryProbeTcpConnect' => 'TCP připojení',
+    'DiscoveryProbeMethod' => 'Metoda sondy: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Detekováno webovým serverem. Pracovník na pozadí může použít jinou metodu.',
+    'DiscoveryTcpProbeWarning' => 'Hostitelé jsou nalezeni pouze tehdy, pokud odpovídají na jednom z prohledaných TCP portů, takže hostitelé, kteří tyto porty blokují, nebudou nalezeni. Pro úplné výsledky nechte server odesílat ICMP ping: povolte neprivilegované ping sockety nebo funkci NET_RAW, případně nainstalujte ping.',
+    'DiscoveryTcpPortsForRun' => 'TCP porty pro toto spuštění',
+    'DiscoveryTcpPortsHint' => 'Odděleno čárkami, maximálně {$max} portů. Ponechte prázdné pro použití výchozí hodnoty: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'TCP porty pro vyhledávání aktiv',
+    'DiscoveryDefaultTcpPortsHint' => 'Používá se, když pracovník na pozadí nemůže odeslat ICMP ping. Odděleno čárkami, maximálně {$max} portů.',
+    'DiscoveryErrorTcpUnreliable' => 'Skenování se zastavilo, protože síť odpovídá na TCP připojení pro adresy, které nemohou být skutečnými hostiteli (v cestě je proxy nebo firewall), takže každá adresa by vypadala jako aktivní. Požádejte administrátora, aby serveru povolil odesílat ICMP ping.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'TCP porty pro vyhledávání aktiv byly uživatelem „{$user}“ resetovány na výchozí hodnoty.',
+    'DiscoveryNotConfigured' => 'Zjišťování není nakonfigurováno. Požádejte správce systému o nastavení povolených rozsahů v souboru config.php.',
+    'DiscoveryRangeNotAllowed' => 'Tento rozsah je mimo rozsahy, které je funkce Discovery povolena prohledávat.',
+    'DiscoveryAllowedRangesList' => 'Povolené rozsahy: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Toto aktivum není k dispozici. Možná bylo smazáno nebo k němu nemáte přístup.',
+    'AssetCustomFieldNotInTemplate' => 'Jedno nebo více vlastních polí nepatří do šablony tohoto aktiva. Nic nebylo změněno.',
+    'AssetMappedControlsInvalid' => 'Namapované ovládací prvky se nepodařilo uložit. Každý řádek vyžaduje úroveň vyspělosti a alespoň jeden existující ovládací prvek. Nic se nezměnilo.',
+    'AssetMappedControlsTooMany' => 'Aktivum lze namapovat na maximálně {$max} kontrol. Nic se nezměnilo.',
+    'AddControlsAtAnotherMaturity' => 'Přidat kontroly na jiné úrovni vyspělosti',
+    'ChoosingControlsNeedsGovernancePermission' => 'Výběr kontrol vyžaduje oprávnění Governance.',
+    'NControls' => '{n} kontrol(y)',
+    'SavingKeepsTheCurrentControlMappings' => 'Uložením se zachovají aktuální mapování kontrol.',
+    'LoadingControls' => 'Načítání kontrol…',
+    'ControlListCouldNotBeLoaded' => 'Seznam kontrol se nepodařilo načíst, takže mapované kontroly nelze v tuto chvíli změnit.',
+    'RemoveControlsAtMaturity' => 'Odebrat kontroly na úrovni zralosti {maturity}',
+    'ControlIdUnavailable' => '#{id} (není k dispozici)',
+    'AssetRecordEdit' => 'Upravit aktivum',
+    'AssetRecordIdN' => 'Aktivum #{$id}',
+    'AssetRecordCopyLink' => 'Kopírovat odkaz na toto aktivum',
+    'AssetRecordLinkCopied' => 'Odkaz zkopírován.',
+    'AssetRecordLinkCopyFailed' => 'Odkaz se nepodařilo zkopírovat. Zkopírujte jej raději z adresního řádku.',
+    'AssetRecordMarkUnverified' => 'Označit jako neověřené',
+    'AssetRecordViewAuditTrail' => 'Zobrazit auditní záznam',
+    'AssetRecordAuditTrailTitle' => 'Auditní stopa',
+    'AssetRecordAuditTrailEmpty' => 'V tomto období nebyla u tohoto aktiva zaznamenána žádná aktivita.',
+    'AssetRecordAuditTrailFailed' => 'Auditní záznam se nepodařilo načíst.',
+    'AssetRecordBackToAsset' => 'Zpět k aktivu',
+    'AssetRecordSave' => 'Uložit aktivum',
+    'AssetRecordProvenanceVerified' => 'Ověřeno · přidáno {$date}',
+    'AssetRecordProvenanceUnverified' => 'Neověřeno: zatím nepotvrzeno někým, kdo může ověřit aktiva · přidáno {$date}',
+    'AssetRecordUnsavedHint' => 'Zavření s neuloženými změnami vás nejprve vyzve k potvrzení.',
+    'AssetRecordDiscardQuestion' => 'Zahodit neuložené změny?',
+    'AssetRecordKeepEditing' => 'Pokračovat v úpravách',
+    'AssetRecordDiscardChanges' => 'Zahodit změny',
+    'AssetRecordVerificationCard' => 'Ověření',
+    'AssetRecordVerificationTag' => 'Vyžaduje oprávnění k ověření aktiv',
+    'AssetRecordVerifiedHint' => 'Toto aktivum zkontroloval odpovědný pracovník. Změna jeho názvu nebo IP adresy bez oprávnění k ověřování aktiv jej vrátí do stavu neověřený.',
+    'AssetRecordLoadFailed' => 'Aktivum se nepodařilo načíst. Zkuste to prosím znovu.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'Rozhraní API pro rozvržení karet přizpůsobení je k dispozici pouze pro fgroup=risk (tab_index 1, 2 nebo 3) a fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'Uživatel, který toto spuštění spustil, již nemá oprávnění ke spuštění vyhledávání aktiv.',
+    'AssetRecordEditField' => 'Upravit {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Důvěrnost',
+    'Integrity' => 'Integrita',
+    'Availability' => 'Dostupnost',
+    'AssetScoringLevelLow' => 'Nízký',
+    'AssetScoringLevelModerate' => 'Mírný',
+    'AssetScoringLevelHigh' => 'Vysoký',
+    'AssetScoringValueInvalid' => 'Důvěrnost, integrita a dostupnost akceptují nízká, střední nebo vysoká (důvěrnost akceptuje i nevztahuje se).',
+    'AssetScoringChangedLog' => 'Uživatel „{$user}“ změnil {$objective} aktiva „{$name}“ z {$from} na {$to}.',
+    'FIPSCategorization' => 'Kategorizace FIPS',
+    'WeightedScore' => 'Vážené skóre',
+    'WeightedBand' => 'Vážené pásmo',
+    'AllCategorizations' => 'Všechny kategorie',
+    'AllBands' => 'Všechny kapely',
+    'AssetFilterByCategorization' => 'Filtrovat podle kategorie FIPS {$name}',
+    'AssetFilteringByCategorization' => 'Filtrování podle kategorizace FIPS {$name}',
+    'AssetFilterByBand' => 'Filtrovat podle váženého pásma {$name}',
+    'AssetFilteringByBand' => 'Filtrování podle váženého pásma {$name}',
+    'AssetScoring' => 'Bodové hodnocení aktiv',
+    'AssetScoringSettingsHint' => 'Každé aktivum je hodnoceno jako Nízké, Střední nebo Vysoké z hlediska důvěrnosti, integrity a dostupnosti a důvěrnost může být místo toho Nepoužitelné, což jej vylučuje z obou výsledků. Jeho kategorie FIPS je nejvyšší ze tří hodnocení. Jeho vážené skóre je váženým průměrem hodnot tří úrovní a prahové hodnoty pásem mění toto skóre na pásmo Nízké, Střední nebo Vysoké. Změnou těchto nastavení se každé aktivum okamžitě přehodnotí.',
+    'Weights' => 'Váhy',
+    'AssetScoringWeightsHint' => 'Kolik se každý cíl váží ve váženém skóre: 0 až 100, s maximálně dvěma desetinnými místy. Váha 0 daný cíl vynechává. Integrita a Dostupnost nemohou být zároveň 0, protože důvěrnost typu Nevztahuje se vždy vynechává.',
+    'LevelValues' => 'Hodnoty úrovní',
+    'AssetScoringLevelValuesHint' => 'Číslo, kterým každé hodnocení přispívá k váženému skóre: nad 0 a do 100, s maximálně dvěma desetinnými místy, a Nízké pod Střední pod Vysoké. Výchozí hodnoty jsou Nízké 1, Střední 2 a Vysoké 3.',
+    'BandThresholds' => 'Prahové hodnoty pásma',
+    'AssetScoringBandThresholdsHint' => 'Vážené skóre na prahové hodnotě nebo nad ní je v tomto pásmu a skóre pod střední prahovou hodnotou je nízké. Střední musí začínat nad nízkou hodnotou a vysoké musí začínat nad střední hodnotou a ne vyšší než vysoká hodnota.',
+    'ModerateStartsAt' => 'Mírná začíná na',
+    'HighStartsAt' => 'Vysoká začíná na',
+    'DefaultScoringForNewAssets' => 'Výchozí bodování pro nová aktiva',
+    'AssetScoringDefaultsHint' => 'Předvybere tato hodnocení, když někdo přidá aktivum ve formuláři aktiva. Aktiva vytvořená objevováním, importem nebo rozhraním API zůstanou bez hodnocení, pokud neposkytnou vlastní hodnocení. Chcete-li tuto možnost vypnout, nechte všechny tři možnosti nastavené na Nenastaveno.',
+    'AssetScoringWeightsInvalid' => 'Váhy pro hodnocení aktiv musí být čísla od 0 do 100 s maximálně dvěma desetinnými místy a Integrita a Dostupnost nemohou být zároveň 0.',
+    'AssetScoringValuesInvalid' => 'Hodnoty úrovně skóre aktiv musí být čísla nad 0 a do 100 s maximálně dvěma desetinnými místy, přičemž Nízká musí být pod Střední pod Vysokou.',
+    'AssetScoringThresholdsInvalid' => 'Prahové hodnoty pásem pro hodnocení aktiv musí mít maximálně dvě desetinná místa, přičemž střední začíná nad nízkou hodnotou, vysoká začíná nad střední hodnotou a vysoká začíná ne nad vysokou hodnotou.',
+    'AssetScoringDefaultsInvalid' => 'Výchozí bodování pro nové prvky musí být na úrovni, kterou každý cíl nabízí.',
+    'AssetScoringSettingsNotSaved' => 'Nastavení hodnocení aktiv se nepodařilo uložit. Nic se nezměnilo.',
+    'AssetScoringSettingsChangedLog' => 'Nastavení hodnocení aktiv bylo změněno uživatelem „{$user}“.',
+    'AssetScoringNotSet' => 'Není nastaveno',
+    'NotScored' => 'Neskórováno',
+    'AssetScoringNotScoredHint' => 'Odpovězte na všechny tři cíle, abyste toto aktivum ohodnotili.',
+    'ImportAssetScoringValueIgnored' => 'Hodnota {$objective} „{$value}“ pro aktivum „{$asset_name}“ není platné hodnocení a byla ignorována.',
+    'AssetScoringSecurityObjectives' => 'Bezpečnostní cíle',
+    'AssetScoringConfidentialityHelp' => 'Jaký je potenciální dopad neoprávněného zveřejnění informací o tomto aktivu?',
+    'AssetScoringIntegrityHelp' => 'Jaký je potenciální dopad neoprávněné úpravy nebo zničení informací na tomto aktivu?',
+    'AssetScoringAvailabilityHelp' => 'Jaký je potenciální dopad, pokud dojde k narušení přístupu k tomuto aktivu nebo jeho používání?',
+    'AssetScoringHelpHigh' => 'Závažný nebo katastrofický nepříznivý účinek',
+    'AssetScoringHelpModerate' => 'Závažný nepříznivý dopad',
+    'AssetScoringHelpLow' => 'Omezený nebo žádný nepříznivý dopad',
+    'AssetScoringHelpNotApplicable' => 'Důvěrnost tohoto aktiva (například veřejně dostupné informace) není důležitá.',
+    'AssetScoringHelpLabel' => '{$objective} doporučení k hodnocení',
+    'AssetScoringMeterValue' => '{$score}, {$band} pásmo',
+    'AssetScoringNoWeightedScore' => 'Žádné vážené skóre',
+    'AssetScoringNoWeightedScoreNote' => 'Žádné vážené skóre: každý cíl, který se počítá, má váhu 0.',
+    'AssetScoringUpgradePending' => 'Bodové hodnocení aktiv nelze uložit, dokud nebude provedena aktualizace databáze SimpleRisk. Nic se nezměnilo.',
+    'AssetScoringResultHelpLabel' => '{$result} vysvětlení',
+    'AssetScoringScoreHelp' => 'Vážené skóre sloučí tři hodnocení do jednoho čísla od {$low} do {$high}. Každé hodnocení se stane svou nastavenou hodnotou a každé se vynásobí váhou svého cíle. Výsledky se sečtou a vydělí součtem vah. Stupeň důvěrnosti „Nepoužije se“ je vynechán spolu s jeho váhou. Nastavené hodnoty a váhy se konfigurují v Nastavení. Všechny tři cíle musí být ohodnoceny, než se zobrazí skóre.',
+    'AssetScoringCategorizationHelp' => 'Kategorie zabezpečení dle FIPS 199 představuje nejvyšší hodnocení: nejvyšší hodnocení mezi použitelnými cíli. Jediné vysoké hodnocení činí aktivum vysokým, bez ohledu na ostatní. Hodnota „Nevztahuje se“ se ignoruje.',
+    'AssetScoringBandHelp' => 'Pásmo umisťuje vážené skóre na stupnici Nízké, Střední nebo Vysoké. Skóre pod {$moderate} je Nízké, od {$moderate} do {$highAt} je Střední a {$highAt} nebo více je Vysoké. Prahové hodnoty se konfigurují v Nastavení.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Všechna hodnocení důvěrnosti',
+    'AllIntegrityRatings' => 'Všechna hodnocení integrity',
+    'AllAvailabilityRatings' => 'Všechna hodnocení dostupnosti',
+    'AssetFilterByConfidentiality' => 'Filtrovat podle důvěrnosti {$name}',
+    'AssetFilteringByConfidentiality' => 'Filtrování podle důvěrnosti {$name}',
+    'AssetFilterByIntegrity' => 'Filtrovat podle integrity {$name}',
+    'AssetFilteringByIntegrity' => 'Filtrování podle integrity {$name}',
+    'AssetFilterByAvailability' => 'Filtrovat podle dostupnosti {$name}',
+    'AssetFilteringByAvailability' => 'Filtrování podle dostupnosti {$name}',
+    'HighestFIPSCategorization' => 'Nejvyšší kategorizace FIPS',
+    'HighestWeightedScore' => 'Nejvyšší vážené skóre',
+    'HighestWeightedBand' => 'Nejvyšší vážené pásmo',
+    'AssetGroupFields' => 'Pole skupiny aktiv',
+    'NoAssetGroupsMatchFilters' => 'Žádné skupiny aktiv neodpovídají vašim filtrům',
+    'AssetGroupFilterByHighestCategorization' => 'Filtrovat podle nejvyšší kategorie FIPS {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Filtrování podle nejvyšší kategorie FIPS {$name}',
+    'AssetGroupFilterByHighestBand' => 'Filtrovat podle pásma s nejvyšší váhou {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Filtrování podle pásma s nejvyšší váhou {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Vyberte skupiny aktiv buď podle ID, nebo podle filtru.',
+    'AssetGroupBulkIdsRequired' => 'Vyberte alespoň jednu skupinu aktiv.',
+    'AssetGroupBulkIdsInvalid' => 'ID skupin aktiv musí být celá čísla.',
+    'AssetGroupBulkFilterAllAlone' => 'Výběr všech skupin aktiv nelze kombinovat s jinými filtry.',
+    'AssetGroupBulkFilterEmpty' => 'Před smazáním vyberte filtr nebo vyberte všechny skupiny aktiv.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Očekávaný počet skupin aktiv musí být celé číslo.',
+    'AssetGroupBulkExpectedCountRequired' => 'Mazání skupin aktiv podle filtru vyžaduje počet skupin, které chcete smazat.',
+    'AssetGroupBulkNoMatch' => 'Vašemu výběru neodpovídají žádné skupiny aktiv.',
+    'AssetGroupBulkCountMismatch' => 'Odpovídající skupiny aktiv se od vašeho výběru změnily z {$expected} na {$actual} . Zkontrolujte seznam a zkuste to znovu.',
+    'AssetGroupBulkTooManyToDelete' => 'Najednou můžete smazat maximálně {$max} skupin aktiv. Zúžte výběr a zkuste to znovu.',
+    'AssetGroupBulkSelectAll' => 'Vybrat všechny {$count} skupiny aktiv',
+    'AssetGroupBulkAllSelected' => 'Vybrány všechny {$count} odpovídající skupiny aktiv',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Smazat {$count} skupin aktiv?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Aktiva v těchto skupinách nebudou smazána. Odstraní se pouze skupiny.',
+    'DeleteAssetGroups' => 'Smazat skupiny',
+    'AssetGroupBulkDeletedSummary' => '{$ok} skupin smazáno, {$failed} přeskočeno',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Výběr souvisejících rizik vyžaduje povolení od Správy rizik.',
+    'NAssociatedRisks' => '{n} související riziko (rizika)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Uložením se zachovají aktuální související rizika.',
+    'UpgradePhpPartialTarget' => 'Aktualizace na {$target}, nejnovější verzi, kterou PHP {$php} podporuje. Verze {$blocked} a novější vyžadují PHP {$needed} nebo novější.',
+    'UpgradeNoPhpCli' => 'Aktualizace vyžaduje pro aktualizaci databáze rozhraní příkazového řádku PHP s rozšířením pdo_mysql, ale na tomto serveru se žádné nenašlo. Nic se nezměnilo. Nainstalujte jej (plánované úlohy SimpleRisk jej také potřebují) a poté znovu spusťte aktualizaci.',
+    'UpgradeDatabaseStepFailed' => 'Aktualizace databáze se nezdařila. Databáze je verze {$reached}. Podívejte se na výše uvedené zprávy a protokol SimpleRisk a poté spusťte aktualizaci znovu.',
+    'UpgradeReplacingVendorDirectory' => 'Nahrazení adresáře vendor.',
+    'AdvancedSearchLockedPlaceholder' => 'Prohledejte celý program',
+    'AdvancedSearchLockedAria' => 'Prohledejte celý program. Zamčeno: vyžaduje funkci Rozšířené vyhledávání.',
+    'AdvancedSearchLockedPitch' => 'Najděte riziko, kontrolu, dokument nebo aktivum v jednom poli a přejděte na záznamy, které jsou s ním spojeny.',
+    'AdvancedSearchUnlocksLabel' => 'Odemkne vyhledávání napříč',
+    'RequiresAdvancedSearchExtra' => 'Vyžaduje doplňkové rozšířené vyhledávání.',
+    'UnlockAdvancedSearchLink' => 'Podívejte se, co to přidává',
+    'UnlockActivateAdvancedSearchNote' => 'Rozšířené vyhledávání je nainstalováno, ale není zapnuté.',
+    'UnlockActivateAdvancedSearchLink' => 'Zapněte to',
+    'AdvancedSearchControlCount' => 'Kontroly: {$count}',
+    'AdvancedSearchAssetCount' => 'Aktiva: {$count}',
+    'AdvancedSearchValuationRange' => '{$min} až {$max}',
+    'AdvancedSearchTypes' => 'Typy',
+    'AdvancedSearchTypesToggle' => 'Typy · {$count}',
+    'AdvancedSearchViewAll' => 'Zobrazit vše',
+    'AdvancedSearchMatchedIn' => 'Shoda v {$field}:',
+    'AdvancedSearchMatchedInFilter' => 'Shoda v',
+    'AdvancedSearchAnyField' => 'Libovolné pole',
+    'AdvancedSearchSortBest' => 'Nejlepší shoda',
+    'AdvancedSearchSummary' => 'Výsledky: {$count}',
+    'AdvancedSearchSummaryTypes' => 'Vyhledané typy: {$types}',
+    'AdvancedSearchNoResultsTitle' => 'Žádné výsledky pro „{$q}“',
+    'AdvancedSearchNoResultsTip' => 'Zkontrolujte pravopis nebo zkuste méně slov.',
+    'AdvancedSearchFailedTitle' => 'Momentálně se nepodařilo vyhledat',
+    'AdvancedSearchFailedBody' => 'Vaše data jsou v bezpečí. Zkuste to znovu za chvíli.',
+    'AdvancedSearchIncompleteTitle' => 'Výsledky mohou být neúplné.',
+    'AdvancedSearchIncompleteDetail' => 'Tento typ prohledal pouze nejnovější záznamy. Zúžte vyhledávání a zobrazte další.',
+    'AdvancedSearchTimeLimitNote' => 'Vyhledávání bylo kvůli rychlosti zastaveno brzy, takže některé typy nebyly vyhledány. Zúžte vyhledávání tak, aby zahrnovalo i tyto typy.',
+    'AdvancedSearchNotSearched' => 'Nevyhledáno',
+    'AdvancedSearchMinChars' => 'Zadejte alespoň {$count} znaků pro vyhledávání.',
+    'AdvancedSearchEmptyPrompt' => 'Vyhledávání rizik, kontrol, dokumentů, aktiv a dalších informací.',
+    'AdvancedSearchFirstPage' => 'První stránka',
+    'AdvancedSearchNoAccess' => 'Váš účet nemůže vyhledávat žádné typy záznamů. Požádejte o přístup administrátora.',
+    'AdvancedSearchSort' => 'Seřadit',
+    'AdvancedSearchConnectedRecords' => 'Propojené záznamy',
+    'AdvancedSearchConnectedRecordsNote' => 'Zobrazuje pouze záznamy, ke kterým máte přístup.',
+    'AdvancedSearchNoConnections' => 'Nevidíte žádné propojené záznamy.',
+    'AdvancedSearchConnectionsFailed' => 'Nepodařilo se načíst připojené záznamy.',
+    'AdvancedSearchShowConnections' => 'Zobrazit propojené záznamy pro {$title}',
+    'AdvancedSearchExploreConnections' => 'Prozkoumejte spojení',
+    'AdvancedSearchCopyLink' => 'Kopírovat odkaz',
+    'AdvancedSearchMoreCount' => '+{$count} více',
+    'AdvancedSearchCopyLinkFailed' => 'Odkaz se nepodařilo zkopírovat.',
+    'AdvancedSearchOpenRecord' => 'Otevřít',
+    'ControlDeepLinkUnavailable' => 'Tato kontrola není k dispozici. Možná byla smazána nebo k ní nemáte přístup.',
+    'ExceptionDeepLinkUnavailable' => 'Tuto výjimku zde nelze otevřít. Možná nemáte přístup k jejímu dokumentu s pravidly.',
+    // Advanced Search: the topbar typeahead
+    'AdvancedSearchSeeAll' => 'Zobrazit všechny výsledky pro „{$q}“',
+    'AdvancedSearchTopHit' => 'Nejlepší hit',
+    'AdvancedSearchKeyMove' => 'Pohyb',
+    'AdvancedSearchKeyEsc' => 'esc',
+    'AdvancedSearchSuggestions' => 'Návrhy vyhledávání',
+    'AdvancedSearchAssessmentSubtitle' => '{$contact} · {$percent}% dokončeno',
+    'AdvancedSearchScannerId' => 'ID skeneru',
+    'AdvancedSearchVendor' => 'Dodavatel',
+    'AdvancedSearchProduct' => 'Produkt',
+    'AdvancedSearchSeverityLevel' => 'Závažnost {$level}',
+    'AdvancedSearchFromYourExtras' => 'Z vašich doplňků',
+    'UpdateAnExistingUser' => 'Aktualizace stávajícího uživatele',
+    'UserImportProgressTitle' => 'Import uživatelů',
+    'UserImportQueued' => 'Zařazeno do fronty. Import začne za chvíli…',
+    'UserImportProgressCount' => '{$processed} z {$total} zpracovaných řádků…',
+    'UserImportComplete' => 'Import dokončen.',
+    'UserImportFailed' => 'Import se nepodařilo dokončit.',
+    'UserImportSummary' => '{$created} vytvořeno, {$updated} aktualizováno, {$failed} neimportováno.',
+    'UserImportRowInvalid' => 'Řádek {$row}: neimportován. Je vyžadováno uživatelské jméno, celé jméno a platná e-mailová adresa.',
+    'UserImportRowError' => 'Řádek {$row}: neimportován z důvodu neočekávané chyby.',
+    'UserImportRevealPasswords' => 'Zobrazit dočasná hesla',
+    'UserImportPasswordsOnce' => 'Dočasná hesla nových uživatelů se zobrazí jednou a poté se smažou. Zkopírujte je nyní a bezpečně sdělte každému uživateli svá hesla. Každý uživatel si je musí při prvním přihlášení změnit.',
+    'UserImportPasswordsShownOnce' => 'Tato dočasná hesla byla ze SimpleRisk smazána a nelze je znovu zobrazit. Zkopírujte je nyní. Každý uživatel si musí při prvním přihlášení změnit svá hesla.',
+    'UserImportPasswordsUnavailable' => 'Dočasná hesla již nelze zobrazit. Zobrazí se jednou, pouze administrátorovi, který import spustil, a pouze na kartě prohlížeče, která jej spustila, a SimpleRisk neuchovává nic, co by je mohlo znovu zobrazit. Nastavte nové heslo pro každého nového uživatele úpravou uživatele.',
+    'UserImportBackgroundNote' => 'Tato stránka se sama aktualizuje a import bude pokračovat, i když ji opustíte. Pro zobrazení výsledku otevřete stránku znovu.',
+    'AuditAdditionalStakeholdersSetOnTest' => 'V testu jsou nastaveny další zúčastněné strany. Chcete-li je změnit, upravte test v sekci {$page}; změna se pro tento audit projeví okamžitě.',
+    'QuestionnaireDraftSomeFilesNotSaved' => 'Vaše odpovědi byly uloženy, ale jedna nebo více příloh uloženy nebyly. Soubor je pravděpodobně příliš velký nebo typu, který není povolen.',
+    'UploadFileTooBigForDatabase' => 'Nahraný soubor je pro databázi příliš velký. Administrátor SimpleRisk může v konfiguraci MySQL zvýšit hodnoty max_allowed_packet a innodb_log_file_size.',
+    'UploadErrorIniSize' => 'Nahraný soubor překračuje povolenou velikost direktivy upload_max_filesize v souboru php.ini.',
+    'UploadErrorFormSize' => 'Nahraný soubor překračuje povolenou velikost direktivy MAX_FILE_SIZE, která byla zadána ve formuláři HTML.',
+    'UploadErrorPartial' => 'Nahraný soubor byl nahrán pouze částečně.',
+    'UploadErrorNoFile' => 'Nebyl nahrán žádný soubor.',
+    'UploadErrorNoTmpDir' => 'Chybí dočasná složka.',
+    'UploadErrorCantWrite' => 'Nepodařilo se zapsat soubor na disk.',
+    'UploadErrorExtension' => 'Nahrávání souboru zastavilo rozšíření PHP.',
+    'MaxUploadSizeNeedsInteger' => 'Maximální velikost nahrávaného souboru musí být celý počet bajtů větší než nula.',
+    'MaxUploadSizeUpdated' => 'Maximální velikost nahrávaného souboru byla úspěšně aktualizována.',
+    'MaxUploadSizeCapped' => 'Uložená hodnota je vyšší, než tento server povoluje, takže větší soubory jsou odmítány, dokud nebudou zvýšeny limity PHP a MySQL nebo tato hodnota snížena. Největší aktuálně akceptovaný soubor v bajtech:',
+    'PleaseEnterAValidEmailAddress' => 'Zadejte prosím platnou e-mailovou adresu.',
+    'RiskImportedClosedWithoutCloseReason' => 'Riziko {$risk_id} ("{$subject}") bylo importováno se stavem Uzavřeno, ale bez důvodu uzavření, takže informace o jeho uzavření jsou neúplné. Přidejte do souboru důvod uzavření a znovu jej importujte, nebo dokončete uzavření ze stránky rizika.',
+    // SR-115: HTTP Strict Transport Security (HSTS)
+    'EnableHSTS' => 'Povolit zabezpečení HTTP Strict Transport Security (HSTS)',
+    'EnableHSTSHelp' => 'Říká prohlížečům, aby se k SimpleRisk připojovaly pouze přes HTTPS po dobu maximální doby platnosti uvedenou níže. Povolte tuto možnost až poté, co HTTPS na tomto webu bude spolehlivě fungovat: prohlížeče, které viděly záhlaví, odmítnou prostý HTTP a poškozený certifikát nelze obejít, dokud nevyprší maximální doba platnosti. Začněte s krátkou maximální věkovou hranicí, například 300 sekund, a zvyšte ji, jakmile je HTTPS ověřen.',
+    'HSTSMaxAge' => 'Maximální věk HSTS (sekundy)',
+    'HSTSMaxAgeInvalid' => 'Maximální stáří HSTS musí být celý počet sekund mezi 0 a 63072000.',
+    'HSTSIncludeSubdomains' => 'Použít HSTS na všechny subdomény',
+    'HSTSIncludeSubdomainsHelp' => 'Také vynucuje HTTPS na každé subdoméně tohoto hostitele. Pokud je některá subdoména obsluhována přes čistý HTTP, nechte tuto možnost vypnutou.',
     '' => '',
 );
 ?>

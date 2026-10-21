@@ -17,7 +17,7 @@ class TypeMapper
         'bool' => 'boolean',
         'int' => 'integer',
         'integer' => 'integer',
-        'long' => ['integer', 'long'],
+        'long' => ['integer', 'int64'],
         'float' => ['number', 'float'],
         'double' => ['number', 'double'],
         'date' => ['string', 'date'],
@@ -72,9 +72,9 @@ class TypeMapper
     /**
      * Map an array of native types to their spec type strings.
      *
-     * @param list<string> $types
+     * @param array<string> $types
      *
-     * @return list<string>
+     * @return array<string>
      */
     public function toSpecTypes(array $types): array
     {

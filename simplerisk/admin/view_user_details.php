@@ -5,7 +5,7 @@
 
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['multiselect', 'CUSTOM:permissions-widget.js'], ['check_admin' => true], 'Update an Existing User', 'Configure', 'UserManagement');
+render_header_and_sidebar(['multiselect', 'CUSTOM:permissions-widget.js'], ['check_admin' => true], 'UpdateAnExistingUser', 'Configure', 'UserManagement');
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));

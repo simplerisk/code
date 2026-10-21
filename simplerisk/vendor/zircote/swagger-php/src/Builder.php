@@ -9,8 +9,10 @@ namespace OpenApi;
 use OpenApi\Builder\Mode;
 use OpenApi\Builder\Result;
 use OpenApi\Contracts\CompilerInterface;
+use OpenApi\Contracts\MergerInterface;
 use OpenApi\Loggers\CollectingLogger;
 use OpenApi\Utils\AttributeFactory;
+use OpenApi\Utils\ClassReflector;
 use OpenApi\Utils\PipeInterface;
 use OpenApi\Utils\SourceScanner;
 use Psr\Log\LoggerInterface;
@@ -40,7 +42,7 @@ class Builder
     /**
      * @var list<BuilderSource|iterable<BuilderSource>>
      */
-    protected string|\SplFileInfo|\Reflector|iterable $sources = [];
+    protected array $sources = [];
 
     protected Mode $mode = Mode::CLASSIC;
 
@@ -58,11 +60,19 @@ class Builder
     protected ?Utils\Pipeline $augmenters = null;
 
     /**
+     * @var Utils\TypedList<MergerInterface>|null
+     */
+    protected ?Utils\TypedList $mergers = null;
+
+    /**
      * @var callable|null
      */
     protected $generatorHook;
 
     protected ?AttributeFactory $attributeFactory = null;
+
+    /** @var list<callable(Specification): (Specification|void)> */
+    protected array $specificationHooks = [];
 
     /**
      * @param BuilderSource|iterable<BuilderSource> $source
@@ -122,6 +132,9 @@ class Builder
     /**
      * Configure the resolver via callable.
      *
+     * Runs when called, against the resolver the builder holds; repeated calls configure the
+     * same instance.
+     *
      * @param callable(Resolver): (Resolver|void) $hook
      */
     public function withResolver(callable $hook): static
@@ -149,11 +162,43 @@ class Builder
     /**
      * Configure the augmenter pipeline via callable.
      *
+     * Runs when called, against the pipeline the builder holds; repeated calls configure the
+     * same pipeline.
+     *
      * @param callable(Utils\Pipeline<Specification>): (Utils\Pipeline<Specification>|void) $hook
      */
     public function withAugmenters(callable $hook): static
     {
         $hook($this->getAugmenters());
+
+        return $this;
+    }
+
+    /**
+     * @return Utils\TypedList<MergerInterface>
+     */
+    public function getMergers(): Utils\TypedList
+    {
+        $this->mergers ??= new Utils\TypedList($this->getDefaultMergers());
+
+        return $this->mergers;
+    }
+
+    /**
+     * Configure the merger chain via callable.
+     *
+     * Mergers decide what makes two attributes the same one and what the survivor is. They are
+     * tried in registration order and the first to claim a type handles it, so a merger for one
+     * type goes ahead of `Merge\LastWins`, which claims everything and ships last.
+     *
+     * Runs when called, against the list the builder holds; repeated calls configure the same
+     * list.
+     *
+     * @param callable(Utils\TypedList<MergerInterface>): (Utils\TypedList<MergerInterface>|void) $hook
+     */
+    public function withMergers(callable $hook): static
+    {
+        $hook($this->getMergers());
 
         return $this;
     }
@@ -166,6 +211,11 @@ class Builder
     }
 
     /**
+     * Configure the attribute factory via callable. Translators are registered here.
+     *
+     * Runs when called, against the factory the builder holds; repeated calls configure the
+     * same instance.
+     *
      * @param callable(AttributeFactory): (AttributeFactory|void) $hook
      */
     public function withAttributeFactory(callable $hook): static
@@ -176,10 +226,33 @@ class Builder
     }
 
     /**
+     * Contribute to the `Specification` after assembly and before resolution.
+     *
+     * The callable receives the assembled `Specification` and adds attributes to it with
+     * `Specification::add()`. A `$ref` in a contribution resolves as one in a scanned attribute
+     * does, and every augmenter sees what was contributed. A contribution carrying a reflector
+     * is treated as the assembler's own; one without is metadata nothing else reaches.
+     *
+     * Runs during the build, once the `Specification` exists. Hooks accumulate: every one
+     * runs, in registration order. Classic mode assembles no `Specification`, so the hooks
+     * are never called there.
+     *
+     * @param callable(Specification): (Specification|void) $hook
+     */
+    public function withSpecification(callable $hook): static
+    {
+        $this->specificationHooks[] = $hook;
+
+        return $this;
+    }
+
+    /**
      * Hook to configure the underlying Generator.
      *
      * The callable receives a default Generator and may either modify it in-place
      * or return a fully configured instance.
+     *
+     * Runs during the build, once the Generator exists. A second call replaces the first.
      *
      * @param callable(Generator): (Generator|void) $hook
      */
@@ -228,7 +301,10 @@ class Builder
 
     protected function doBuildSpec(bool $hybrid = false): Result
     {
+        $collecting = new CollectingLogger($this->getLogger());
+
         $attributeFactory = $this->getAttributeFactory();
+        $attributeFactory->setLogger($collecting);
         $assembler = new Assembler(attributeFactory: $attributeFactory);
 
         $sourceScanner = new SourceScanner($this->getLogger());
@@ -238,30 +314,48 @@ class Builder
 
         foreach ($sourceScanner->getFiles() as $file) {
             foreach (array_keys($tokenScanner->scanFile($file)) as $class) {
-                if (class_exists($class) || interface_exists($class) || enum_exists($class) || trait_exists($class)) {
-                    $assembler->collect(new \ReflectionClass($class));
+                [$rc, $reason] = ClassReflector::tryReflect($class);
+                if (!$rc instanceof \ReflectionClass) {
+                    $this->getLogger()->warning($reason === null
+                        ? 'Skipping unknown ' . $class
+                        : "Skipping unloadable {$class}: {$reason}");
+
+                    continue;
                 }
+
+                $this->collectSafely($assembler, $rc);
             }
         }
 
         foreach ($sourceScanner->getReflectors() as $reflector) {
             if ($reflector instanceof \ReflectionClass) {
-                $assembler->collect($reflector);
+                $this->collectSafely($assembler, $reflector);
             }
         }
 
         $specification = $assembler->getSpecification();
 
+        foreach ($this->specificationHooks as $hook) {
+            $hook($specification);
+        }
+
+        // every producer has run and nothing has read a component key yet; the resolver's
+        // index is the first reader
+        Specification\ComponentName::normalise($specification, deprecate: true);
+
+        $this->getResolver()->setLogger($this->getLogger());
         $this->getResolver()->resolve($assembler);
 
         if ($hybrid) {
             $this->doHybridAssemble($specification);
+            Specification\ComponentName::normalise($specification, deprecate: false);
         }
 
         // share the token scanner cache ...
         $this->getAugmenters()->get(Augmenter\Inheritance::class)
             ?->setAttributeFactory($attributeFactory);
 
+        $this->getAugmenters()->setLogger($collecting);
         $this->getAugmenters()->process($specification);
 
         $version = $this->version ?? $specification->openapi->version ?? '3.1.0';
@@ -271,7 +365,24 @@ class Builder
         $diagnostics = $compiler->validate($specification);
         $output = $compiler->compile($specification);
 
-        return Result::fromSpec($sourceScanner->getFiles(), $specification, $output, $diagnostics);
+        return Result::fromSpec(
+            $sourceScanner->getFiles(),
+            $specification,
+            $output,
+            [...$collecting->entries(), ...$diagnostics],
+        );
+    }
+
+    /**
+     * @param \ReflectionClass<object> $reflector
+     */
+    protected function collectSafely(Assembler $assembler, \ReflectionClass $reflector): void
+    {
+        try {
+            $assembler->collect($reflector);
+        } catch (\Throwable $throwable) {
+            $this->getLogger()->warning("Skipping unloadable {$reflector->getName()}: {$throwable->getMessage()}");
+        }
     }
 
     protected function doHybridAssemble(Specification $specification): void
@@ -318,18 +429,25 @@ class Builder
     }
 
     /**
-     * @return list<PipeInterface>
+     * @return list<PipeInterface<Specification>>
      */
     protected function getDefaultAugmenters(): array
     {
+        // both runs share one registry, so `withMergers()` reaches them both
+        $mergers = $this->getMergers();
+
         return [
+            new Augmenter\TypeAliases(),
             new Augmenter\Inheritance(),
             new Augmenter\Names(),
             new Augmenter\Enums(),
             new Augmenter\Shortcuts(),
+            new Augmenter\SecurityRequirements(),
             new Augmenter\PathItems(),
             new Augmenter\Types(),
             new Augmenter\Refs(),
+            new Augmenter\Parameters(),
+            new Augmenter\Merge($mergers),
             new Augmenter\PathFilter(),
             new Augmenter\Cleanup(),
             new Augmenter\MediaTypes(),
@@ -337,6 +455,19 @@ class Builder
             new Augmenter\OperationIds(),
             new Augmenter\Tags(),
             new Augmenter\EnumDescriptions(),
+            // the same pass again, as the last pipe of all: what a late augmenter added is
+            // reduced too, so nothing downstream has to be trusted to keep keys unique
+            new Augmenter\Merge($mergers, Augmenter\Group::Augment),
+        ];
+    }
+
+    /**
+     * @return list<MergerInterface>
+     */
+    protected function getDefaultMergers(): array
+    {
+        return [
+            new Merge\LastWins(),
         ];
     }
 }

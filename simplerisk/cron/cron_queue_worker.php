@@ -32,6 +32,8 @@ $stuckThresholdMinutes = 30;
 
 $startTime = time();
 $lastWorkTime = time();
+// config.php, watched so an edit recycles the worker (see the main loop).
+$configPath = __DIR__ . '/../includes/config.php';
 
 // === SESSION IDENTITY FOR AUDIT LOGS ===
 // Functions that write audit log entries read $_SESSION['user'] and $_SESSION['uid'].
@@ -114,6 +116,17 @@ while (true) {
         break;
     }
 
+    // config.php is read once, at start. When a system administrator edits it
+    // (for example the asset discovery allowlist), exit between tasks so cron
+    // respawns the worker with the new configuration. Fail-safe: a stat
+    // failure or a future mtime never triggers this, and the respawned worker
+    // starts after the edit, so it does not loop (worker_config_changed_since()).
+    clearstatcache(true, $configPath);
+    if (worker_config_changed_since($startTime, @filemtime($configPath), $now)) {
+        record_worker_restart($workerName, 'config_changed');
+        break;
+    }
+
     // === METRICS: memory usage ===
     worker_metric_set($workerName, 'memory_bytes', memory_get_usage(true));
     worker_metric_set($workerName, 'peak_memory_bytes', memory_get_peak_usage(true));
@@ -169,26 +182,11 @@ while (true) {
     $task = null;
     try {
         $db->beginTransaction();
-        $stmt = $db->prepare("
-            SELECT * FROM queue_tasks
-            WHERE status = 'pending'
-            ORDER BY priority DESC, created_at ASC
-            LIMIT 1
-            FOR UPDATE
-        ");
-        $stmt->execute();
-        $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Skips tasks still waiting out a retry back-off (SR-2307) so a failing
+        // high-priority task cannot stall the rest of the queue.
+        $task = queue_pick_next_runnable_task($db, $now);
         if ($db->inTransaction()) {
             $db->commit();
-        }
-
-        foreach ($tasks as $t) {
-            $payload = json_decode($t['payload'] ?? '{}', true);
-            $nextRetryAt = isset($payload['next_retry_at']) ? strtotime($payload['next_retry_at']) : null;
-            if ($nextRetryAt === null || $nextRetryAt <= $now) {
-                $task = $t;
-                break;
-            }
         }
     } catch (\Throwable $t) {
         if ($db->inTransaction()) $db->rollBack();
@@ -208,6 +206,10 @@ while (true) {
     // === TASK LOOKUP USING KEYED JOB MAP ===
     $job_def = worker_get_job_definition($taskType);
     if (!$job_def) {
+        // Counts every failed attempt, retried or not, like failed_promises. Each
+        // increment comes before the failure handler so a throwing terminal hook
+        // cannot skip it.
+        worker_metric_inc($workerName, 'failed_queue_tasks');
         handle_queue_task_failure($db, $task, "No job definition");
         worker_interruptible_sleep($loopDelaySeconds);
         continue;
@@ -225,6 +227,7 @@ while (true) {
             // worker_handle_task_failure() only surfaces the failure to a user
             // once retries are exhausted — handle_queue_task_failure() (which it
             // calls) returns true exactly then.
+            worker_metric_inc($workerName, 'failed_queue_tasks');
             worker_handle_task_failure($job_def, $db, $task, "Handler returned false");
         } else {
             if (!empty($job_def['stages']) && is_array($job_def['stages'])) {
@@ -237,6 +240,7 @@ while (true) {
         write_debug_log("Unexpected error processing task #{$task['id']}: " . $t->getMessage(), "error");
         // Same retry/backoff policy as the false-return path above — left to the
         // function's defaults on both so the two can't drift.
+        worker_metric_inc($workerName, 'failed_queue_tasks');
         worker_handle_task_failure($job_def, $db, $task, $t->getMessage());
     }
 

@@ -339,6 +339,34 @@
             });
     });
 
+    // Destructive confirm (design-system.md §8) for the Save/Restore action
+    // bar's Restore button (extras/customization/index.php's '.sr-cust-
+    // actions'). '#restore-trigger' is the visible button; '#restore' is now
+    // a hidden real submit button inside the same form (kept for a no-JS
+    // fallback), clicked programmatically here only once the admin confirms
+    // -- Restore is a real full-page POST (admin/customization.php's
+    // isset($_POST['restore']) branch), not an AJAX call, so there is
+    // nothing to intercept/replay except the click itself.
+    $(document).on('click', '#restore-trigger', function () {
+        $('#restore-template-modal').modal('show');
+    });
+
+    // Same focus-the-safe-action rationale as '#custom-field-delete-modal'
+    // above -- Esc/backdrop are disabled on this modal too, so Cancel is the
+    // only way out besides confirming.
+    $(document).on('shown.bs.modal', '#restore-template-modal', function () {
+        $(this).find('[data-bs-dismiss="modal"].btn-dark').first().trigger('focus');
+    });
+
+    $(document).on('click', '#restore-template-confirm', function () {
+        $('#restore-template-modal').modal('hide');
+        // Native .click(), not jQuery's .trigger('click') -- this button's
+        // default action (submitting its form) is a real DOM behavior, not
+        // a jQuery-bound handler, and only a genuine native click reliably
+        // fires it.
+        document.getElementById('restore').click();
+    });
+
     // Encryption is only meaningful for shorttext/longtext fields -- matches the
     // pre-existing getField()/update-encryption-wrapper show/hide condition this
     // modal replaces. The wrapper only exists in the DOM when encryption_extra()
@@ -901,13 +929,29 @@
     // picker) so the eye can find it among what may be many fields. Only the
     // CURRENTLY VISIBLE tab's copy -- Control's mirrored second tab isn't
     // visible right now anyway.
+    //
+    // The risk Details tab (tab 1), the risk Mitigation tab (tab 2, Phase
+    // 4b-i) and the risk Review tab (tab 3, Phase 4c-i) have no '.left-panel'
+    // any more -- all three are Gridstack card canvases, and the field was
+    // just appended as a chip rather than as an <li>. Key off whichever canvas
+    // container actually exists for the given tabIndex (same generalization
+    // firstLegacyTab applies in extras/customization/index.php), not a
+    // hardcoded tabIndex check -- that hardcoding is what left this UX
+    // affordance silently no-op'ing on Mitigation, and then again on Review
+    // (the ternary had grown a tab-2 branch but still returned null for 3).
+    // The lookup is now the canvas's own '[data-canvas-key][data-tab-index]'
+    // attribute pair (stamped by initCanvas() / rendered by
+    // extras/customization/index.php), so a fourth canvas needs no edit here.
     function flashJustAddedField(tabIndex) {
-        var $li = $('.left-panel', '.tabs' + tabIndex).find('li.field-holder').last();
-        if (!$li.length) {
+        var $canvas = $('[data-canvas-key][data-tab-index="' + tabIndex + '"]');
+        var $target = $canvas.length
+            ? $canvas.find('.sr-cust-field').last()
+            : $('.left-panel', '.tabs' + tabIndex).find('li.field-holder').last();
+        if (!$target.length) {
             return;
         }
-        $li.addClass('is-new');
-        window.setTimeout(function () { $li.removeClass('is-new'); }, 1400);
+        $target.addClass('is-new');
+        window.setTimeout(function () { $target.removeClass('is-new'); }, 1400);
     }
 
     // Re-fires the existing, UNMODIFIED add handlers (see the file-level
@@ -1000,17 +1044,33 @@
     // re-render is deferred with setTimeout(0) to run AFTER that handler (and
     // everything else the click triggers) has finished mutating the
     // select/DOM, since capture-then-bubble is still one synchronous pass.
+    //
+    // '.sr-cust-field-remove' is the same affordance on the risk Details tab's
+    // Gridstack card canvas (customization-layout-editor.js), which has no
+    // '.field-holder' <li>s at all. That handler puts the <option> back into
+    // the hidden select on its own, so all this needs from it is the same
+    // deferred picker re-render -- it carries data-main/data-text for exactly
+    // that.
     document.addEventListener('click', function (e) {
-        var del = e.target.closest && e.target.closest('.field-holder .delete');
+        var del = e.target.closest && e.target.closest('.field-holder .delete, .sr-cust-field-remove');
         if (!del) {
             return;
         }
-        var $li = $(del).closest('.field-holder');
-        if (!$li.length) {
-            return;
+
+        var isMain;
+        var name;
+
+        if (del.classList.contains('sr-cust-field-remove')) {
+            isMain = del.getAttribute('data-main') === '1';
+            name = del.getAttribute('data-text') || '';
+        } else {
+            var $li = $(del).closest('.field-holder');
+            if (!$li.length) {
+                return;
+            }
+            isMain = String($li.data('main')) === '1' || $li.attr('data-main') === '1';
+            name = $li.data('text') || $li.attr('data-text') || $li.find('.nm').text();
         }
-        var isMain = String($li.data('main')) === '1' || $li.attr('data-main') === '1';
-        var name = $li.data('text') || $li.attr('data-text') || $li.find('.nm').text();
 
         window.setTimeout(function () {
             if (!isFieldPickerOpen()) {
@@ -1020,6 +1080,109 @@
             setFieldPickerStatus(L('FieldRemovedBackToList').replace('{field}', name));
         }, 0);
     }, true);
+
+    // NOT a Bootstrap a11y-focus side effect (tab.js's own _activate() never
+    // calls .focus() -- confirmed directly against the vendored source).
+    // The real cause is header.php's shared 'tabs:logic' block, loaded on
+    // every page that renders Bootstrap tabs: its own delegated handlers on
+    // 'nav a[data-bs-toggle="tab"]' set `window.location.hash` on every tab
+    // click (so a direct link/back-button can re-activate the right tab)
+    // and then deliberately call `$('.content-wrapper')[0].scrollIntoView()`
+    // -- TWICE, once on the raw 'click' and again on 'shown.bs.tab' -- as
+    // its own workaround for the scroll-to-the-clicked-element jump that
+    // setting `location.hash` causes natively. On a short tab panel that
+    // reads as "scroll to the tab strip," but the Template section here can
+    // be many cards tall, so clicking Mitigation or Review while scrolled
+    // down snapped the whole page back to the top on every click.
+    //
+    // header.php's block is shared site-wide, so it can't be changed just
+    // for this page. Fix instead by capturing this scroll container's
+    // position BEFORE any of it runs, and restoring it twice after (see
+    // restoreTabScrollTop()'s own comment for why it takes two restores).
+    //
+    // The capture can't happen on a 'click' listener, however -- not even
+    // a capturing-phase one. Bootstrap's own tab-toggle handler is ALSO
+    // registered on 'click' at the capturing phase (EventHandler.on()
+    // passes `true` for delegated bindings -- confirmed against the
+    // vendored dom/event-handler.js), and it loads before this script, so
+    // it always runs first regardless of ours also using capture. Once
+    // Bootstrap's capturing handler fires, it runs tab.show() to
+    // completion SYNCHRONOUSLY -- including dispatching 'shown.bs.tab',
+    // which runs tabs:logic's OWN handler and its scrollIntoView() --
+    // before our 'click' listener, capturing or not, ever gets a turn.
+    // Confirmed live: a capturing 'click' listener reads scrollTop already
+    // reset to 0.
+    //
+    // 'mousedown' fires as a wholly separate, earlier event in the
+    // pointer sequence (mousedown -> mouseup -> click), before any of the
+    // above has a reason to run, so capturing there is reliably early
+    // enough. 'keydown' (Enter/Space) covers keyboard activation, which
+    // never fires mousedown at all.
+    var pendingTabScrollTop = null;
+
+    function findScrollParent(el) {
+        while (el && el !== document.body) {
+            var overflowY = window.getComputedStyle(el).overflowY;
+            if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
+                return el;
+            }
+            el = el.parentElement;
+        }
+        return null;
+    }
+
+    function captureTabScrollTop(e) {
+        var link = e.target.closest && e.target.closest('#tabs [data-bs-toggle="tab"]');
+        if (!link) {
+            return;
+        }
+        var scrollParent = findScrollParent(link);
+        pendingTabScrollTop = scrollParent
+            ? { el: scrollParent, top: scrollParent.scrollTop }
+            : { el: null, top: window.scrollY };
+    }
+
+    document.addEventListener('mousedown', captureTabScrollTop, true);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+            captureTabScrollTop(e);
+        }
+    }, true);
+
+    // Deliberately does NOT clear pendingTabScrollTop -- this runs twice
+    // per click (see below), and the next mousedown/keydown capture
+    // overwrites it before it is ever read again regardless.
+    function restoreTabScrollTop() {
+        if (!pendingTabScrollTop) {
+            return;
+        }
+        if (pendingTabScrollTop.el) {
+            pendingTabScrollTop.el.scrollTop = pendingTabScrollTop.top;
+        } else {
+            window.scrollTo(window.scrollX, pendingTabScrollTop.top);
+        }
+    }
+
+    // Restored twice, on purpose, matching tabs:logic's own two resets:
+    // 'shown.bs.tab' undoes the reset tabs:logic's OWN 'shown.bs.tab'
+    // handler just did (both fire synchronously, nested inside Bootstrap's
+    // capturing-phase click handler, tabs:logic's first since header.php
+    // registers it earlier). The plain bubble-phase 'click' listener below
+    // undoes tabs:logic's SEPARATE, EARLIER-attached 'click' handler,
+    // which does its own scrollIntoView() and only runs during the click
+    // event's bubble phase -- strictly after everything above, so it would
+    // otherwise silently win and put the page back at the top. A plain
+    // (non-jQuery) listener attached here still fires after jQuery's own
+    // shared bubble dispatcher, because that dispatcher's one native
+    // addEventListener call happened much earlier (the first time any code
+    // on the page called `$(document).on('click', ...)`, well before this
+    // script loads).
+    $(document).on('shown.bs.tab', '#tabs [data-bs-toggle="tab"]', restoreTabScrollTop);
+    document.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('#tabs [data-bs-toggle="tab"]')) {
+            restoreTabScrollTop();
+        }
+    }, false);
 
     // Bootstrap's own 'shown.bs.tab' (fired once the new pane is fully shown
     // and the nav-link's 'active' class is set) rather than a raw click

@@ -190,7 +190,8 @@ function connectToServerWithAuth(
         $clientCredentials = new ClientCredentials(
             clientId: $context['client_id'],
             clientSecret: $context['client_secret'] ?? null,
-            tokenEndpointAuthMethod: $authMethod
+            tokenEndpointAuthMethod: $authMethod,
+            issuer: $context['issuer'] ?? null
         );
     }
 

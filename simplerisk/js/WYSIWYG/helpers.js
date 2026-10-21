@@ -28,5 +28,8 @@ function force_save_all_editors() {
  *  
  */
 function setEditorContent(id, content) {
-    hugerte.get(id).setContent(content);
+    var editor = hugerte.get(id);
+    if (editor) {
+        editor.setContent(content);
+    }
 }

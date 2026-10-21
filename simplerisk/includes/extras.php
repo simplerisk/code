@@ -740,16 +740,40 @@ function core_upgrade_extras($extras_to_upgrade = false) {
         // condition the gate checks for.
         $result = download_extra($extra, true, true);
         if (!is_string($result)) {
-            $err_message = $result['reason'] ?? $result['error'] ?? null;
+            // The machine-readable 'error' code is logged only; it is not a
+            // translated string, so it never reaches the streamed line.
+            $err_message = is_array($result) ? ($result['reason'] ?? $result['error'] ?? null) : null;
             if ($err_message !== null) {
                 write_debug_log("download_extra failed for '{$extra}': {$err_message}", 'warning');
             }
-            stream_write_error(_lang('UpdateExtrasUpdateExtraFailed', array('extra' => $extra)));
+            // stream_write_error() escapes once at output, so the reason is appended raw.
+            stream_write_error(extra_download_failure_line(_lang_raw('UpdateExtrasUpdateExtraFailed', array('extra' => $extra)), $result));
             return 0;
         }
     }
     stream_write($lang['UpdateExtrasSuccessful']);
     return 1;
+}
+
+/*******************************************
+ * FUNCTION: EXTRA DOWNLOAD FAILURE LINE   *
+ *******************************************/
+/**
+ * Append the specific, translated download_extra() failure reason (if any)
+ * to the base failure message. Neither value is escaped here: the caller's sink
+ * (stream_write_error()) escapes exactly once.
+ *
+ * @param string $base   The already-built generic failure message.
+ * @param mixed  $result The non-string download_extra() result.
+ * @return string
+ */
+function extra_download_failure_line(string $base, $result): string
+{
+    // 'reason' only: it comes from translated strings. The 'error' code
+    // (e.g. 'transport') is an untranslated token and is logged by the caller.
+    $reason = is_array($result) ? ($result['reason'] ?? '') : '';
+
+    return (is_string($reason) && $reason !== '') ? $base . ' ' . $reason : $base;
 }
 
 /*********************************************************

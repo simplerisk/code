@@ -1,0 +1,427 @@
+// ============================================================================
+// My Profile (account/profile.php) — Task 12
+//
+// The page is a design-system.md §11 "detail / read view": a record header,
+// a two-column main+rail grid, and section cards built from the existing
+// .sr-qcard/.sr-qform system (scss/modules/_sr-modal.scss,
+// scss/modules/_questionnaire.scss). What's new here is the handful of
+// generic components §11/§7 describe but that no earlier page has shipped
+// yet: the record header (avatar + name + status pill), the status pill
+// itself, the two-column record grid, a definition list for read-only
+// account facts, the live password-requirement checklist, and the
+// permissions disclosure rows. Reuses design tokens throughout rather than
+// inventing new colors — see editing-stylesheets/references/variables.md.
+// ============================================================================
+
+// ---- Record header (design-system.md §11) --------------------------------
+.sr-rhead {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 2px 0 20px;
+}
+
+// Large initials avatar for the record header. Distinct from the small
+// 24px .sr-avatar identity chip in _tables.scss (per-row tester identity,
+// color-rotated) -- this page has exactly one avatar, so a single neutral
+// brand fill is enough; no color-rotation logic needed.
+.sr-avatar-lg {
+    flex: none;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: $sr-primary;
+    color: $sr-body;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: .02em;
+}
+
+.sr-rhead-id {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.sr-rhead-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 19px;
+    font-weight: 800;
+    color: $sr-primary;
+}
+
+.sr-rhead-email {
+    font-size: 12.5px;
+    color: $gray-600;
+}
+
+.sr-rhead-meta {
+    margin-left: auto;
+    font-size: 12px;
+    color: $gray-600;
+
+    strong {
+        color: $sr-primary;
+        font-weight: 700;
+    }
+}
+
+// ---- Two-column record grid: main column + meta rail (§11) ---------------
+.sr-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+
+    @media (max-width: 991.98px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.sr-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+// ---- Status pill (design-system.md §7 — soft/categorical state pill) -----
+.sr-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    background: $gray-100;
+    color: $gray-700;
+    border: 1px solid $gray-300;
+}
+
+.sr-pill-neutral {
+    background: $gray-100;
+    color: $gray-700;
+    border-color: $gray-300;
+}
+
+.sr-pill-success {
+    background: rgba($success, .12);
+    color: darken($success, 20%);
+    border-color: rgba($success, .35);
+}
+
+.sr-pill-warning {
+    background: rgba($warning, .18);
+    color: darken($warning, 35%);
+    border-color: rgba($warning, .5);
+}
+
+// ---- Card-scoped action buttons (design-system.md §5's ghost/outline/fill
+// hierarchy). _questionnaire.scss's .sr-qcancel/.sr-qsave/.sr-qsend are
+// scoped under .sr-qactions (a page-wide sticky bottom bar), which this page
+// doesn't have -- each card here owns its own single action instead. The
+// same three weights, same class names, same token values are reproduced
+// here so a card's action reads as "outline, red only on hover" (.sr-qsave)
+// or "ghost, neutral" (.sr-qcancel) rather than Bootstrap's .btn-outline-submit,
+// which is a STANDING red at rest (see _governance-frameworks.scss's
+// #sr-soa-btn comment for the same reasoning already documented once). This
+// page has several independent actions (change password, update language,
+// generate API key) that would otherwise all compete for the one accent the
+// system says to spend once per view.
+.sr-qform .sr-qcard-body {
+    // Neutralizes _sr-modal.scss's unscoped `.sr-qcard-body { display: grid }`
+    // (written for modal bodies only) leaking into every other .sr-qcard-body
+    // in the codebase and stretching a standalone button to the card's full
+    // width.
+    display: block;
+
+    // SimpleRisk squares Bootstrap's .btn globally ($border-radius: 1px in
+    // variable.scss) -- .sr-qactions restores 6px for its own buttons
+    // (_questionnaire.scss), and this does the same here since these buttons
+    // aren't inside .sr-qactions.
+    .btn { border-radius: 6px; }
+
+    .sr-qcancel {
+        background: transparent;
+        color: $gray-600;
+        border-color: $gray-300;
+
+        &:hover { color: $sr-primary; border-color: $gray-500; }
+    }
+
+    .sr-qsave {
+        background: $sr-body;
+        color: $sr-primary;
+        border-color: $gray-300;
+
+        &:hover { color: $sr-important; border-color: $sr-important; }
+    }
+}
+
+// ---- Security card: MFA row + password form -------------------------------
+.sr-mfa-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sr-mfa-text {
+    flex: 1 1 auto;
+    min-width: 200px;
+}
+
+.sr-mfa-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: $sr-primary;
+}
+
+.sr-mfa-desc {
+    font-size: 12px;
+    color: $gray-600;
+}
+
+// Live password-requirement checklist (SRAccountProfileSecurity,
+// js/simplerisk/pages/account-profile.js). Each row is built as a plain
+// <div class="req-item pending"><svg class="req-icon">…, toggled to
+// "met"/"pending" as the user types -- the icon is a small CSS-drawn dot
+// rather than an icon font glyph, matching the quiet dot treatment already
+// used for state pills (.sr-wn-pill__dot, scss/modules/_home.scss).
+.req-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 4px 0;
+}
+
+.req-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: $gray-600;
+
+    .req-icon {
+        flex: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid $gray-400;
+        background: $sr-body;
+    }
+
+    &.met {
+        color: $sr-primary;
+
+        .req-icon {
+            border-color: $success;
+            background: $success;
+        }
+    }
+}
+
+// ---- Account details rail: read-only definition list (§11) ----------------
+// "Values, not disabled controls" -- a plain label/value pair, never a
+// greyed-out input.
+.sr-deflist {
+    display: grid;
+    grid-template-columns: minmax(90px, 120px) 1fr;
+    gap: 10px 14px;
+    margin: 0;
+
+    > div {
+        display: contents;
+    }
+
+    dt {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: $gray-600;
+    }
+
+    dd {
+        margin: 0;
+        font-size: 13px;
+        color: $sr-primary;
+        overflow-wrap: anywhere;
+    }
+}
+
+// Quiet inline text-button (e.g. the account-details rail's team "Show
+// more"/"Show less" toggle) -- an action that reads as a link, not a form
+// control.
+.sr-linkbtn {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: $sr-secondary;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover {
+        color: $sr-important;
+    }
+}
+
+// ---- Permissions disclosure (SRAccountProfilePreferences) ------------------
+// One collapsible row per permission group; expanding shows only the
+// permissions the user's role/teams actually grant.
+.sr-perm-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 4px;
+    border: 0;
+    border-top: 1px solid $gray-300;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+
+    &:first-child {
+        border-top: 0;
+    }
+
+    &:hover {
+        background: $gray-100;
+    }
+}
+
+.sr-perm-caret {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid $gray-500;
+    border-bottom: 2px solid $gray-500;
+    transform: rotate(-45deg);
+    transition: transform .12s;
+
+    &.open {
+        transform: rotate(45deg);
+    }
+}
+
+.sr-perm-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: $sr-primary;
+}
+
+.sr-perm-count {
+    flex: none;
+    font-size: 11.5px;
+    color: $gray-600;
+    font-variant-numeric: tabular-nums;
+}
+
+.sr-perm-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 2px 4px 10px 22px;
+}
+
+.sr-perm-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    color: $gray-700;
+
+    .sr-perm-check {
+        flex: none;
+        width: 10px;
+        height: 6px;
+        border-left: 2px solid $success;
+        border-bottom: 2px solid $success;
+        transform: rotate(-45deg);
+    }
+}
+
+// ---- Preferences card: language selector + inline Update button -----------
+.sr-lang-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .form-select {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .btn {
+        flex: none;
+    }
+}
+
+// ---- Resources card links ---------------------------------------------------
+.sr-resource-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 2px;
+    border-top: 1px solid $gray-300;
+    font-size: 13px;
+    font-weight: 600;
+    color: $sr-primary;
+    text-decoration: none;
+
+    i {
+        flex: none;
+        width: 14px;
+        text-align: center;
+        color: $gray-600;
+    }
+
+    &:first-child {
+        border-top: 0;
+    }
+
+    &:hover {
+        color: $sr-important;
+
+        i { color: $sr-important; }
+    }
+}
+
+// ---- API key reveal box (SRAccountProfileApiKey) ---------------------------
+.sr-key-box {
+    margin: 8px 0;
+    padding: 10px 12px;
+    background: $gray-100;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-family: $font-family-monospace;
+    word-break: break-all;
+    white-space: pre-wrap;
+}
+
+// ---- Misc quiet caption text --------------------------------------------
+.sr-note {
+    font-size: 11.5px;
+    color: $gray-600;
+}
+
+// Note: the MFA step-up modal (#profile-mfa-code-modal) uses the shared
+// .sr-modal shell (scss/modules/_sr-modal.scss) with plain .btn-dark/
+// .btn-submit footer buttons for their established visual treatment. Those
+// buttons ALSO carry .sr-qcancel/.sr-qsave, purely as functional hooks —
+// SRAccountProfileApiKey's promptForMfaCodeIfNeeded()
+// (js/simplerisk/pages/account-profile.js) selects them by those class
+// names — with no styling attached here, since .btn-dark/.btn-submit
+// already supply it.

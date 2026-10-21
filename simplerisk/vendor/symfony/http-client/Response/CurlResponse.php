@@ -146,19 +146,18 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
             });
         }
 
-        curl_setopt($ch, \CURLOPT_WRITEFUNCTION, static function ($ch, string $data) use ($multi, $id): int {
-            if ('H' === (curl_getinfo($ch, \CURLINFO_PRIVATE)[0] ?? null)) {
-                $multi->handlesActivity[$id][] = null;
-                $multi->handlesActivity[$id][] = new TransportException(\sprintf('Unsupported protocol for "%s"', curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL)));
+        $checkProtocol = true;
+        curl_setopt($ch, \CURLOPT_WRITEFUNCTION, static function ($ch, string $data) use ($multi, $id, &$checkProtocol): int {
+            if ($checkProtocol) {
+                if ('H' === (curl_getinfo($ch, \CURLINFO_PRIVATE)[0] ?? null)) {
+                    $multi->handlesActivity[$id][] = null;
+                    $multi->handlesActivity[$id][] = new TransportException(\sprintf('Unsupported protocol for "%s"', curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL)));
 
-                return 0;
+                    return 0;
+                }
+
+                $checkProtocol = false;
             }
-
-            curl_setopt($ch, \CURLOPT_WRITEFUNCTION, static function ($ch, string $data) use ($multi, $id): int {
-                $multi->handlesActivity[$id][] = $data;
-
-                return \strlen($data);
-            });
 
             $multi->handlesActivity[$id][] = $data;
 
@@ -365,6 +364,12 @@ final class CurlResponse implements ResponseInterface, StreamableInterface
                 curl_multi_add_handle($multi->handle, $multi->openHandles[$id][0]);
             }
         }
+
+        // curl_multi_select() passes the timeout to curl as milliseconds in a signed
+        // 32-bit int, so it rejects anything above 2147483.647 seconds: a warning on
+        // PHP < 8.5, a ValueError since. A large timeout or max_duration reaches that.
+        // The lower bound is clamped by the caller, in TransportResponseTrait.
+        $timeout = min($timeout, 2147483.647);
 
         if (0 !== $selected = curl_multi_select($multi->handle, $timeout)) {
             return $selected;

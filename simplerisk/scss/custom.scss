@@ -445,15 +445,6 @@ input.editable:focus {
 	}
 }
 
-// CONFIGURE / ASSET VALUATION PAGE -- dollar sign input
-input#dollarsign {
-	background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjx0ZXh0IHg9IjVweCIgeT0iMjBweCIgZm9udC1zaXplPSIxNSIgc3Ryb2tlPSJncmVlbiIgZmlsbD0iZ3JlZW4iPiQ8L3RleHQ+PC9zdmc+);
-	background-repeat: no-repeat;
-	background-color: white;
-	background-position: left;
-	padding-left: 35px;
-}
-
 // CONFIGURE / AUDIT TRAIL PAGE -- download btn
 .download-btn {
     width: 40px;
@@ -1271,6 +1262,15 @@ a.open-in-new-tab {
 // `[data-function="login"]` block above that admin/upgrade.php still uses.
 @import "modules/auth";
 @import "modules/customization-fgroup";
+// The Cards + nested-grid layout editor: the risk Details/Mitigation/Review
+// canvases and the Asset designer's canvas (see $sr-cust-layout-canvases).
+// Separate from customization-fgroup above: that partial styles the page's
+// chrome (Extra header, tab hub, field picker), this one styles the Gridstack
+// canvas that replaced the legacy panel <ul>s for fgroup=risk tab 1.
+@import "modules/customization-layout-editor";
+// The asset record's Mapped controls composite (asset-card-profile.js).
+@import "modules/asset-mapped-controls";
+@import "modules/asset-scoring";
 //@import "modules/_tabs";
 
 

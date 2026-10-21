@@ -275,6 +275,7 @@ $sr-sidebar-rail-width: 56px;
         background: rgba(255, 255, 255, .10);
         border: 1px solid rgba(255, 255, 255, .10);
         border-radius: 8px;
+        transition: background .12s ease;
 
         // The default (and Advanced Search Extra) markup wraps the glyph button
         // and the input in a <form>. That form is display:block by default, so
@@ -315,6 +316,11 @@ $sr-sidebar-rail-width: 56px;
             }
         }
     }
+    // The theme darkens the whole nav-item on hover (rgba(0,0,0,.05), header.scss),
+    // which shifts the pill's grey and shows the item's rectangle behind it. The
+    // pill owns its hover instead, matching the right-hand icon buttons' lift --
+    // locked and active alike. Not while focused: the focused pill is already open.
+    &:not(:focus-within):hover .search-box { background: rgba(255, 255, 255, .14); }
     // Neutralise the theme's focus-expand jump — the pill is already open.
     &:focus-within .search-box .search-button ~ .search-input {
         flex: 1 1 auto;
@@ -323,6 +329,9 @@ $sr-sidebar-rail-width: 56px;
         padding-left: 4px;
     }
 }
+
+// Outranks the theme's `.topbar .top-navbar .navbar-nav > .nav-item:hover`.
+.topbar .top-navbar .navbar-nav > .nav-item.nav-item-search:hover { background: transparent; }
 
 // Center the search using flex (no fragile absolute positioning): the brand
 // cluster stays left, the icon cluster stays right, and the search sits centred

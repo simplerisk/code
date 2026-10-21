@@ -240,47 +240,30 @@
     }
 
     // bootstrap-multiselect (Site/Location, Technology, Team, Additional
-    // Stakeholders). Its trigger is a .btn, so it inherits Bootstrap button
-    // chrome -- centered text, button background -- and read as an action
-    // rather than a field. Matched to the box above. The plugin writes
-    // buttonWidth as an INLINE style on both the group and the button
-    // (design-system.md 14b), and review-risk.js passes 100%, so width is
-    // left alone here rather than fought.
+    // Stakeholders). Selection lives in chips inside the field
+    // (renderSelectionChips(), risk-details-form.js), with the widget's own
+    // trigger moved into that SAME box as the trailing "Add or remove…"
+    // affordance -- the shell's shared, unscoped .sr-chips-field > .btn-group
+    // > button.multiselect rule (_sr-modal.scss) already gives that trigger
+    // its correct quiet, borderless, inline treatment and the OUTER
+    // .sr-chips-field box the 35px/6px-radius/$gray-400-border look every
+    // other control in this form matches (design-system.md 14b: "Move it,
+    // don't duplicate it").
+    //
+    // This block used to duplicate that same box styling onto button.
+    // multiselect ITSELF (min-height/padding/background/border) -- and
+    // because it's scoped under #review-risk-add-modal (an ID), it beat the
+    // shell's pure-class rule on specificity, so the trigger rendered with
+    // its own visible border/background INSIDE the already-boxed
+    // .sr-chips-field. Two nested boxes reads as "a button that lives beside
+    // the field," not "part of the field" -- which is what made this
+    // modal's Team/Additional Stakeholders/Site Location/Technology
+    // controls look different from Submit Risk's identical fields (same
+    // shared JS, no page-specific override there to conflict). Removed
+    // rather than fixed in place: the shell rule already does exactly what
+    // this one was trying to, so there is nothing left for this modal to
+    // override.
     .multiselect-native-select {
-
-        button.multiselect {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            min-height: 35px;
-            padding: 4px 10px;
-            background: $sr-body;
-            border: 1px solid $gray-400;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 400;
-            color: $sr-primary;
-            text-align: left;
-
-            &:hover,
-            &:focus,
-            &:active,
-            &.show {
-                background: $sr-body;
-                border-color: $gray-500;
-                color: $sr-primary;
-                box-shadow: none;
-            }
-        }
-
-        // Long selections have to truncate rather than stretch the trigger
-        // past its column.
-        .multiselect-selected-text {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
 
         // 14b: the menu is a child of the trigger's .btn-group, so it
         // inherits the trigger's width and its option labels spill. Give it

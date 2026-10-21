@@ -74,6 +74,7 @@ function ai_context_node_types(): array
     return [
         'risk'      => ['permission' => 'riskmanagement', 'table' => 'risks',             'prefix' => 'risk_id_'],
         'asset'     => ['permission' => 'asset',          'table' => 'assets',            'prefix' => 'asset_id_'],
+        'asset_group' => ['permission' => 'asset',        'table' => 'asset_groups',      'prefix' => 'asset_group_id_'],
         'framework' => ['permission' => 'governance',     'table' => 'frameworks',        'prefix' => 'framework_id_'],
         'control'   => ['permission' => 'governance',     'table' => 'framework_controls','prefix' => 'control_id_'],
         'test'      => ['permission' => 'compliance',     'table' => 'framework_control_tests', 'prefix' => 'test_id_'],
@@ -111,7 +112,7 @@ function ai_context_node_types(): array
 function ai_context_type_permission(string $type): string
 {
     $map = [
-        'risk' => 'riskmanagement', 'asset' => 'asset',
+        'risk' => 'riskmanagement', 'asset' => 'asset', 'asset_group' => 'asset',
         'framework' => 'governance', 'control' => 'governance', 'document' => 'governance',
         'test' => 'compliance', 'test_result' => 'compliance', 'audit' => 'compliance',
         'exception' => 'view_exception', 'assessment' => 'assessments',
@@ -987,6 +988,7 @@ function ai_context_entity_name(string $type, int $id): ?string
     $col = [
         'risk'      => ['risks',                'subject',        'id',    null],
         'asset'     => ['assets',               'name',           'id',    null],
+        'asset_group' => ['asset_groups',       'name',           'id',    null],
         'framework' => ['frameworks',           'name',           'value', null],
         // deleted = 0 / retired_at IS NULL: same soft-delete/retirement
         // filter as ai_context_search_columns() -- without it a deleted
@@ -1015,6 +1017,13 @@ function ai_context_entity_name(string $type, int $id): ?string
     db_close($db);
     if ($row === false) {
         return null;
+    }
+    // asset_groups.name is a PLAINTEXT column, absent from the Encrypted
+    // Database Extra's field registry. try_decrypt() on a plaintext value
+    // returns "" (valid key) or "XXXX" (no key) while the Extra is active,
+    // so return it raw.
+    if ($type === 'asset_group') {
+        return $row['name'];
     }
     return try_decrypt($row['name']);
 }
@@ -1100,6 +1109,7 @@ function ai_context_parse_node_id(string $node_id): ?array
         'risk_catalog_id_'   => 'risk_catalog',
         'threat_catalog_id_' => 'threat_catalog',
         'risk_id_'        => 'risk',
+        'asset_group_id_' => 'asset_group',
         'asset_id_'       => 'asset',
         'framework_id_'   => 'framework',
         'control_id_'     => 'control',
@@ -1151,6 +1161,9 @@ function ai_context_edge_direction_map(): array
         ['exception', 'risk'],
         ['document', 'framework'],
         ['risk', 'asset'],
+        ['asset', 'asset_group'],
+        ['risk', 'asset_group'],
+        ['control', 'asset_group'],
         ['risk', 'control'],
         ['risk_catalog', 'risk'],
         ['threat_catalog', 'risk'],
@@ -1307,6 +1320,7 @@ function ai_context_associations(string $type, int $id, ?string $platform = null
     switch ($type) {
         case 'risk':      return connectivity_visualizer_associations_risk($id + 1000);
         case 'asset':     return connectivity_visualizer_associations_asset($id);
+        case 'asset_group': return connectivity_visualizer_associations_asset_group($id);
         case 'framework': return connectivity_visualizer_associations_framework($id);
         case 'control':   return connectivity_visualizer_associations_control($id);
         case 'test':      return connectivity_visualizer_associations_test($id);
@@ -2468,6 +2482,7 @@ function ai_context_search_columns(): array
         'audit'          => ['framework_control_test_audits', 'id',    'name',       null],
         'risk_catalog'   => ['risk_catalog',                  'id',    'name',       null],
         'threat_catalog' => ['threat_catalog',                'id',    'name',       null],
+        'asset_group'    => ['asset_groups',                  'id',    'name',       null],
     ];
 }
 

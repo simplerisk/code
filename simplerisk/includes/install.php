@@ -1004,6 +1004,15 @@ function step_6_simplerisk_installation()
     $stmt = $db->prepare("INSERT INTO settings (name,value) VALUES ('ssl_certificate_check_external', '1') ON DUPLICATE KEY UPDATE value=VALUES(value)");
     $stmt->execute();
 
+    // Enable the Content Security Policy by default on a fresh install for the
+    // same reason as ssl_certificate_check_external above -- the upgrade
+    // migration that seeds this setting (set_content_security_policy() in
+    // includes/functions.php) predates this decision and intentionally still
+    // defaults existing installs to disabled, so it isn't touched here.
+    // Admins can disable it on the Security settings page if it causes
+    // display or scripting issues in their environment.
+    seed_fresh_install_csp_default($db);
+
     $stmt = $db->prepare("UPDATE settings SET value=? WHERE name='default_language'");
     $stmt->execute([$default_language]);
 
@@ -1024,6 +1033,15 @@ function step_6_simplerisk_installation()
         echo "SimpleRisk should now be communicating with the database.<br><br>";
         echo "<input type=\"button\" value=\"GO TO SIMPLERISK\" onclick=\"window.location.reload(true)\" />";
     }
+}
+
+/********************************************
+ * FUNCTION: SEED FRESH INSTALL CSP DEFAULT *
+ ********************************************/
+function seed_fresh_install_csp_default($db)
+{
+    $stmt = $db->prepare("INSERT INTO settings (name,value) VALUES ('content_security_policy', '1') ON DUPLICATE KEY UPDATE value=VALUES(value)");
+    $stmt->execute();
 }
 
 /****************************************************

@@ -77,7 +77,7 @@ class ExpressionLanguage
             $cacheKeyItems[] = \is_int($nameKey) ? $name : $nameKey.':'.$name;
         }
 
-        $cacheItem = $this->cache->getItem(rawurlencode($expression.'//'.implode('|', $cacheKeyItems)));
+        $cacheItem = $this->cache->getItem(rawurlencode($expression.'//'.implode('|', $cacheKeyItems).($flags ? '//'.$flags : '')));
 
         if (null === $parsedExpression = $cacheItem->get()) {
             $nodes = $this->getParser()->parse($this->getLexer()->tokenize((string) $expression), $names, $flags);
@@ -156,7 +156,7 @@ class ExpressionLanguage
         }
 
         $this->addFunction(new ExpressionFunction('enum',
-            static fn ($str): string => \sprintf("(\constant(\$v = (%s))) instanceof \UnitEnum ? \constant(\$v) : throw new \TypeError(\sprintf('The string \"%%s\" is not the name of a valid enum case.', \$v))", $str),
+            static fn ($str): string => \sprintf("(static fn (\$v) => \constant(\$v) instanceof \UnitEnum ? \constant(\$v) : throw new \TypeError(\sprintf('The string \"%%s\" is not the name of a valid enum case.', \$v)))(%s)", $str),
             static function ($arguments, $str): \UnitEnum {
                 $value = \constant($str);
 

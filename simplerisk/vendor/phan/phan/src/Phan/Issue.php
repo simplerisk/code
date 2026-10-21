@@ -648,6 +648,7 @@ class Issue
     public const UnextractableAnnotationElementName = 'PhanUnextractableAnnotationElementName';
     public const CommentParamWithoutRealParam     = 'PhanCommentParamWithoutRealParam';
     public const CommentParamAssertionWithoutRealParam = 'PhanCommentParamAssertionWithoutRealParam';
+    public const CommentReturnConditionalWithoutRealParam = 'PhanCommentReturnConditionalWithoutRealParam';
     public const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
     public const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
     public const CommentInheritDocOnNonOverrideMethod = 'PhanCommentInheritDocOnNonOverrideMethod';
@@ -5593,6 +5594,14 @@ class Issue
                 16031
             ),
             new Issue(
+                self::CommentReturnConditionalWithoutRealParam,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                'Saw a conditional @return referring to ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}',
+                self::REMEDIATION_B,
+                16032
+            ),
+            new Issue(
                 self::CommentOverrideOnNonOverrideConstant,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
@@ -6036,12 +6045,20 @@ class Issue
     public const TRACE_VERBOSE = 'verbose';
 
     /**
+     * @var int the number of times an issue was checked for suppression or emitted, or a suppression count was incremented
+     * (Context::hasSuppressIssue(), TypedElement::incrementSuppressIssueCount()).
+     * Analysis\CloneReplay compares it before and after a group of checks to see whether they could have had an observable effect.
+     */
+    public static $emit_attempt_count = 0;
+
+    /**
      * @param IssueInstance $issue_instance
      * An issue instance to emit
      */
     public static function emitInstance(
         IssueInstance $issue_instance
     ): void {
+        ++self::$emit_attempt_count;
         if (Phan::isExcludedAnalysisFile($issue_instance->getFile())) {
             return;
         }
@@ -6158,23 +6175,23 @@ class Issue
         }
 
         $issue = self::fromType($issue_type);
-        $normalized_parameters = \array_map(
-            /**
-             * @return mixed
-             */
-            static function (mixed $param): mixed {
-                if (\is_bool($param)) {
-                    return $param ? 'true' : 'false';
-                }
-                return $param;
-            },
-            $parameters
-        );
+        $file = $context->getFile();
+        if (Phan::isExcludedAnalysisFile($file)) {
+            // emitInstance() would discard this issue, so don't bother formatting the message.
+            return;
+        }
+        // Render booleans as 'true'/'false' (modifies the local copy only if there are booleans)
+        foreach ($parameters as $i => $param) {
+            if (\is_bool($param)) {
+                $parameters[$i] = $param ? 'true' : 'false';
+            }
+        }
         $issue_instance = new IssueInstance(
             $issue,
-            $context->getFile(),
+            $file,
             $lineno,
-            $normalized_parameters,
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument the booleans were replaced with strings above
+            $parameters,
             $suggestion,
             $column
         );
@@ -6193,6 +6210,7 @@ class Issue
         array $parameters,
         ?Suggestion $suggestion = null
     ): bool {
+        ++self::$emit_attempt_count;
         if (Config::getValue('disable_suppression')) {
             return false;
         }

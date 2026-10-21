@@ -41,22 +41,43 @@ if (ai_capability_enabled('risk_recommendations') && table_exists('ai_recommenda
     $_ai_status = $_ai_row['status'] ?? null;
     db_close($_ai_db);
 }
+// design-system.md §7 "State -- soft": a workflow status (categorical, not
+// severity), mapped by MEANING against that section's own family table --
+// 'pending' -> warning ("Pending, Past Due, Awaiting Review"), 'in_progress'
+// -> info ("New, In Progress, Reopened, Open"), 'complete' -> success
+// ("Mitigated, Reviewed, Approved, Pass"), 'failed' -> danger ("Rejected,
+// Fail, Overdue") -- replacing raw Bootstrap .badge.bg-* (an off-palette,
+// undocumented 4th badge style next to .sr-state-pill's own family, the
+// same issue several other raw .badge/.btn-dark spots on this page already
+// had fixed this session).
 $_ai_badge_map = [
-    'pending'     => ['bg-secondary', 'Pending'],
-    'in_progress' => ['bg-info',      'Processing'],
-    'complete'    => ['bg-success',   'Complete'],
-    'failed'      => ['bg-danger',    'Failed'],
+    'pending'     => ['sr-state-warning', 'Pending'],
+    'in_progress' => ['sr-state-info',    'Processing'],
+    'complete'    => ['sr-state-success', 'Complete'],
+    'failed'      => ['sr-state-danger',  'Failed'],
 ];
-$_ai_badge_class = $_ai_badge_map[$_ai_status][0] ?? 'bg-secondary';
+$_ai_badge_class = $_ai_badge_map[$_ai_status][0] ?? 'sr-state-neutral';
 $_ai_badge_label = $_ai_badge_map[$_ai_status][1] ?? ucfirst($_ai_status ?? '');
+// The one truly ACTIVE state (a background job actually running) gets the
+// same fa-spinner fa-spin affordance this same accordion's own Monte Carlo
+// placeholder uses below, in place of .sr-state-pill's static ::before dot
+// (suppressed via .sr-state-pill-spinning -- see _tabs.scss) -- the other
+// three are static states with nothing actively happening to animate.
+$_ai_is_processing = ($_ai_status === 'in_progress');
 ?>
-<div class="accordion mb-2">
+<div class="accordion sr-record-accordion mb-3">
     <?php if ($_ai_show_section): ?>
     <div class="accordion-item">
         <h2 id="ai-analysis-accordion-header" class="accordion-header">
-            <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#ai-analysis-accordion-body'>
-                <?= $escaper->escapeHtml($lang['ArtificialIntelligenceAssistant']); ?>
-                <span id="ai-analysis-status-badge" class="badge ms-2 <?= $_ai_status ? $escaper->escapeHtmlAttr($_ai_badge_class) : 'd-none'; ?>"><?= $escaper->escapeHtml($_ai_badge_label); ?></span>
+            <button type='button' class='accordion-button collapsed sr-qacc-head' data-bs-toggle='collapse' data-bs-target='#ai-analysis-accordion-body' aria-controls='ai-analysis-accordion-body' aria-expanded='false'>
+                <i class="fa fa-chevron-right sr-audit-trail-caret" aria-hidden="true"></i>
+                <span class="sr-table-title"><?= $escaper->escapeHtml($lang['ArtificialIntelligenceAssistant']); ?></span>
+                <span id="ai-analysis-status-badge" class="sr-state-pill ms-2 <?= $_ai_status ? $escaper->escapeHtmlAttr($_ai_badge_class) : 'd-none'; ?><?= $_ai_is_processing ? ' sr-state-pill-spinning' : ''; ?>">
+    <?php if ($_ai_is_processing): ?>
+                    <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+    <?php endif; ?>
+                    <?= $escaper->escapeHtml($_ai_badge_label); ?>
+                </span>
             </button>
         </h2>
         <div id="ai-analysis-accordion-body" class="accordion-collapse collapse" data-risk-id="<?= $escaper->escapeHtml($id); ?>" data-ai-status="<?= $escaper->escapeHtml($_ai_status ?? ''); ?>">
@@ -469,49 +490,144 @@ $_ai_badge_label = $_ai_badge_map[$_ai_status][1] ?? ucfirst($_ai_status ?? '');
     <?php endif; ?>
     <div class="accordion-item">
         <h2 class="accordion-header">
-            <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#associated-exceptions-accordion-body'><?= $escaper->escapeHtml($lang['AssociatedExceptions']); ?></button>
+            <button type='button' class='accordion-button collapsed sr-qacc-head' data-bs-toggle='collapse' data-bs-target='#associated-exceptions-accordion-body' aria-controls='associated-exceptions-accordion-body' aria-expanded='false'>
+                <i class="fa fa-chevron-right sr-audit-trail-caret" aria-hidden="true"></i>
+                <span class="sr-table-title"><?= $escaper->escapeHtml($lang['AssociatedExceptions']); ?></span>
+            </button>
         </h2>
         <div id="associated-exceptions-accordion-body" class="accordion-collapse collapse">
             <div class="accordion-body">
-                <div class="row">
-                    <div class="col-12">
-                        <div>
-                            <nav class="nav nav-tabs">
-                                <a data-bs-target="#policy-exceptions" data-bs-toggle="tab" class="nav-link active" data-type="policy"><?php echo $escaper->escapeHtml($lang['PolicyExceptions']); ?> (<span id="policy-exceptions-count">-</span>)</a>
-                                <a data-bs-target="#control-exceptions" data-bs-toggle="tab" class="nav-link" data-type="control"><?php echo $escaper->escapeHtml($lang['ControlExceptions']); ?> (<span id="control-exceptions-count">-</span>)</a>
-    <?php 
-        if (check_permission_exception('approve')) { 
-    ?>
-                                <a data-bs-target="#unapproved-exceptions" data-bs-toggle="tab" class="nav-link" data-type="unapproved"><?php echo $escaper->escapeHtml($lang['UnapprovedExceptions']); ?> (<span id="unapproved-exceptions-count">-</span>)</a>
+                <!-- design-system.md §12's hand-rolled .sr-tabs/.sr-tab
+                     component (shipped in _tabs.scss; admin/data_integrity.php
+                     is the other live consumer) -- NOT Bootstrap's real
+                     data-bs-toggle="tab" plugin. Two bugs traced back to that
+                     plugin plus header.php's sitewide 'tabs:logic' script,
+                     which assumes exactly ONE tab hierarchy per page:
+                     (a) it binds unscoped to every `nav a[data-bs-toggle=
+                     "tab"]` and force-scrolls `.content-wrapper` into view on
+                     every click -- there's no tab CONTENT to jump away from
+                     down here, so it just read as an unwanted scroll-to-top;
+                     (b) on EVERY page load (hash or not) it unconditionally
+                     runs `$('div.tab-pane.active').removeClass('active')`
+                     sitewide, then restores only the ONE hierarchy matching
+                     location.hash -- or, with no hash, only the FIRST
+                     `nav.nav-tabs` group in DOM order, which is Details/
+                     Mitigation/Review's, earlier on the page than this one.
+                     A hash pointing at one of THESE sub-tabs (which that
+                     same script also writes into the URL on click, e.g.
+                     `#control-exceptions`) matched here instead, so Details/
+                     Mitigation/Review's own active state was cleared and
+                     never restored -- everything under them visibly
+                     vanished on reload. But even with NO hash, this second,
+                     later `div.tab-pane.active` group was still wiped by
+                     the same blanket clear and never restored either way --
+                     Policy Exceptions' treegrid silently lost its default-
+                     active state on every single load, hash or not.
+                     Fixed at the source rather than patching the shared
+                     script (which other pages' nested tabs still rely on):
+                     dropping data-bs-toggle="tab" removes these buttons from
+                     its click selector, and using .sr-tab-pane/.is-active
+                     instead of .tab-pane/.active on the three content divs
+                     below (and in initAsAssociatedExceptionTreegrid()'s
+                     matching selectors, risk.js) keeps them out of its
+                     load-time selector too. .sr-tab-pane's own CSS
+                     (_tables.scss) mirrors the theme's .tab-content>.active
+                     {display:block} rule under our own class name. -->
+                <div class="sr-tabs" id="associated-exceptions-tabs">
+                    <button type="button" class="sr-tab is-active" data-target="#policy-exceptions" data-type="policy" id="tab_policy-exceptions">
+                        <?php echo $escaper->escapeHtml($lang['PolicyExceptions']); ?> <span class="sr-table-count" id="policy-exceptions-count">-</span>
+                    </button>
+                    <button type="button" class="sr-tab" data-target="#control-exceptions" data-type="control" id="tab_control-exceptions">
+                        <?php echo $escaper->escapeHtml($lang['ControlExceptions']); ?> <span class="sr-table-count" id="control-exceptions-count">-</span>
+                    </button>
     <?php
-        } 
+        if (check_permission_exception('approve')) {
     ?>
-                            </nav>
-                        </div>
-                        <div class="tab-content card-body border my-2">
-                            <div id="policy-exceptions" class="tab-pane active custom-treegrid-container">
-                                <?php get_associated_exception_tabs('policy') ?>
-                            </div>
-                            <div id="control-exceptions" class="tab-pane custom-treegrid-container">
-                                <?php get_associated_exception_tabs('control') ?>
-                            </div>
-    <?php if (check_permission_exception('approve')) { ?>
-                            <div id="unapproved-exceptions" class="tab-pane custom-treegrid-container">
-                                <?php get_associated_exception_tabs('unapproved') ?>
-                            </div>
-    <?php } ?>
-                        </div>
+                    <button type="button" class="sr-tab" data-target="#unapproved-exceptions" data-type="unapproved" id="tab_unapproved-exceptions">
+                        <?php echo $escaper->escapeHtml($lang['UnapprovedExceptions']); ?> <span class="sr-table-count" id="unapproved-exceptions-count">-</span>
+                    </button>
+    <?php
+        }
+    ?>
+                </div>
+                <div class="tab-content" id="associated-exceptions-tab-content">
+                    <div id="policy-exceptions" class="sr-tab-pane is-active custom-treegrid-container">
+                        <?php get_associated_exception_tabs('policy') ?>
                     </div>
+                    <div id="control-exceptions" class="sr-tab-pane custom-treegrid-container">
+                        <?php get_associated_exception_tabs('control') ?>
+                    </div>
+    <?php if (check_permission_exception('approve')) { ?>
+                    <div id="unapproved-exceptions" class="sr-tab-pane custom-treegrid-container">
+                        <?php get_associated_exception_tabs('unapproved') ?>
+                    </div>
+    <?php } ?>
                 </div>
             </div>
         </div>
     </div>
     <script>
 
-        // Have to init the treegrid when the tab is first displayed, because it's rendered incorrectly when initialized in the background
-        $(document).on('shown.bs.tab', 'nav a[data-bs-toggle=\"tab\"][data-type]', function (e) {
-            let type = $(this).data('type');
+        // Hand-rolled .sr-tabs switch (see the markup comment above for why
+        // this isn't Bootstrap's data-bs-toggle="tab" plugin): toggle
+        // .is-active on the clicked trigger and its matching .sr-tab-pane,
+        // then init/resize that pane's treegrid -- same "have to init the
+        // treegrid when the tab is first DISPLAYED, because it renders
+        // incorrectly in the background" reasoning the old shown.bs.tab
+        // handler had, just driven by this click instead of a Bootstrap
+        // event.
+        $('#associated-exceptions-tabs').on('click', '.sr-tab', function () {
+            var $tab = $(this);
+            var type = $tab.data('type');
+            $('#associated-exceptions-tabs .sr-tab').removeClass('is-active');
+            $tab.addClass('is-active');
+            $('#associated-exceptions-tab-content .sr-tab-pane').removeClass('is-active');
+            $($tab.data('target')).addClass('is-active');
             $(`#associated-exception-table-${type}`).initAsAssociatedExceptionTreegrid(type);
+        });
+
+        // Policy Exceptions is the default-active tab, so it never fires the
+        // click handler above -- and its treegrid can't size correctly while
+        // the accordion itself is still collapsed (0-width container, same
+        // reasoning initAsAssociatedExceptionTreegrid()'s own "all ancestor
+        // .sr-tab-pane must be is-active" guard exists for). Init it once
+        // the accordion is actually expanded instead; plain .on() rather
+        // than .one() so a collapse-then-reexpand safely re-triggers the
+        // function's own already-initialized branch (a cheap .treegrid
+        // ("resize") rather than a re-init).
+        $(document).on('shown.bs.collapse', '#associated-exceptions-accordion-body', function () {
+            $('#associated-exception-table-policy').initAsAssociatedExceptionTreegrid('policy');
+
+            // The other two tabs' counts otherwise stay stuck on the "-"
+            // placeholder until the user actually clicks through to them
+            // (initAsAssociatedExceptionTreegrid() won't init a treegrid
+            // that isn't visible -- see its own "all ancestor .sr-tab-pane
+            // must be is-active" guard). A plain read-only fetch against the
+            // same endpoint the treegrid itself loads gets just the count
+            // without needing that pane visible or building the treegrid
+            // widget early -- the actual table still only renders lazily on
+            // first click, unchanged.
+            var $accordionBody = $(this);
+            var riskId = $('.risk-id', $accordionBody.closest('.tab-data')).html();
+            ['control', 'unapproved'].forEach(function (type) {
+                if (!$('#' + type + '-exceptions').length) {
+                    return; // unapproved-exceptions is permission-gated
+                }
+                $.ajax({
+                    url: BASE_URL + '/api/v2/associated-exceptions/tree?type=' + type + '&id=' + riskId,
+                    type: 'GET',
+                    success: function (res) {
+                        var rows = (res && res.data) || [];
+                        var totalCount = 0;
+                        rows.forEach(function (parent) {
+                            if (parent.children && parent.children.length) {
+                                totalCount += parent.children.length;
+                            }
+                        });
+                        $('#' + type + '-exceptions-count').text(totalCount);
+                    }
+                });
+            });
         });
 
         function wireActionButtons(tab) {
@@ -674,7 +790,10 @@ $_ai_badge_label = $_ai_badge_map[$_ai_status][1] ?? ucfirst($_ai_status ?? '');
     </div>
     <div class="accordion-item comments--wrapper">
         <h2 class="accordion-header">
-            <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#comments-accordion-body'><?= $escaper->escapeHtml($lang['Comments']); ?></button>
+            <button type='button' class='accordion-button collapsed sr-qacc-head' data-bs-toggle='collapse' data-bs-target='#comments-accordion-body' aria-controls='comments-accordion-body' aria-expanded='false'>
+                <i class="fa fa-chevron-right sr-audit-trail-caret" aria-hidden="true"></i>
+                <span class="sr-table-title"><?= $escaper->escapeHtml($lang['Comments']); ?></span>
+            </button>
         </h2>
         <div id="comments-accordion-body" class="accordion-collapse collapse">
             <div class="accordion-body">
@@ -703,19 +822,100 @@ $_ai_badge_label = $_ai_badge_map[$_ai_status][1] ?? ucfirst($_ai_status ?? '');
             </div>
         </div>
     </div>
-    <div class="accordion-item">
-        <h2 class="accordion-header">
-            <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#audit-trail-accordion-body'><?= $escaper->escapeHtml($lang['AuditTrail']); ?></button>
-        </h2>
-        <div id="audit-trail-accordion-body" class="accordion-collapse collapse">
-            <div class="accordion-body">
-                <div class="row">
-                    <div class="col-12 audit-trail">
-                        <?php get_audit_trail_html($id, 36500, ['risk', 'jira']); ?>
-                    </div>
-                </div>
-            </div>
+</div>
+<!-- AUDIT TRAIL (design-system.md §6/§7): a real .sr-table-card disclosure
+     -- Define Exceptions'/Document Program's identical shape and
+     js/simplerisk/pages/risk-audit-trail.js (js/simplerisk/pages/governance-
+     document-audit-trail.js is the reference implementation) -- rather than
+     one more item inside the .sr-record-accordion group above: the spec's
+     own §6d shell is "a plain disclosure, not .accordion", with its own
+     toggle chrome, so it sits as a sibling section instead of a 4th nested
+     accordion-item. No Entity column/filter (entityKey: null in the JS
+     config) -- this card is already scoped to THIS risk by the API path,
+     unlike the list-page reference implementations. Gated the same way the
+     legacy accordion it replaces was: reachable whenever $display_risk is
+     true (the surrounding viewhtml.php include's own gate), matching GET
+     /api/v2/management/risk/auditLog's own riskmanagement + check_access_
+     for_risk() gate. -->
+<div class="sr-table-card sr-audit-trail-card sr-risk-audit-trail-card" id="risk-audit-trail">
+    <div class="sr-table-toolbar" id="risk-audit-trail-toolbar">
+        <button type="button" class="sr-audit-trail-toggle" id="risk-audit-trail-toggle" aria-expanded="false" aria-controls="risk-audit-trail-collapse">
+            <i class="fa fa-chevron-right sr-audit-trail-caret" aria-hidden="true"></i>
+            <span class="sr-table-title"><?= $escaper->escapeHtml($lang['AuditTrail']); ?> <span class="sr-table-count d-none" id="risk-audit-trail-count"></span></span>
+        </button>
+        <div class="sr-table-tools">
+            <button type="button" class="sr-table-filter" id="risk-audit-trail-refresh" title="<?= $escaper->escapeHtmlAttr($lang['Refresh']); ?>" aria-label="<?= $escaper->escapeHtmlAttr($lang['Refresh']); ?>"><i class="fa fa-sync" aria-hidden="true"></i></button>
         </div>
     </div>
+    <div class="d-none" id="risk-audit-trail-collapse">
+        <!-- No Export button and no separate inner-toolbar row: this config's
+             searchBesideFilters:true (js/simplerisk/pages/risk-audit-trail.js)
+             has relocateSearchIntoTools() (js/simplerisk/sr-audit-trail.js)
+             append DataTables' own generated search box directly onto
+             #risk-audit-trail-filters (.sr-qf-selects) instead, so it sits
+             after the filter selects on the same row and wraps left with
+             them at narrow widths rather than staying pinned right on an
+             otherwise-empty toolbar row. -->
+        <!-- Narrow-width filter sheet (design-system.md §6b) -- inert at
+             full width, where .sr-qf-toggle is display:none and the row
+             below is simply on screen; below 1100px it collapses behind
+             this button instead (_tables.scss's .sr-qf-toggle rules, no
+             bespoke CSS needed here). Wired generically in createAuditTrail
+             (js/simplerisk/sr-audit-trail.js) rather than per-page, so
+             Define Exceptions'/Document Program's own audit trails pick up
+             the identical toggle once this markup is added to their pages
+             too. -->
+        <button type="button" class="sr-qf-toggle" id="risk-audit-trail-filters-toggle" aria-expanded="false" aria-controls="risk-audit-trail-quickfilters">
+            <i class="fa fa-filter" aria-hidden="true"></i>
+            <span><?= $escaper->escapeHtml($lang['Filters']); ?></span>
+            <span class="sr-qf-toggle-count" id="risk-audit-trail-filters-count" hidden></span>
+        </button>
+        <div class="sr-table-quickfilters" id="risk-audit-trail-quickfilters">
+            <div class="sr-qf-selects" id="risk-audit-trail-filters">
+                <div class="audit-select-folder">
+                    <select name="days" id="risk-audit-trail-range-filter" class="form-select" title="<?= $escaper->escapeHtmlAttr($lang['DateRange']); ?>" aria-label="<?= $escaper->escapeHtmlAttr($lang['DateRange']); ?>">
+                        <option value="7" selected><?= $escaper->escapeHtml($lang['PastWeek']); ?></option>
+                        <option value="30"><?= $escaper->escapeHtml($lang['PastMonth']); ?></option>
+                        <option value="90"><?= $escaper->escapeHtml($lang['PastQuarter']); ?></option>
+                        <option value="180"><?= $escaper->escapeHtml($lang['Past6Months']); ?></option>
+                        <option value="365"><?= $escaper->escapeHtml($lang['PastYear']); ?></option>
+                        <option value="36500"><?= $escaper->escapeHtml($lang['AllTime']); ?></option>
+                    </select>
+                </div>
+                <select id="risk-audit-trail-activity-filter" class="form-select" multiple title="<?= $escaper->escapeHtmlAttr($lang['Activity']); ?>" aria-label="<?= $escaper->escapeHtmlAttr($lang['Activity']); ?>"></select>
+                <select id="risk-audit-trail-user-filter" class="form-select" multiple title="<?= $escaper->escapeHtmlAttr($lang['User']); ?>" aria-label="<?= $escaper->escapeHtmlAttr($lang['User']); ?>"></select>
+                <button type="button" class="btn btn-link btn-sm sr-qf-clear d-none" id="risk-audit-trail-filters-clear"><?= $escaper->escapeHtml($lang['ClearFilters']); ?></button>
+            </div>
+        </div>
+        <div id="risk-audit-trail-body"></div>
+    </div>
 </div>
+<?php
+    // The mount above is server-rendered directly (not built by JS the way
+    // Details' Cards mount is), but window.RiskAuditTrail.init() -- the
+    // click bindings that make its toggle/refresh/filters actually work --
+    // only ever runs once, from management/view.php's own $(document).ready.
+    // On the AJAX path (Close Risk/Reopen/Change Status all replace THIS
+    // WHOLE FILE's markup via getTabHtml() -- risk.js's tabContainer.html())
+    // that destroys the card management/view.php's ready handler already
+    // bound to, and nothing ever re-binds the fresh replacement: the toggle
+    // silently stopped responding to clicks after any one of those actions.
+    // Re-invoking init() here is the exact mirror of details.php's own
+    // $isAjax-gated re-render script just above it in this same render --
+    // sr-audit-trail.js's init() is written to be safely re-callable (resets
+    // its own expanded/loaded/filter state and tears down the two
+    // $(document)-delegated handlers before re-registering them) precisely
+    // so this works.
+    if (isset($isAjax) && $isAjax) {
+?>
+<script>
+    $(function () {
+        if (window.RiskAuditTrail && $('#risk-audit-trail').length) {
+            window.RiskAuditTrail.init();
+        }
+    });
+</script>
+<?php
+    }
+?>
 <input type="hidden" id="_token_value" value="<?php echo csrf_get_tokens(); ?>">

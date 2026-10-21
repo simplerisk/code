@@ -102,48 +102,10 @@
         // multi-selects could not be opened/picked.
     }
 
+    // See sr-qcard-head-styled's own docblock (scss/mixins/qcard-head.scss)
+    // for why this is a shared mixin, not a rule local to this file.
     .sr-qcard-head {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 13px 18px;
-        background: $gray-100;
-        border-bottom: 1px solid $gray-300;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-
-        .sr-qcard-ico {
-            flex: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 7px;
-            background: $sr-body;
-            border: 1px solid $gray-300;
-            display: grid;
-            place-items: center;
-            color: $sr-primary;
-
-            svg { width: 17px; height: 17px; }
-        }
-
-        .sr-qcard-htext {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            flex: 1;
-
-            h2 {
-                margin: 0;
-                font-size: 15px;
-                font-weight: 800;
-                color: $sr-primary;
-            }
-
-            .sr-qcard-hsub {
-                font-size: 12px;
-                color: $gray-600;
-            }
-        }
+        @include sr-qcard-head-styled;
     }
 
     .sr-qcard-body { padding: 18px; }
@@ -209,7 +171,382 @@
         }
     }
 
+    // Two independently-flowing flex columns instead of shared CSS Grid row
+    // tracks. A plain .sr-qgrid pairs left/right fields onto the SAME grid
+    // row, and grid row tracks are inherently global: the row's height is
+    // the taller of its two cells, so a short field paired with a much
+    // taller one (the Review card's Comment, the one half-width richtext
+    // field on this canvas -- every other richtext field here is forced
+    // full width) stretches to match it, leaving dead space below the
+    // short field's own value before the NEXT field can start. Confirmed
+    // live on risk #1001: Comment's two-line content forced Review's own
+    // cell 16px taller than "Approve Risk" needed, on top of the normal
+    // 15px row gap, reading as one big gap between Review and Next Step.
+    // renderFieldsGrid() (risk-details-view.js) switches to this layout
+    // instead whenever a card has no full-width field to intersperse
+    // between rows -- see that function's own docblock for why the guard
+    // is safe. flex-basis 0 on each column, rather than percentage widths,
+    // is what lets min-width:0 keep working the same way .sr-qgrid's own
+    // grid columns do (long unbroken text still wraps instead of forcing
+    // the column wider).
+    .sr-qgrid--columns {
+        display: flex;
+        align-items: flex-start;
+        gap: 0 16px;
+
+        .sr-qgrid-col {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1 1 0;
+            min-width: 0;
+        }
+    }
+
+    // NextStep's conditionally-shown Project sub-field (buildNextStepWidget(),
+    // risk-details-form.js): the outcome <select> and the Project Name
+    // holder are two siblings stacked inside ONE .sr-qfield's control slot,
+    // not two separate .sr-qfield grid cells -- so .sr-qgrid's own 15px
+    // row-gap (between DIFFERENT fields) never applies between them, and
+    // with no rule of its own .sr-next-step-field left them touching
+    // directly. Project Name reads as its own labeled field once revealed
+    // (own .sr-qlabel + control), so it gets the SAME 15px rhythm .sr-qgrid
+    // uses between two ordinary sibling fields, not the tighter 6px
+    // label-to-control gap .sr-qfield uses internally.
+    .sr-next-step-field {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    // NextReviewDate's own widget (buildSetNextReviewDateWidget(),
+    // risk-details-form.js): the default-date text, the toggle switch, and
+    // the conditionally-revealed date input are three siblings stacked
+    // inside ONE .sr-qfield's control slot, same shape as .sr-next-step-
+    // field above -- a tighter 10px rhythm than that field's 15px since
+    // these three read as one continuous thought (fact, then the toggle
+    // to override it), not separate fields the way Next Step/Project Name
+    // do.
+    .sr-set-next-review-date-field {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    // The "use a different date" toggle -- same pill-switch mechanic as
+    // the "Toggle switches" component below (.sr-qswitch-row .sr-qswitch),
+    // but that component's own CSS is scoped to its row/border/padding
+    // context (a standalone settings list), the wrong shape for ONE
+    // compact control inside a single small field slot -- restyled locally
+    // instead of reusing that class. Same $sr-important checked color and
+    // pill proportions; normal-weight label text, since this is a
+    // secondary, occasional action, not a field label -- .sr-qlabel's bold
+    // weight is reserved for the field name itself ("Next Review Date",
+    // rendered above this whole widget by populateFieldContent()'s generic
+    // label, not part of this widget's own markup). Replaces a former
+    // "Would you like to use a different date instead? [No] [Yes]" radio
+    // pair at the user's request: that read as a mandatory either/or
+    // choice for what is really a single off/on override, and its own
+    // bold .sr-qlabel question competed with the real field label above it.
+    .sr-set-next-review-date-switch {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        // Bootstrap's .form-check/.form-switch reserve this as indent space
+        // for a FLOATED input pulled back into place with a matching
+        // negative margin (_form-check.scss: `padding-left:
+        // $form-switch-padding-start` on the container, `margin-left:
+        // $form-switch-padding-start * -1` on the input) -- ~2.5em by
+        // default, since the switch itself is the widest control Bootstrap
+        // sizes this padding for. Zeroing the input's margin below (flex
+        // layout needs no float/negative-margin trick) leaves that padding
+        // with nothing to cancel it, so without this the whole row -- input
+        // AND label -- rendered shifted ~2.5em right of the default-date
+        // text above it. Confirmed live and traced to this exact rule.
+        padding-left: 0;
+        min-height: auto;
+
+        .form-check-input {
+            margin: 0;
+            width: 2.4em;
+            height: 1.25em;
+            border-radius: 2em; // pill -- SimpleRisk squares inputs globally
+            cursor: pointer;
+            flex: none;
+
+            &:checked { background-color: $sr-important; border-color: $sr-important; }
+            &:focus { border-color: $sr-important; box-shadow: 0 0 0 0.2rem rgba($sr-important, 0.25); }
+        }
+
+        // font-size/color are NOT set here -- the label also carries
+        // 'form-text' (buildSetNextReviewDateWidget(), risk-details-form.js),
+        // Bootstrap's shared rule, the SAME class $defaultDateText uses, so
+        // the two lines share identical typography instead of the switch's
+        // label reading as a visually different (13px solid vs .form-text's
+        // ~12px/75%-opacity) size and weight than the fact right above it --
+        // confirmed live, that mismatch read as "different fonts."
+        //
+        // `!important` is required, not decorative: custom.scss's global
+        // `label { font-weight: 700 !important; }` (a legacy site-wide
+        // bold-every-label rule) outranks any normal-priority override
+        // regardless of selector specificity -- confirmed live, this text
+        // still rendered bold without it. Established override pattern
+        // elsewhere in custom.scss for the same conflict, not invented
+        // here. Kept as a real `<label for>` rather than switching to a
+        // `<span>` (the "Toggle switches" component's own .sr-qswitch-desc
+        // dodges the conflict that way) so clicking the text still toggles
+        // the switch -- worth the `!important` for a control this small.
+        .form-check-label {
+            font-weight: 400 !important;
+            cursor: pointer;
+            // .form-text's own 4px margin-top is for stacking below a
+            // control, not for sitting beside one in this flex row (it
+            // would offset the label's vertical centering against the
+            // switch input) -- .sr-set-next-review-date-field's own gap
+            // already spaces this whole row from $defaultDateText above it.
+            margin-top: 0;
+        }
+    }
+
     .sr-qfield-mb { margin-bottom: 16px; }
+
+    // Splits ONE metric-group card's fields into two internal columns
+    // (buildDreadHolder()'s "DREAD Metrics" card: 3 fields in column 1, 2
+    // in column 2) -- distinct from .sr-qgrid (pairs individual FIELDS 2-up
+    // within a single column) and .sr-cvss-metric-row (lays out several
+    // WHOLE CARDS side by side): this one arranges fields into two columns
+    // inside a single card, which neither existing rule does. DREAD has no
+    // natural group name for a 3-vs-2 split (unlike CVSS's real
+    // Exploitability/Impact groups), so this is one card with an internal
+    // split, not two separately-headed cards.
+    //
+    // 3 explicit row tracks + column-major auto-flow (not two independent
+    // .sr-qstack columns, which this replaced) is what makes column 2's
+    // fields land on the SAME row as their column-1 counterpart --
+    // AffectedUsers next to DamagePotential, Discoverability next to
+    // Reproducibility -- since a shared grid row's height is the max of
+    // both its cells, not two stacks whose own heights can drift apart.
+    // Callers append the 5 field items directly, in column-major DOM order
+    // (DamagePotential, Reproducibility, Exploitability, AffectedUsers,
+    // Discoverability): auto-flow fills all 3 rows of column 1 before
+    // wrapping into column 2, leaving column 2's 3rd row empty.
+    .sr-dread-metric-columns {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(3, minmax(0, auto));
+        grid-auto-flow: column;
+        gap: 12px 16px;
+
+        @media (max-width: 480px) {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: none;
+            grid-auto-flow: row;
+        }
+    }
+
+    // A 2-card Score-card-plus-wide-second-card row reuses
+    // .sr-cvss-metric-row's grid/gap/stack-below-900px mechanics, but that
+    // rule's 3-equal-column template was built for CVSS's genuine 3-card
+    // rows -- a 2-card row only ever places 2 cards into it, leaving an
+    // unused empty third column instead of a deliberate ratio. This
+    // override (combined selector for higher specificity than
+    // .sr-cvss-metric-row alone, so it doesn't depend on source order)
+    // weights the row 1:2 -- the wide card holds the bulk of the content
+    // and needs the room; the narrow Score card holds only a pill and one
+    // or two score rows. Two consumers share it, each a genuine 2-card row
+    // (unlike Classic's/OWASP's/CVSS's own 3-card rows above, which stay on
+    // plain .sr-cvss-metric-row): DREAD (Score card | Metrics card --
+    // buildDreadHolder()/buildDreadReadView()) and Custom (Score card |
+    // Custom Value card -- buildCustomHolder()/buildCustomReadView()).
+    // Applied to both the edit-mode holders (risk-details-form.js) and the
+    // read-mode cards (risk-details-view.js).
+    .sr-cvss-metric-row.sr-dread-holder-row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+
+        // Without this, the higher-specificity 1:2 template above would
+        // beat .sr-cvss-metric-row's own <900px single-column collapse
+        // (same breakpoint, same stacking rule CVSS's row already gets).
+        @media (max-width: 900px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    // CVSS holder (buildCvssHolder(), risk-details-form.js): three
+    // .sr-cvss-metric-group-shaped cards side by side in one row --
+    // Exploitability | Impact | CVSS Score at the top, and (shared class)
+    // Temporal | Environmental | Impact-Modifiers inside the Advanced
+    // Metrics accordion once expanded. CSS Grid's default `align-items:
+    // stretch` is what actually keeps every card in a ROW the same height
+    // as its tallest sibling -- not per-card sizing, which is fragile the
+    // moment any one card's content changes. Deliberately its own class,
+    // not .sr-qgrid: that pattern pairs two FIELDS 2-up, not three whole
+    // sections. Stacks below 900px (wider than .sr-qgrid's own 576px
+    // breakpoint -- three narrow columns get cramped sooner than two),
+    // the same "wide: side by side, narrow: stack" principle applied to
+    // sections instead of fields.
+    .sr-cvss-metric-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 15px 16px;
+        align-items: stretch;
+
+        @media (max-width: 900px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    // Every CVSS metric/result group is a small card of its own -- the
+    // SAME gray-head/white-body/bordered relationship .sr-qcard/.sr-qcard-
+    // head has (design-system.md §5), one size down, not an inverted
+    // white-on-gray version of it. A white head on this white page
+    // background had nothing to separate it from the page itself; the real
+    // pattern's border + gray head is what actually reads as a distinct
+    // group. Shared by the 5-score summary and every metric group
+    // (Exploitability/Impact/Temporal/Environmental/Impact-Modifiers,
+    // buildCvssHolder()'s metricsSubGroup()/$temporalMetrics/etc).
+    .sr-cvss-holder-summary,
+    .sr-cvss-metric-group {
+        @include sr-mini-card;
+
+        // Bled to the panel's own padding edge (NOT the border edge -- a
+        // child's background paints over an ancestor's border wherever the
+        // two overlap, so a margin that also cancels the border-width hides
+        // the border under the header instead of framing it) via a negative
+        // margin equal to the panel's own padding, so the header sits flush
+        // against the INSIDE of the border on all 3 sides and the border
+        // visibly wraps the whole card, header included. Shared with the
+        // asset record's Asset Scoring cards (mixins/mini-card.scss).
+        h5, h6 {
+            @include sr-mini-card-head;
+        }
+    }
+
+    // Flex-column ONLY on the summary card (not shared with .sr-cvss-metric-
+    // group above -- CVSS's own summary has no bottom-anchored content and
+    // stacks the same either way, so this is scoped narrowly rather than
+    // risking a layout change on every OTHER metric-group card). Lets
+    // .sr-owasp-methodology-note below push itself to the card's actual
+    // bottom edge with margin-top: auto, rather than just trailing the last
+    // score row with a fixed gap above whatever empty space the row's
+    // align-items: stretch (grid, above) leaves under it.
+    .sr-cvss-holder-summary {
+        display: flex;
+        flex-direction: column;
+    }
+
+    // Score-DISPLAY rows (buildCvssScoreDisplay()) inside the summary --
+    // label-left, value-right, the same shape the now-deleted #cvssModal's
+    // own .score-item rule gave the modal's score rows (custom.scss) before
+    // Phase 4d-ii's inline redesign removed the modal that rule was scoped
+    // to.
+    .sr-cvss-holder-summary .score-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+
+        label { color: $sr-primary; font-weight: 600; }
+
+        // Label + vector caption stack in this one column (a plain block
+        // div; the trailing <div class="sr-cvss-vector"> after the inline
+        // <label> already lands on its own line with no flex-direction
+        // needed) -- flexes to fill the row's remaining width so a long
+        // caption (Environmental's is ~26 characters) wraps within it
+        // instead of pushing the fixed-width number box off its 80px.
+        .sr-cvss-score-label-col {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .score-value {
+            flex: none;
+            width: 80px;
+            text-align: right;
+            background-color: var(--bs-secondary-bg);
+        }
+    }
+
+    // Light CVSS v2 vector caption (e.g. "AV:N/AC:L/Au:N" under "Base
+    // Score:") -- stacked directly under the row's OWN label in
+    // .sr-cvss-score-label-col above, not under the number on the right:
+    // that column's combined [label + caption] height is meant to read as
+    // roughly the same as the grey number box beside it, not a two-line
+    // label competing against a one-line number.
+    .sr-cvss-vector {
+        font-size: 10.5px;
+        color: $gray-600;
+        margin-top: 2px;
+        word-break: break-all;
+    }
+
+    // The risk-level hero tile: a colored number + level name, the same
+    // idea as view_score_html()'s .risk-square (Inherent/Residual Risk, top
+    // of the read view) reimplemented with this system's own tokens (8px
+    // card radius, no inline hex) instead of that older component's bare
+    // Bootstrap styling. Fill color is set inline by
+    // paintCvssRiskLevelTile() (risk-details-form.js) from the configured
+    // risk_levels color; white text is the default, flipping to charcoal on
+    // pale fills via .on-light, same contrast rule as .sr-sev-pill (§7).
+    // Nests directly inside .sr-cvss-holder-summary, above the 5-score
+    // breakdown -- kept compact (small padding, no big-number treatment)
+    // so the ONE combined card it leads doesn't run taller than Base Score
+    // Metrics opposite it, which two separate cards did.
+    .sr-cvss-risk-level-tile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        border-radius: 6px;
+        padding: 8px 16px;
+        margin-bottom: 10px;
+        text-align: center;
+        color: $white;
+        background: $gray-500; // fallback until JS paints the configured color
+
+        &.on-light { color: $sr-primary; }
+
+        .sr-cvss-risk-level-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            opacity: .85;
+        }
+
+        .sr-cvss-risk-level-score {
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .sr-cvss-risk-level-name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+    }
+
+    // The Advanced Metrics accordion (Temporal/Environmental/Impact-
+    // Modifiers, collapsed by default) -- the header/OPTIONAL badge reuse
+    // the shipped .sr-qaccordion .sr-qacc-head rule above verbatim (plus its
+    // own border override just below THAT rule, not here -- see the comment
+    // there for why); this only adds the spacing that rule doesn't own
+    // (separation from Base Score Metrics above it, and room between the
+    // three groups once expanded).
+    .sr-cvss-advanced {
+        margin-top: 4px;
+    }
+
+    // No horizontal padding: the grey metric-group panels inside span the
+    // SAME full width as the Advanced Metrics header bar above them, rather
+    // than sitting inset from it. Its one child is the .sr-cvss-metric-row
+    // holding all three groups, so spacing between them is that row's own
+    // `gap`, not a sibling margin here.
+    .sr-cvss-advanced-body {
+        padding: 16px 0;
+    }
 
     .sr-qlabel {
         font-size: 12.5px;
@@ -218,6 +555,102 @@
         margin: 0;
 
         .required { color: $sr-important; font-weight: 800; }
+    }
+
+    // Per-metric help popover trigger on the CVSS holder's 14 selects
+    // (scoringSubField()/buildCvssScoreItem(), risk-details-form.js) --
+    // sits inline after the label text, matching extras/workflows/includes/
+    // display.php's own info-icon-plus-popover pattern.
+    .sr-scoring-help-icon {
+        margin-left: 4px;
+        font-size: 0.9em;
+        color: $gray-500;
+        cursor: pointer;
+    }
+
+    // OWASP's Likelihood/Impact cards each nest 2 named sub-groups
+    // (buildOwaspHolder()'s owaspSubGroup(), risk-details-form.js) inside
+    // ONE .sr-cvss-metric-group card -- unlike CVSS's own
+    // metricsSubGroup(), where each sub-group is its own separate card.
+    // A bare <h6> would double up the existing ".sr-cvss-metric-group h5,
+    // h6" gray-bar-bleed rule inside the same card (that rule assumes
+    // exactly one heading per card); this is a plain, lighter heading
+    // instead.
+    .sr-owasp-subgroup-head {
+        font-size: 12.5px;
+        font-weight: 700;
+        text-decoration: underline;
+        margin: 0 0 8px;
+        color: $sr-primary;
+    }
+
+    // Visually separates the 2 nested sub-groups within one Likelihood/
+    // Impact card (owaspSubGroup()/owaspReadSubGroup(), risk-details-form.js
+    // and risk-details-view.js) -- $gray-300, the SAME token this system
+    // already uses for card borders/row dividers, not a new grey.
+    // :not(:last-of-type) leaves the card's LAST sub-group undivided
+    // (nothing below it to separate from). :has() (already used elsewhere
+    // in this file) scopes this precisely to the OWASP sub-group wrapper,
+    // not every .sr-qfield-mb-classed div in the system.
+    .sr-cvss-metric-group .sr-qfield-mb:has(.sr-owasp-subgroup-head):not(:last-of-type) {
+        padding-bottom: 16px;
+        border-bottom: 1px solid $gray-300;
+    }
+
+    // Indents a factor-group row under its parent Likelihood/Impact row in
+    // the Score card (buildOwaspHolder()/buildOwaspReadView()) -- label
+    // column only, so the number column stays flush right/aligned with the
+    // parent row's own number.
+    .sr-owasp-subscore-item .sr-cvss-score-label-col {
+        padding-left: 16px;
+    }
+
+    // A second nesting level, ON TOP of the 16px above (both classes stack
+    // on the same row -- see buildContributingRiskHolder()/
+    // buildContributingRiskReadView()) -- each configured factor sits under
+    // Contributing Risk's OWN subscore row, which itself sits under the
+    // total the same one level buildOwaspHolder()'s subgroups use. OWASP
+    // never needs this: its subgroups are the deepest level already.
+    .sr-owasp-subscore-item--nested .sr-cvss-score-label-col {
+        padding-left: 32px;
+    }
+
+    // A short plain-English caption under each subgroup heading inside the
+    // Likelihood/Impact cards, sourced from OWASP's own Risk Rating
+    // Methodology (community.owasp.org) -- same treatment as CVSS's own
+    // .sr-cvss-vector caption (muted, small), but preceding the fields
+    // instead of following a score. The live "= ( a + b + c + d ) / 4"
+    // calculation for each of these 4 named factors is NOT here -- it is a
+    // .sr-cvss-vector caption under the factor's own score ROW in the OWASP
+    // Score summary card instead (owaspScoreRow(), risk-details-view.js),
+    // matching CVSS's identical score-row+vector-caption pattern exactly.
+    .sr-owasp-subgroup-desc {
+        font-size: 10.5px;
+        color: $gray-600;
+        margin: -4px 0 8px;
+    }
+
+    // The OWASP Risk Rating Methodology link note. Pinned to the ACTUAL
+    // bottom of the OWASP Score card (margin-top: auto against the flex-
+    // column .sr-cvss-holder-summary above) rather than just trailing the
+    // last score row -- that column is shorter than the Likelihood/Impact
+    // columns beside it (their shared grid row's align-items:stretch
+    // reserves the extra height without filling it), so a fixed top margin
+    // would leave it stranded mid-card instead of using that open space.
+    .sr-owasp-methodology-note {
+        font-size: 10.5px;
+        color: $gray-600;
+        margin-top: auto;
+        padding-top: 12px;
+
+        // Underlined and in the brand color, not just bold -- muted caption
+        // text this small reads as a link only when it carries the
+        // universal underline affordance too, not weight alone.
+        a {
+            color: $sr-primary;
+            font-weight: 600;
+            text-decoration: underline;
+        }
     }
 
     // Toggle-switch rows
@@ -300,6 +733,24 @@
         border-top-left-radius: 8px;
         border-top-right-radius: 8px;
 
+        // Bootstrap's chevron (.accordion-button::after) reads these off
+        // --bs-accordion-btn-icon and friends, which Bootstrap's OWN CSS
+        // only defines on its .accordion wrapper class -- .sr-qaccordion is
+        // this system's own class, not Bootstrap's, so no ancestor ever
+        // supplied them and every .sr-qaccordion instance (this one and the
+        // shipped ones in extras/assessments|customization/index.php) has
+        // silently rendered with no arrow at all. Defining them directly
+        // here (a custom property set on an element is visible to that
+        // element's own ::after) fixes every instance at once. Values
+        // copied verbatim from Bootstrap's compiled defaults (style.min.css)
+        // -- same chevron glyph, collapsed vs. expanded stroke color, and
+        // the rotate-on-expand transform/transition Bootstrap already ships.
+        --bs-accordion-btn-icon-width: 1.25rem;
+        --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%233A3A3A' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%233A3A3A' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        --bs-accordion-btn-icon-transform: rotate(-180deg);
+        --bs-accordion-btn-icon-transition: transform 0.2s ease-in-out;
+
         &.collapsed {
             border-bottom-left-radius: 8px;
             border-bottom-right-radius: 8px;
@@ -326,6 +777,25 @@
             border-radius: 4px;
             padding: 1px 7px;
         }
+    }
+
+    // The CVSS holder's Advanced Metrics header gets the same card-style
+    // outline the metric-group panels use, but only on the header row --
+    // each expanded group underneath already has its own .sr-cvss-metric-
+    // group border, and wrapping the whole accordion too stacked a second
+    // border directly against those, reading as a double line. MUST be
+    // declared AFTER the shared .sr-qaccordion .sr-qacc-head.accordion-
+    // button rule above: both selectors compile to identical specificity
+    // (4 classes each), so without this ordering the shared rule's own
+    // unconditional `border-bottom: none` (collapsed state) silently wins
+    // the tie and the border never shows on the bottom edge -- confirmed
+    // live (computed border-bottom-width stayed 0px with the rule the
+    // other way around). Scoped to .sr-cvss-advanced specifically (not
+    // folded into the shared rule) since the other shipped .sr-qaccordion
+    // instances in extras/assessments|customization/index.php don't opt
+    // into this look.
+    .sr-cvss-advanced .sr-qacc-head.accordion-button {
+        border: 1px solid $gray-300;
     }
 
     // Template rows + add button
@@ -386,6 +856,12 @@
 
         .sr-qnote-ico { flex: none; color: $orange; margin-top: 1px; }
     }
+
+    // The 10px margin-top above is for a note tucked under a toggle. As a
+    // direct item of a .sr-qstack the stack's gap already spaces it, and the
+    // margin would stack on top of the gap -- the note would sit 22px from
+    // the field above it while every other item sits 12px apart.
+    .sr-qstack > .sr-qnote { margin-top: 0; }
 
     // Sticky action bar
     .sr-qactions {
@@ -452,4 +928,222 @@
 .bg-white:has(> .col-12 > .sr-qform) {
     background-color: transparent !important;
     border-color: transparent !important;
+}
+
+// Same "Cards on gray ground" mechanism, extended to the risk view page
+// (management/view.php), which wraps its whole Cards read view in a
+// `.row.bg-white` > `.content` (management/view.php + core layout.scss)
+// rather than an `.sr-qform`. Without this the redesigned Overview/record-
+// header card and the Details/Mitigation/Review tab strip sit inside one
+// solid white slab, which is exactly the "one bordered white box" look every
+// other Cards surface in this file already left behind. `.score-overview-
+// container` (management/partials/viewhtml.php) is this page's own first
+// child inside `.content`/`.bg-white`, and isn't reused as a `.content`/
+// `.bg-white` descendant anywhere else, so it's a safe, unique :has() anchor
+// -- same reasoning as scoping the .sr-qform rule above instead of editing
+// the shared `.content`/`.bg-white` classes those other pages still need
+// solid white.
+.content:has(.score-overview-container) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    margin: 0 !important;   // drop the extra outer margin (keep padding) so the
+                            // Cards align with the page title/breadcrumb, same
+                            // fix as the .sr-qform rule above
+}
+.row.bg-white:has(.score-overview-container) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+// Same fix again for management/view.php's OTHER branch: a risk id that
+// doesn't exist renders no .score-overview-container at all (viewhtml.php
+// is never included), just the "couldn't load" empty-state card
+// (.sr-table-card--no-border) -- so the :has() anchor above never matches
+// and this branch was still sitting inside the solid white slab the rest
+// of this file already moved every other Cards surface off of.
+.content:has(.sr-table-card--no-border) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    margin: 0 !important;
+}
+.row.bg-white:has(.sr-table-card--no-border) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+// Undoes .sr-qform's own `padding-bottom: 72px` (reserved for an edit
+// form's sticky action bar) for risk-details-view.js's read-mode CVSS card
+// (buildCvssReadView()), which adds 'sr-qform' purely as a scoping hook to
+// reach this file's .sr-cvss-*/.sr-qaccordion rules -- see that function's
+// own comment for why. Two classes (0,2,0) outranks .sr-qform's own bare
+// rule (0,1,0) regardless of source order, so this could sit anywhere, but
+// lives here with this file's other top-level .sr-qform overrides.
+.sr-cvss-view.sr-qform {
+    padding-bottom: 0;
+}
+
+// Read-mode Cards stack (risk-details-view.js's renderCards(), collapsible
+// card headers) needs the same accordion chevron treatment as the shared
+// .sr-qaccordion .sr-qacc-head.accordion-button rule above, but that rule
+// is nested under `.sr-qform { ... }` and this stack's container
+// deliberately does NOT carry .sr-qform (renderReadMode()'s own comment,
+// risk-view-details.js -- adding it here dragged .sr-qform's OTHER nested
+// rules, card padding/shadow and the 72px sticky-action-bar spacer, onto
+// every read-mode card). Unlike buildCvssReadView()'s fix just above
+// (which adds .sr-qform as a narrow scoping hook to its own
+// .sr-cvss-holder wrapper, safe because that wrapper's class names are
+// CVSS-specific), this stack's cards reuse the generic .sr-qcard/
+// .sr-qcard-head/.sr-qgrid names .sr-qform's ruleset also targets, so the
+// same hook trick would restyle every card wholesale. Duplicating the
+// chevron declarations under a .sr-qcards-stack-scoped selector instead
+// keeps the fix contained to just the chevron. Values copied verbatim from
+// the shared rule above (in turn copied from Bootstrap's compiled
+// defaults) -- keep the three in sync if the chevron ever changes.
+.sr-qcards-stack .sr-qaccordion .sr-qacc-head.accordion-button {
+    --bs-accordion-btn-icon-width: 1.25rem;
+    --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%233A3A3A' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%233A3A3A' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    --bs-accordion-btn-icon-transform: rotate(-180deg);
+    --bs-accordion-btn-icon-transition: transform 0.2s ease-in-out;
+}
+
+// "Risk Scoring History" widget (Scoring card, buildScoringHistoryWidget(),
+// risk-details-view.js). Sits as a direct child of .sr-qcard-body (a
+// sibling of .sr-qgrid), so it's already full-width for free -- .sr-qcard-body has no
+// grid-template-columns of its own (that's .sr-qgrid's job), just a
+// single-column stacking grid. Margin-top separates it from the Risk
+// Scoring widget above; the nested accordion's own header/chevron come
+// from the shared .sr-qcards-stack .sr-qaccordion rule above, this file's
+// .sr-qaccordion .sr-qacc-head.accordion-button border/background rule
+// (nested under .sr-qform, so N/A here -- reapplied narrowly for this
+// widget only, not the whole read-mode stack, since only THIS accordion
+// needs it).
+.sr-scoring-history-widget {
+    position: relative; // anchors .sr-scoring-history-download's corner position
+    margin-top: 12px;
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .sr-qacc-head.accordion-button {
+        background: $gray-100;
+        box-shadow: none;
+
+        &:not(.collapsed) {
+            border-bottom: 1px solid $gray-300;
+        }
+    }
+}
+
+.sr-scoring-history-body {
+    padding: 16px;
+}
+
+.sr-scoring-history-status {
+    color: $gray-600;
+    font-size: 13px;
+    text-align: center;
+    padding: 8px 0;
+}
+
+// Chart + risk-level legend side by side. Wraps under phone width (the
+// artifact/page responsive rule -- nothing gets a min-width wider than the
+// screen) so the legend drops below the chart instead of forcing a
+// horizontal scroll.
+.sr-scoring-history-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+// Chart.js needs a sized ancestor to compute its `responsive` layout from
+// -- without an explicit height it collapses to 0 the first time this
+// accordion opens (canvas has no intrinsic size of its own). flex: 1 1 320px
+// lets it claim the row's remaining width while still wrapping the legend
+// below it on a narrow card.
+.sr-scoring-history-chart {
+    position: relative;
+    height: 280px;
+    flex: 1 1 320px;
+}
+
+// buildScoringHistoryDownloadButton() -- floats over the WIDGET's own
+// bottom-right corner (the widget's `position: relative` above is what
+// this positions against, not just the chart), so it reads as belonging
+// to the whole card, matching the legacy chart's own save icon in spirit
+// (create_chartjs_line_code(), includes/reporting.php) without taking a
+// row of its own or competing with the canvas for height. Plain ghost
+// icon button -- design-system.md §12's app-shell header icon buttons
+// ("uniform size, rounded hover"), scaled down for a quiet secondary
+// affordance on a card rather than a primary action, so no visible border
+// or fill until hovered.
+.sr-scoring-history-download {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: $gray-600;
+    font-size: 13px;
+
+    &:hover, &:focus {
+        background: $gray-100;
+        color: $sr-primary;
+    }
+}
+
+// Fixed-width legend column (buildScoringHistoryLegend()) -- one
+// .sr-sev-pill per configured risk level, positioned to line up with its
+// own band's vertical center on the chart (positionScoringHistoryLegend()
+// reads the live chart's y-scale pixel positions and sets each row's
+// `top` directly), not just evenly spaced. Same height as the chart so
+// the two share one coordinate space top-to-bottom.
+.sr-scoring-history-legend-slot {
+    position: relative;
+    flex: 0 0 140px;
+    height: 280px;
+}
+
+.sr-scoring-history-legend {
+    position: relative;
+    height: 100%;
+}
+
+// `top` is set inline (JS) per row to its band's own pixel center;
+// translateY(-50%) centers the pill ON that point regardless of the row's
+// own rendered height, so the JS never needs to know it.
+.sr-scoring-history-legend-row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+
+    .sr-sev-pill { width: 100%; }
+}
+
+// CVSS metric help popovers (scoringSubField(), risk-details-form.js).
+// Bootstrap renders a popover at the document root (not inside .sr-qform),
+// so this can't be scoped under it like the rest of this file -- top-level,
+// same as the two rules above. Wider than Bootstrap's ~276px default: these
+// describe every option's meaning, not just the metric, and read as a tall,
+// narrow column at the default width.
+.popover.sr-scoring-help-popover {
+    max-width: 320px;
+
+    // The lang.en.php *Help strings carry real \n line breaks (one overall
+    // sentence, then one bullet line per option) -- plain text, not HTML, so
+    // the popover can stay in Bootstrap's default (safer) non-HTML content
+    // mode. Normal white-space collapses those to spaces; pre-line renders
+    // them as breaks while still wrapping each line normally.
+    .popover-body {
+        white-space: pre-line;
+    }
 }

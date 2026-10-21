@@ -9,120 +9,106 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1") {
 enforce_permission("riskmanagement");
 
 ?>
-<div class="risk-details mt-2">
+<div class="risk-details sr-risk-view-tabs position-relative">
     <nav class="nav nav-tabs">
         <a id="tab_details" data-bs-target="#details" class="nav-link active" data-bs-toggle="tab"><?php echo $escaper->escapeHtml($lang['Details']); ?></a>
         <a id="tab_mitigation" data-bs-target="#mitigation" class="nav-link" data-bs-toggle="tab"><?php echo $escaper->escapeHtml($lang['Mitigation']); ?></a>
         <a id="tab_review" data-bs-target="#review" class="nav-link" data-bs-toggle="tab"><?php echo $escaper->escapeHtml($lang['Review']); ?></a>
     </nav>
-    <div class="tab-content position-relative card-body my-2 border">
+    <div class="tab-content">
 
         <div id="details" class="tab-pane active clearfix">
-            <form name="details" method="post" action="" enctype="multipart/form-data">
-                <input type="hidden" class="risk_id" value="<?php echo $escaper->escapeHtml($id); ?>">
-
-    <?php if(@$isAjax && has_permission("modify_risks") && (!isset($action) || $action != 'editdetail')): ?>
-                <!-- Edit th risk details-->
-                <div class="tabs--action position-absolute top-0 end-0">
-                    <button type="button" name="edit_details" class="btn btn-dark on-view"><?php echo $escaper->escapeHtml($lang['EditDetails']); ?></button>
-                </div>
-    <?php endif; ?>
-
-    <?php
-        // If the user has selected to edit the risk and has permission to edit the risk
-        if ((isset($_POST['edit_details']) || (isset($action) && $action == 'editdetail')) && has_permission("modify_risks")) {
-                edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $risk_tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id);
-        // Otherwise we are just viewing the risk
-        } else {
-                view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id);
-        }
-    ?>
-            </form>
+            <input type="hidden" class="risk_id" value="<?php echo $escaper->escapeHtml($id); ?>">
+            <div id="risk-view-details-mount" data-risk-id="<?php echo $escaper->escapeHtml($id); ?>"
+                 data-can-edit="<?php echo has_permission('modify_risks') ? '1' : '0'; ?>"></div>
+<?php
+    // The mount above is rendered EMPTY -- js/simplerisk/pages/risk-view-details.js
+    // fills it. On a regular page load that module's own $(document).ready hook
+    // does it, so nothing is needed here.
+    //
+    // On the AJAX path this whole partial is re-rendered server-side and dropped
+    // into the page by risk.js with `$('.content-container', tabContainer).html(...)`
+    // (Edit/Cancel Mitigation, Perform/Save/Cancel Review, View All Reviews,
+    // Close Risk, Change Status). That replaces the #details pane with a fresh
+    // empty mount long after document-ready fired, leaving the Details tab blank
+    // until a full reload. Re-invoke the coordinator here so the re-render is
+    // tied to the markup itself: jQuery's .html() executes injected <script>
+    // tags, and several of those handlers never call callbackAfterRefreshTab(),
+    // so a hook in that function would not cover them all.
+    //
+    // This is the mirror image of the $isAjax guards the Mitigation and Review
+    // panes below use: they re-init on the NON-ajax path because risk.js already
+    // re-inits them on the ajax one.
+    if (isset($isAjax) && $isAjax) {
+?>
+            <script>
+                $(function () {
+                    if (window.RiskViewDetails) {
+                        window.RiskViewDetails.render();
+                    }
+                });
+            </script>
+<?php
+    }
+?>
         </div>
 
         <div id="mitigation" class="tab-pane">
-            <form name="mitigation" method="post" action="" enctype="multipart/form-data">
-
-    <?php if(@$isAjax && has_permission("plan_mitigations") && (!isset($action) || $action!="editmitigation")): ?>
-                <!-- Edit mitigation -->
-                <div class="tabs--action position-absolute top-0 end-0">
-                    <button type="button" name="edit_mitigation" class="btn btn-dark"><?php echo $escaper->escapeHtml($lang['EditMitigation']); ?></button>
-                </div>
-    <?php endif; ?>
-    
-    <?php
-        // If the user has selected to edit the mitigation and they have permission to edit the mitigation
-        if ((isset($_POST['edit_mitigation']) || (isset($action) && $action == 'editmitigation')) && has_permission("plan_mitigations")) {
-            edit_mitigation_details($id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id);
-
-            // If it's not being included through an AJAX call we have to run the below logic to initialize the controls on the page
-            // Conveniently the '$isAjax' variable isset in the API call before including this page
-            // so we can track if it's loaded through the API or it's a regular page load
-            if (!isset($isAjax) || !$isAjax) {
-                ?>
-                <script>
-					// To be able to only run this for the active tab we have to get a reference of THIS script tag
-					// which is why we're using this structure below
-                    (function(scriptTag){
-
-                    	// do whatever you want after the DOM is loaded here...
-                    	$(function(){
-                        	// Get the containing parent of this script tag
-                            var tabContainer = $(scriptTag).parents('.tab-data');
-                            // Run the logic that's initializing the elements of the included part
-                            callbackAfterRefreshTab(tabContainer, 1);
-                        });
-                     })(document.currentScript);
-                </script>
+            <input type="hidden" class="risk_id" value="<?php echo $escaper->escapeHtml($id); ?>">
+            <div id="risk-view-mitigation-mount" data-risk-id="<?php echo $escaper->escapeHtml($id); ?>"
+                 data-can-edit="<?php echo has_permission('plan_mitigations') ? '1' : '0'; ?>"></div>
 <?php
-            }
-
-            // Otherwise we are just viewing the mitigation
-        } else {
-            view_mitigation_details($id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id);
-        }
-    ?>
-
-            </form>
+    // The mount above is rendered EMPTY -- js/simplerisk/pages/risk-view-mitigation.js
+    // fills it. Same $isAjax re-init guard as the #details pane above (Phase 4a) --
+    // see that pane's own comment for the full reasoning: risk.js's Review/Close
+    // Risk/Change Status handlers re-render this WHOLE partial server-side and drop
+    // it in with $('.content-container', tabContainer).html(...), which replaces this
+    // mount too and leaves it empty until a full reload without this re-invocation.
+    //
+    // edit_mitigation_details()/view_mitigation_details() stay in the codebase
+    // (still used elsewhere), just no longer called from this pane -- this mount
+    // point replaces both, the same swap Phase 4a made for #details.
+    if (isset($isAjax) && $isAjax) {
+?>
+            <script>
+                $(function () {
+                    if (window.RiskViewMitigation) {
+                        window.RiskViewMitigation.render();
+                    }
+                });
+            </script>
+<?php
+    }
+?>
         </div>
         
         <div id="review" class="tab-pane">
-<!--        <form name="review" method="post" action="">-->
-    <?php
-        // Check the review permissions for this risk id
-        $edit = check_review_permission_by_risk_id($id);
-
-        // If the user is trying to perform a review and the user has the right permission
-        if (isset($action) && $action == 'editreview' && $edit) {
-            $default_next_review = get_next_review_default($id-1000);
-            edit_review_submission($id, $review_id, $review, $next_step, $next_review, $comments, $default_next_review, $template_group_id);
-
-            // If it's not being included through an AJAX call we have to run the below logic to initialize the controls on the page
-            // Conveniently the '$isAjax' variable isset in the API call before including this page
-            // so we can track if it's loaded through the API or it's a regular page load 
-            if (!isset($isAjax) || !$isAjax) {
-?>
-                <script>
-					// To be able to only run this for the active tab we have to get a reference of THIS script tag
-					// which is why we're using this structure below
-                    (function(scriptTag){
-
-                    	// do whatever you want after the DOM is loaded here...
-                    	$(function(){
-                        	// Get the containing parent of this script tag
-                            var tabContainer = $(scriptTag).parents('.tab-data');
-                            // Run the logic that's initializing the elements of the included part
-                            callbackAfterRefreshTab(tabContainer, 2);
-                        });
-                     })(document.currentScript);
-                </script>
+            <input type="hidden" class="risk_id" value="<?php echo $escaper->escapeHtml($id); ?>">
+            <div id="risk-view-review-mount" data-risk-id="<?php echo $escaper->escapeHtml($id); ?>"></div>
 <?php
-            }
-        } else {
-            view_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id);
-        }
-    ?>
-<!--        </form>-->
+    // No data-can-edit attribute -- unlike modify_risks/plan_mitigations,
+    // "can perform a review" is RISK-INSTANCE-SPECIFIC
+    // (check_review_permission_by_risk_id($id), tiered by this risk's own
+    // calculated level), not a plain session permission a static PHP
+    // attribute can express. The coordinator gets it from the values
+    // response's can_perform_review key instead (Task 1).
+    //
+    // Same $isAjax re-init guard as the #details/#mitigation panes -- see
+    // #details' own comment for the full reasoning (risk.js's Close
+    // Risk/Change Status/View All Reviews handlers re-render this WHOLE
+    // partial server-side).
+    if (isset($isAjax) && $isAjax) {
+?>
+            <script>
+                $(function () {
+                    if (window.RiskViewReview) {
+                        window.RiskViewReview.render();
+                    }
+                });
+            </script>
+<?php
+    }
+?>
         </div>
     </div>
 </div>

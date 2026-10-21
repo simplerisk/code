@@ -33,6 +33,31 @@
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));
     require_once(realpath(__DIR__ . '/../includes/governance.php'));
     require_once(realpath(__DIR__ . '/../includes/extras.php'));
+    // build_active_control_columns() / control_frameworks_sanitize_display_
+    // settings() / get_user_by_id() below -- already reachable transitively
+    // via governance.php's own require chain, but every direct consumer
+    // declares its own require per CLAUDE.md's Function Reachability rule.
+    require_once(realpath(__DIR__ . '/../includes/functions.php'));
+
+    // Columns picker persistence (Task: Columns picker). Read HERE, before
+    // the page renders, the same inline-blob channel SR_GOV_PERMS already
+    // established for this page (server-resolved state a header-loaded
+    // <script> can't wait on an AJAX round trip for). Column visibility is
+    // harmless to apply a beat late -- same as Document Program/Define
+    // Exceptions' own picker -- but reading it here avoids a visible flash
+    // of the default column set on every load.
+    //
+    // The filter sheet's facet state is NOT part of this blob: it is search
+    // state, not layout, and every fresh load is expected to come back
+    // unfiltered.
+    $ctl_display_settings = null;
+    if (isset($_SESSION['uid'])) {
+        $ctl_display_user = get_user_by_id($_SESSION['uid']);
+        $ctl_display_settings = control_frameworks_sanitize_display_settings(
+            json_decode($ctl_display_user['custom_control_frameworks_display_settings'] ?? '', true)
+        );
+    }
+    $ctl_active_columns = build_active_control_columns();
 
     // NOTE: The add_framework / delete_framework / delete_control / delete_controls
     // POST handlers that used to live here were removed along with the tab strips
@@ -81,6 +106,25 @@
         modify_controls:    <?= has_permission('modify_controls')    ? 'true' : 'false' ?>,
         delete_controls:    <?= has_permission('delete_controls')    ? 'true' : 'false' ?>
     };
+
+    // The Columns picker's persisted state -- see this file's own comment
+    // above (Task: Columns picker) for why this rides the same inline-blob
+    // channel as SR_GOV_PERMS rather than the controls/table API response.
+    // `columns` is null on a first visit (no saved settings yet, or nothing
+    // in the saved blob survived sanitizing); governance-frameworks.js
+    // treats null exactly like "nothing saved" -- every column defaults to
+    // visible EXCEPT class/phase/priority/control_type, which default to
+    // hidden (DEFAULT_HIDDEN_COLUMNS in governance-frameworks.js) so a fresh
+    // visit still renders the same four-column table this page always has.
+    // `active_columns` is null whenever the Customization Extra is inactive,
+    // in which case the client falls back to its own static 8-column list
+    // and offers no custom fields. There is no `filters` key -- the filter
+    // sheet's facet state is not persisted; every fresh load starts
+    // unfiltered.
+    window.SR_CTL_DISPLAY_SETTINGS = <?= json_encode([
+        'columns' => $ctl_display_settings['columns'] ?? null,
+        'active_columns' => $ctl_active_columns,
+    ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
     // Set current mouse position
     var mouseX, mouseY;

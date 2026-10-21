@@ -299,6 +299,15 @@ function api_v2_governance_controls()
 // endpoints differ only in which permission they gate on, and a shared helper
 // spanning api/v2/includes/compliance.php and governance.php would invert which
 // file owns which permission domain for no real savings over ~15 lines of SQL.
+//
+// The Mitigation Controls picker (risk-mitigation-controls.js) also gates on
+// `governance` (see this function's own permission check -- the roster is
+// pure control-CATALOG data, owned by Governance, not risk-management), so it
+// calls this SAME endpoint rather than maintaining its own duplicate query --
+// with `include_facets=1` to additionally receive the framework/family facet
+// lists its faceted-picker columns need (governance/documentation.php's and
+// document_exceptions.php's callers don't ask for those and keep getting the
+// original flat-array response, so neither breaks).
 function api_v2_governance_control_roster()
 {
     // Check that this user has the ability to view governance
@@ -336,6 +345,29 @@ function api_v2_governance_control_roster()
     // Grouping/dedupe is pure -- see shape_control_roster()
     // (includes/compliance_grid.php), unit-tested without a DB.
     $controls = shape_control_roster($rows, $mapping_rows);
+
+    // Opt-in only: governance/documentation.php's and document_exceptions.php's
+    // roster callers expect `data` to be the flat controls array itself (see
+    // their own loadDocumentControlsRoster()/loadExceptionControlsRoster()),
+    // so the default response shape is unchanged. Only a caller that asks for
+    // the facet lists (risk-mitigation-controls.js's faceted picker) pays for
+    // computing them and receives the wrapped {controls, frameworks, families}
+    // shape instead.
+    if (get_param("GET", "include_facets", "0") === "1") {
+        $frameworks = array_map(function ($row) {
+            return array('value' => (int)$row['value'], 'name' => (string)$row['name']);
+        }, getAvailableControlFrameworkList(true));
+        $families = array_map(function ($row) {
+            return array('value' => (int)$row['value'], 'name' => (string)$row['name']);
+        }, getAvailableControlFamilyList());
+
+        api_v2_json_result(200, "SUCCESS", array(
+            'controls' => $controls,
+            'frameworks' => $frameworks,
+            'families' => $families,
+        ));
+        return;
+    }
 
     // Return the result
     api_v2_json_result(200, "SUCCESS", $controls);

@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'ユーザーセッション',
     'SessionActivityTimeout' => 'セッションアクティビティのタイムアウト',
     'Security' => 'セキュリティ',
-    'EnableCSP' => 'コンテンツセキュリティポリシーを有効にする (これは過去にクロームが壊れています)',
+    'EnableCSP' => 'コンテンツセキュリティポリシーを有効にする（推奨）',
     'EnableDebugLogging' => 'デバッグログを有効にする',
     'seconds' => '秒',
     'FieldSample' => 'フィールドサンプル',
@@ -1986,7 +1986,7 @@ $lang = array(
     'YouNeedToSpecifyTheTemplateNameParameter' => 'テンプレート名パラメータを指定する必要があります。',
     'QuestionsLackingAubjectEdited' => '件名のない質問は、空白のリスク件名を送信しないように編集されました。',
     'AdminSelfEditWarning' => '管理者ユーザーは、自身の管理者権限を削除したり、自分自身をロックアウトしたりすることはできません。',
-    'Value' => '価値',
+    'Value' => '値',
     'ControlDetails' => 'コントロールの詳細',
     'CannotDeleteLastItem' => '最後の項目を削除できません。',
     'FieldChangeTemplate' => '`{$field_name}` (`{$before}` => `{$after}`)',
@@ -2529,19 +2529,19 @@ $lang = array(
     'AIConfidence' => 'AI信頼度',
     'AIReasoning' => 'AI推論',
     'DocumentColumns' => 'ドキュメント列',
-    'ControlColumns' => '制御列',
+    'ControlColumns' => 'コントロール列',
     'MatchingColumns' => '一致する列',
     'ToBeDetermined' => '未定',
     'Matching' => 'マッチング',
     'Recommendation' => 'おすすめ',
     'AddControlToPolicy' => 'ポリシーに制御を追加する',
     'ConsiderAddingControl' => 'コントロールの追加を検討する',
-    'RemoveControlFromPolicy' => 'ポリシーから制御を削除する',
+    'RemoveControlFromPolicy' => 'ポリシーからコントロールを削除する',
     'NoActionRequired' => 'アクションは必要ありません',
     'DefiniteMatch' => '確実な一致',
     'LikelyMatch' => 'おそらく一致する',
     'PossibleMatch' => '一致する可能性のあるもの',
-    'UnlikelyMatch' => 'あり得ない試合',
+    'UnlikelyMatch' => '一致の可能性が低い',
     'NotAMatch' => '一致しません',
     'ReviewManually' => '手動で確認する',
     'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'リンクされたコントロールのある質問に回答すると、コントロールの種類が次のように更新されます。',
@@ -2601,7 +2601,7 @@ $lang = array(
     'PleaseEnterAValidTimezone' => '有効なタイムゾーンを入力してください。',
     'TFIDFMatch' => 'TF-IDFマッチ',
     'CompletionDate' => '完了日',
-    'AssetsAndControls' => '資産と管理',
+    'AssetsAndControls' => '資産とコントロール',
     'AssetsByControl' => '管理別資産',
     'ControlsByAsset' => '資産別のコントロール',
     'NoIncidentDetectionDataAvailable' => '開始日と検出日の両方が記録されているインシデントはありません。',
@@ -2625,7 +2625,7 @@ $lang = array(
     'NoPermissionDeleteSavedRiskReports' => '保存済みのリスクレポートを削除する権限がありません。',
     'LimitedPeriodTestmailMessage' => '先日、テストメールが送信されました。1時間に最大5通までテストメールを送信できます。',
     'ATestEmailHasBeenSentUsingTheCurrentSettings' => '現在の設定を使用してテストメールが送信されました。',
-    'ControlPassFailStatus' => '制御の合否ステータス',
+    'ControlPassFailStatus' => 'コントロールの合否ステータス',
     'GovernanceDashboard' => 'ガバナンスダッシュボード',
     'GovernanceDashboardDescription' => 'このグラフは、すべての統制の現在の成熟度を示しています。',
     'GovernanceControlsByFrameworkMaturityStacked' => 'フレームワーク別および現在の成熟度別の管理策',
@@ -2663,7 +2663,7 @@ $lang = array(
     'Reports'                  => '報告書',
     'Dashboards'               => 'ダッシュボード',
     'RiskCharts'               => 'リスクチャート',
-    'SearchReports'            => '検索レポート...',
+    'SearchReports'            => 'レポートを検索...',
     'SearchConfigure'          => '検索設定...',
     'Favorites'                => 'お気に入り',
     'AddToFavorites'           => 'お気に入りに追加',
@@ -2680,7 +2680,7 @@ $lang = array(
     'ComplianceDashboardDesc'                 => '監査の進捗状況、コンプライアンス状況、および是正措置に関する概要。',
     'GovernanceDashboardDesc'                 => '制御フレームワーク、ドキュメントプログラム、および例外状態のスナップショット。',
     'RiskChartsDesc'                          => 'リスクレベル、年齢、提出傾向を網羅した、あらかじめ作成されたチャート。',
-    'RiskAppetiteReportDesc'                  => '現在発生しているリスクを、設定したリスク許容度の閾値と比較してください。',
+    'RiskAppetiteReportDesc'                  => '現在オープンになっているリスクを、設定したリスク許容度の閾値と比較してください。',
     'RiskTrendDesc'                           => '累積的な未解決および解決済みのリスク件数を時系列でプロットしたグラフ。',
     'DynamicRiskReportDesc'                   => 'アドホックなリスククエリに対応できる、設定可能でエクスポート可能なレポート作成ツール。',
     'GraphicalRiskAnalysisDesc'               => '折れ線グラフと棒グラフを使用して、複数の側面からリスクを視覚化します。',
@@ -2700,7 +2700,7 @@ $lang = array(
     'CurrentRiskCommentsDesc'                 => 'プログラム全体のリスクに関する最近のコメント（新しい順）。',
     'AllClosedRisksByRiskLevelDesc'                              => '完了したすべてのリスクを、固有のリスクレベル順に並べたもの。',
     'AllOpenRisksAcceptedUntilNextReviewByRiskLevelDesc'         => '次回の見直し日に再評価を予定しているリスクを、レベル別に整理して示します。',
-    'AllOpenRisksByRiskLevelDesc'                                => '現在発生しているすべてのリスクを、固有のリスクレベル順に並べたもの。',
+    'AllOpenRisksByRiskLevelDesc'                                => '現在未解決のすべてのリスクを、固有のリスクレベル順に並べたもの。',
     'AllOpenRisksToSubmitAsAProductionIssueByRiskLevelDesc'      => '運用上の問題として報告すべき未解決のリスクを、レベル別に整理して表示します。',
     'AllOpenRisksConsideredForProjectsByRiskLevelDesc'           => 'プロジェクト候補としてタグ付けされた未解決のリスクを、レベル別に並べ替えたもの。',
     'ProjectsAndRisksAssignedDesc'                               => 'すべてのプロジェクトと、現在そのプロジェクトに割り当てられているリスク。',
@@ -2743,7 +2743,7 @@ $lang = array(
     'SettingsBackupsDesc'                 => 'SimpleRiskデータベースのバックアップについて、バックアップの保持期間、スケジュール、およびダウンロードリンクを設定します。',
     'SettingsSecurityDesc'                => '認証、セッション、パスワードポリシー、ベースURL、およびAPIセキュリティ設定。',
     'SettingsLoggingDesc'                 => 'デバッグおよび監査ログの設定：ログレベル、保持期間、およびログファイルの場所。',
-    'HealthCheckDesc'                     => 'システムの状態を診断します：PHPバージョン、拡張機能、ファイル権限、データベース接続、cronスケジュール、および追加の有効化。',
+    'HealthCheckDesc'                     => 'システムの状態を診断します：PHPバージョン、拡張機能、ファイル権限、データベース接続、cronスケジュール、およびExtraの有効化。',
     'AnnouncementsDesc'                   => 'すべてのユーザーに表示されるバナーお知らせを作成および管理します。',
     'RegisterAndUpgradeDesc'              => 'SimpleRiskのインストールを登録し、サブスクリプションキーを入力または更新して、ワンクリックでコア/エクストラのアップグレードを実行してください。',
     'QueueMonitorDesc'                    => 'バックグラウンドジョブキューを確認します。保留中のジョブ、実行中のジョブ、失敗したジョブが表示されます。',
@@ -2776,7 +2776,7 @@ $lang = array(
     'ImportExportExtraDesc'               => 'Import-Export Extraを使用すると、CSVファイルのフィールドをSimpleRiskデータベースのフィールドにマッピングすることで、SimpleRiskにデータをインポートできます。サードパーティのスプレッドシートからの監査結果、別のツールからの脆弱性スキャン結果、CMDBからの資産などをインポートするために使用できます。また、SimpleRiskからリスク、軽減策、レビュー、またはこれら3つを組み合わせたレポートを含むCSVファイルをエクスポートすることもできます。',
     'JiraExtraDesc'                       => 'Jira Integration Extraを使用すると、Jiraインスタンスと双方向で連携できます。これにより、リスクをJira課題に関連付けたり、データ、ステータス、コメントを同期したりすることが可能になります。',
     'APIExtraDesc'                        => 'API Extraを使用すると、顧客はRESTful APIを使用して他のアプリケーションとのスクリプトによるやり取りを作成し、高度な自動化を実現し、既存のインフラストラクチャを活用できます。',
-    'AdvancedSearchExtraDesc'             => "高度な検索機能は、上部の検索バーにある検索ボックスの機能を拡張し、リスクデータ内でテキスト検索を行うことでリスクを検索できるようにします。",
+    'AdvancedSearchExtraDesc'             => "高度な検索機能を追加すると、上部の検索ボックスが、リスク、フレームワーク、コントロール、ドキュメント、例外、テスト、監査、資産、資産グループを横断する単一の検索機能となり、検索結果を詳細に確認できる専用の検索ページが提供されます。また、ユーザーが閲覧を許可されているレコードのみが表示されます。",
     'AssessmentsExtraDesc'                => 'リスク評価エクストラでは、連絡先の定義、質問の作成（ロジックを含む）、アンケートテンプレートを使用した複数の質問の組み立て、アンケートの作成と連絡先への送信、アンケート結果の表示、結果に基づくリスクの追加、時間の経過に伴う結果の比較、外部でカスタマイズされた評価のインポートとエクスポート、リスク評価監査証跡の確認などの機能をユーザーに提供します。',
     'ActiveAssessmentsDesc'               => '現在進行中の評価を表示および管理します。',
     'WorkflowsExtraDesc'                  => 'Workflows Extraは、SimpleRisk内のイベントに応じてリスク管理アクションを自動化する、視覚的でイベント駆動型のワークフローエンジンを提供します。リスクの提出、更新、レビューなどの変更をトリガーとするワークフローを設計することで、承認のルーティング、作業の割り当て、手動介入なしでのプロセスの円滑な進行を実現できます。',
@@ -2792,8 +2792,8 @@ $lang = array(
 
     // Configure Hub - Extra labels (only the ones not already defined elsewhere in this file)
     'ArtificialIntelligenceExtra'         => '人工知能エクストラ',
-    'NotificationExtra'                   => '通知追加',
-    'TeamBasedSeparationExtra'            => 'チームベースの分離追加',
+    'NotificationExtra'                   => '通知エクストラ',
+    'TeamBasedSeparationExtra'            => 'チームベースの分離 Extra',
     'CustomAuthenticationExtra'           => 'カスタム認証追加',
     'EncryptedDatabaseExtra'              => '暗号化データベース追加',
     'APIExtra'                            => 'APIエクストラ',
@@ -2807,7 +2807,7 @@ $lang = array(
     // Note: 'Active' (line 733) and 'Purchase' (line 404) are reused as-is;
     // do not duplicate them here. One key per English string per CLAUDE.md.
     'StateReadyToDownload'                => 'ダウンロード準備完了',
-    'StateChecking'                       => '… を確認中',
+    'StateChecking'                       => '確認中…',
     'StateRegistrationRequired'           => '登録が必要です',
 
     // Configure Hub - Activation modal (Phase 3)
@@ -2834,7 +2834,7 @@ $lang = array(
     'InstallExtraBody'                           => '{name} Extraをインストールしますか？ これにより、SimpleRiskからパッケージがダウンロードされ、インストール先に展開されます。アクティベーションは別の手順で、インストール完了後にタイルから実行できます。',
     'InstallExtraError'                          => '追加機能のインストールに失敗しました。診断情報については、ヘルスチェックページをご確認ください。',
     'MissingExtraName'                           => '追加の名前がありません。',
-    'UnknownExtra'                               => '不明な追加名。',
+    'UnknownExtra'                               => '不明なExtra名。',
 
     // License state banner messages (display_license_check() in display.php)
     // Shown as a header banner when $_SESSION['license_check'] is a non-passing state.
@@ -2845,7 +2845,7 @@ $lang = array(
     // 'Cancel' (line 489) is reused as-is.
     'PurchaseExtraTitle'                  => '追加購入',
     'PurchaseExtraBody'                   => '{name} エクストラは、現在ご利用のSimpleRiskライセンスには含まれていません。詳細を確認したり、ライセンスを購入したりするには、SimpleRiskエクストラページをご覧ください。',
-    'ViewExtras'                          => '追加コンテンツを見る',
+    'ViewExtras'                          => 'エクストラを表示',
 
     // In-app notifications bell UI
     // Note: 'Notifications' (line 2234), 'SelectAll' (line 816), 'Restore' (line 952),
@@ -2878,7 +2878,7 @@ $lang = array(
     'AssetValuationMode' => '資産評価モード',
     'AutomaticLinearRange' => '自動リニアレンジ',
     'AutomaticExponentialRange' => '自動指数範囲',
-    'ManualValuation' => 'マニュアル',
+    'ManualValuation' => '手動',
     'AssetValuationMinMustBeNonNegative' => '自動指数範囲を適用するには、資産評価額の最低値がゼロ以上である必要があります。',
     'CrossDomain' => 'クロスドメイン',
     'Preferences' => '設定',
@@ -3037,7 +3037,7 @@ $lang = array(
     'LocalRegistrationStateCleared' => 'ローカル登録状態がクリアされました。新しいインスタンスIDを取得するには、/admin/register.phpで再登録してください。',
     'InstanceInformationUpdated' => 'インスタンス情報が更新されました。',
     'UpgradeExtraDesc' => 'アップグレードエクストラは、アプリケーションとデータベースのアップグレードをダウンロードして適用し、その他のエクストラをインストールして更新することで、SimpleRiskインスタンスを常に最新の状態に保ちます。これらの操作はすべて、[登録とアップグレード]ページから実行できます。SimpleRiskに無料でバンドルされているため、手動でのファイル管理を行うことなく、常に最新リリースを使用できます。',
-    'ExtraInstallDisabledByEnforcement' => 'ライセンスの種類によっては、追加インストールが無効になっている場合があります。システム管理者またはSimpleRiskサポートにお問い合わせください。',
+    'ExtraInstallDisabledByEnforcement' => '現在、ライセンスの状態により、Extraのインストールが無効になっています。システム管理者またはSimpleRiskサポートにお問い合わせください。',
     'LicenseStateUnknownRetryShortly' => 'ライセンス情報はまだ入手できません。しばらくしてからもう一度お試しください。',
     'LicenseExpiringSoonTitle' => 'ライセンスの有効期限が間もなく切れます: {$extra}',
     'LicenseExpiringSoonBody' => 'お客様の {$extra} ライセンスは {$date} （残り{$days} 日）に期限切れとなります。アクセス権を失わないためにも、登録とアップグレードから更新してください。',
@@ -3048,7 +3048,7 @@ $lang = array(
     'RefreshLicenses' => 'ライセンスを更新する',
     'LoadingLicenseData' => 'ライセンスデータを読み込んでいます...',
     'Licensed' => 'ライセンス取得済み',
-    'Unlicensed' => '無許可',
+    'Unlicensed' => 'ライセンスなし',
     'Expired' => '期限切れ',
     'Free' => '無料',
     'License' => 'ライセンス',
@@ -3101,7 +3101,7 @@ $lang = array(
     'QuestionnaireNamePlaceholder' => '例：ベンダーセキュリティレビュー2026',
     'AddTeamPlaceholder' => 'チームを追加…',
     'AddStakeholderPlaceholder' => 'ステークホルダーを追加…',
-    'AddControlTypePlaceholder' => 'コントロールタイプ… を追加します。',
+    'AddControlTypePlaceholder' => 'コントロールタイプを追加…',
     'AddLocationPlaceholder' => '場所を追加…',
     'NotifyWhenNotCompleteLabel' => '完了していない場合は通知してください',
     'NotifyWhenNotCompleteDescription' => 'まだ評価を完了していない連絡先にリマインダーを送ってください。',
@@ -3138,18 +3138,18 @@ $lang = array(
     'ConfirmCompleteSelfAssessment' => 'この評価は完了とみなしますか？リスクは、管理策の不備によって発生します。',
     'NoSelfAssessmentsYet' => '自己評価はまだありません。開始するには、まず自己評価を開始してください。',
     'RequestFailed' => 'リクエストを完了できませんでした。もう一度お試しください。',
-    'NoPendingRisks' => '差し迫ったリスクはありません。管理策の不備によるリスクを特定するには、アセスメントを実施してください。',
+    'NoPendingRisks' => '保留中のリスクはありません。失敗した管理策からリスクを生成するには、アセスメントを完了してください。',
     'NoFailedControls' => 'このフィルターに該当するコントロール結果はありません。',
     'ControlResultsTruncated' => '最新の2000件の結果を表示しています。フィルターを絞り込むと、さらに多くの結果が表示されます。',
     'GeneratedFromSelfAssessment' => '自己評価に基づいて生成されました',
     'SelfAssessmentMitigationSolution' => 'このリスクを軽減するために、今回の自己評価で不備が指摘された、下記リンク先の対策を実施してください。',
     'NSelected' => '{n} 選択済み',
     'FilterByControl' => 'コントロールでフィルタリング',
-    'Pushing' => '… を押しています',
-    'Deleting' => '… を削除しています',
-    'ConfirmPushSelectedPendingRisks' => 'Push the {n} selected pending risk(s) to risks?',
+    'Pushing' => 'プッシュ中…',
+    'Deleting' => '削除中…',
+    'ConfirmPushSelectedPendingRisks' => '選択した保留中のリスク {n} 件をリスクに移行しますか？',
     'ConfirmDeleteSelectedPendingRisks' => '選択した保留中のリスク {n} を削除しますか？この操作は元に戻せません。',
-    'ConfirmDeleteSelectedSelfAssessments' => 'Delete the {n} selected self-assessment(s)? This cannot be undone.',
+    'ConfirmDeleteSelectedSelfAssessments' => '選択した {n} 件の自己評価を削除しますか？この操作は元に戻せません。',
     'BulkPartialFailure' => '{total} 件中{n} 件が成功しました。残りは失敗しました。現在の状態を確認するには、ページを更新してください。',
 
     // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
@@ -3160,7 +3160,7 @@ $lang = array(
     'HomeKpiClosedRisks' => '閉じたリスク',
     'HomeKpiControlPassRate' => 'コントロールパスレート',
     'HomeKpiFailingControls' => '不合格のコントロール',
-    'HomeKpiOpenAudits' => '監査の実施',
+    'HomeKpiOpenAudits' => '未完了の監査',
     'HomeKpiTestsDueSoon' => 'まもなくテスト実施予定',
     'HomeKpiActiveFrameworks' => 'アクティブなフレームワーク',
     'HomeKpiTotalControls' => 'トータルコントロール',
@@ -3200,7 +3200,7 @@ $lang = array(
     'ImChartByStatus' => 'ステータス別',
     'ImListRecent' => '最近のインシデント',
     'ImListUnassigned' => '未割り当てのインシデント',
-    'HomeKpiOpenExceptions' => '例外を開く',
+    'HomeKpiOpenExceptions' => '未解決の例外',
     'HomeKpiPolicies' => 'ポリシー',
     'ResolutionTargets' => '解決目標日数',
     'ResolutionTargetsHelp' => 'インシデントが未解決のまま放置される日数。この日数が経過すると、期限超過とみなされます。',
@@ -3259,7 +3259,7 @@ $lang = array(
     'GSReviewCta' => 'レビューを実行する',
     'GSDefineTestTitle' => '制御テストを定義する',
     'GSDefineTestDesc' => 'コントロールのテスト方法を設定します。',
-    'GSDefineTestCta' => '定義テスト',
+    'GSDefineTestCta' => 'テストを定義する',
     'GSInitiateAuditTitle' => '監査を開始する',
     'GSInitiateAuditDesc' => 'テストまたは監査サイクルを開始する。',
     'GSInitiateAuditCta' => '監査を開始する',
@@ -3302,11 +3302,11 @@ $lang = array(
     'ListFailingControls' => '不合格のコントロール',
     'Exceptions' => '例外',
     'Documents' => '文書',
-    'ControlsBelowMaturity' => '成熟前の管理',
+    'ControlsBelowMaturity' => '成熟度を下回るコントロール',
     'ControlsAtMaturity' => '成熟時の管理',
-    'ControlsAboveMaturity' => '成熟度を超える制御',
+    'ControlsAboveMaturity' => '成熟度を超えるコントロール',
     'Maturity' => '成熟',
-    'AllTime' => '歴代',
+    'AllTime' => '全期間',
     'Last7Days' => '過去7日間',
     'Last30Days' => '過去30日間',
     'Last90Days' => '過去90日間',
@@ -3334,8 +3334,8 @@ $lang = array(
     'ImportExportGeneratedOn' => '生成された',
     'ImportExportPage' => 'ページ',
     'ImportExportPageOf' => 'の',
-    'ResolutionTargetsUpdated' => '重症度別の解決目標が更新されました。',
-    'SeverityColorsUpdated' => '重症度を示す色分けが更新されました。',
+    'ResolutionTargetsUpdated' => '深刻度別の解決目標が更新されました。',
+    'SeverityColorsUpdated' => '深刻度を示す色が更新されました。',
     // AI Capabilities Catalog + AI settings hub (unified AI settings)
     'AICapGrcRecommendations' => 'GRCフレームワークに関する推奨事項',
     'AICapGrcRecommendationsDesc' => '組織の状況に合わせて調整された、AIが生成するフレームワークの推奨事項とエグゼクティブサマリー。',
@@ -3354,10 +3354,10 @@ $lang = array(
     'AICapAiChat' => 'チャットアシスタント',
     'AICapAiChatDesc' => 'SimpleRisk内のあらゆる場所で、状況に応じた質問に答えるGRCアシスタント。',
     'AICapSurfacedRecommendations' => '人工知能ページ',
-    'AICapSurfacedRiskView' => 'リスクの見方 ― 詳細と軽減策',
+    'AICapSurfacedRiskView' => 'リスクビュー ― 詳細と軽減策',
     'AICapSurfacedFairTab' => 'リスクビュー — FAIRタブ',
     'AICapSurfacedDocuments' => 'ガバナンス ― 文書',
-    'AICapSurfacedControls' => 'コンプライアンス - 管理',
+    'AICapSurfacedControls' => 'コンプライアンス - コントロール',
     'AICapSurfacedEveryPage' => 'すべてのページ — フローティングアシスタント',
     'AICapabilitiesCatalog' => '機能',
     'AICapSearchPlaceholder' => '検索AI機能…',
@@ -3407,7 +3407,7 @@ $lang = array(
     'AIContextLastSaved' => '最終保存日時',
     'AIContextNeverSaved' => 'まだ保存されていません',
     'AICtxCardSubtitle' => '4つの分野にわたる21の質問。回答数が多いほど、より的確なアドバイスが得られます。',
-    'AICtxAnswered' => '%1$d のうち %2$d が回答しました',
+    'AICtxAnswered' => '%2$d 件中 %1$d 件が回答済み',
     'AICtxAllOptional' => 'オプション',
     'AIContextSaving' => '保存中…',
     'AIContextSaveFailed' => '変更内容を保存できませんでした。もう一度お試しください。',
@@ -3481,7 +3481,7 @@ $lang = array(
     'ReassignTester' => 'テスターの再割り当て',
     'SetSchedule' => 'スケジュールを設定',
     'ConfirmRetireSelectedTests' => '選択したテスト {n} を廃止しますか？',
-    'ConfirmDeleteSelectedTests' => 'Delete the {n} selected test(s)? This cannot be undone.',
+    'ConfirmDeleteSelectedTests' => '選択した {n} 件のテストを削除しますか？この操作は元に戻せません。',
     // Define Tests grid -- Coverage toolbar select (Issue 4)
     'Coverage' => 'カバレッジ',
     'CoverageWithTests' => 'テストによるコントロール',
@@ -3504,11 +3504,11 @@ $lang = array(
     'TestMethodInquiry' => '問い合わせ',
     'TestMethodObservation' => '観察',
     'TestMethodInspection' => '検査',
-    'TestMethodReperformance' => '再パフォーマンス',
+    'TestMethodReperformance' => '再実施',
     'Sample' => 'サンプル',
     'RequiredEvidence' => '必要な証拠',
     'Approvers' => '承認者',
-    'AuditLog_TestAuditApproved' => '監査「{$test_audit_name}"(ID: {$test_audit_id}) はユーザー「{$user_name} "によって承認されました。',
+    'AuditLog_TestAuditApproved' => '監査 "{$test_audit_name}"(ID: {$test_audit_id}) はユーザー "{$user_name}" によって承認されました。',
     'AuditLog_TestAuditRejected' => '監査 "{$test_audit_name}"(ID: {$test_audit_id}) は、ユーザー "{$user_name}" によってコメント "{$comment} " で拒否されました。',
     'AuditLog_TestAuditAwaitingApproval' => '監査 "{$test_audit_name}"(ID: {$test_audit_id}) はユーザー "{$user_name}" によりクローズ申請され、承認待ちです。変更: {$changes}。',
     'AuditApproved' => '監査は無事承認されました。',
@@ -3523,7 +3523,7 @@ $lang = array(
     'NotificationAuditRejectedBody' => '監査「{$test_audit_name}」は、「{$comment}」というコメントとともに却下されました。',
     'AwaitingApproval' => '承認待ち',
     'AwaitingApprovalBannerText' => 'この監査は完了のために提出されており、完了するには設定済みの承認者による承認を待っている状態です。',
-    'ReturnedForRework' => '再調整のため復帰',
+    'ReturnedForRework' => '再作業のため差し戻し',
     'ReturnedForReworkBannerText' => 'この監査は却下され、再作業のために差し戻されました。',
     'RejectReason' => '拒否理由',
     'AreYouSureYouWantToApproveThisAudit' => 'この監査を承認してもよろしいですか？',
@@ -3549,7 +3549,7 @@ $lang = array(
     'SelectOneOrMoreTests' => '1つ以上のテストを選択してください。',
     'CommonTestsApplied' => 'このコントロールに対して {n} 回のテストが適用されました。',
     'ApplyCommonTests' => '共通テストを適用する…',
-    'History' => '歴史',
+    'History' => '履歴',
     'Result' => '結果',
     'Approval' => '承認',
     'ThisTestHasNotBeenRunYet' => 'このテストはまだ実行されていません。',
@@ -3583,15 +3583,15 @@ $lang = array(
     'DueStatus' => '期限ステータス',
     'AllResults' => 'すべての結果',
     // Remove a test from one control (Define Tests grid unlink row action)
-    'RemoveFromThisControl' => 'この制御から削除する',
+    'RemoveFromThisControl' => 'このコントロールから削除する',
     'RemoveTestFromControl' => 'コントロールからテストを削除する',
     'RemoveTestFromControlConfirm' => '{test_name}を {control_name} から削除しますか？',
-    'RemoveTestFromControlStays' => 'The test stays on its {n} other controls. Nothing is deleted.',
+    'RemoveTestFromControlStays' => 'テストは他の {n} 件のコントロールにそのまま残ります。何も削除されません。',
     'RemoveTestFromControlStaysOne' => 'テストは、もう1つのコントロールにとどまります。何も削除されません。',
     'CannotRemoveTestsOnlyControl' => 'テストは少なくとも1つのコントロールに属していなければなりません。テストを廃止するか削除してください。',
     'TestRemovedFromControl' => 'そのテストはコントロールから削除されました。',
     'CouldNotRemoveTestFromControl' => 'テストはコントロールから削除できませんでした。',
-    'TestRemovedFromControlAuditLogMessage' => 'テスト「{$test_name}"(ID: {$test_id}) は、ユーザー「{$user} " によって制御 (ID: {$control_id}) から削除されました。',
+    'TestRemovedFromControlAuditLogMessage' => 'テスト「{$test_name}」(ID: {$test_id}) は、ユーザー「{$user}」によってコントロール (ID: {$control_id}) から削除されました。',
     'DeleteTestUsedByNControls' => 'これは {n} コントロールで使用されており、それらすべてから削除されます。',
     'BulkDeleteSharedTestsNote' => 'これらのうち {n} は他のコントロールで使用されているため、それらからも削除されます。',
     'BulkRetireSharedTestsNote' => 'これらのうち {n} は他のコントロールで使用されており、そちらでも廃止されます。',
@@ -3639,7 +3639,7 @@ $lang = array(
     'WorkflowNotFound' => 'ワークフローが見つかりません。',
     'EditWorkflow' => '編集ワークフロー: {$name}',
     'OrganizationContextProfile' => '組織コンテキストプロファイル',
-    'AICtxAutoAcceptThreshold' => '貴社におけるリスクの自動承認基準値（金額または年間収益率の割合）はどのくらいですか？',
+    'AICtxAutoAcceptThreshold' => '貴社におけるリスクの自動承認基準値（金額、またはALE（年間予想損失額）の割合）はどのくらいですか？',
     'AICtxGrcBudget' => '年間のGRC/セキュリティ予算はいくらですか？',
     'AICtxAuditorPerspective' => 'あなたは主に誰の視点から監査を受けているのですか？',
     'AICtxUnitCurrency' => '通貨（$）',
@@ -3654,7 +3654,7 @@ $lang = array(
     'AICapControlTestGenerationDesc' => '管理フレームワークのマッピング、既存のテスト、および自己評価結果を使用して、レビュー用の管理テストの草案を作成します。承認されるまでは何も作成されません。',
     'AICapSurfacedControlTestGeneration' => 'コンプライアンス — テストの定義',
     'AIControlTestGenUnavailable' => 'サービスが利用できません：管理者がAI設定でこの機能を有効にする必要があります。',
-    'AIControlTestGenInvalidId' => '不正なリクエストです：陽性コントロールIDが必要です。',
+    'AIControlTestGenInvalidId' => '不正なリクエストです：正のコントロールIDが必要です。',
     'AIControlTestGenNotFound' => '見つかりませんでした: 指定されたコントロールが見つかりませんでした。',
     'AIControlTestGenConflict' => '競合：この制御に対して既に生成処理がキューに登録されています。',
     'AIControlTestGenQueued' => '承認済み：制御テスト生成がキューに追加されました。',
@@ -3668,7 +3668,7 @@ $lang = array(
     'TestCreatedFromSuggestion' => '提案に基づいて作成されたテスト。',
     'SuggestionDismissed' => 'その提案は却下された。',
     'TestGenerationQueued' => 'テスト生成がキューに追加されました。',
-    'Generating' => '… を生成しています',
+    'Generating' => '生成しています…',
     'SuggestionDismissFailed' => 'テストは作成されましたが、AIによる提案を破棄できませんでした。残っている場合は、手動で破棄してください。',
     'AICtxAuditorBig4' => 'ビッグ4（外部）',
     'AICtxAuditorBoutique' => 'ブティック／地域密着型（外部）',
@@ -3678,24 +3678,24 @@ $lang = array(
     'AICtxAppetiteCautious' => '用心深い',
     'AICtxAppetiteBalanced' => 'バランスの取れた',
     'AICtxAppetiteAggressive' => '攻撃的',
-    'TestGenerationComplete' => 'AIが作成した制御テストは、レビューの準備が整いました。',
+    'TestGenerationComplete' => 'AIが作成したコントロールのテストは、レビューの準備が整いました。',
     'TestGenerationStillRunning' => 'テスト生成は現在も進行中です。ドラフトはまもなく公開されます。',
     'TestGenerationNoNew' => '生成が完了しました。このコントロールに対して新たに提案するテストはありません。',
     'SearchEntities' => '検索対象',
     'SearchEntitiesPlaceholder' => 'リスク、コントロール、ポリシー、例外を検索…',
-    'ShowTypes' => '表示タイプ',
+    'ShowTypes' => 'タイプを表示',
     'Depth' => '深さ',
     'Inspector' => 'インスペクター',
     'Connections' => 'つながり',
     'NoConnectionsFound' => '選択したエンティティに関連する接続が見つかりませんでした。',
     'CouldNotLoadGraph' => '接続グラフを読み込めませんでした。',
     'CouldNotSearchEntities' => 'エンティティを検索できませんでした。',
-    'ShowingTopNOfM' => '{0} を表示中（全 {1}）',
+    'ShowingTopNOfM' => '上位 {0} 件を表示中（全 {1} 件）',
     'RankedByMaturityGap' => '成熟度の差でランク付け',
     'RankedByRiskScore' => 'リスクスコア順',
-    'RankedByRecentFailure' => '直近の失敗件数順',
+    'RankedByRecentFailure' => '直近の失敗が新しい順',
     'RankedByReviewDate' => '次回の審査日順',
-    'RankedBySeverity' => '重症度順にランク付け',
+    'RankedBySeverity' => '重大度順にランク付け',
     'RankedByName' => '名前順にランク付け',
     'NodeTypeSelfAssessmentResult' => '自己評価結果',
     'Relationship' => '関係',
@@ -3707,7 +3707,7 @@ $lang = array(
     // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
     // fieldLabel() in connectivity-visualizer.js did not yet cover.
     'LastDate' => '最終日',
-    'LastResultDate' => '最終結果発表日',
+    'LastResultDate' => '最新の結果日',
     'PercentComplete' => '完了率',
     'AssessmentDate' => '評価日',
     'NextDate' => '次回の日程',
@@ -3715,7 +3715,7 @@ $lang = array(
     'Grouping' => 'グループ分け',
     'Hidden' => '隠れた',
     'FirstFound' => '最初に発見された',
-    'LastFound' => '最後に発見された場所',
+    'LastFound' => '最終検出',
     'Patchable' => 'パッチ適用可能',
     'Solution' => '解決',
     'Breadcrumb' => 'パンくず',
@@ -3731,7 +3731,7 @@ $lang = array(
     'FilterEntitiesPlaceholder' => 'フィルター…',
     'NoMatchingEntities' => 'フィルター条件に一致するエンティティは見つかりませんでした。',
     'LoadMore' => 'もっと読み込む',
-    'Loading' => '… を読み込み中',
+    'Loading' => '読み込み中…',
     'CouldNotLoadEntityCounts' => 'エンティティ数を読み込めませんでした。',
     'CouldNotLoadEntities' => 'エンティティを読み込めませんでした。',
     'ClearGraph' => 'グラフをクリア',
@@ -3842,7 +3842,7 @@ $lang = array(
     // the other answer -- the control is excluded, so no evidence is expected
     // and the absence is correct. Rendering both as an empty cell hides the
     // first, which is the one an auditor circles.
-    'SoaNoEvidenceLinked' => '関連性を示す証拠はありません',
+    'SoaNoEvidenceLinked' => 'リンクされた証拠はありません',
     // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
     // is expected. A language key rather than a hardcoded character for the same
     // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
@@ -3969,14 +3969,14 @@ $lang = array(
     'UnlockDownloadScfNote' => 'このインスタンスは登録済みです。使用するには、セキュアコントロールフレームワークをダウンロードしてください。',
     'UnlockDownloadScfLink' => 'ダウンロードする',
     'UnlockActivateScfNote' => 'セキュアコントロールフレームワークはダウンロードされていますが、有効化されていません。',
-    'UnlockActivateScfLink' => '電源を入れる',
+    'UnlockActivateScfLink' => '有効にする',
     // Import-Export is a paid Extra, so "not installed" is an upsell rather
     // than a registration prompt. Deliberately a bare capability sentence: it
     // has to sit under a menu row and next to an export button equally well.
-    'RequiresImportExportExtra' => '輸出入追加料金が必要です。',
+    'RequiresImportExportExtra' => 'インポート/エクスポート Extra が必要です。',
     'UnlockImportExportLink' => '追加される内容をご覧ください',
     'UnlockActivateImportExportNote' => 'Import-Export Extraはインストールされていますが、有効化されていません。',
-    'UnlockActivateImportExportLink' => '電源を入れる',
+    'UnlockActivateImportExportLink' => '有効にする',
     // Shown instead of any of the above to a user who is not an administrator:
     // every unlock step lives on a check_admin page, so they get the half that
     // is useful to them -- that the capability exists, and who to ask -- and no
@@ -4030,7 +4030,7 @@ $lang = array(
     // The Evidence column's four bullet glyphs. Load-bearing since the visible
     // result word was dropped from pass and fail bullets, and until now defined
     // nowhere at all.
-    'SoaLegendEvidencePass' => 'この制御テストは、前回実行時に合格を記録しました。横に記載されている日付は、その実行日です。',
+    'SoaLegendEvidencePass' => 'このコントロールのテストは、前回実行時に合格を記録しました。横に記載されている日付は、その実行日です。',
     'SoaLegendEvidenceFail' => 'このコントロールのテストは、前回実行時に失敗を記録しました。付録Rには、リスク対処計画が存在する場合、その内容が記載されています。',
     'SoaLegendEvidenceInconclusive' => 'この検査を実施しましたが、判定は得られませんでした。この文書で認識できない結果には同じマークが使用され、その場合は結果自体がマークの横に印刷されます。',
     // The TERM beside the § glyph. Not a document type -- the four types
@@ -4056,20 +4056,20 @@ $lang = array(
     'AnyOwner' => 'どのオーナーでも',
     'AnyClass' => 'どのクラスでも',
     'AnyPhase' => 'どの段階でも',
-    'AnyPriority' => '優先順位',
+    'AnyPriority' => '任意の優先順位',
     'AnyType' => 'あらゆるタイプ',
-    'AnyStatus' => 'ステータス',
+    'AnyStatus' => '任意のステータス',
     'SelectAllN' => 'すべて選択 {n}',
     'Classification' => '分類',
     'Placement' => '配置',
     'OwnershipAndMaturity' => '所有権と成熟度',
-    'MappingsAndGuidance' => '地図とガイダンス',
+    'MappingsAndGuidance' => 'マッピングとガイダンス',
     'DeleteFrameworkTitle' => 'フレームワーク「{$name}」を削除しますか？',
     'DeleteControlTitle' => 'コントロール「{$name}」を削除しますか？',
     'DeleteControlsTitle' => '{$n} コントロールを削除しますか？',
     'DeleteCannotBeUndone' => 'これは元に戻せない。',
-    'DeleteFrameworkConsequence' => 'これにより、フレームワークとそのすべての制御マッピングが削除されます。',
-    'DeleteControlConsequence' => 'これにより、マッピングされているすべてのフレームワークから制御が削除されます。',
+    'DeleteFrameworkConsequence' => 'これにより、フレームワークとそのすべてのコントロールマッピングが削除されます。',
+    'DeleteControlConsequence' => 'これにより、マッピングされているすべてのフレームワークからコントロールが削除されます。',
     'DeleteControlsConsequence' => 'これにより、選択された各コントロールが、マッピングされているすべてのフレームワークから削除されます。',
     // Task 9: empty states (design-system.md §10) -- the four intents on
     // Define Control Frameworks. Reuses existing keys where the copy already
@@ -4099,9 +4099,9 @@ $lang = array(
     'FwLastTestPassed' => '最後のテストに合格しました',
     'FwLastTestFailed' => '最後のテストが失敗しました',
     'FwNoEvidence' => '適用可能、証拠なし',
-    'FwMaturityUnderDesired' => '望ましい成熟度',
+    'FwMaturityUnderDesired' => '望ましい成熟度を下回る',
     'FwScopeAFramework' => '決定するための枠組みの範囲を定める',
-    'FwNotApplicableOrInherited' => '該当なしまたは継承なし',
+    'FwNotApplicableOrInherited' => '該当なしまたは継承済み',
     // Task 22: framework rail search (governance/index.php's #sr-fw-search,
     // wired client-side in governance-frameworks.js). Reuses the shipped
     // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
@@ -4163,7 +4163,7 @@ $lang = array(
     'ApplicabilityApplicable' => '該当する',
     'ApplicabilityNotApplicable' => '適用できない',
     'ApplicabilityInherited' => '受け継いだ',
-    'AnyApplicability' => '適用範囲',
+    'AnyApplicability' => '任意の適用性',
     // The drawer's applicability record: who recorded the decision and when.
     // Both are attribution for an audited decision a customer may have to
     // defend years later, which is why the drawer names them at all.
@@ -4179,7 +4179,7 @@ $lang = array(
     // is already overloaded across SimpleRisk (assessment scope, audit scope,
     // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
     // field and keeps it from being reused for an unrelated one.
-    'StatementOfApplicability' => '適用範囲に関する声明',
+    'StatementOfApplicability' => '適用宣言書',
     'IsmsScopeStatement' => '適用範囲に関する記述',
     'IsmsScopeStatementHint' => 'このフレームワークが認証されている範囲。SoAの表紙に記載されています。',
     'DefaultInclusionJustification' => 'デフォルト包含の正当化',
@@ -4311,7 +4311,7 @@ $lang = array(
     // The header button on Define Control Frameworks. The verb is "generate"
     // rather than "view" because the document is assembled at the moment it is
     // asked for -- there is no stored SoA that could be out of date.
-    'GenerateStatementOfApplicability' => '適用範囲に関する声明を作成する',
+    'GenerateStatementOfApplicability' => '適用宣言書を作成する',
 
     // The Justification column's SECOND resolution step, and the reason an SoA
     // built here beats the spreadsheet it replaces: the risks that drove the
@@ -4371,19 +4371,19 @@ $lang = array(
     // matters.
     // The document has no sidebar, so it needs its own way back for anyone who
     // arrives from a bookmark or a shared link. Screen only; never printed.
-    'SoaBackToSelector' => '適用範囲に関する記述に戻る',
+    'SoaBackToSelector' => '適用宣言書に戻る',
     'SoaNoFrameworks' => 'アクティブなフレームワークはありません',
     'SoaNoFrameworksHint' => 'ガバナンス > コントロールフレームワークの定義でフレームワークをインストールまたは有効化すると、ここに表示されます。',
 
     // The two refusals. Both explain rather than just failing, because the user
     // arrived here deliberately.
     'SoaFrameworkInactiveTitle' => 'このフレームワークは非アクティブです',
-    'SoaFrameworkInactiveBody' => '適用範囲に関する記述は、組織が現在活動している範囲を説明するものです。フレームワークを再起動すると、適用範囲に関する記述を作成できます。',
+    'SoaFrameworkInactiveBody' => '適用宣言書は、組織が現在活動している適用範囲を示すものです。フレームワークを再度有効化すると、適用宣言書を作成できます。',
     'SoaFrameworkNotFoundBody' => 'その枠組みはもはや存在しない。',
 
     // A framework with no controls mapped into it. Not an error -- it is a real
     // and recoverable state, and saying so beats an empty table.
-    'SoaNoControls' => 'このフレームワークには制御機能がありません',
+    'SoaNoControls' => 'このフレームワークにはコントロールがありません',
     'SoaNoControlsHint' => 'フレームワークに制御項目をマッピングすると、その適用範囲に関する記述にそれらが一覧表示されます。',
 
     // The second half of the statement-of-applicability launcher's affordance
@@ -4416,7 +4416,7 @@ $lang = array(
     // about to overwrite it, and {$n} is the count of the OTHER selected
     // controls -- the target is excluded, because it is very often ticked too
     // and a promise that included it would be false.
-    'ApplicabilityAppliesToControlNotSelection' => 'これは「{$name}」に対してのみ記録されます。選択した「 {$n} コントロールには影響しません。',
+    'ApplicabilityAppliesToControlNotSelection' => 'これは「{$name}」に対してのみ記録されます。選択した {$n} 件のコントロールには影響しません。',
 
     // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
     // sentence ('GenerateStatementOfApplicability' above) stays as the button's
@@ -4457,7 +4457,7 @@ $lang = array(
     // Seeds the name field so the clone can be saved without a rename --
     // framework names are unique, so a verbatim copy is refused on save.
     'CloneOfFrameworkName' => '{$name} (クローン)',
-    'CloneFramework' => 'クローンフレームワーク',
+    'CloneFramework' => 'フレームワークをクローンする',
     // Extras version independently of Core, so an updated Import/Export Extra
     // can end up calling a Core function the installed Core does not have. The
     // export refuses with this rather than fataling -- see
@@ -4476,7 +4476,7 @@ $lang = array(
     // controls", which read as a stutter once the label carried those words.
     'GetFrameworkFromScf' => 'セキュアコントロールフレームワークから入手してください。',
     'GetFrameworkFromScfHint' => '公開済みのフレームワークを選択し、マッピングされたコントロールを一度に読み込むことができます。',
-    'ImportFrameworkFromCatalog' => '輸入する',
+    'ImportFrameworkFromCatalog' => '1つインポートする',
     'ImportFrameworkFromCatalogHint' => 'SimpleRiskのコンテンツカタログからフレームワークとそのコントロールをインストールしてください。',
 
     // The framework acquisition chooser's third route, which now offers the
@@ -4512,7 +4512,7 @@ $lang = array(
     'ApplicabilityErrProviderRequired' => 'プロバイダーは、継承されたコントロールをマークする必要があります。',
     'ApplicabilityErrProviderTooLong' => 'プロバイダ名が {$bytes} バイトより長いです。',
     'ApplicabilityErrReasonsNotFound' => 'これらの適用理由が存在しません: {$ids}。',
-    'ApplicabilityErrReasonsNotOffered' => 'これらの適用理由はこの州では提供されていません: {$ids}。',
+    'ApplicabilityErrReasonsNotOffered' => 'これらの適用理由はこの状態では提供されていません: {$ids}。',
     'ApplicabilityErrFrameworkNotFound' => 'フレームワーク {$framework} は存在しません。',
     'ApplicabilityErrControlsNotFound' => 'これらの制御 ID は存在しません: {$ids}。',
     // Controls/Risks import result messages (validation gate, individual bad-row
@@ -4542,8 +4542,8 @@ $lang = array(
     'UpgradeInProgress' => '進行中',
     'UpgradeStepNotNeeded' => '不要',
     // Recovering an Upgrade Extra whose files are damaged
-    'UpgradeExtraDamagedReinstalling' => 'インストール済みのアップグレード特典が破損しています。新しいバージョンをダウンロードしています。',
-    'UpgradeExtraDamagedRepaired' => 'アップグレード特典は、正常に動作するものと交換されました。',
+    'UpgradeExtraDamagedReinstalling' => 'インストール済みのアップグレードエクストラが破損しています。新しいコピーをダウンロードしています。',
+    'UpgradeExtraDamagedRepaired' => 'アップグレードエクストラは、正常に動作するコピーに置き換えられました。',
     'UpgradeExtraDamagedFailed' => 'アップグレードエクストラが破損しているため、自動的に交換できませんでした。エクストラページから再インストールするか、simplerisk/extras/upgrade/ をバックアップから復元してから、もう一度お試しください。',
     'UpgradeAlreadyCurrent' => 'このインスタンスは既に {version}という最新リリースの状態です。アップグレードは不要でした。',
     'UpgradeShowWhatItDid' => 'それが何をしたかを示してください',
@@ -4551,7 +4551,7 @@ $lang = array(
     'UpgradingTo' => '{version}にアップグレード中',
     'UpgradeSafeToClose' => 'このウィンドウは閉じても問題ありません。サーバー上でアップグレード処理が続行され、このページは自動的に再表示されます。',
     'UpgradeDownloadLog' => 'ダウンロードログ',
-    'UpgradeStatementsApplied' => '{started} · {count} ステートメントが適用されました',
+    'UpgradeStatementsApplied' => '開始: {started} · {count} 件のステートメントが適用されました',
     // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
     'UpgradeCheckingInstance' => 'このインスタンスをチェックしています',
     'UpgradeInstanceChecked' => 'インスタンスを確認しましたが、修正は不要です。',
@@ -4578,7 +4578,7 @@ $lang = array(
     'UpgradeStepBackingUp' => 'バックアップ中',
     'UpgradeStepUpgradingFiles' => 'アプリケーションファイルのアップグレード',
     'UpgradeStepUpgradingExtras' => 'インストール済み追加機能のアップグレード',
-    'UpgradeStepUpdatingUpgradeExtra' => 'アップグレード特典の更新',
+    'UpgradeStepUpdatingUpgradeExtra' => 'アップグレードエクストラの更新',
     // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
     // about it. These are the highest-stakes messages the upgrade produces --
     // an operator reads them to unstick an instance that cannot upgrade.
@@ -4693,13 +4693,13 @@ $lang = array(
     'BackupTargetChangedOrExists' => 'バックアップを "{$dir}" に書き込むことを拒否します: ターゲットが予期せず変更されたか、既に存在します。',
     'BackupDirectoryUnsafe' => '「{$location}」バックアップディレクトリの使用を拒否します。これはシンボリックリンクであるか、別のアカウントによって所有されています。',
     'DocumentAuditLogApprove' => '文書「{$document_name}」は {$user}によって承認されました。',
-    'DocumentAuditLogUnapprove' => '文書「{$document_name}」は {$user}によって承認されませんでした。',
+    'DocumentAuditLogUnapprove' => '文書「{$document_name}」の承認が {$user} によって取り消されました。',
     'NoApproveDocumentationPermission' => 'あなたには文書を承認する権限がありません。',
     'DocumentApproved' => 'その文書は承認された。',
     'DocumentUnapproved' => 'その文書は承認されていませんでした。',
     'DocumentsApproved' => '書類は承認された。',
     'ApproveSelected' => '選択した項目を承認する',
-    'SearchDocumentsPlaceholder' => '検索文書',
+    'SearchDocumentsPlaceholder' => '文書を検索',
     'NoDocumentsYet' => 'まだ書類はありません',
     'NoDocumentsYetBody' => 'このカテゴリに追加されたドキュメントはここに表示されます。',
     'NoDocumentsMatchFilters' => '検索条件に一致する文書はありません。',
@@ -4708,7 +4708,7 @@ $lang = array(
     'CouldNotLoadDocumentsBody' => 'ドキュメントプログラムグリッドの読み込み中に問題が発生しました。',
     'ApproveDocumentQuestion' => 'この文書を承認しますか？',
     'ApproveDocumentConfirmBody' => 'これにより「{name}」が承認済みに設定され、次回のレビュー日が計算されます。',
-    'UnapproveDocumentQuestion' => 'この文書を承認しない？',
+    'UnapproveDocumentQuestion' => 'この文書の承認を取り消しますか？',
     'UnapproveDocumentConfirmBody' => 'これにより「{name}」が「審査中」に戻されます。',
     'ApproveSelectedDocumentsQuestion' => '選択した文書 {n} を承認しますか？',
     'ApproveSelectedDocumentsConfirmBody' => 'これにより、選択された文書 {n} が承認され、それぞれの次回のレビュー日が計算されます。',
@@ -4723,11 +4723,11 @@ $lang = array(
     'CouldNotLoadExceptionsBody' => '例外定義グリッドの読み込み中に問題が発生しました。',
     'ApproveExceptionQuestion' => 'この例外を承認しますか？',
     'ApproveExceptionConfirmBody' => 'これにより「{name}」が承認済みに設定されます。',
-    'UnapproveExceptionQuestion' => 'この例外を承認しない？',
+    'UnapproveExceptionQuestion' => 'この例外の承認を取り消しますか？',
     'UnapproveExceptionConfirmBody' => 'これにより「{name}」が保留状態に戻されます。',
-    'ApproveSelectedExceptionsQuestion' => 'Approve {n} selected exceptions?',
+    'ApproveSelectedExceptionsQuestion' => '選択した例外 {n} 件を承認しますか？',
     'ApproveSelectedExceptionsConfirmBody' => 'これは選択された例外を {n} 承認します。',
-    'SearchExceptionsPlaceholder' => '検索例外...',
+    'SearchExceptionsPlaceholder' => '例外を検索...',
     'DeleteSelected' => '選択した項目を削除',
     'ExceptionsDeleted' => '選択された例外は削除されました。',
     'GovernanceReviewDueEmailSubject' => 'レビュー期限： {$name}',
@@ -4754,7 +4754,7 @@ $lang = array(
     'DocumentsDeleted' => '選択された文書は削除されました。',
     'AllApprovers' => 'すべての承認者',
     'NotScheduled' => '予定なし',
-    'LastReviewDate' => '最終更新日',
+    'LastReviewDate' => '最終レビュー日',
     'DocumentAuditLogDownload' => '文書「{$document_name}」は {$user}によってダウンロードされました。',
     'Refresh' => '更新',
     'AuditTrailDateAndTime' => '日時',
@@ -4787,11 +4787,11 @@ $lang = array(
     'DeletedVersion' => 'バージョンが削除されました',
     'CouldNotLoadVersionHistory' => 'バージョン履歴を読み込めませんでした。',
     'DocumentsOverdueForReview' => '審査期限を過ぎた文書',
-    'DocumentsDueSoonForReview' => '審査対象書類は近日中に提出期限を迎えます',
+    'DocumentsDueSoonForReview' => 'まもなくレビュー期限を迎える文書',
     'RequiresCustomizationExtra' => 'カスタマイズオプションが必要です。',
     'UnlockCustomizationLink' => '追加される内容をご覧ください',
     'UnlockActivateCustomizationNote' => 'カスタマイズオプションはインストールされていますが、有効になっていません。',
-    'UnlockActivateCustomizationLink' => '電源を入れる',
+    'UnlockActivateCustomizationLink' => '有効にする',
     'ExceptionsOverdueForReview' => '審査期限を過ぎた例外事項',
     'ExceptionsDueSoonForReview' => '例外事項は近日中に審査予定',
     'PendingApproval' => '承認待ち',
@@ -4816,7 +4816,7 @@ $lang = array(
     'NeedANewCategoryManageDocumentTypes' => '新しいカテゴリが必要ですか？',
     'ManageOptions' => 'オプションの管理',
     'AddCustomFieldSubtitle' => 'このフィールドグループに固有の情報を取得するために、カスタムフィールドを追加します。',
-    'NewField' => '新しい分野',
+    'NewField' => '新しいフィールド',
     'TemplateGroupsSectionSubtitle' => '追加のテンプレートグループを作成し、それらを事業部門に割り当てます。',
     'TemplateSectionSubtitle' => 'このテンプレートに表示するフィールドとその順序を選択してください。',
     'CustomFieldsSectionSubtitle' => 'このフィールドグループに対して定義されているすべてのカスタムフィールド（すべてのテンプレートに適用）。',
@@ -4825,7 +4825,7 @@ $lang = array(
     'CloneTemplateGroup' => 'このテンプレートグループを複製する',
     'RequiredFieldCheckboxLabel' => 'このカスタムフィールドを必須項目に設定してください。',
     'AddField' => 'フィールドを追加',
-    'CoreFields' => '主要分野',
+    'CoreFields' => '主要フィールド',
     'SearchCoreFields' => '主要フィールドを検索',
     'SearchCustomFields' => '検索カスタムフィールド',
     'AllCoreFieldsAddedToTab' => '主要な項目はすべてこのタブにあります。',
@@ -4855,9 +4855,9 @@ $lang = array(
     'BulkChangeStatusTitle' => '%s 個の選択されたリスクのステータスを変更します。',
     'BulkReassignRiskOwnerTitle' => '%s 個の選択されたリスクのリスク所有者を再割り当てします。',
     'BulkReassignMitigationOwnerTitle' => '%s 選択されたリスクの緩和担当者を再割り当てします。',
-    'BulkAddCommentTitle' => 'Add a comment to %s selected risks',
+    'BulkAddCommentTitle' => '選択した %s 件のリスクにコメントを追加',
     'BulkCloseRiskTitle' => '選択したリスクを閉じる %s',
-    'BulkActionPartialSuccess' => '%s のうち %s のリスクが更新されました。',
+    'BulkActionPartialSuccess' => '%s/%s 件のリスクが更新されました。',
     'PerformReview' => 'レビューを実行する',
     'BulkActionSuccess' => '%s リスクが更新されました。',
     'SomeRowsSkippedNoMitigation' => '一部のリスクについては、現時点で軽減策が計画されていないため、対象から除外しました。',
@@ -4878,7 +4878,7 @@ $lang = array(
     // user-facing string still needs to flow through a lookup per CLAUDE.md,
     // even one where the English and translated value would typically match.
     'CVSS' => 'CVSS',
-    'DREAD' => '恐怖',
+    'DREAD' => 'DREAD',
     'OWASP' => 'OWASP',
     'MyActionItems' => '私の行動項目',
     'AddRisk' => 'リスクを追加',
@@ -4892,7 +4892,7 @@ $lang = array(
     'RrNeedsMitigation' => '緩和策が必要',
     'PastDue' => '延滞',
     'OpenedThisMonth' => '今月オープン',
-    'ClosedThisMonth' => '今月は休業です',
+    'ClosedThisMonth' => '今月クローズ済み',
     'AllRiskLevels' => 'すべてのリスクレベル',
     // Import-Export Extra's Users sheet column for the Review Risk grid's
     // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
@@ -4967,6 +4967,669 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'あなたにはリスクをクローズする権限がありません。',
     'QuestionnaireRequiredQuestionUnanswered' => '評価を完了する前に、必須の質問すべてに回答してください。',
+    'AuditLog_ControlStatusAutoSynced' => 'コントロール「{$short_name}」の状態は、最新のテスト結果に基づいて「{$status_text}」に自動的に更新されました。',
+    'EnableCSPHelp' => 'コンテンツセキュリティポリシー（CSP）は、ブラウザがスクリプト、スタイル、画像、フォントをSimpleRisk自体からのみ読み込むように制限し、ページフレームやクロスオリジンフォーム送信をブロックします。これは、クロスサイトスクリプティングに対する最も強力な組み込み防御策です。プロキシ、ブラウザ拡張機能、または環境内のサードパーティ統合と競合しない限り、有効にしておいてください。',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => '標準フィールド',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => '管理者',
+    'AccountDetails' => 'アカウントの詳細',
+    'YourPermissions' => 'あなたの権限',
+    'RoleAndTeamsGrantAccess' => 'あなたの役割とチームによってアクセスが許可されるもの',
+    'AllGranted' => 'すべて許可されました',
+    'PermissionsCountLabel' => '$count 権限',
+    'ManagedByYourAdministrator' => 'これらの情報は管理者によって管理されています。変更が必要な場合は、管理者にご連絡ください。',
+    'MultiFactorAuthenticationHint' => 'アカウントの安全性を高めるため、ログインに2段階認証を追加してください。',
+    'ChangingPasswordSignsOutEverywhere' => 'パスワードを変更すると、他のすべてのサービスからログアウトされます。',
+    'APIKeyHint' => 'SimpleRisk APIに対して、独自のスクリプトや統合機能を認証するために使用されます。',
+    'ResetDisplaySettingsHint' => 'カスタム列の選択をデフォルト設定に戻します。',
+    'CardGeneral' => '一般',
+    'CardClassification' => '分類',
+    'CardScoring' => '得点',
+    'CardAdditionalInformation' => '追加情報',
+    'CardCustomFields' => 'ユーザー設定フィールド',
+    'CardCustomFieldsHint' => 'これらのフィールドはカードに分類する必要があります',
+    'LayoutEditorHint' => 'フィールドを別のカードにドラッグすると、そのフィールドの割り当てが変わります。カード内でドラッグすると、カードの順序を変更したり、サイズを変更したりできます。カードをドラッグまたはサイズ変更すると、ページ上の位置を変更できます。',
+    'ScoringNotYetAvailableInThisView' => 'このビューでは、スコアリング設定はまだ利用できません。',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'ドラッグしてサイズを変更',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} 個のフィールドがこのカードに収まりきりません。カードのサイズを変更して表示してください。',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => '緩和戦略',
+    'CardMitigationSolution' => '緩和策',
+    'CardMitigationControls' => '軽減コントロール',
+    'CardReview' => '見直し',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'フォームをリセット',
+    'SaveAndNew' => '保存＆新規',
+    'SaveAndView' => '保存して表示',
+    'ResetFormConfirmTitle' => 'このリスク報告を破棄しますか？',
+    'ResetFormConfirmBody' => '入力された情報はすべて失われます。',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'デフォルトのレイアウトを復元?',
+    'RestoreTemplateConfirmBodyRisk' => 'これにより、このテンプレートグループの「詳細」、「対策」、「レビュー」タブにあるすべてのフィールドがデフォルト値にリセットされます。他のテンプレートグループには影響はありません。',
+    'RestoreTemplateConfirmBody' => 'これにより、このテンプレートのすべてのフィールドが、このテンプレートグループのデフォルト値にリセットされます。他のテンプレートグループには影響はありません。',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => '高度な指標',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => '基本スコアの悪用可能性指標',
+    'BaseScoreImpactMetrics' => '基本スコア影響指標',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "脆弱性へのアクセス方法。\n• ローカル: コンソールやシェルなどのローカルアクセスが必要です。\n• 隣接ネットワーク: 攻撃者は同じ物理的または論理的なネットワークセグメント上にいる必要があります。\n• ネットワーク: ローカルアクセスや隣接アクセスを必要とせずに、ネットワーク経由でリモートから悪用できます。",
+    "AttackComplexityHelp" => "攻撃者がターゲットにアクセスした後の攻撃の複雑さ。\n• 高: 準備が難しい特殊な条件が必要です。\n• 中: いくつかの条件を満たす必要がありますが、それらが満たされれば悪用は難しくありません。\n• 低: 特別な条件は必要ありません。",
+    "AuthenticationHelp" => "攻撃者がターゲットを悪用するために認証を行う必要がある回数。\n• 複数: 同じ認証情報を使用しても、2 回以上の認証が必要です。\n• 単一: 1 回認証が必要です。\n• なし: 認証は不要です。",
+    "ConfidentialityImpactHelp" => "システムが悪用された場合に、システムが処理するデータの機密性に及ぼす影響。\n• なし: 影響なし。\n• 部分的: 情報が一部漏洩するが、攻撃者は何を漏洩するかを制御できないか、損失が限定的である。\n• 完全: システム上のすべての情報が完全に漏洩する。",
+    "IntegrityImpactHelp" => "悪用された場合のシステムの完全性への影響。\n• なし: 影響なし。\n• 部分的: 一部のデータは変更可能ですが、攻撃者は何を変更できるかを制御できないか、範囲が限定されています。\n• 完全: システムの完全性が完全に侵害され、攻撃者は任意のファイルを変更できます。",
+    "AvailabilityImpactHelp" => "悪用された場合のシステムの可用性への影響。\n• なし：影響なし。\n• 部分的：パフォーマンスの低下または可用性の中断。\n• 完全：影響を受けるリソースの完全なシャットダウン。",
+    "RemediationLevelHelp" => "脆弱性に対する修復レベル。\n• 公式修正: ベンダーによる完全なソリューションが利用可能です。\n• 一時的な修正: 公式ではあるが一時的な修正が利用可能です。\n• 回避策: 非公式のベンダー以外の回避策が存在します。\n• 利用不可: ソリューションが利用できないか、適用できません。",
+    "ReportConfidenceHelp" => "脆弱性の存在に対する信頼度と、その技術的な詳細の信憑性。\n• 未確認: 単一の未確認の情報源からの報告。根本的な問題は推測の域を出ない。\n• 裏付けなし: 複数の独立した情報源が同じ動作を報告しているが、根本原因は確認されていない。\n• 確認済み: ベンダーが問題を認めているか、ソースコードまたはエクスプロイト分析によって確認されている。",
+    "CollateralDamagePotentialHelp" => "脆弱性が悪用された場合、生命、物的資産、または金銭的損失が発生する可能性。\n• なし: そのような損失が発生する可能性はありません。\n• 低～中: 中程度の損失が発生する可能性があります。\n• 高: 組織の資産、収益、または安全に壊滅的な影響があります。",
+    "TargetDistributionHelp" => "環境内の脆弱なシステムの割合。\n• なし: 対象システムは存在しません。\n• 低: システムの 1 ～ 25% が脆弱です。\n• 中: 26 ～ 75% が脆弱です。\n• 高: 76 ～ 100% が脆弱です。",
+    "ConfidentialityRequirementHelp" => "影響を受ける資産の機密性が組織にとってどれほど重要か。\n• 低: 機密性の喪失による影響は限定的です。\n• 中: 深刻な影響があります。\n• 高: 壊滅的な影響があります。",
+    "IntegrityRequirementHelp" => "影響を受ける資産の完全性が組織にとってどれほど重要か。\n• 低: 完全性の損失による影響は限定的です。\n• 中: 深刻な影響があります。\n• 高: 壊滅的な影響があります。",
+    "AvailabilityRequirementHelp" => "影響を受ける資産の可用性が組織にとってどれほど重要か。\n• 低: 可用性の喪失による影響は限定的です。\n• 中: 深刻な影響があります。\n• 高: 壊滅的な影響があります。",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => '攻撃者がこの脆弱性に到達し、悪用するにはどうすればよいか：攻撃者はどこにいる必要があるのか、攻撃の複雑さはどの程度か、そして最初に認証が必要かどうか。',
+    'BaseScoreImpactMetricsDescription' => '脆弱性が悪用された場合、影響を受けるシステムの機密性、完全性、可用性にどのような影響が生じるか。',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'この脆弱性が現実世界で及ぼす脅威が時間とともにどのように変化するか：現在のエクスプロイトコードの状態、利用可能な対策、そして脆弱性の存在に関する報告の確実性。',
+    'EnvironmentalScoreMetricsDescription' => 'この脆弱性のリスクは、お客様の環境によって大きく異なります。具体的には、現実世界での被害の可能性や、実際に影響を受けるシステムの数などが挙げられます。',
+    'ImpactSubscoreModifiersDescription' => '基本スコアの影響度は、この特定の資産にとって機密性、完全性、可用性が実際にどれほど重要かによって重み付けされます。',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => '脅威が悪用された場合、どの程度の損害が発生するでしょうか？' . "\n" . '0 = なし' . "\n" . '5 = 個々のユーザーデータが侵害または影響を受けている。' . "\n" . '10 = システムまたはデータの完全破壊',
+    'ReproducibilityHelp' => 'この脅威を再現するのはどれくらい簡単ですか？' . "\n" . '0 = アプリケーションの管理者にとっても非常に困難または不可能。' . "\n" . '5 = 1つまたは2つの手順が必要で、承認されたユーザーである必要がある場合があります。' . "\n" . '10 = 認証なしで、ウェブブラウザとアドレスバーだけで十分です。',
+    'ExploitabilityHelp' => 'この脅威を悪用するには何が必要でしょうか？' . "\n" . '0 = 高度なプログラミングとネットワークの知識、およびカスタムまたは高度な攻撃ツールの使用経験。' . "\n" . '5 = インターネット上にマルウェアが存在するか、または入手可能な攻撃ツールを使用して容易にエクスプロイトを実行できる。' . "\n" . '10 = ただのウェブブラウザ',
+    'AffectedUsersHelp' => '影響を受けるユーザーは何人ですか？' . "\n" . '0 = なし' . "\n" . '5 = 一部のユーザーだが、全員ではない' . "\n" . '10 = すべてのユーザー',
+    'DiscoverabilityHelp' => 'この脅威を発見するのはどれくらい簡単ですか？' . "\n" . '0 = 非常に困難または不可能。ソースコードまたは管理者権限が必要。' . "\n" . '5 = 推測するか、ネットワークトレースを監視することで特定できる。' . "\n" . '9 = このような欠陥の詳細は既に公開されており、検索エンジンを使用すれば簡単に見つけることができます。' . "\n" . '10 = 情報はウェブブラウザのアドレスバーまたはフォームに表示されます。',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'ドレッドスコア',
+    'DreadMetrics' => 'DREADメトリクス',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'この脅威グループの技術力はどの程度なのか？' . "\n" . '1 = 技術スキルなし' . "\n" . '3 = ある程度の技術スキル' . "\n" . '5 = 上級コンピュータユーザー' . "\n" . '6 = ネットワークおよびプログラミングスキル' . "\n" . '9 = セキュリティ侵入スキル',
+    'MotiveHelp' => 'この脅威グループは、この脆弱性を発見し悪用することにどれほど意欲的だろうか？' . "\n" . '1 = 報酬が低い、または全くない' . "\n" . '4 = 獲得可能な報酬' . "\n" . '9 = 高報酬',
+    'OpportunityHelp' => 'この脅威グループがこの脆弱性を発見し悪用するためには、どのような資源と機会が必要でしょうか？' . "\n" . '0 = フルアクセスまたは高価なリソースが必要' . "\n" . '4 = 特別なアクセスまたはリソースが必要' . "\n" . '7 = アクセスまたはリソースが必要' . "\n" . '9 = アクセスやリソースは不要',
+    'SizeHelp' => 'この脅威グループの規模はどれくらいですか？' . "\n" . '2 = 開発者' . "\n" . '2 = システム管理者' . "\n" . '4 = イントラネットユーザー' . "\n" . '5 = パートナー' . "\n" . '6 = 認証済みユーザー' . "\n" . '9 = 匿名インターネットユーザー',
+    'EaseOfDiscoveryHelp' => 'この脅威グループにとって、この脆弱性を発見するのはどれほど容易なことだろうか？' . "\n" . '1 = 事実上不可能' . "\n" . '3 = 難しい' . "\n" . '7 = 簡単' . "\n" . '9 = 自動化ツールが利用可能',
+    'EaseOfExploitHelp' => 'この脅威グループが実際にこの脆弱性を悪用するのはどれほど容易なのだろうか？' . "\n" . '1 = 理論値' . "\n" . '3 = 難しい' . "\n" . '5 = 簡単' . "\n" . '9 = 自動化ツールが利用可能',
+    'AwarenessHelp' => 'この脆弱性は、この脅威グループの間でどの程度知られているのか？' . "\n" . '1 = 不明' . "\n" . '4 = 隠された' . "\n" . '6 = 明白' . "\n" . '9 = 公知',
+    'IntrusionDetectionHelp' => '脆弱性が発見される可能性はどのくらいですか？' . "\n" . '1 = アプリケーションにおけるアクティブ検出' . "\n" . '3 = 記録およびレビュー済み' . "\n" . '8 = レビューなしで記録' . "\n" . '9 = ログなし',
+    'LossOfConfidentialityHelp' => 'どの程度のデータが開示される可能性があり、その機密性はどの程度か？' . "\n" . '2 = 最小限の非機密データの開示' . "\n" . '6 = 最小限の重要データ開示' . "\n" . '6 = 機密性の低いデータが広範囲に開示されている' . "\n" . '7 = 重大なデータが広範囲に開示されている' . "\n" . '9 = すべてのデータが公開されています',
+    'LossOfIntegrityHelp' => 'どの程度のデータが破損する可能性があり、どの程度損傷を受けるのか？' . "\n" . '1 = 軽微なデータ破損' . "\n" . '3 = 重大なデータ破損が最小限' . "\n" . '5 = 広範囲にわたる軽微なデータ破損' . "\n" . '7 = 広範囲にわたる深刻なデータ破損' . "\n" . '9 = すべてのデータが完全に破損しています',
+    'LossOfAvailabilityHelp' => 'どの程度のサービスが失われる可能性があり、そのサービスはどれほど重要なのか？' . "\n" . '1 = 二次サービスの中断が最小限' . "\n" . '5 = 主要サービスの中断が最小限' . "\n" . '5 = 広範囲にわたる二次サービスが中断' . "\n" . '7 = 広範囲にわたる主要サービスの中断' . "\n" . '9 = 全サービスが完全に停止',
+    'LossOfAccountabilityHelp' => '脅威となる行為を行った人物を特定できるだろうか？' . "\n" . '1 = 完全な追跡可能性' . "\n" . '7 = 追跡可能の可能性あり' . "\n" . '9 = 完全匿名',
+    'FinancialDamageHelp' => '不正利用によってどれだけの経済的損害が発生するだろうか？' . "\n" . '1 = 脆弱性を修正するコストよりも低い' . "\n" . '3 = 年間利益への影響は軽微' . "\n" . '7 = 年間利益に重大な影響' . "\n" . '9 = 破産',
+    'ReputationDamageHelp' => '不正行為によって企業の評判が損なわれ、事業に悪影響を及ぼす可能性はあるだろうか？' . "\n" . '1 = 最小限の損傷' . "\n" . '4 = 主要顧客の喪失' . "\n" . '5 = 信用の喪失' . "\n" . '9 = ブランド損傷',
+    'NonComplianceHelp' => '法令遵守を怠ると、どの程度のリスクが生じるのか？' . "\n" . '2 = 軽微な違反' . "\n" . '5 = 明らかな違反' . "\n" . '7 = 重大な違反',
+    'PrivacyViolationHelp' => 'どの程度の個人識別情報が開示される可能性があるのか？' . "\n" . '3 = 個人1人' . "\n" . '5 = 数百人' . "\n" . '7 = 数千人' . "\n" . '9 = 数百万の人々',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASPスコア',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'この脅威グループによる攻撃が成功する可能性を推定します。',
+    'VulnerabilityFactorsDescription' => 'この脆弱性が発見され、悪用される可能性を推定します。',
+    'TechnicalImpactDescription' => '機密性、完全性、可用性、説明責任の観点から影響を分析します。',
+    'BusinessImpactDescription' => '技術的な影響という表面的なものだけでなく、ビジネスにとって何が重要なのかを反映している。',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "エクスプロイト技術またはコードの入手可能性の現状。\n• 未実証: エクスプロイトコードは入手できないか、エクスプロイトは理論上のものです。\n• 概念実証: エクスプロイトコードは存在しますが、ほとんどの攻撃者にとって実用的ではありません。\n• 機能的: 機能的なエクスプロイトコードは、ほとんどの状況で動作します。\n• 高: エクスプロイトは信頼性が高く、自動化されているか (たとえばワーム)、エクスプロイトコードがまったく必要ありません。",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'クラシックスコア',
+    'ClassicLikelihoodDescription' => 'このリスクが発生する可能性はどのくらいか。',
+    'ClassicImpactDescription' => 'このリスクが発生した場合、どれほど深刻な結果を招くか。',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'カスタムスコア',
+    'CustomValueDescription' => 'カスタム値は、0から10までの小数値を指定できます。',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'このリスクが発生する可能性はどのくらいか。',
+    'ContributingRiskDescription' => '以下の各要素は、その相対的な重要度に応じて重み付けされています。それぞれの要素がこのリスクにどの程度影響を与えるかを選択してください。',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'OWASPリスク評価方法論の詳細は、以下をご覧ください。',
+    'Here' => 'ここ',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= （重み × 影響 × 5 / 最大）の合計',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => '画像としてダウンロード',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'CVSSバージョン2.0の採点に関する詳細は、以下をご覧ください。',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => '無効なコントロールIDです。',
+    'ValidationOwner' => '検証責任者',
+    'ValidationStatus' => '検証ステータス',
+    'NotStarted' => '未開始',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'お探しのリスク情報は削除されたか、リンクが間違っている可能性があります。',
+    'MitigationControlsRequiresGovernance' => '閲覧するにはガバナンス権限が必要です。',
+    'ViewControlValidation' => 'コントロールの検証を表示',
+    'EditControlValidation' => '編集コントロールの検証',
+    'SupportingDocumentationRequiresSubmitRisk' => 'ファイルをアップロードするには、「リスク送信」権限が必要です。',
+    'SupportingDocumentationRequiresModifyRisks' => 'ファイルを管理するには、「リスクの変更」権限が必要です。',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'ファイルを管理するには、計画緩和策の権限が必要です。',
+    'MitigationSubmittedBy' => '緩和策の提出者',
+    'UseADifferentDate' => '別の日付を使用する',
+    'AssetGroup' => 'アセットグループ',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => '無効なfgroupです。',
+    'CustomizationCardsLayoutApiScopeError' => 'カスタマイズカードレイアウトAPIは、fgroup=risk、tab_index=1、tab_index=2、またはtab_index=3の場合にのみ利用可能です。',
+    // Asset management redesign
+    'DiscoverAssets' => '資産を発見する',
+    'DiscoveryRuns' => 'ディスカバリー実行',
+    'DiscoveryRangeHint' => '1つのアドレス、開始-終了範囲、またはIPv4 CIDR',
+    'DiscoveryResolveNames' => 'ホスト名を調べる',
+    'DiscoveryAddAs' => '新しいアセットを追加する',
+    'DiscoveryStart' => '発見を始めましょう',
+    'DiscoveryBackgroundNote' => 'バックグラウンドで実行されます。既に存在するアドレスはスキップされます。',
+    'DiscoveryRangeInvalid' => '有効なIPv4アドレス、範囲、またはCIDRブロックを入力してください。',
+    'DiscoveryRangeTooLarge' => 'その範囲は大きすぎます。制限は {$max} アドレスです。',
+    'DiscoveryRunQueued' => '発見が始まった。',
+    'DiscoveryRunCompleted' => '発見が完了しました: {$new} 個の新しいアセット。',
+    'AssetBulkSelectAll' => '{$count} アセットをすべて選択',
+    'AssetBulkAssignTeams' => 'チームを割り当てる…',
+    'AssetBulkAddToGroup' => 'グループに追加…',
+    'AssetBulkDeleteConfirmTitle' => '{$count} のアセットを削除しますか？',
+    'AbleToEditAssets' => 'アセットを編集可能',
+    'AbleToDeleteAssets' => '資産を削除可能',
+    'AbleToVerifyAssets' => '資産を検証可能',
+    'AbleToRunAssetDiscovery' => 'アセットディスカバリを実行可能',
+    'AbleToCreateAssetGroups' => 'アセットグループを作成可能',
+    'AbleToEditAssetGroups' => 'アセットグループを編集可能',
+    'AbleToDeleteAssetGroups' => 'アセットグループを削除可能',
+    'ViewAsset' => 'アセットを表示',
+    'AssetUnverifiedByEditLog' => 'アセット「{$name}」は、ユーザー「{$user}」がアセットを検証する許可なしに名前またはIPアドレスを変更したため、未検証に戻されました。',
+    'AssetTeamsAssignedLog' => 'アセット "{$name}" は、ユーザー "{$user}" によってチーム "{$teams}" に割り当てられました。',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'アセットを追加する',
+    'SearchAssetsPlaceholder' => '名前またはIPアドレスで検索',
+    'AllLocations' => 'すべての場所',
+    'AllTags' => 'すべてのタグ',
+    'AllAssetGroups' => 'すべての資産グループ',
+    'AssetFields' => '資産フィールド',
+    'AssetBulkAllSelected' => '選択されたすべての {$count} 一致するアセット',
+    'AssetDeleteConfirmTitle' => 'アセット「{$name}」を削除しますか？',
+    'DeleteAsset' => 'アセットを削除する',
+    'DeleteAssets' => 'アセットを削除する',
+    'AssetBulkAssignTeamsTitle' => '{$count} 個のアセットにチームを割り当てる',
+    'AssetAssignTeamsHint' => '選ばれたチームが追加されます。既に資産に登録されているチームはそのまま残ります。',
+    'AssetAddToGroupTitle' => '{$count} 個のアセットをグループに追加します',
+    'AssetChooseTeams' => 'チームを選択する',
+    'AssetChooseGroup' => 'グループを選択してください',
+    'Assign' => '割り当てる',
+    'AssetBulkVerifiedSummary' => '{$ok} 検証済み、 {$failed} スキップ',
+    'AssetBulkDeletedSummary' => '{$ok} 削除、 {$failed} スキップ',
+    'AssetBulkTeamsSummary' => '{$ok} の資産に割り当てられたチーム、 {$failed} はスキップされました',
+    'AssetBulkGroupSummary' => '{$ok} がグループに追加されました、 {$failed} はスキップされました',
+    'AssetBulkSkippedList' => 'スキップ: {$list}',
+    'AssetBulkReasonNotFound' => '見つかりません',
+    'NoAssetsYet' => 'アセットはまだありません',
+    'NoAssetsYetHint' => '追加または発見したアセットはここに表示されます。',
+    'NoAssetsMatchFilters' => 'フィルターに一致するアセットはありません',
+    'CouldNotLoadAssets' => 'アセットを読み込めませんでした。お客様のデータは安全です。',
+    'AllValuations' => 'すべての評価',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'グループを追加',
+    'EditAssetGroup' => 'グループを編集',
+    'DeleteAssetGroup' => 'グループを削除',
+    'ViewGroupMembers' => 'メンバーを見る',
+    'SearchAssetGroupsPlaceholder' => 'グループを名前で検索',
+    'HighestValuation' => '最高評価額',
+    'LinkedRisks' => '関連リスク',
+    'RemoveFromGroup' => 'グループから削除',
+    'AssetGroupMoreMembers' => '+ {$count} もっと見る',
+    'ViewAllInAssetsTab' => 'アセットタブですべてを表示',
+    'NoAssetsInGroup' => 'このグループには資産がありません。',
+    'CouldNotLoadGroupMembers' => 'このグループのメンバーを読み込めませんでした。',
+    'AssetGroupMembers' => 'メンバー',
+    'AssetGroupMembersHint' => '表示されるのは、あなたが閲覧できる資産のみです。閲覧できないメンバーもグループに残ります。',
+    'ChooseAssets' => 'アセットを選択',
+    'AddOrRemoveAssets' => 'アセットを追加または削除します…',
+    'UseTheseAssets' => 'これらのアセットを使用する',
+    'AllAssets' => 'すべての資産',
+    'Valuation' => '評価',
+    'PickerShowingFirstN' => '全 {$total} 件中、最初の {$count} 件を表示しています。検索または絞り込みで残りを見つけてください。',
+    'AssetGroupDeleteConfirmTitle' => 'グループ "{$name}" を削除しますか？',
+    'AssetGroupDeleteKeepsAssets' => 'このグループ内のアセットは削除されません。グループのみが削除されます。',
+    'NoAssetGroupsYet' => '資産グループはまだありません',
+    'NoAssetGroupsYetHint' => '資産をグループ化することで、それらをまとめてマッピングしたり、レポートを作成したりできます。',
+    'NoAssetGroupsMatchSearch' => '検索条件に一致する資産グループは見つかりませんでした。',
+    'CouldNotLoadAssetGroups' => 'アセットグループを読み込めませんでした。データは安全です。',
+    'DiscoveryAssignTeams' => 'チームに割り当てる',
+    'DiscoveryAssignTeamsHint' => '任意。新しいアセットはすべてこれらのチームに追加されます。',
+    'DiscoveryAddAsHint' => '資産の検証は、お客様の許可に基づいて行われます。',
+    'DiscoveryTeamsInvalid' => '既に存在するチームの中から、自分が所属しているチームを選びましょう。',
+    'DiscoveryResolveNamesInvalid' => 'ホスト名のルックアップは、有効または無効にする必要があります。',
+    'DiscoveryTooManyActiveRuns' => '既に {$max} 件の探索実行が進行中です。いずれかの実行が完了するまで待つか、キャンセルしてください。',
+    'DiscoveryRunNotFound' => '検出実行が見つかりませんでした。',
+    'DiscoveryRunAlreadyFinished' => 'この検出実行は既に終了しました。',
+    'DiscoveryRunCancelled' => '検出実行がキャンセルされました。',
+    'DiscoveryRunFailedToast' => '{$range} の発見に失敗しました。',
+    'DiscoveryStatusQueued' => 'キューに追加済み',
+    'DiscoveryProgress' => '{$scanned} / {$total}',
+    'DiscoveryLiveHosts' => 'ライブホスト',
+    'DiscoveryNewAssets' => '新しい資産',
+    'DiscoveryStartedAt' => '開始しました',
+    'DiscoveryCancelRun' => 'キャンセル実行',
+    'CouldNotLoadDiscoveryRuns' => '検出実行をロードできませんでした。',
+    'DiscoveryRangeReserved' => 'その範囲には、スキャンできない予約済みアドレス（ループバック、リンクローカル、マルチキャスト、または0.0.0.0/8）が含まれます。',
+    'DiscoveryTooManyActiveRunsInstance' => '既に {$max} 件の探索実行が進行中です。1件が完了したら、もう一度お試しください。',
+    'DiscoveryErrorScan' => 'エラーが発生したため、スキャンが停止しました。詳細はシステムログをご確認ください。',
+    'DiscoveryErrorWorkerLost' => 'バックグラウンドキューはこの実行の処理を停止しました。',
+    'DiscoveryErrorRequesterInactive' => 'この実行を開始したユーザーは、現在アクティブではありません。',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => '一括処理をJSON形式の本文として送信します。',
+    'AssetBulkActionRequired' => '一括操作を選択してください。',
+    'AssetBulkUnknownAction' => 'その一括操作は利用できません。',
+    'AssetBulkSelectionRequired' => 'IDまたはフィルターを使用してアセットを選択してください。',
+    'AssetBulkIdsRequired' => '少なくとも1つの資産を選択してください。',
+    'AssetBulkIdsInvalid' => '資産IDは整数でなければなりません。',
+    'AssetBulkTooManyAssets' => '一度に操作できるアセットは最大で {$max} 個です。選択範囲を絞り込んで、もう一度お試しください。',
+    'AssetBulkFilterInvalid' => 'フィルターが無効です。ページを再読み込みして、もう一度お試しください。',
+    'AssetBulkFilterUnknownKey' => 'フィルター "{$key}" は認識されません。',
+    'AssetBulkFilterBadValue' => 'フィルター "{$key}" の値は無効です。',
+    'AssetBulkFilterTooManyValues' => 'フィルター "{$key}" は最大で {$max} 個の値をリストできます。',
+    'AssetBulkFilterAllAlone' => 'すべてのアセットを選択するオプションは、他のフィルターと組み合わせることはできません。',
+    'AssetBulkFilterEmpty' => '一括操作を実行する前に、フィルターを選択するか、すべてのアセットを選択してください。',
+    'AssetBulkExpectedCountInvalid' => '資産の予想数は整数でなければならない。',
+    'AssetBulkParamsInvalid' => 'この一括操作のオプションは無効です。',
+    'AssetBulkTeamsRequired' => '少なくとも1つのチームを選択してください。',
+    'AssetBulkTeamsNotFound' => 'それらのチームのうち、1つ以上が既に存在しない。',
+    'AssetBulkTeamsNotMember' => '自分が所属するチームのみを割り当てることができます。',
+    'AssetBulkGroupNotFound' => 'その資産グループはもはや存在しません。',
+    'AssetBulkNoMatch' => '選択された条件に一致する資産はありません。',
+    'AssetBulkCountMismatch' => '選択したアセットが {$expected} から {$actual} に変更されました。リストを確認して、もう一度お試しください。',
+    'AssetColumnSettingsBodyInvalid' => '列設定をJSONボディとして、列または順序を指定して送信してください。',
+    'AssetColumnSettingsSaveFailed' => '列を保存できませんでした。SimpleRiskのアップグレードを完了させるには、管理者に依頼してください。',
+    'DiscoveryRunQueueFailed' => '検出実行をキューに追加できませんでした。もう一度お試しください。',
+    'DiscoveryRunStartedLog' => 'アセット検出実行 #{$id}（{$range}、{$count} 件のアドレス）は、ユーザー "{$user}" によって開始されました。',
+    'DiscoveryRunCancelledLog' => 'アセット検出実行 #{$id} ( {$range} ) は、ユーザー "{$user} " によってキャンセルされました。',
+    'AssetBulkTooManyToDelete' => '一度に削除できるアセットの数は最大で {$max} 個です。選択範囲を絞り込んで、もう一度お試しください。',
+    'AssetBulkFilterNotApplied' => 'フィルター "{$key}" は送信されたとおりに適用できなかったため、何も変更されませんでした。',
+    'AssetBulkExpectedCountRequired' => 'フィルターを使用してアセットを削除するには、削除予定のアセットの数を指定する必要があります。',
+    'AssetBulkReasonNotAttempted' => '試みられなかった',
+    'MoreActions' => 'その他の操作',
+    'AssetCreateNewGroupOption' => '新しいグループを作成します…',
+    'AssetNewGroupName' => '新しいグループ名',
+    'AssetFilterByTeam' => 'チームで絞り込む {$name}',
+    'AssetFilterByValuation' => '評価額で絞り込む {$name}',
+    'AssetFilterByTag' => 'タグでフィルタリング {$name}',
+    'AssetFilterByLocation' => 'サイト/場所で絞り込む {$name}',
+    'AssetFilteringByTeam' => 'チームで絞り込み {$name}',
+    'AssetFilteringByValuation' => '評価額でフィルタリング {$name}',
+    'AssetFilteringByTag' => 'タグによるフィルタリング {$name}',
+    'AssetFilteringByLocation' => 'サイト/場所で絞り込み {$name}',
+    'AssetShowOnlyVerified' => '検証済みの資産のみを表示する',
+    'AssetShowOnlyUnverified' => '未検証の資産のみを表示する',
+    'AssetShowingVerified' => '検証済みの資産を表示しています',
+    'AssetShowingUnverified' => '未確認資産を表示しています',
+    'CustomizationLayoutPayloadRejected' => 'レイアウトには、このテンプレートに属さないフィールドまたはカードが含まれているため、保存できませんでした。変更は行われませんでした。',
+    'CustomizationLayoutRejectedUnknownScope' => 'このテンプレートスコープはレイアウトエディタから保存できません。何も変更されていません。',
+    'CustomizationLayoutRejectedEmptyFields' => 'レイアウトに有効なフィールドがないため、保存されませんでした。何も変更されていません。',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'このレイアウトを保存するとテンプレートからすべてのフィールドが削除されるため、保存されませんでした。ページを再読み込みして、もう一度お試しください。',
+    'CustomizationLayoutRejectedRequiredField' => '必須項目はレイアウトから削除できません。何も変更されていません。',
+    'CustomizationLayoutRejectedBulkRemoval' => 'このレイアウトを保存すると、ここで削除しなくてもほとんどのテンプレートフィールドが削除されます。ページを再読み込みしてもう一度お試しください。何も変更されませんでした。',
+    'CustomizationLayoutRejectedGroupMismatch' => 'テンプレートグループが存在しないか、別の種類のレコードに属しています。何も変更されていません。',
+    'CustomizationLayoutLegacySaveRefused' => 'このテンプレートはレイアウトエディタで編集されるため、従来のパネルエンドポイントからは保存できません。',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => '1～65535の範囲で、カンマで区切って最大 {$max} 個のTCPポートを入力してください。',
+    'DiscoveryErrorProbeUnavailable' => 'この実行の開始時に使用されたプローブ方法は、バックグラウンドワーカーでは利用できなくなりました。新しい実行を開始してください。',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping（非特権ソケット）',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping (生ソケット)',
+    'DiscoveryProbePingCommand' => 'ICMP ping（pingコマンド）',
+    'DiscoveryProbeTcpConnect' => 'TCP接続',
+    'DiscoveryProbeMethod' => 'プローブ方法: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'ウェブサーバーによって検出されました。バックグラウンドワーカーは別の方法を使用する場合があります。',
+    'DiscoveryTcpProbeWarning' => 'ホストは、スキャン対象のTCPポートのいずれかで応答する場合にのみ検出されるため、これらのポートをブロックしているホストは検出されません。完全な結果を得るには、サーバーにICMP pingを送信させてください。そのためには、特権のないpingソケットまたはNET_RAW機能を許可するか、pingをインストールしてください。',
+    'DiscoveryTcpPortsForRun' => 'この実行用のTCPポート',
+    'DiscoveryTcpPortsHint' => 'カンマ区切りで、最大 {$max} 個のポートを指定します。空欄のままにすると、デフォルト値 {$ports} が使用されます。',
+    'DiscoveryDefaultTcpPorts' => 'アセット検出用TCPポート',
+    'DiscoveryDefaultTcpPortsHint' => 'バックグラウンドワーカーが ICMP ping を送信できない場合に使用します。カンマ区切りで、最大 {$max} 個のポートを指定します。',
+    'DiscoveryErrorTcpUnreliable' => 'スキャンが停止したのは、ネットワークが実際のホストではないアドレス（プロキシやファイアウォールなど）へのTCP接続に応答したため、すべてのアドレスがアクティブに見えてしまったからです。管理者に、サーバーがICMP pingを送信できるように設定するよう依頼してください。',
+    'DiscoveryDefaultTcpPortsResetLog' => 'アセット検出のTCPポートは、"{$user}"ユーザーによってデフォルトにリセットされました。',
+    'DiscoveryNotConfigured' => '検出機能が設定されていません。システム管理者に、config.php ファイルで許可範囲を設定するよう依頼してください。',
+    'DiscoveryRangeNotAllowed' => 'その範囲は、検出機能がスキャンを許可されている範囲外です。',
+    'DiscoveryAllowedRangesList' => '許可される範囲: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'このアセットは利用できません。削除されたか、アクセス権がない可能性があります。',
+    'AssetCustomFieldNotInTemplate' => '1つ以上のカスタムフィールドが、このアセットのテンプレートに属していません。変更は行われていません。',
+    'AssetMappedControlsInvalid' => 'マッピングされたコントロールを保存できませんでした。各行には成熟度と少なくとも1つの既存のコントロールが必要です。何も変更されませんでした。',
+    'AssetMappedControlsTooMany' => 'アセットは最大で {$max} 個のコントロールにマッピングできます。何も変更されていません。',
+    'AddControlsAtAnotherMaturity' => '別の成熟度で制御を追加する',
+    'ChoosingControlsNeedsGovernancePermission' => 'コントロールを選択するには、ガバナンス権限が必要です。',
+    'NControls' => '{n} コントロール',
+    'SavingKeepsTheCurrentControlMappings' => '保存すると、現在の管理策のマッピングが保持されます。',
+    'LoadingControls' => 'コントロールを読み込んでいます…',
+    'ControlListCouldNotBeLoaded' => 'コントロールリストを読み込めなかったため、マッピングされたコントロールは現在変更できません。',
+    'RemoveControlsAtMaturity' => '成熟度 {maturity} でコントロールを削除',
+    'ControlIdUnavailable' => '#{id} (利用不可)',
+    'AssetRecordEdit' => 'アセットを編集',
+    'AssetRecordIdN' => 'アセット #{$id}',
+    'AssetRecordCopyLink' => 'このアセットへのリンクをコピー',
+    'AssetRecordLinkCopied' => 'リンクをコピーしました。',
+    'AssetRecordLinkCopyFailed' => 'リンクをコピーできませんでした。アドレスバーからコピーしてください。',
+    'AssetRecordMarkUnverified' => '未確認としてマークする',
+    'AssetRecordViewAuditTrail' => '監査証跡を表示する',
+    'AssetRecordAuditTrailTitle' => '監査証跡',
+    'AssetRecordAuditTrailEmpty' => 'この期間において、この資産に関する活動は記録されていません。',
+    'AssetRecordAuditTrailFailed' => '監査ログを読み込めませんでした。',
+    'AssetRecordBackToAsset' => '資産に戻る',
+    'AssetRecordSave' => 'アセットを保存する',
+    'AssetRecordProvenanceVerified' => '確認済み · 追加済み {$date}',
+    'AssetRecordProvenanceUnverified' => '未確認：資産を検証できる人物によってまだ確認されていません · {$date} が追加されました',
+    'AssetRecordUnsavedHint' => '変更を保存せずに閉じようとすると、まず確認を求められます。',
+    'AssetRecordDiscardQuestion' => '保存していない変更を破棄しますか？',
+    'AssetRecordKeepEditing' => '編集を続ける',
+    'AssetRecordDiscardChanges' => '変更を破棄する',
+    'AssetRecordVerificationCard' => '検証',
+    'AssetRecordVerificationTag' => '資産の検証権限が必要です',
+    'AssetRecordVerifiedHint' => '責任者がこの資産を審査済みです。資産の検証権限なしに名前やIPアドレスを変更すると、未検証の状態に戻ります。',
+    'AssetRecordLoadFailed' => 'アセットを読み込めませんでした。もう一度お試しください。',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'カスタマイズカードレイアウトAPIは、fgroup=risk（tab_index 1、2、または3）およびfgroup=asset（tab_index 1）の場合にのみ利用可能です。',
+    'DiscoveryErrorRequesterNotPermitted' => 'この実行を開始したユーザーは、アセット検出を実行する権限を既に持っていません。',
+    'AssetRecordEditField' => '編集 {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => '機密保持',
+    'Integrity' => '完全性',
+    'Availability' => '可用性',
+    'AssetScoringLevelLow' => '低い',
+    'AssetScoringLevelModerate' => '適度',
+    'AssetScoringLevelHigh' => '高い',
+    'AssetScoringValueInvalid' => '機密性、完全性、可用性については、低、中、高のいずれかを選択できます（機密性については、該当なしも選択可能です）。',
+    'AssetScoringChangedLog' => 'アセット "{$name}" {$objective} は、ユーザー "{$user} " によって {$from} から {$to} に変更されました。',
+    'FIPSCategorization' => 'FIPS分類',
+    'WeightedScore' => '加重スコア',
+    'WeightedBand' => '加重バンド',
+    'AllCategorizations' => 'すべての分類',
+    'AllBands' => 'すべてのバンド',
+    'AssetFilterByCategorization' => 'FIPS分類でフィルタリング {$name}',
+    'AssetFilteringByCategorization' => 'FIPS分類によるフィルタリング {$name}',
+    'AssetFilterByBand' => '重み付きバンドでフィルタリング {$name}',
+    'AssetFilteringByBand' => '重み付きバンドによるフィルタリング {$name}',
+    'AssetScoring' => '資産スコアリング',
+    'AssetScoringSettingsHint' => '各資産は、機密性、完全性、可用性について「低」「中」「高」のいずれかで評価されます。機密性については「該当なし」と設定することもでき、その場合は両方の評価結果から除外されます。FIPS分類は、3つの評価の中で最も高い値です。加重スコアは、3つのレベル値の加重平均であり、バンドしきい値によって、そのスコアが「低」「中」「高」のいずれかのバンドに変換されます。これらの設定を変更すると、すべての資産のスコアが即座に再計算されます。',
+    'Weights' => '重み',
+    'AssetScoringWeightsHint' => '各目標が加重スコアに占める割合：0～100（小数点以下2桁まで）。重みが0の場合は、その目標は除外されます。機密保持が「該当しない」場合は常に除外されるため、完全性と可用性の両方が0になることはありません。',
+    'LevelValues' => 'レベル値',
+    'AssetScoringLevelValuesHint' => '各評価が加重スコアに寄与する数値：0より大きく100まで、小数点以下2桁まで。値は「低」＜「中」＜「高」の順になるようにします。デフォルト値は、低1、中2、高3です。',
+    'BandThresholds' => 'バンドしきい値',
+    'AssetScoringBandThresholdsHint' => '加重スコアが閾値以上であればその区分に属し、中程度の閾値を下回るスコアは低度と分類されます。中程度は低度より上の値から始まり、高度は中程度より上の値から始まり、高度より上の値を超えてはなりません。',
+    'ModerateStartsAt' => '中程度の開始',
+    'HighStartsAt' => 'ハイは',
+    'DefaultScoringForNewAssets' => '新規アセットのデフォルトスコアリング',
+    'AssetScoringDefaultsHint' => 'アセットフォームでアセットを追加する際に、これらの評価を事前に選択します。検出、インポート、またはAPIによって作成されたアセットは、独自の評価を提供しない限り、スコアリングされません。3つすべてを「未設定」のままにすると、この機能が無効になります。',
+    'AssetScoringWeightsInvalid' => '資産スコアリングの重みは、0から100までの数値で、小数点以下は最大2桁までとし、完全性と可用性の両方が0であってはならない。',
+    'AssetScoringValuesInvalid' => '資産スコアリングレベルの値は、0より大きく100以下の数値で、小数点以下は最大2桁までとし、低、中、高の順とする。',
+    'AssetScoringThresholdsInvalid' => '資産スコアリングのバンドしきい値は、小数点以下最大2桁までとし、中程度は低値より高く、高は中程度より高く、高は高値以下から開始するものとする。',
+    'AssetScoringDefaultsInvalid' => '新規アセットのデフォルトのスコアリングは、各目標が提供するレベルである必要があります。',
+    'AssetScoringSettingsNotSaved' => '資産スコアリングの設定を保存できませんでした。何も変更されませんでした。',
+    'AssetScoringSettingsChangedLog' => 'アセットスコアリング設定はユーザー「{$user}」によって変更されました。',
+    'AssetScoringNotSet' => '設定されていません',
+    'NotScored' => '得点なし',
+    'AssetScoringNotScoredHint' => 'この資産を評価するには、3つの目標すべてに回答してください。',
+    'ImportAssetScoringValueIgnored' => '資産「{$asset_name}」の {$objective} の値「{$value}」は有効な評価ではないため、無視されました。',
+    'AssetScoringSecurityObjectives' => 'セキュリティ目標',
+    'AssetScoringConfidentialityHelp' => 'この資産に関する情報が不正に開示された場合、どのような影響が生じる可能性がありますか？',
+    'AssetScoringIntegrityHelp' => 'この資産上の情報が不正に改変または破壊された場合、どのような影響が生じる可能性がありますか？',
+    'AssetScoringAvailabilityHelp' => 'この資産へのアクセスや利用が中断された場合、どのような影響が生じる可能性がありますか？',
+    'AssetScoringHelpHigh' => '重大または壊滅的な悪影響',
+    'AssetScoringHelpModerate' => '重大な悪影響',
+    'AssetScoringHelpLow' => '悪影響は限定的またはなし',
+    'AssetScoringHelpNotApplicable' => 'この資産（例えば、公開情報）に関しては、機密保持は問題になりません。',
+    'AssetScoringHelpLabel' => '{$objective} レーティングガイダンス',
+    'AssetScoringMeterValue' => '{$score}、 {$band} バンド',
+    'AssetScoringNoWeightedScore' => '加重スコアなし',
+    'AssetScoringNoWeightedScoreNote' => '加重スコアなし：評価対象となるすべての目標の重みは0です。',
+    'AssetScoringUpgradePending' => 'SimpleRiskデータベースのアップグレードが実行されるまで、資産スコアリングは保存できません。変更は何も行われていません。',
+    'AssetScoringResultHelpLabel' => '{$result} 説明',
+    'AssetScoringScoreHelp' => '加重スコアは、3つの評価を {$low} から {$high}までの1つの数値に統合します。各評価は設定値となり、それぞれがその目標の重みで乗算されます。結果は合計され、重みの合計で割られます。「該当なし」の機密性は、その重みとともに除外されます。設定値と重みは「環境設定」で構成します。スコアが表示される前に、3つの目標すべてを評価する必要があります。',
+    'AssetScoringCategorizationHelp' => 'FIPS 199セキュリティ分類は最高水準であり、適用される目標の中で最も高い評価です。単一の評価が「高」であれば、他の評価がどうであれ、その資産は「高」と判断されます。「該当なし」は無視されます。',
+    'AssetScoringBandHelp' => 'このバンドは、加重スコアを低、中、高の3段階に分類します。 {$moderate} 未満のスコアは低、 {$moderate} から {$highAt} までは中、 {$highAt} 以上は高と判定されます。しきい値は環境設定で設定できます。',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'すべての機密性評価',
+    'AllIntegrityRatings' => 'すべての健全性評価',
+    'AllAvailabilityRatings' => 'すべての可用性評価',
+    'AssetFilterByConfidentiality' => '機密性でフィルタリング {$name}',
+    'AssetFilteringByConfidentiality' => '機密性によるフィルタリング {$name}',
+    'AssetFilterByIntegrity' => '整合性でフィルタリング {$name}',
+    'AssetFilteringByIntegrity' => '整合性によるフィルタリング {$name}',
+    'AssetFilterByAvailability' => '可用性で絞り込む {$name}',
+    'AssetFilteringByAvailability' => '可用性で絞り込み {$name}',
+    'HighestFIPSCategorization' => '最高FIPS分類',
+    'HighestWeightedScore' => '最高加重スコア',
+    'HighestWeightedBand' => '最高加重バンド',
+    'AssetGroupFields' => '資産グループフィールド',
+    'NoAssetGroupsMatchFilters' => 'フィルターに一致する資産グループはありません。',
+    'AssetGroupFilterByHighestCategorization' => 'FIPS分類の最高ランクでフィルタリング {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'FIPS分類の最高値でフィルタリング {$name}',
+    'AssetGroupFilterByHighestBand' => '最も重み付けの高いバンドでフィルタリング {$name}',
+    'AssetGroupFilteringByHighestBand' => '最も重み付けの高いバンドでフィルタリング {$name}',
+    'AssetGroupBulkSelectionRequired' => '資産グループは、IDまたはフィルターで選択できます。',
+    'AssetGroupBulkIdsRequired' => '少なくとも1つの資産グループを選択してください。',
+    'AssetGroupBulkIdsInvalid' => '資産グループIDは整数でなければなりません。',
+    'AssetGroupBulkFilterAllAlone' => 'すべての資産グループを選択するオプションは、他のフィルターと組み合わせることはできません。',
+    'AssetGroupBulkFilterEmpty' => '削除する前に、フィルターを選択するか、すべてのアセットグループを選択してください。',
+    'AssetGroupBulkExpectedCountInvalid' => '想定される資産グループの数は整数でなければなりません。',
+    'AssetGroupBulkExpectedCountRequired' => 'フィルターを使用してアセットグループを削除するには、削除予定のグループの数を指定する必要があります。',
+    'AssetGroupBulkNoMatch' => '選択された条件に一致する資産グループは見つかりませんでした。',
+    'AssetGroupBulkCountMismatch' => '選択した資産グループが {$expected} から {$actual} に変更されました。リストを確認して、もう一度お試しください。',
+    'AssetGroupBulkTooManyToDelete' => '一度に削除できるアセットグループは最大で {$max} 個です。選択範囲を絞り込んで、もう一度お試しください。',
+    'AssetGroupBulkSelectAll' => 'すべての資産グループを選択します {$count}',
+    'AssetGroupBulkAllSelected' => '選択されたすべての {$count} 一致する資産グループ',
+    'AssetGroupBulkDeleteConfirmTitle' => '{$count} アセットグループを削除しますか？',
+    'AssetGroupBulkDeleteKeepsAssets' => 'これらのグループに含まれるアセットは削除されません。グループのみが削除されます。',
+    'DeleteAssetGroups' => 'グループを削除する',
+    'AssetGroupBulkDeletedSummary' => '{$ok} グループが削除され、 {$failed} がスキップされました',
+    'ChoosingRisksNeedsRiskManagementPermission' => '関連リスクを選択するには、リスク管理権限が必要です。',
+    'NAssociatedRisks' => '{n} 関連するリスク',
+    'SavingKeepsTheCurrentRiskAssociations' => '保存すると、現在関連付けられているリスクが維持されます。',
+    'UpgradePhpPartialTarget' => 'PHP {$php} がサポートする最新リリース {$target}にアップグレードします。リリース {$blocked} 以降では、PHP {$needed} 以降が必要です。',
+    'UpgradeNoPhpCli' => 'アップグレードには、データベースをアップグレードするためのPHPコマンドラインインターフェースとpdo_mysql拡張機能が必要ですが、このサーバーにはそれらが見つかりませんでした。何も変更されていません。インストールしてから（SimpleRiskのスケジュールされたジョブにも必要です）、再度アップグレードを実行してください。',
+    'UpgradeDatabaseStepFailed' => 'データベースのアップグレードに失敗しました。データベースのバージョンは {$reached}です。上記のメッセージとSimpleRiskのログを確認してから、再度アップグレードを実行してください。',
+    'UpgradeReplacingVendorDirectory' => 'ベンダーディレクトリを置き換えています。',
+    'AdvancedSearchLockedPlaceholder' => 'プログラム全体を検索する',
+    'AdvancedSearchLockedAria' => 'プログラム全体を検索する。ロックされています：高度な検索エクストラが必要です。',
+    'AdvancedSearchLockedPitch' => '1つのボックスからリスク、管理策、文書、資産を検索し、それに関連付けられたレコードにジャンプします。',
+    'AdvancedSearchUnlocksLabel' => 'ロック解除される検索対象：',
+    'RequiresAdvancedSearchExtra' => '高度な検索オプションが必要です。',
+    'UnlockAdvancedSearchLink' => '追加される内容をご覧ください',
+    'UnlockActivateAdvancedSearchNote' => '高度な検索機能はインストールされていますが、有効化されていません。',
+    'UnlockActivateAdvancedSearchLink' => '有効にする',
+    'AdvancedSearchControlCount' => 'コントロール: {$count}',
+    'AdvancedSearchAssetCount' => '資産: {$count}',
+    'AdvancedSearchValuationRange' => '{$min} から {$max}',
+    'AdvancedSearchTypes' => '種類',
+    'AdvancedSearchTypesToggle' => '種類 · {$count}',
+    'AdvancedSearchViewAll' => 'すべて表示',
+    'AdvancedSearchMatchedIn' => '{$field}で一致しました:',
+    'AdvancedSearchMatchedInFilter' => '一致した場所',
+    'AdvancedSearchAnyField' => '任意のフィールド',
+    'AdvancedSearchSortBest' => 'ベストマッチ',
+    'AdvancedSearchSummary' => '結果: {$count}',
+    'AdvancedSearchSummaryTypes' => '検索されたタイプ: {$types}',
+    'AdvancedSearchNoResultsTitle' => '「{$q}」に一致する結果は見つかりませんでした。',
+    'AdvancedSearchNoResultsTip' => 'スペルを確認するか、単語数を減らしてみてください。',
+    'AdvancedSearchFailedTitle' => '今は検索できません',
+    'AdvancedSearchFailedBody' => 'お客様のデータは安全です。しばらくしてからもう一度お試しください。',
+    'AdvancedSearchIncompleteTitle' => '結果は不完全な場合があります。',
+    'AdvancedSearchIncompleteDetail' => 'この検索タイプでは、最新のレコードのみが表示されます。より多くのレコードを表示するには、検索条件を絞り込んでください。',
+    'AdvancedSearchTimeLimitNote' => '速度を維持するため検索を早めに停止したため、一部の種類は検索対象外となりました。検索条件を絞り込んで、それらを含めてください。',
+    'AdvancedSearchNotSearched' => '検索されていません',
+    'AdvancedSearchMinChars' => '検索するには、少なくとも {$count} 文字を入力してください。',
+    'AdvancedSearchEmptyPrompt' => 'リスク、統制、文書、資産などを検索できます。',
+    'AdvancedSearchFirstPage' => '最初のページ',
+    'AdvancedSearchNoAccess' => 'お客様のアカウントでは、いかなる種類のレコードも検索できません。管理者にアクセス権限をリクエストしてください。',
+    'AdvancedSearchSort' => '並べ替え',
+    'AdvancedSearchConnectedRecords' => '関連レコード',
+    'AdvancedSearchConnectedRecordsNote' => 'アクセス権のあるレコードのみを表示します。',
+    'AdvancedSearchNoConnections' => '関連する記録は表示されません。',
+    'AdvancedSearchConnectionsFailed' => '接続されたレコードを読み込めませんでした。',
+    'AdvancedSearchShowConnections' => '{$title} の接続レコードを表示します。',
+    'AdvancedSearchExploreConnections' => 'つながりを探る',
+    'AdvancedSearchCopyLink' => 'リンクをコピー',
+    'AdvancedSearchMoreCount' => '他 {$count} 件',
+    'AdvancedSearchCopyLinkFailed' => 'リンクをコピーできませんでした。',
+    'AdvancedSearchOpenRecord' => '開く',
+    'ControlDeepLinkUnavailable' => 'そのコントロールは利用できません。削除されたか、アクセス権がない可能性があります。',
+    'ExceptionDeepLinkUnavailable' => 'その例外はここでは開けません。ポリシー文書へのアクセス権がない可能性があります。',
+    // Advanced Search: the topbar typeahead
+    'AdvancedSearchSeeAll' => '「{$q}」のすべての検索結果を表示',
+    'AdvancedSearchTopHit' => 'トップヒット',
+    'AdvancedSearchKeyMove' => '移動',
+    'AdvancedSearchKeyEsc' => 'ESC',
+    'AdvancedSearchSuggestions' => '検索候補',
+    'AdvancedSearchAssessmentSubtitle' => '{$contact} · {$percent}% 完了',
+    'AdvancedSearchScannerId' => 'スキャナーID',
+    'AdvancedSearchVendor' => 'ベンダー',
+    'AdvancedSearchProduct' => '製品',
+    'AdvancedSearchSeverityLevel' => '重症度 {$level}',
+    'AdvancedSearchFromYourExtras' => '追加機能から',
+    'UpdateAnExistingUser' => '既存ユーザーの情報を更新する',
+    'UserImportProgressTitle' => 'ユーザーのインポート',
+    'UserImportQueued' => 'キューに追加されました。インポートはまもなく開始されます…',
+    'UserImportProgressCount' => '{$processed} 行中 {$total} 行が処理されました…',
+    'UserImportComplete' => 'インポート完了。',
+    'UserImportFailed' => 'インポートを完了できませんでした。',
+    'UserImportSummary' => '{$created} 作成、 {$updated} 更新、 {$failed} インポートされませんでした。',
+    'UserImportRowInvalid' => '行 {$row}: インポートされませんでした。ユーザー名、氏名、有効なメールアドレスが必要です。',
+    'UserImportRowError' => '行 {$row}: 予期しないエラーのためインポートされませんでした。',
+    'UserImportRevealPasswords' => '一時パスワードを表示する',
+    'UserImportPasswordsOnce' => '新規ユーザーの一時パスワードは一度表示された後、消去されます。今すぐコピーして、各ユーザーに安全な場所に保管してください。各ユーザーは初回ログイン時にパスワードを変更する必要があります。',
+    'UserImportPasswordsShownOnce' => 'これらの仮パスワードはSimpleRiskから削除されており、再度表示することはできません。今すぐコピーしてください。各ユーザーは初回ログイン時にパスワードを変更する必要があります。',
+    'UserImportPasswordsUnavailable' => '一時パスワードは表示されなくなりました。一時パスワードは、インポートを開始した管理者に対して、インポートを開始したブラウザタブでのみ一度だけ表示され、SimpleRiskはそれらを再度表示できるような情報を一切保持しません。新しいユーザーごとに、ユーザーを編集して新しいパスワードを設定してください。',
+    'UserImportBackgroundNote' => 'このページは自動的に更新され、ページを閉じてもインポート処理は継続されます。結果を確認するには、再度ページを開いてください。',
+    'AuditAdditionalStakeholdersSetOnTest' => 'テストには追加のステークホルダーが設定されています。変更するには、 {$page}の下にあるテストを編集してください。変更はすぐにこの監査に適用されます。',
+    'QuestionnaireDraftSomeFilesNotSaved' => '回答は保存されましたが、添付ファイルの一部が保存されませんでした。ファイルサイズが大きすぎるか、許可されていないファイル形式である可能性があります。',
+    'UploadFileTooBigForDatabase' => 'アップロードされたファイルが大きすぎて、データベースに保存できません。SimpleRiskの管理者は、MySQLの設定ファイルでmax_allowed_packetとinnodb_log_file_sizeの値を増やすことができます。',
+    'UploadErrorIniSize' => 'アップロードされたファイルがphp.iniのupload_max_filesizeディレクティブを超えています。',
+    'UploadErrorFormSize' => 'アップロードされたファイルは、HTMLフォームで指定されたMAX_FILE_SIZEディレクティブを超えています。',
+    'UploadErrorPartial' => 'アップロードされたファイルは部分的にしかアップロードされていません。',
+    'UploadErrorNoFile' => 'ファイルはアップロードされませんでした。',
+    'UploadErrorNoTmpDir' => '一時フォルダが見つかりません。',
+    'UploadErrorCantWrite' => 'ファイルのディスクへの書き込みに失敗しました。',
+    'UploadErrorExtension' => 'PHP拡張機能がファイルアップロードを妨害しました。',
+    'MaxUploadSizeNeedsInteger' => 'アップロードできるファイルの最大サイズは、0より大きい整数バイトである必要があります。',
+    'MaxUploadSizeUpdated' => '最大アップロードファイルサイズが正常に更新されました。',
+    'MaxUploadSizeCapped' => '保存された値がこのサーバーで許可されている値よりも大きいため、PHPとMySQLの制限が引き上げられるか、この値が引き下げられるまで、より大きなファイルは拒否されます。現在受け入れられる最大ファイルサイズ（バイト単位）：',
+    'PleaseEnterAValidEmailAddress' => '有効なメールアドレスを入力してください。',
+    'RiskImportedClosedWithoutCloseReason' => 'リスク {$risk_id} ("{$subject}") は、ステータスが「クローズ済み」でインポートされましたが、クローズ理由がないため、クローズ情報が不完全です。ファイルにクローズ理由を追加して再度インポートするか、リスクページからクローズ処理を完了してください。',
+    // SR-115: HTTP Strict Transport Security (HSTS)
+    'EnableHSTS' => 'HTTP Strict Transport Security (HSTS) を有効にする',
+    'EnableHSTSHelp' => '以下の最大有効期間の間、ブラウザはSimpleRiskへの接続をHTTPS経由でのみ行うように指示されます。HTTPSがこのサイトで確実に動作することを確認してから有効にしてください。このヘッダーを認識したブラウザは通常のHTTP接続を拒否するため、最大有効期間が経過するまで無効な証明書を回避することはできません。最初は300秒などの短い最大有効期間から始め、HTTPSが検証されたら有効期間を長くしてください。',
+    'HSTSMaxAge' => 'HSTS最大経過時間（秒）',
+    'HSTSMaxAgeInvalid' => 'HSTSの最大経過時間は、0から63072000までの整数秒である必要があります。',
+    'HSTSIncludeSubdomains' => 'すべてのサブドメインにHSTSを適用する',
+    'HSTSIncludeSubdomainsHelp' => 'また、このホストのすべてのサブドメインでHTTPSを強制します。サブドメインが通常のHTTPで提供される場合は、このオプションを削除してください。',
     '' => '',
 );
 ?>

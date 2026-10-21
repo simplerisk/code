@@ -1,0 +1,475 @@
+// Asset record modal (view / edit / add) on Manage assets
+// (js/simplerisk/pages/asset-record-modal.js, spec 2026-09-29-asset-record-
+// modal §2). The dialog width comes from the shared .sr-modal--cards class
+// (modules/_sr-modal.scss); everything here is the record's own header,
+// ⋯ menu, template switch, footer states and audit-trail pane, scoped under
+// the modal's id.
+#asset-record-modal {
+
+  // --- Header: icon, name + meta line, actions, close -------------------
+  .sr-arm-head {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .sr-arm-titles {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    .modal-title {
+      font-size: 18px;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+
+      // Focus lands here when the dialog opens (tabindex -1, never in the
+      // tab order), so it needs no ring of its own.
+      &:focus,
+      &:focus-visible {
+        outline: none;
+        box-shadow: none;
+      }
+    }
+  }
+
+  .sr-arm-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin-top: 5px;
+    font-size: 12.5px;
+    color: $gray-600;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  .sr-arm-meta-text + .sr-arm-meta-text::before {
+    content: "·";
+    margin-right: 10px;
+    color: $gray-500;
+  }
+
+  // Valuation: the level's neutral chip and its numeric range (same look as
+  // the list's valuation cell; asset values carry no colour).
+  .sr-arm-val {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .sr-arm-val-chip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 180px;
+    padding: 2px 10px;
+    overflow: hidden;
+    border: 1px solid $gray-300;
+    border-radius: 20px;
+    background: $gray-100;
+    color: $gray-700;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+  }
+
+  .sr-arm-val-range {
+    font-size: 12px;
+    color: $gray-600;
+  }
+
+  .sr-arm-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+
+    &[hidden] {
+      display: none;
+    }
+
+    .btn {
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+  }
+
+  .sr-arm-iconbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    background: $sr-body;
+    color: $gray-700;
+
+    &:hover,
+    &[aria-expanded="true"] {
+      border-color: $gray-500;
+      background: $gray-100;
+      color: $sr-primary;
+    }
+  }
+
+  .sr-arm-more {
+    position: relative;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .sr-arm-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    padding: 4px;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    background: $sr-body;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .sr-arm-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 12px 7px 9px;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: $sr-primary;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+
+    &[hidden] {
+      display: none;
+    }
+
+    .fa {
+      width: 16px;
+      color: $gray-600;
+      text-align: center;
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: $gray-100;
+      outline: none;
+    }
+  }
+
+  // Destructive item: quiet until hovered (design-system §8 escalation).
+  .sr-arm-menu-item--danger:hover,
+  .sr-arm-menu-item--danger:focus-visible {
+    color: $sr-important;
+
+    .fa {
+      color: $sr-important;
+    }
+  }
+
+  // --- Body --------------------------------------------------------------
+  .sr-arm-loading {
+    padding: 24px 0;
+    color: $gray-600;
+    font-size: 13px;
+    text-align: center;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .sr-arm-view[hidden],
+  .sr-arm-form[hidden],
+  .sr-arm-verification[hidden],
+  .sr-arm-audit[hidden] {
+    display: none;
+  }
+
+  // The engine reserves 72px under .sr-qform for its sticky action bar;
+  // here the modal footer is the action bar.
+  #asset-record-form.sr-qform,
+  .sr-arm-extra.sr-qform {
+    padding-bottom: 0;
+  }
+
+  .sr-arm-verification {
+    .sr-qcard-tag {
+      margin-left: auto;
+    }
+
+    .sr-qswitches,
+    .sr-qswitch-row:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+  }
+
+  // The engine's own cards bring their spacing; the extra wrapper only
+  // holds the Verification card.
+  .sr-arm-extra:not(:has(> .sr-qcard:not([hidden]))) {
+    display: none;
+  }
+
+  // Template switch (Add, several asset template groups): a segmented
+  // radio group.
+  .sr-arm-templates {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+
+    &[hidden] {
+      display: none;
+    }
+
+    .sr-qlabel {
+      margin: 0;
+    }
+  }
+
+  .sr-arm-segment {
+    display: inline-flex;
+    flex-wrap: wrap;
+    overflow: hidden;
+    border: 1px solid $gray-400;
+    border-radius: 6px;
+    background: $sr-body;
+  }
+
+  .sr-arm-seg {
+    padding: 6px 14px;
+    border: 0;
+    border-right: 1px solid $gray-400;
+    background: $sr-body;
+    color: $gray-700;
+    font-size: 12.5px;
+    font-weight: 700;
+
+    &:last-child {
+      border-right: 0;
+    }
+
+    &:hover {
+      background: $gray-100;
+    }
+
+    &.is-active {
+      background: $sr-primary;
+      color: $sr-body;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $gray-500;
+      outline-offset: -2px;
+    }
+  }
+
+  // Audit trail pane
+  .sr-arm-audit .sr-qcard-head {
+    flex-wrap: wrap;
+  }
+
+  .sr-arm-audit-window {
+    width: auto;
+    margin-left: auto;
+    border-radius: 6px;
+  }
+
+  .sr-arm-audit-state {
+    margin: 0;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .sr-arm-audit-table {
+    width: 100%;
+
+    &[hidden] {
+      display: none;
+    }
+
+    th,
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid $gray-300;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      color: $gray-600;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    td {
+      font-size: 13px;
+      color: $sr-primary;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+  }
+
+  .sr-arm-audit-when {
+    white-space: nowrap;
+  }
+
+  .sr-arm-audit-what {
+    overflow-wrap: anywhere;
+  }
+
+  // --- Footer: hint + actions, or the discard confirm --------------------
+  .sr-arm-foot {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+
+    &[hidden] {
+      display: none;
+    }
+
+    .btn[hidden] {
+      display: none;
+    }
+  }
+
+  // Hint (or question) and the buttons wrap as two units: the buttons move
+  // together to their own line, right-aligned, never one at a time.
+  .sr-arm-foot .sr-modal-hint {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+
+  .sr-arm-foot-actions {
+    display: flex;
+    flex: none;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  // Save while its request runs (design-system §8 submitting state):
+  // disabled, with a spinner before the label.
+  #asset-record-save.is-busy {
+    opacity: .75;
+    cursor: progress;
+
+    &::before {
+      content: "";
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 7px;
+      vertical-align: -1px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: sr-arm-spin .7s linear infinite;
+
+      @media (prefers-reduced-motion: reduce) {
+        animation: none;
+      }
+    }
+  }
+
+  .sr-arm-discard-question {
+    flex: 1 1 220px;
+    color: $sr-primary;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  // View inline edit (asset-record-modal.js): the engine's pencils show on
+  // hover/focus (modules/_sr-modal.scss). A touch screen has no hover, so
+  // there they stay visible.
+  @media (hover: none) {
+    .sr-qfield--inline-editable .sr-qfield-value-row > .sr-row-action {
+      opacity: 1;
+    }
+  }
+
+  // Phones: the full-bleed sheet (.sr-modal--cards) keeps the footer on
+  // screen; the header's actions move under the title.
+  @media (max-width: 575.98px) {
+    .sr-arm-head {
+      flex-wrap: wrap;
+    }
+
+    .sr-arm-titles {
+      flex: 1 1 0;
+    }
+
+    .btn-close {
+      order: 2;
+    }
+
+    .sr-arm-actions {
+      order: 3;
+      width: 100%;
+      justify-content: flex-end;
+    }
+
+    .sr-arm-foot .sr-modal-hint,
+    .sr-arm-discard-question {
+      flex-basis: 100%;
+    }
+  }
+
+  // Save while its request runs (design-system §8 submitting state):
+  // disabled, with a spinner before the label.
+  #asset-record-save.is-busy {
+    opacity: .75;
+    cursor: progress;
+
+    &::before {
+      content: "";
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 7px;
+      vertical-align: -1px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: sr-arm-spin .7s linear infinite;
+
+      @media (prefers-reduced-motion: reduce) {
+        animation: none;
+      }
+    }
+  }
+}
+
+@keyframes sr-arm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

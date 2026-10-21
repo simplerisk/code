@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Felhasználói munkamenetek',
     'SessionActivityTimeout' => 'Időtúllépés tevékenység',
     'Security' => 'Biztonsági',
-    'EnableCSP' => 'Engedélyezi a tartalom biztonsági házirend (ez tört Chrome a múltban)',
+    'EnableCSP' => 'Tartalombiztonsági házirend engedélyezése (ajánlott)',
     'EnableDebugLogging' => 'Hibakeresési naplózás engedélyezése',
     'seconds' => 'másodperc',
     'FieldSample' => 'Mező minta',
@@ -1984,10 +1984,10 @@ $lang = array(
     'NotificationTemplate' => 'Értesítési sablon',
     'JiraUpdateDetails' => 'Jira frissítés részletei',
     'YouNeedToSpecifyTheTemplateNameParameter' => 'Meg kell adni a sablonnév paramétert!',
-    'QuestionsLackingAubjectEdited' => 'A tárgy nélküli kérdéseket úgy szerkesztettük, hogy ne próbáljunk meg üresen hagyni egy kockázatos tárgyat.',
+    'QuestionsLackingAubjectEdited' => 'A tárgy nélküli kérdéseket úgy szerkesztettük, hogy ne próbáljanak meg üres kockázati tárgyat beküldeni.',
     'AdminSelfEditWarning' => 'Az adminisztrátor felhasználók nem tudják eltávolítani saját adminisztrátori jogosultságukat, és nem zárolhatják ki magukat.',
     'Value' => 'Érték',
-    'ControlDetails' => 'Vezérlési részletek',
+    'ControlDetails' => 'Kontroll részletei',
     'CannotDeleteLastItem' => 'Az utolsó elem nem törölhető.',
     'FieldChangeTemplate' => '`{$field_name}` (`{$before}` => `{$after}`)',
     'AuditLog_TestAuditReopen' => 'A(z) „{$test_audit_name}” (ID: {$test_audit_id}) auditot a következő felhasználó nyitotta meg újra: „{$user_name}”.',
@@ -2038,12 +2038,12 @@ $lang = array(
     'DatabaseBackup' => 'Adatbázis biztonsági mentése',
     'Download' => 'Letöltés',
     'ForSecurityReasonsBackupOutsideWebRoot' => 'Biztonsági okokból a biztonsági mentéseket a webes gyökérkönyvtáron kívül kell tárolni.',
-    'PrivateTmpMessage' => 'Megjegyzés: Ha a PrivateTmp engedélyezve van, akkor nem fogja tudni letölteni a rendszer ideiglenes mentési könyvtárában található biztonsági mentéseket.',
+    'PrivateTmpMessage' => 'Megjegyzés: Ha a PrivateTmp engedélyezve van, akkor nem fogja tudni letölteni a rendszer tmp könyvtárában található biztonsági mentéseket.',
     'SaveAndBackupNow' => 'Mentés és biztonsági mentés most',
     'BackupSettingsUpdated' => 'A biztonsági mentési beállításokat a(z) "{$user_name} " felhasználó frissítette.',
     'BackupInitiatedByUser' => 'A biztonsági mentést a(z) "{$user_name} " felhasználó kezdeményezte.',
     'BackupInitiated' => 'A biztonsági mentés megkezdődött. Ez eltarthat több percig is.',
-    'NoControlsAvailable' => 'Nincsenek elérhető vezérlők',
+    'NoControlsAvailable' => 'Nincsenek elérhető kontrollok',
     'AdminCantDisableItself' => 'Egy adminisztrátor nem tilthatja le saját magát.',
     'AdminCantDeleteItself' => 'Egy adminisztrátor nem törölheti magát.',
     'NoFrameworksFromGithub' => 'Nincsenek a Githubból importált meghatározott keretrendszerek',
@@ -2094,7 +2094,7 @@ $lang = array(
     'RiskDetails' => 'Kockázat részletei',
     'TagType_questionnaire_risk' => 'Kérdőív kockázat',
     'SAMLRoleMapping' => 'SAML szerepleképezés',
-    'SAMLTeamMapping' => 'SAML Team Mapping',
+    'SAMLTeamMapping' => 'SAML csapatleképezés',
     'RemoteSAMLRolePlaceholder' => 'Válasszon egy távoli szerepet, vagy adjon hozzá egy újat',
     'RemoteSAMLTeamPlaceholder' => 'Válasszon egy távoli csapatot, vagy adjon hozzá egy újat',
     'MappingSuccessfullyUpdated' => 'A térképezés sikeresen frissítve!',
@@ -2404,7 +2404,7 @@ $lang = array(
     'TheNameOfAPlaybookActionCannotBeEmpty' => 'A játékkönyv-művelet neve nem lehet üres.',
     'InvalidWidgetName' => 'Érvénytelen modulnév',
     'EditMode' => 'Szerkesztés mód',
-    'On' => 'On',
+    'On' => 'Be',
     'Off' => 'Le',
     'SelectWidgetToAdd' => 'Válassza ki a hozzáadni kívánt widgetet',
     'DragToAddSelectedWidget' => 'Húzza a kiválasztott widget hozzáadásához!',
@@ -2516,16 +2516,16 @@ $lang = array(
     'TheNameFieldCannotBeEmptyOrContainOnlySpaces' => 'A név mező nem lehet üres, és nem tartalmazhat csak szóközt.',
     'EditAsset' => 'Eszköz szerkesztése',
     'TheSelectedControlsWereDeletedSuccessfully' => 'A kiválasztott vezérlők sikeresen törölve.',
-    'NothingControlsForDeletingWereSelected' => 'Nincsenek kiválasztva a törléshez szükséges vezérlők.',
+    'NothingControlsForDeletingWereSelected' => 'Nincs kijelölve törlendő kontroll.',
     'PleaseSelectARoleBeforeDeleting' => 'Kérjük, válasszon egy szerepet a törlés előtt.',
     'DocumentInstallation' => 'Dokumentum telepítése',
-    'DocumentControlMapping' => 'Dokumentum a vezérlőelemek leképezéséhez',
-    'DocumentControlMappingHelp'=>'Ez a jelentés az összes dokumentum és a vezérlőelemek közötti megfeleltetéseket mutatja.',
+    'DocumentControlMapping' => 'Dokumentum–kontroll leképezés',
+    'DocumentControlMappingHelp'=>'Ez a jelentés az összes dokumentum és kontroll közötti megfeleltetést mutatja.',
     'DocumentID' => 'Dokumentumazonosító',
     'Score' => 'Pontszám',
     'TFIDFSimilarity' => 'TF-IDF hasonlóság',
     'MatchingKeywords' => 'Egyező kulcsszavak',
-    'AIMatch' => 'AI-mérkőzés',
+    'AIMatch' => 'AI-egyezés',
     'AIConfidence' => 'AI megbízhatósági szint',
     'AIReasoning' => 'MI-érvelés',
     'DocumentColumns' => 'Dokumentum oszlopai',
@@ -2534,9 +2534,9 @@ $lang = array(
     'ToBeDetermined' => 'Meghatározandó',
     'Matching' => 'Egyezés',
     'Recommendation' => 'Ajánlás',
-    'AddControlToPolicy' => 'Szabályozás hozzáadása',
+    'AddControlToPolicy' => 'Kontroll hozzáadása a szabályzathoz',
     'ConsiderAddingControl' => 'Fontolja meg az irányítás hozzáadását',
-    'RemoveControlFromPolicy' => 'Szabályozás eltávolítása',
+    'RemoveControlFromPolicy' => 'Kontroll eltávolítása a szabályzatból',
     'NoActionRequired' => 'Nincs szükség intézkedésre',
     'DefiniteMatch' => 'Határozott egyezés',
     'LikelyMatch' => 'Valószínű egyezés',
@@ -2544,7 +2544,7 @@ $lang = array(
     'UnlikelyMatch' => 'Valószínűtlen egyezés',
     'NotAMatch' => 'Nem egyezik',
     'ReviewManually' => 'Manuális ellenőrzés',
-    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'A kapcsolt vezérlőelemeket tartalmazó kérdésekre adott válaszok a vezérlőelem típusát a következőre frissítik:',
+    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'A kapcsolt kontrollokat tartalmazó kérdésekre adott válaszok a kontroll típusát a következőre frissítik:',
     'AuditLog_IncidentUpdated' => 'A(z) „{$incident_summary}” (ID: {$incident_id}) incidenst a következő felhasználó frissítette: „{$user_name}” Változások: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'A válaszok automatikusan mentésre kerülnek a felméréseken',
     'SecondsAssessmentsAreAutoSaved' => 'A másodperces értékelések automatikusan mentésre kerülnek',
@@ -2569,7 +2569,7 @@ $lang = array(
     'TheRiskScoreNormalizationSettingWasUpdatedSuccessfully_TheScoresOfExistingRisksWereRecalculatedBasedOnTheNewSetting' => 'A kockázati pontszám normalizálási beállításának frissítése sikeresen megtörtént. A meglévő kockázatok pontszámait a rendszer az új beállítás alapján újraszámította.',
     'DownloadFilePermissionMessage' => 'Nincs jogosultsága a fájl letöltésére.',
     'Tab' => 'Fül',
-    'TabOrdering' => 'Tabulátorsorrend',
+    'TabOrdering' => 'Fülek sorrendje',
     'AutoInitiateAudit' => 'Automatikusan kezdeményezett audit',
     'AuditInitiationOffset' => 'Auditkezdeményezési eltolás',
     'AuditInitiationOffset_explanation' => 'nap a határidőtől számítva',
@@ -2599,11 +2599,11 @@ $lang = array(
     'EnableLoggingDebug' => 'HIBAKERESÉS: Részletes diagnosztikai információk fejlesztők számára.',
     'QueueMonitor' => 'Várólista-figyelő',
     'PleaseEnterAValidTimezone' => 'Kérjük, adjon meg egy érvényes időzónát.',
-    'TFIDFMatch' => 'TF-IDF mérkőzés',
+    'TFIDFMatch' => 'TF-IDF egyezés',
     'CompletionDate' => 'Befejezési dátum',
     'AssetsAndControls' => 'Eszközök és ellenőrzések',
-    'AssetsByControl' => 'Eszközök irányítás szerint',
-    'ControlsByAsset' => 'Eszközök szerinti vezérlők',
+    'AssetsByControl' => 'Eszközök kontroll szerint',
+    'ControlsByAsset' => 'Kontrollok eszközök szerint',
     'NoIncidentDetectionDataAvailable' => 'Nem rögzítettünk olyan incidenst, amelynek kezdete és észlelési dátuma is volt.',
     'IncidentDashboard' => 'Eseményjelző',
     'TimeToDetectByTeam' => 'Csapat által észlelhető idő',
@@ -2615,7 +2615,7 @@ $lang = array(
     'NoAuditDataAvailable' => 'A kiválasztott keretrendszerekhez nem állnak rendelkezésre lezárt ellenőrzési megállapítások.',
     'SelectColumns' => 'Oszlopok kiválasztása',
     'ColumnOrder' => 'Oszlopsorrend',
-    'DragAndDropToReorder' => 'Húzd át az oszlopok sorrendjét.',
+    'DragAndDropToReorder' => 'Húzd és ejtsd az oszlopokat a sorrendjük megváltoztatásához.',
     'NoColumnsSelected' => 'Nincsenek kijelölt oszlopok. Jelölje ki az oszlopokat az első lapon.',
     'Remove' => 'Eltávolítás',
     'Apply' => 'Alkalmaz',
@@ -2698,16 +2698,16 @@ $lang = array(
     'ManagementReviewsByDateDesc'             => 'Vezetőségi felülvizsgálati műveletek naplózva egy adott dátumtartományon belül.',
     'ClosedRisksByDateDesc'                   => 'Egy adott dátumtartományon belül lezárt kockázatok, lezárás ok szerinti eloszlással.',
     'CurrentRiskCommentsDesc'                 => 'A program kockázataival kapcsolatos legfrissebb megjegyzések, a legújabbaktól elöl.',
-    'AllClosedRisksByRiskLevelDesc'                              => 'Minden lezárt kockázat, a kockázati szint szerint rendezve.',
+    'AllClosedRisksByRiskLevelDesc'                              => 'Minden lezárt kockázat, az eredendő kockázati szint szerint rendezve.',
     'AllOpenRisksAcceptedUntilNextReviewByRiskLevelDesc'         => 'A következő felülvizsgálati időpontban függőben lévő újraértékeléssel elfogadott kockázatok, szint szerint rendezve.',
-    'AllOpenRisksByRiskLevelDesc'                                => 'Minden jelenleg nyitott kockázat, a kockázati szint szerint rendezve.',
+    'AllOpenRisksByRiskLevelDesc'                                => 'Minden jelenleg nyitott kockázat, az eredendő kockázati szint szerint rendezve.',
     'AllOpenRisksToSubmitAsAProductionIssueByRiskLevelDesc'      => 'Éles problémaként beküldésre megjelölt nyitott kockázatok, szint szerint rendezve.',
     'AllOpenRisksConsideredForProjectsByRiskLevelDesc'           => 'Projektre jelöltként megjelölt nyílt kockázatok, szint szerint rendezve.',
     'ProjectsAndRisksAssignedDesc'                               => 'Minden projekt és a hozzá jelenleg rendelt kockázatok.',
     'AllOpenRisksByScoringMethodDesc'                            => 'A nyílt kockázatok a pontszámuk kiszámításához használt pontozási módszer szerint csoportosítva.',
     'AllOpenRisksByTeamDesc'                                     => 'A nyitott kockázatok a hozzájuk rendelt csapatok szerint csoportosítva.',
     'AllOpenRisksByTechnologyDesc'                               => 'A nyílt kockázatok a rájuk hivatkozó technológiai címke szerint csoportosítva.',
-    'DynamicAuditReportDesc'                  => 'Konfigurálható auditfolyamat-jelentés keretrendszerrel és vezérlőszűrőkkel.',
+    'DynamicAuditReportDesc'                  => 'Konfigurálható auditfolyamat-jelentés keretrendszer- és kontrollszűrőkkel.',
     'AuditTimelineDesc'                       => 'Az audittevékenységek, az állapotváltozások és a megállapítások kronológiai áttekintése.',
     'AuditRemediationCycleTimeDesc'           => 'Az audit megállapításaitól a korrekcióig eltelt átlagos idő keretrendszerenként.',
     'ControlGapAnalysisDesc'                  => 'Hiányzó tesztek, tulajdonosok vagy elavult vezérlők.',
@@ -2755,7 +2755,7 @@ $lang = array(
     'IncidentManagementExtraDesc'         => 'Az Incidenskezelési Extra a NIST 800-61 Számítógép-biztonsági Incidenskezelési Útmutatón alapul, és incidenskezelési képességeket biztosít a SimpleRisk rendszeren belül.',
 
     // Configure Hub - tile descriptions (customization category)
-    'RedefineNamingConventionsDesc'       => 'Nevezd át a SimpleRisk terminológiáját (Risk, Eszköz, Keretrendszer stb.) a felhasználói felületen.',
+    'RedefineNamingConventionsDesc'       => 'Nevezd át a SimpleRisk terminológiáját (Kockázat, Eszköz, Keretrendszer stb.) a felhasználói felületen.',
     'RiskConfigurationDesc'               => 'Kockázatpontozási szabályok konfigurálása: szintek, kockázati étvágy, SLA-küszöbértékek és a klasszikus/hozzájáruló kockázati képletek.',
     'RiskAndThreatCatalogDesc'            => 'Karbantartja a legördülő menükben használt kockázati és fenyegetési értékek katalógusát.',
     'AddAndRemoveValuesDesc'              => 'Kezelje a kockázati mezők legördülő értékeit: hely, forrás, kategória, csapat, technológia és egyebek.',
@@ -2776,13 +2776,13 @@ $lang = array(
     'ImportExportExtraDesc'               => 'Az Import-Export Extra lehetővé teszi adatok importálását a SimpleRisk rendszerbe egy CSV-fájl mezőinek a SimpleRisk adatbázis mezőihez való leképezésével. Használható audit eredmények importálására harmadik féltől származó táblázatokból, sebezhetőségi vizsgálatok eredményeinek importálására egy másik eszközből, eszközök importálására a CMDB-ből és egyebek. Az Extra lehetővé teszi CSV fájlok exportálását a SimpleRisk rendszerből, amelyek kockázatokat, enyhítéseket, áttekintéseket vagy mindhárom kombinációs jelentését tartalmazzák.',
     'JiraExtraDesc'                       => 'A Jira Integration Extra lehetővé teszi a felhasználók számára a kétirányú integrációt egy Jira-példánnyal. Lehetővé teszi a kockázatok Jira-problémákhoz való kapcsolását, valamint adataik, állapotuk és megjegyzéseik szinkronizálását.',
     'APIExtraDesc'                        => 'Az API Extra lehetővé teszi az ügyfelek számára, hogy RESTful API-t használjanak szkriptelt interakciók létrehozására más alkalmazásokkal, ezáltal fejlett automatizálást érjenek el és kihasználják a meglévő infrastruktúrát.',
-    'AdvancedSearchExtraDesc'             => "Az Összetett keresés extra funkció kibővíti a felső sáv keresőmezőjének funkcionalitását, hogy szöveges kereséssel is lehessen kockázatokat találni a kockázati adatokban.",
+    'AdvancedSearchExtraDesc'             => "Az Összetett keresés extra funkció a felső sáv keresőmezőjét egyetlen kereséssé alakítja, amely kockázatokra, keretrendszerekre, kontrollokra, dokumentumokra, kivételekre, tesztekre, auditokra, eszközökre és eszközcsoportokra terjed ki, egy teljes keresési oldallal az eredmények áttekintéséhez. Csak azokat a rekordokat jeleníti meg, amelyeket a felhasználó láthat.",
     'AssessmentsExtraDesc'                => 'A Kockázatértékelés Extra lehetővé teszi a felhasználók számára, hogy definiáljanak kapcsolattartókat, kérdéseket hozzanak létre (logikával együtt), több kérdést állítsanak össze egy kérdőívsablonnal, kérdőíveket hozzanak létre és elküldjék azokat a kapcsolattartóknak, megtekintsék a kérdőív eredményeit, kockázatokat adjanak hozzá az eredmények alapján, és összehasonlítsák az eredményeket az idő múlásával, importáljanak és exportáljanak külsőleg testreszabott értékeléseket, valamint áttekintsék a kockázatértékelési naplót.',
     'ActiveAssessmentsDesc'               => 'Jelenleg futó értékelések megtekintése és kezelése.',
     'WorkflowsExtraDesc'                  => 'A Workflows Extra egy vizuális, eseményvezérelt munkafolyamat-motort biztosít, amely automatizálja a kockázatkezelési műveleteket a SimpleRisk eseményeire válaszul. Olyan munkafolyamatokat tervezhet, amelyek változások – például egy kockázat beküldése, frissítése vagy felülvizsgálata – hatására aktiválódnak, így manuális beavatkozás nélkül továbbítják a jóváhagyásokat, kiosztják a feladatokat, és biztosítják a folyamatok folyamatosságát.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'Az Unified Compliance Framework (UCF) Extra egy API-szintű integráció az Unified Compliance Framework és a SimpleRisk között. Engedélyezésével közvetlenül importálhatja a kiválasztott keretrendszereket és vezérlőleképezéseket az UCF-ből.',
+    'UCFExtraDesc'                        => 'Az Unified Compliance Framework (UCF) Extra egy API-szintű integráció az Unified Compliance Framework és a SimpleRisk között. Engedélyezésével közvetlenül importálhatja a kiválasztott keretrendszereket és kontrollleképezéseket az UCF-ből.',
     'SCFExtraDesc'                        => "A Secure Controls Framework (SCF) Extra közvetlen integrációt biztosít a Secure Controls Framework és a SimpleRisk között. Importálja az SCF vezérlőelemeinek katalógusát és azok leképezéseit számos megfelelőségi és kiberbiztonsági keretrendszerben a SimpleRisk irányítási funkciójába, így Ön átveheti a szükséges keretrendszereket, és kezelheti azok vezérlőelemeit anélkül, hogy kézzel kellene felépíteni azokat.",
 
     // Configure Hub - tile descriptions (maintenance category)
@@ -2807,7 +2807,7 @@ $lang = array(
     // Note: 'Active' (line 733) and 'Purchase' (line 404) are reused as-is;
     // do not duplicate them here. One key per English string per CLAUDE.md.
     'StateReadyToDownload'                => 'Letöltésre kész',
-    'StateChecking'                       => '… ellenőrzése',
+    'StateChecking'                       => 'Ellenőrzés…',
     'StateRegistrationRequired'           => 'Regisztráció szükséges',
 
     // Configure Hub - Activation modal (Phase 3)
@@ -2891,7 +2891,7 @@ $lang = array(
     'EncryptionMissingLockTablesPrivilegeUi' => 'A SimpleRisk adatbázis-felhasználó nem rendelkezik a titkosításhoz szükséges LOCK TABLES jogosultsággal. Az adatbázis-adminisztrátornak a következő parancsot kell futtatnia: GRANT LOCK TABLES ON {$db}.* TO {$user}; majd próbálja újra.',
     'EncryptionRequiredGrantLabel' => 'Szükséges GRANT nyilatkozat:',
     'EncryptionActivationAlreadyRunning' => 'Egy titkosítás aktiválása már folyamatban van. Várja meg, amíg befejeződik, vagy használja a biztonsági mentésből való visszaállítás funkciót.',
-    'EncryptionActivationEnqueued'           => 'Titkosítás Az extra aktiválás várólistára került. Az adminisztrátori felhasználói felület nyomon követi a folyamatot, amíg az adatbázis titkosítva van.',
+    'EncryptionActivationEnqueued'           => 'A Titkosítás extra aktiválása várólistára került. Az adminisztrátori felhasználói felület nyomon követi a folyamatot, amíg az adatbázis titkosítva van.',
     'EncryptionActivationEnqueueFailed'      => 'Nem sikerült a titkosítás aktiválási feladatát várólistára helyezni. A részletekért tekintse meg a hibakeresési naplót.',
     'EncryptionDeactivationEnqueued'         => 'Titkosítás Extra deaktiválás várólistára került. Az adminisztrátori felhasználói felület nyomon követi a folyamatot, amíg az adatbázis visszafejtése folyamatban van.',
     'EncryptionDeactivationEnqueueFailed'    => 'Nem sikerült a titkosítás deaktiválási feladatát várólistára helyezni. A részletekért tekintse meg a hibakeresési naplót.',
@@ -2901,7 +2901,7 @@ $lang = array(
     'EncryptionInFlightBody'             => 'Jelenleg egy titkosítási aktiválási, deaktiválási vagy visszaállítási folyamat fut. Várja meg, amíg befejeződik – az oldal automatikusan frissül, amikor a művelet befejeződik –, mielőtt újra próbálkozna.',
     'OK'                                 => 'RENDBEN',
     'ActivationGuardFailed'                 => 'Az aktiválás nem indult el. A részletekért lásd a lap fejlécében található riasztást.',
-    'EncryptionStageStarting'               => 'Kezdő…',
+    'EncryptionStageStarting'               => 'Indítás…',
     'EncryptionStageProgress'               => '{current}. / {total} szakasz: {name}',
     'EncryptionStageAllDone'                => 'Minden szakasz befejeződött.',
     'EncryptionStageEncryptTable'           => 'Tábla titkosítása: {table}',
@@ -2972,7 +2972,7 @@ $lang = array(
     'ContextQuestions' => 'Kontextuális kérdések',
     'AIProviderNotConfiguredWarning' => 'Az AI-szolgáltató nincs konfigurálva. Nem lehet élő eredményeket előállítani, amíg be nem állítja a szolgáltatót és az API-kulcsot a Szolgáltató konfigurációja lapon.',
     'AutoProcessSCFUpdates' => 'Az új Secure Controls Framework (SCF) kiadások automatikus feldolgozása',
-    'AddNewControls' => 'Új SCF-vezérlők hozzáadása',
+    'AddNewControls' => 'Új SCF-kontrollok hozzáadása',
     'UpdateExistingControls' => 'Meglévő SCF-vezérlők frissítése',
     'DeleteRemovedControls' => 'Törölje az eltávolított SCF-vezérlőket',
     'CreateEvidenceRequests' => 'Bizonyítékkérelmek létrehozása SCF-ellenőrzésekhez',
@@ -2980,8 +2980,8 @@ $lang = array(
     'SCFReleaseProcessing' => 'SCF kiadás feldolgozása',
     'NotFrameworkDescription' => 'Az alábbi widget a Secure Controls Framework (SCF) táblázatban található összes fejlécet megjeleníti. Használd annak kiválasztására, hogy mely oszlopok tartalmazzanak keretrendszereket és melyek nem keretrendszerbeli adatokat.',
     'Note' => 'Jegyzet',
-    'AISettingsNote' => 'A mesterséges intelligencia támogatásának engedélyezésével az Anthropic adatokat küld elemzésre az LLM-ben az Ön Anthropic API-kulcsának használatával, hogy személyre szabott eredményeket biztosíthasson Önnek.',
-    'EnableAIAssistanceForControlData' => 'Mesterséges intelligencia segítségének engedélyezése a vezérlőadatokhoz',
+    'AISettingsNote' => 'A mesterséges intelligencia támogatásának engedélyezésével adatok kerülnek elküldésre az Anthropic részére elemzésre az LLM-jében, az Ön Anthropic API-kulcsának használatával, hogy személyre szabott eredményeket biztosíthasson Önnek.',
+    'EnableAIAssistanceForControlData' => 'Mesterséges intelligencia segítségének engedélyezése a kontrolladatokhoz',
     'ReferenceText' => 'Referencia szöveg',
     'FrameworkSelection' => 'Keretrendszer kiválasztása',
     'Show' => 'Megmutat',
@@ -2993,11 +2993,11 @@ $lang = array(
     'FailedToFetchCVEInformation' => 'Nem sikerült lekérni a CVE-információkat. Ellenőrizze a CVE-azonosítót, és próbálja újra.',
     'ComplianceDashboard' => 'Megfelelőségi irányítópult',
     'DynamicAuditReportHelp' => 'Ez a jelentés az összes auditot és azok állapotát mutatja.',
-    'ComplianceDashboardDescription' => 'Ez a diagram az egyes keretrendszerekben található vezérlők számát mutatja, zölddel jelölve a sikeres, pirossal pedig a sikertelen vezérlőket.',
+    'ComplianceDashboardDescription' => 'Ez a diagram az egyes keretrendszerekben található kontrollok számát mutatja, zölddel jelölve a sikeres, pirossal pedig a sikertelen kontrollokat.',
     'PassingControls' => 'Teljesített vezérlők',
-    'FailingControls' => 'Hibás vezérlők',
+    'FailingControls' => 'Sikertelen kontrollok',
     'ControlsByFramework' => 'Keretrendszer szerinti vezérlők',
-    'NumberOfControls' => 'Vezérlők száma',
+    'NumberOfControls' => 'Kontrollok száma',
     'PasswordResetTokenExpirationPeriod' => 'Jelszó-visszaállító token lejárati ideje',
     'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'A jelszó-visszaállítási token lejárati idejének több mint 5 percnek kell lennie.',
     'MeanTimeToRemediate' => 'Átlagos elhárítási idő',
@@ -3139,12 +3139,12 @@ $lang = array(
     'NoSelfAssessmentsYet' => 'Még nincsenek önértékelések. Kezdésként indítson el egyet.',
     'RequestFailed' => 'A kérés nem teljesíthető. Kérjük, próbálja újra.',
     'NoPendingRisks' => 'Nincsenek függőben lévő kockázatok. Végezzen el egy értékelést a sikertelen kontrollokból eredő kockázatok generálására.',
-    'NoFailedControls' => 'Nincsenek megjeleníthető vezérlőelemek ehhez a szűrőhöz.',
+    'NoFailedControls' => 'Ehhez a szűrőhöz nincsenek megjeleníthető kontrolleredmények.',
     'ControlResultsTruncated' => 'A legfrissebb 2000 találat megjelenítése. Szűkítse a szűrőt a továbbiak megtekintéséhez.',
     'GeneratedFromSelfAssessment' => 'Önértékelésből generálva',
     'SelfAssessmentMitigationSolution' => 'A kockázat csökkentése érdekében alkalmazza az alább linkelt, az önértékelés során hiányosnak ítélt ellenőrzéseket.',
     'NSelected' => '{n} kiválasztva',
-    'FilterByControl' => 'Szűrés vezérlőelemek szerint',
+    'FilterByControl' => 'Szűrés kontroll szerint',
     'Pushing' => 'Áthelyezés folyamatban…',
     'Deleting' => 'Törlés…',
     'ConfirmPushSelectedPendingRisks' => 'Áthelyezi a {n} kiválasztott függőben lévő kockázat(oka)t a kockázatok közé?',
@@ -3159,14 +3159,14 @@ $lang = array(
     'HomeKpiUnmitigated' => 'Nem csökkentett',
     'HomeKpiClosedRisks' => 'Zárt kockázatok',
     'HomeKpiControlPassRate' => 'Ellenőrzési sikerességi arány',
-    'HomeKpiFailingControls' => 'Hibás vezérlők',
+    'HomeKpiFailingControls' => 'Hibás kontrollok',
     'HomeKpiOpenAudits' => 'Nyílt auditok',
     'HomeKpiTestsDueSoon' => 'Hamarosan esedékes tesztek',
     'HomeKpiActiveFrameworks' => 'Aktív keretrendszerek',
     'HomeKpiTotalControls' => 'Összes kontroll',
     // Home dashboard — What's Next feed
     'WhatsNext' => 'Mi a következő lépés?',
-    'WhatsNextAllCaughtUp' => 'Mindennel fel vagy készülve.',
+    'WhatsNextAllCaughtUp' => 'Mindennel naprakész vagy.',
     'WhatsNextRegisterInstance' => 'Regisztrálja SimpleRisk példányát',
     'WhatsNextSubmitFirstRisk' => 'Küldd el az első kockázatodat',
     'WhatsNextLoadFramework' => 'Vezérlőkeretrendszer betöltése',
@@ -3257,8 +3257,8 @@ $lang = array(
     'GSReviewTitle' => 'Végezzen kockázatértékelést',
     'GSReviewDesc' => 'Tekintsd át a kockázatot, és döntsd el a következő lépést.',
     'GSReviewCta' => 'Felülvizsgálat elvégzése',
-    'GSDefineTestTitle' => 'Definiáljon egy vezérlőtesztet',
-    'GSDefineTestDesc' => 'Állítsa be a vezérlőelemek tesztelésének módját.',
+    'GSDefineTestTitle' => 'Definiáljon egy kontrolltesztet',
+    'GSDefineTestDesc' => 'Állítsa be a kontroll tesztelésének módját.',
     'GSDefineTestCta' => 'Teszt definiálása',
     'GSInitiateAuditTitle' => 'Ellenőrzés indítása',
     'GSInitiateAuditDesc' => 'Indítson el egy teszt- vagy auditciklust.',
@@ -3272,7 +3272,7 @@ $lang = array(
     'GSNextCards' => 'Következő lépések megjelenítése',
     'WhatsNextInstallSCF' => 'Telepítse a Secure Controls Frameworköt',
     'GSActivateScfTitle' => 'A Biztonságos Ellenőrzési Keretrendszer aktiválása',
-    'GSActivateScfDesc' => 'Kapcsold be a telepített SCF-et, hogy a vezérlői betöltsd a könyvtáradba.',
+    'GSActivateScfDesc' => 'Kapcsold be a telepített SCF-et, hogy betöltsd a kontrolljait a könyvtáradba.',
     'GSActivateScfCta' => 'SCF aktiválása',
     'WhatsNextActivateSCF' => 'A Biztonságos Ellenőrzési Keretrendszer aktiválása',
     'GSEnableFrameworksTitle' => 'Alkalmazható keretrendszerek engedélyezése',
@@ -3285,10 +3285,10 @@ $lang = array(
     'WhatsNextTakeSelfAssessment' => 'Végezzen önértékelést',
     'WhatsNextConfigureAI' => 'MI konfigurálása',
     'ListUnreviewedRisks' => 'Felül nem vizsgált kockázatok',
-    'ControlsByDomain' => 'Tartományonkénti vezérlők',
-    'ControlsByClass' => 'Osztályok szerinti vezérlők',
-    'ControlsByPhase' => 'Fázisonkénti vezérlés',
-    'ControlsByPriority' => 'Prioritás szerinti vezérlők',
+    'ControlsByDomain' => 'Kontrollok tartományonként',
+    'ControlsByClass' => 'Kontrollok osztályok szerint',
+    'ControlsByPhase' => 'Kontrollok fázisonként',
+    'ControlsByPriority' => 'Kontrollok prioritás szerint',
     'ControlsByCurrentMaturity' => 'Kontrollok jelenlegi érettség szerint',
     'ControlStatusOverTime' => 'Kontroll állapota idővel',
     'ComplianceTotalControls' => 'Összes kontroll',
@@ -3299,7 +3299,7 @@ $lang = array(
     'GoToTest' => 'Menj a teszthez',
     'NotTested' => 'Nem tesztelt',
     'PassingPercent' => 'Sikeres arány (%)',
-    'ListFailingControls' => 'Hibás vezérlők',
+    'ListFailingControls' => 'Sikertelen kontrollok',
     'Exceptions' => 'Kivételek',
     'Documents' => 'Dokumentumok',
     'ControlsBelowMaturity' => 'Érettségi szint alatti ellenőrzések',
@@ -3344,13 +3344,13 @@ $lang = array(
     'AICapFairAnalysis' => 'FAIR kvantitatív elemzés',
     'AICapFairAnalysisDesc' => 'A mesterséges intelligencia becsli a Beta-PERT veszteségparamétereit; a SimpleRisk egy 10 000 iterációjú Monte Carlo-próbát futtat a kockázat dollárban kifejezett számszerűsítésére.',
     'AICapDocumentCustomization' => 'Dokumentum testreszabása',
-    'AICapDocumentCustomizationDesc' => 'Kitölti a helyőrzőket és kiüríti a szabályzat szövegét a dokumentumsablonokban, hogy a sablonszabályzat a sajátodként olvasható legyen.',
+    'AICapDocumentCustomizationDesc' => 'Kitölti a helyőrzőket és megtisztítja a szabályzat szövegét a dokumentumsablonokban, hogy a sablonszabályzat a sajátodként olvasható legyen.',
     'AICapDocumentControlMatching' => 'Dokumentum ↔ Ellenőrzés egyeztetése',
-    'AICapDocumentControlMatchingDesc' => 'Automatikusan leképezi a vezérlőket a szabályzatdokumentumokhoz, egy megbízhatósági pontszámmal és az áttekinthető indoklással.',
+    'AICapDocumentControlMatchingDesc' => 'Automatikusan leképezi a kontrollokat a szabályzatdokumentumokhoz, egy megbízhatósági pontszámmal és az áttekinthető indoklással.',
     'AICapDocumentTemplates' => 'Dokumentumsablon-tár',
     'AICapDocumentTemplatesDesc' => 'Telepítsen válogatott szabályzat-, irányelv- és eljárássablonokat a SimpleRisk könyvtárból.',
-    'AICapControlReferenceEnhancement' => 'Vezérlőreferencia-bővítés',
-    'AICapControlReferenceEnhancementDesc' => 'Szó szerinti ellenőrző szöveget kutat webes kereséssel a vezérlőhivatkozások gazdagítása érdekében.',
+    'AICapControlReferenceEnhancement' => 'Kontrollreferencia-bővítés',
+    'AICapControlReferenceEnhancementDesc' => 'Szó szerinti kontrollszöveget kutat webes kereséssel a kontrollhivatkozások gazdagítása érdekében.',
     'AICapAiChat' => 'Csevegési asszisztens',
     'AICapAiChatDesc' => 'Egy GRC asszisztens, amely a SimpleRisk bármely pontján kontextusban válaszol a kérdésekre.',
     'AICapSurfacedRecommendations' => 'Mesterséges Intelligencia oldal',
@@ -3361,7 +3361,7 @@ $lang = array(
     'AICapSurfacedEveryPage' => 'Minden oldal — lebegő asszisztens',
     'AICapabilitiesCatalog' => 'Képességek',
     'AICapSearchPlaceholder' => 'AI-képességek keresése…',
-    'AICapFilterDomain' => 'Domain',
+    'AICapFilterDomain' => 'Szakterület',
     'AICapFilterTier' => 'Szint',
     'AICapFilterState' => 'Állapot',
     'AICapTierExtra' => 'AI Extra',
@@ -3418,7 +3418,7 @@ $lang = array(
     'AICapDisableAll' => 'Összes letiltása',
     'AISettingsSavedConnected' => 'MI-beállítások mentése – sikeres kapcsolódás.',
     'AISettingsSavedNotConnected' => 'A mesterséges intelligencia beállításai mentve, de a csatlakozási teszt sikertelen. Ellenőrizze a modellt, a kulcsot és az URL-t.',
-    'AIProviderURLNotOnAllowlist' => 'Ez a host nincs az AI-szolgáltató SSRF engedélyezőlistáján. Mentés előtt add hozzá a $ai_allowed_provider_hosts zónához a config.php fájlban.',
+    'AIProviderURLNotOnAllowlist' => 'Ez a host nincs az AI-szolgáltató SSRF engedélyezőlistáján. Mentés előtt add hozzá a config.php fájlban a $ai_allowed_provider_hosts változóhoz.',
     'Connected' => 'Csatlakoztatva',
     'NotConnected' => 'Nincs csatlakoztatva',
     'AICapBulkError' => 'Néhány funkció frissítése nem sikerült. Próbáld újra.',
@@ -3466,8 +3466,8 @@ $lang = array(
     'ShowRetired' => 'Kivont elemek megjelenítése',
     'Tests' => 'Tesztek',
     'NoTestsForThisControl' => 'Ehhez a kontrollhoz még nincsenek tesztek.',
-    'NoControlsDefinedYet' => 'Még nincsenek definiált vezérlők',
-    'NoControlsDefinedYetBody' => 'A tesztek hozzáadása előtt definiáld a vezérlőket az Irányítás részben.',
+    'NoControlsDefinedYet' => 'Még nincsenek definiált kontrollok',
+    'NoControlsDefinedYetBody' => 'A tesztek hozzáadása előtt definiáld a kontrollokat az Irányítás részben.',
     'NoTestsMatchFilters' => 'Egyik teszt sem felel meg a szűrőknek',
     'NoTestsMatchFiltersBody' => 'Próbáld meg módosítani a keresést vagy a szűrőket.',
     'CouldNotLoadTests' => 'Nem sikerült betölteni a teszteket',
@@ -3475,7 +3475,7 @@ $lang = array(
     'ShowingXToYOfZ' => '{$start}–{$end} / {$total} megjelenítése',
     // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
     'Reference' => 'Referencia',
-    'NoFrameworksMapped' => 'Nincsenek keretrendszerek ehhez a vezérlőhöz rendelve.',
+    'NoFrameworksMapped' => 'Nincsenek keretrendszerek ehhez a kontrollhoz rendelve.',
     // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
     'Retire' => 'Kivon',
     'ReassignTester' => 'Tesztelő átrendelése',
@@ -3485,18 +3485,18 @@ $lang = array(
     // Define Tests grid -- Coverage toolbar select (Issue 4)
     'Coverage' => 'Lefedettség',
     'CoverageWithTests' => 'Kontrollok tesztekkel',
-    'CoverageAllControls' => 'Minden vezérlőelem',
+    'CoverageAllControls' => 'Minden kontroll',
     'CoverageGaps' => 'Rések',
     // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
     // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
     // chips above (identical text) rather than duplicated here.
     'DtTotalTests' => 'Összes teszt',
     'DtCoverageGaps' => 'Lefedettségi hiányosságok',
-    'DtAcrossNControls' => '{$n} vezérlők között',
+    'DtAcrossNControls' => '{$n} kontroll között',
     'DtControlsWithNoTest' => 'Teszt nélküli kontrollok',
     'DtNeedInitiationNow' => 'Azonnali indítás szükséges',
     'DtWithinLeadInWindow' => 'A bevezető ablakon belül',
-    'DtLastResultFailed' => 'Az utolsó találat sikertelen',
+    'DtLastResultFailed' => 'Az utolsó eredmény sikertelen',
     'InvalidTestMethod' => 'A vizsgálati módszernek a következők egyikének kell lennie: lekérdezés, megfigyelés, ellenőrzés vagy ismételt végrehajtás!',
     'TesterCannotBeApprover' => 'A tesztelő nem szerepelhet jóváhagyóként ennél a tesztnél.',
     'ApproverNotEligible' => 'Egy vagy több kiválasztott jóváhagyónak nincs „Tesztek jóváhagyása” jogköre.',
@@ -3504,7 +3504,7 @@ $lang = array(
     'TestMethodInquiry' => 'Vizsgálat',
     'TestMethodObservation' => 'Megfigyelés',
     'TestMethodInspection' => 'Ellenőrzés',
-    'TestMethodReperformance' => 'Újrateljesítmény',
+    'TestMethodReperformance' => 'Újraelvégzés',
     'Sample' => 'Minta',
     'RequiredEvidence' => 'Szükséges bizonyítékok',
     'Approvers' => 'Jóváhagyók',
@@ -3518,7 +3518,7 @@ $lang = array(
     'ApproverCannotBeTester' => 'A jóváhagyó nem lehet egyben az audit tesztelője is.',
     'AuditNotAwaitingApproval' => 'Ez az audit jelenleg nem vár jóváhagyásra.',
     'NotificationAuditAwaitingApprovalTitle' => 'Jóváhagyásra váró audit',
-    'NotificationAuditAwaitingApprovalBody' => 'A(z) "{$test_audit_name}" audit lezárásra került, és az Ön jóváhagyására vár.',
+    'NotificationAuditAwaitingApprovalBody' => 'A(z) "{$test_audit_name}" auditot lezárásra benyújtották, és az Ön jóváhagyására vár.',
     'NotificationAuditRejectedTitle' => 'Ellenőrzés elutasítva',
     'NotificationAuditRejectedBody' => 'A(z) "{$test_audit_name}" ellenőrzést a következő megjegyzéssel utasították el: "{$comment}"',
     'AwaitingApproval' => 'Jóváhagyásra vár',
@@ -3527,9 +3527,9 @@ $lang = array(
     'ReturnedForReworkBannerText' => 'Ezt az auditot elutasították és visszaküldték átdolgozásra.',
     'RejectReason' => 'Elutasítás oka',
     'AreYouSureYouWantToApproveThisAudit' => 'Biztosan jóváhagyja ezt az auditot?',
-    'AtLeastOneControlRequired' => 'Legalább egy vezérlőelem szükséges.',
-    'DtNCommonAcrossNControls' => '{$common} közös · {$n} vezérlők',
-    'DtUntestedControls' => 'Nem tesztelt vezérlők',
+    'AtLeastOneControlRequired' => 'Legalább egy kontroll szükséges.',
+    'DtNCommonAcrossNControls' => '{$common} közös · {$n} kontroll',
+    'DtUntestedControls' => 'Nem tesztelt kontrollok',
     'DtControlsInScopeNoCoverage' => 'Nincs lefedettség',
     'Passing' => 'Sikeres',
     'DtLastResultPassed' => 'Utolsó eredmény elfogadva',
@@ -3543,11 +3543,11 @@ $lang = array(
     'EditTest' => 'Teszt szerkesztése',
     'ControlHasNoTestCoverage' => 'Ennek a hatókörön belüli ellenőrzésnek még nincs tesztlefedettsége.',
     'AddTheFirstTest' => 'Első teszt hozzáadása',
-    'ApplyCommonTestHint' => 'Alkalmazzon egy vagy több meglévő tesztet erre a vezérlőelemre. Minden teszt megtartja az aktuális vezérlőelemeit, és egy közös tesztté válik, amely ezt a vezérlőelemet is lefedi.',
-    'CommonTestApplied' => 'Teszt alkalmazva erre a vezérlőre.',
-    'CouldNotApplyCommonTest' => 'A tesztet nem sikerült alkalmazni erre a vezérlőre.',
+    'ApplyCommonTestHint' => 'Alkalmazzon egy vagy több meglévő tesztet erre a kontrollra. Minden teszt megtartja az aktuális kontrolljait, és egy közös tesztté válik, amely ezt a kontrollt is lefedi.',
+    'CommonTestApplied' => 'Teszt alkalmazva erre a kontrollra.',
+    'CouldNotApplyCommonTest' => 'A tesztet nem sikerült alkalmazni erre a kontrollra.',
     'SelectOneOrMoreTests' => 'Válasszon ki egy vagy több tesztet',
-    'CommonTestsApplied' => '{n} tesztet alkalmaztak erre a vezérlőre.',
+    'CommonTestsApplied' => '{n} tesztet alkalmaztak erre a kontrollra.',
     'ApplyCommonTests' => 'Gyakori tesztek alkalmazása…',
     'History' => 'Előzmények',
     'Result' => 'Eredmény',
@@ -3555,10 +3555,10 @@ $lang = array(
     'ThisTestHasNotBeenRunYet' => 'Ezt a tesztet még nem futtatták le.',
     'CouldNotLoadTestHistory' => 'Nem sikerült betölteni a teszt előzményeit.',
     'Identity' => 'Identitás',
-    'IdentitySectionHint' => 'Név, tesztelő és az általa validált vezérlők',
+    'IdentitySectionHint' => 'Név, tesztelő és az általa validált kontrollok',
     'WhenTheAuditInitiates' => 'Amikor az audit megkezdődik',
     'ProcedureAndEvidence' => 'Eljárás és bizonyítékok',
-    'CommonTestControlsHint' => 'Egyetlen teszt számos vezérlőelemet validálhat – egy közös teszt. Ha ezt egy vezérlőelem „+ Teszt hozzáadása” gombjával nyitjuk meg, akkor az itt előre kijelölődik.',
+    'CommonTestControlsHint' => 'Egyetlen teszt számos kontrollt validálhat – egy közös teszt. Ha ezt egy kontroll „+ Teszt hozzáadása” gombjával nyitjuk meg, akkor az itt előre kijelölődik.',
     'SeparationOfDutiesNote' => 'Feladatok szétválasztása – a jóváhagyó nem lehet egyben a tesztelő is.',
     'CommonTestEditScopeHint' => 'A változások mindenhol érvényesek, ahol ezt a közös tesztet használják.',
     'Mode' => 'Mód',
@@ -3569,7 +3569,7 @@ $lang = array(
     'ShowAllTests' => 'Minden teszt',
     'ShowActiveTests' => 'Aktív tesztek',
     'ShowRetiredTests' => 'Kivont tesztek',
-    'UntestedControls' => 'Nem tesztelt vezérlők',
+    'UntestedControls' => 'Nem tesztelt kontrollok',
     'OverdueByXDays' => 'Lejárt · {n} nap',
     'OverdueByOneDay' => 'Lejárt · 1 nap',
     'DueInXDays' => 'Esedékes {n} nap múlva',
@@ -3583,20 +3583,20 @@ $lang = array(
     'DueStatus' => 'Esedékesség állapota',
     'AllResults' => 'Minden eredmény',
     // Remove a test from one control (Define Tests grid unlink row action)
-    'RemoveFromThisControl' => 'Eltávolítás erről a vezérlőről',
-    'RemoveTestFromControl' => 'Teszt eltávolítása a kontrollcsoportból',
+    'RemoveFromThisControl' => 'Eltávolítás erről a kontrollról',
+    'RemoveTestFromControl' => 'Teszt eltávolítása a kontrollból',
     'RemoveTestFromControlConfirm' => 'Eltávolítod a "{test_name}"-t a {control_name}-ból?',
-    'RemoveTestFromControlStays' => 'A teszt a {n} többi vezérlőelemén marad. Semmi sem törlődik.',
+    'RemoveTestFromControlStays' => 'A teszt a {n} többi kontrollon marad. Semmi sem törlődik.',
     'RemoveTestFromControlStaysOne' => 'A teszt az 1 másik kontrollon marad. Semmi sem törlődik.',
     'CannotRemoveTestsOnlyControl' => 'Egy tesztnek legalább egy vezérlőhöz kell tartoznia. Ehelyett vonultassa vissza vagy törölje a tesztet.',
-    'TestRemovedFromControl' => 'A tesztet eltávolították a kontrollcsoportból.',
+    'TestRemovedFromControl' => 'A tesztet eltávolították a kontrollból.',
     'CouldNotRemoveTestFromControl' => 'A tesztet nem lehetett eltávolítani a kontrollból.',
-    'TestRemovedFromControlAuditLogMessage' => 'A(z) „{$test_name}” tesztet (ID: {$test_id}) a „{$user} ” felhasználó eltávolította a(z) „ kontroll” csoportból (ID: {$control_id}).',
-    'DeleteTestUsedByNControls' => 'A {n} vezérlőelemek használják, és mindegyikről el lesz távolítva.',
-    'BulkDeleteSharedTestsNote' => 'Ezek közül {n} más vezérlőelemek által használt, és azokból is eltávolításra kerül.',
+    'TestRemovedFromControlAuditLogMessage' => 'A(z) „{$test_name}” tesztet (ID: {$test_id}) a(z) „{$user}” felhasználó eltávolította a kontrollból (ID: {$control_id}).',
+    'DeleteTestUsedByNControls' => '{n} kontroll használja, és mindegyikről el lesz távolítva.',
+    'BulkDeleteSharedTestsNote' => 'Ezek közül {n} más kontrollok által használt, és azokból is eltávolításra kerül.',
     'BulkRetireSharedTestsNote' => 'Ezek közül {n} elemet más vezérlők használnak, és ott is kivonásra kerülnek.',
     'BulkDeleteOneSharedTestNote' => 'Ezek közül az egyiket más vezérlők használják, és azokból is eltávolításra kerül.',
-    'BulkRetireOneSharedTestNote' => 'Ezek közül az egyiket más vezérlők használják, és ott is kivezetésre kerül.',
+    'BulkRetireOneSharedTestNote' => 'Ezek közül az egyiket más kontrollok használják, és ott is kivezetésre kerül.',
     'CouldNotLoadTest' => 'Nem sikerült betölteni ezt a tesztet.',
     'Expand' => 'Kibontás',
     'SearchMappings' => 'Keretrendszerek és referenciák keresése',
@@ -3604,16 +3604,16 @@ $lang = array(
     'Insights' => 'Betekintések',
     'ShowInsights' => 'A betekintési csempék megjelenítése',
     'HideInsights' => 'Az elemzési csempék összecsukása egy összefoglaló sorrá',
-    'ChooseControls' => 'Vezérlők kiválasztása',
+    'ChooseControls' => 'Kontrollok kiválasztása',
     'UseTheseControls' => 'Használja ezeket a vezérlőket',
     'SearchControlsPlaceholder' => 'Keresés szám vagy név alapján',
     'PickerKeyboardHint' => 'Fel/le mozgatáshoz, Enter kijelöléshez, Esc visszavonáshoz',
     'NoControlsMatchFilters' => 'Nincs találat. Szélesítse ki a bal oldali lépést, vagy törölje a keresést.',
     'NoControlsSelectedYet' => 'Még semmi sincs kiválasztva.',
-    'AllControls' => 'Minden vezérlőelem',
+    'AllControls' => 'Minden kontroll',
     'AddOrRemoveControls' => 'Vezérlők hozzáadása vagy eltávolítása…',
     'LastTested' => 'Utolsó tesztelés',
-    'LastTestDateAnchorHint' => 'Horgonyok intervallum ütemezése (ez a dátum plusz a gyakoriság). Miután a teszt rögzítette az eredményeket, a rács a legújabb eredmény dátumát mutatja.',
+    'LastTestDateAnchorHint' => 'Rögzíti az intervallumütemezés kiindulópontját (ez a dátum plusz a gyakoriság). Miután a teszt rögzítette az eredményeket, a rács a legújabb eredmény dátumát mutatja.',
     'Filters' => 'Szűrők',
     'ShowFilters' => 'Szűrők megjelenítése',
     'HideFilters' => 'Szűrők elrejtése',
@@ -3654,11 +3654,11 @@ $lang = array(
     'AICapControlTestGenerationDesc' => 'Ellenőrzésre tervezi a kontrollteszteket, felhasználva a kontroll keretrendszer-leképezését, a meglévő teszteket és az önértékelés eredményeit – semmi sem jön létre, amíg Ön jóvá nem hagyja.',
     'AICapSurfacedControlTestGeneration' => 'Megfelelőség – Tesztek meghatározása',
     'AIControlTestGenUnavailable' => 'SZOLGÁLTATÁS NEM ELÉRHETŐ: Egy rendszergazdának engedélyeznie kell ezt a funkciót a mesterséges intelligencia beállításaiban.',
-    'AIControlTestGenInvalidId' => 'HIBÁS KÉRÉS: Pozitív vezérlőazonosító szükséges.',
-    'AIControlTestGenNotFound' => 'NOT FOUND: A megadott vezérlő nem található.',
+    'AIControlTestGenInvalidId' => 'HIBÁS KÉRÉS: Pozitív kontrollazonosító szükséges.',
+    'AIControlTestGenNotFound' => 'NEM TALÁLHATÓ: A megadott kontroll nem található.',
     'AIControlTestGenConflict' => 'ÜTKÖZÉS: A generálás már várólistára került ehhez a vezérlőhöz.',
-    'AIControlTestGenQueued' => 'ELFOGADVA: A vezérlőteszt generálása várólistára került.',
-    'AIControlTestGenFailed' => 'BELSŐ SZERVERHIBA: Nem sikerült a várólista-vezérlő teszt generálása.',
+    'AIControlTestGenQueued' => 'ELFOGADVA: A kontrollteszt generálása várólistára került.',
+    'AIControlTestGenFailed' => 'BELSŐ SZERVERHIBA: Nem sikerült a kontrollteszt generálását sorba állítani.',
     'AIControlTestGenCheckFailed' => 'HIBA: Nem sikerült ellenőrizni a vezérlőt a sorba állítás előtt.',
     'GenerateTestsWithAI' => 'Tesztek generálása mesterséges intelligenciával',
     'ShowAiSuggestedTests' => 'MI által javasolt tesztek',
@@ -3668,7 +3668,7 @@ $lang = array(
     'TestCreatedFromSuggestion' => 'Teszt létrehozva a javaslat alapján.',
     'SuggestionDismissed' => 'Javaslat elvetve.',
     'TestGenerationQueued' => 'A tesztgenerálás várólistára került.',
-    'Generating' => '… generálása',
+    'Generating' => 'Generálás…',
     'SuggestionDismissFailed' => 'A teszt létrejött, de a hozzá tartozó mesterséges intelligencia általi javaslatot nem lehetett elvetni. Ha továbbra is fennáll, vesse el manuálisan.',
     'AICtxAuditorBig4' => 'Nagy 4 (külső)',
     'AICtxAuditorBoutique' => 'Butik / regionális (külső)',
@@ -3731,7 +3731,7 @@ $lang = array(
     'FilterEntitiesPlaceholder' => 'Szűrő…',
     'NoMatchingEntities' => 'Egyik entitás sem felel meg a szűrőnek.',
     'LoadMore' => 'Továbbiak betöltése',
-    'Loading' => '… betöltése',
+    'Loading' => 'Betöltés…',
     'CouldNotLoadEntityCounts' => 'Nem sikerült betölteni az entitások számát.',
     'CouldNotLoadEntities' => 'Nem sikerült betölteni az entitásokat.',
     'ClearGraph' => 'Grafikon törlése',
@@ -3756,8 +3756,8 @@ $lang = array(
     // The token form credits the contact; an API caller is an authenticated
     // SimpleRisk user acting on that contact's questionnaire, so both the
     // contact and the acting user are named.
-    'QuestionnaireCompletedAuditLogViaApi' => 'Questionnaire "{$questionnaire_name}" for contact "{$contact_name}" was completed via the API by user "{$user_name}".',
-    'QuestionnaireDraftAuditLogViaApi' => 'A(z) „{$questionnaire_name}” típusú kérdőívet a(z) „{$contact_name}” címre a(z) „{$user_name} ” felhasználó API-n keresztül vázlatként mentette.',
+    'QuestionnaireCompletedAuditLogViaApi' => 'A(z) "{$questionnaire_name}" kérdőívet a(z) "{$contact_name}" kapcsolattartóhoz az API-n keresztül töltötte ki a(z) "{$user_name}" felhasználó.',
+    'QuestionnaireDraftAuditLogViaApi' => 'A(z) „{$questionnaire_name}” kérdőívet a(z) „{$contact_name}” kapcsolattartó számára a(z) „{$user_name}” felhasználó API-n keresztül vázlatként mentette.',
     // Bad-input response for the questionnaire risk-list endpoints, which
     // previously reported a malformed questionnaire_id as a permission denial.
     // Mirrors the existing 'MissingOrInvalidTrackingID'.
@@ -3867,8 +3867,8 @@ $lang = array(
     // reader to guess unfavourably.
     'SoaLegendTitle' => 'Hogyan kell olvasni ezt a kijelentést',
     'SoaLegendYes' => 'Az ehhez a vezérlőhöz definiált összes teszt sikeresen lefutott az utolsó futtatáskor.',
-    'SoaLegendPartial' => 'A kontrollcsoport tesztjei eltérőek: legalább egy sikeres volt, és legalább egy sikertelen, vagy nem hozott eredményt.',
-    'SoaLegendNo' => 'A vezérlő egyetlen tesztje sem sikerült a legutóbbi futtatásakor, és legalább egy sikertelen volt.',
+    'SoaLegendPartial' => 'A kontroll tesztjei eltérőek: legalább egy sikeres volt, és legalább egy sikertelen, vagy nem hozott eredményt.',
+    'SoaLegendNo' => 'A kontroll egyetlen tesztje sem sikerült a legutóbbi futtatásakor, és legalább egy sikertelen volt.',
     // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
     // and the labels alone do not quite carry that -- so the legend spells it
     // out. This is the distinction the whole six-state set exists for.
@@ -3877,7 +3877,7 @@ $lang = array(
     'SoaLegendNotApplicable' => 'A vezérlés ki van zárva a keretrendszer hatóköréből, így nincs megvalósítási állapota.',
     // The one most in need of explaining: with nothing to define it, this reads
     // as an admission about the control rather than as what it is.
-    'SoaLegendUnknown' => 'A SimpleRisk nem tudta címkézni a rögzített állapotot, ezért a megvalósítást itt nem mutatjuk be. Ez egy szoftverhiba, és semmit sem mond a vezérlésről – sem azt, hogy működik, sem azt, hogy nem.',
+    'SoaLegendUnknown' => 'A SimpleRisk nem tudta címkézni a rögzített állapotot, ezért a megvalósítást itt nem mutatjuk be. Ez egy szoftverhiba, és semmit sem mond a kontrollról – sem azt, hogy működik, sem azt, hogy nem.',
     'SoaLegendOverdue' => 'A bemutatott eredmény továbbra is érvényes, de a mögötte álló tesztek közül legalább az egyik már túl van a következő tesztdátumán. A bizonyítékok elavultak.',
     'SoaLegendNoEvidence' => 'Az ellenőrzés a hatáskörébe tartozik, és semmi sem támasztja alá: nincs megerősített dokumentum, és nincs eredményt adó teszt.',
     'SoaLegendEvidenceNotExpected' => 'Nem várható bizonyíték, mivel a kontroll ki van zárva a hatókörből.',
@@ -4030,9 +4030,9 @@ $lang = array(
     // The Evidence column's four bullet glyphs. Load-bearing since the visible
     // result word was dropped from pass and fail bullets, and until now defined
     // nowhere at all.
-    'SoaLegendEvidencePass' => 'A vezérlőelem tesztje a legutóbbi futtatásakor sikeres eredményt rögzített. A mellette lévő dátum a futtatás dátumát jelzi.',
-    'SoaLegendEvidenceFail' => 'A vezérlőegység tesztje a legutóbbi futtatásakor hibát jelzett. Az R. függelék tartalmazza a kezelési tervet, amennyiben létezik ilyen.',
-    'SoaLegendEvidenceInconclusive' => 'A vezérlőelem tesztje lefutott, de nem hozott eredményt. Ugyanezt a jelölést használják egy olyan eredményhez, amelyet ez a dokumentum nem ismer fel, és ebben az esetben maga az eredmény is mellette jelenik meg.',
+    'SoaLegendEvidencePass' => 'Ennek a kontrollnak a tesztje a legutóbbi futtatásakor sikeres eredményt rögzített. A mellette lévő dátum a futtatás dátumát jelzi.',
+    'SoaLegendEvidenceFail' => 'A kontroll tesztje a legutóbbi futtatásakor hibát jelzett. Az R függelék tartalmazza a kezelési tervet, amennyiben létezik ilyen.',
+    'SoaLegendEvidenceInconclusive' => 'A kontroll tesztje lefutott, de nem hozott eredményt. Ugyanezt a jelölést használják egy olyan eredményhez, amelyet ez a dokumentum nem ismer fel, és ebben az esetben maga az eredmény is mellette jelenik meg.',
     // The TERM beside the § glyph. Not a document type -- the four types
     // (Policy, Standard, Procedure, Guideline) are printed per item; this names
     // the CATEGORY of evidence a document is.
@@ -4065,20 +4065,20 @@ $lang = array(
     'OwnershipAndMaturity' => 'Tulajdonjog és érettség',
     'MappingsAndGuidance' => 'Térképezések és útmutatás',
     'DeleteFrameworkTitle' => 'Törölje a(z) \'{$name} \' keretrendszert?',
-    'DeleteControlTitle' => 'Törölje a(z) \'{$name} \' vezérlőt?',
-    'DeleteControlsTitle' => 'Törölni a {$n} vezérlőket?',
+    'DeleteControlTitle' => 'Törölje a(z) \'{$name}\' kontrollt?',
+    'DeleteControlsTitle' => 'Törli a(z) {$n} kontrollt?',
     'DeleteCannotBeUndone' => 'Ez nem vonható vissza.',
-    'DeleteFrameworkConsequence' => 'Ez eltávolítja a keretrendszert és az összes vezérlőleképezését.',
-    'DeleteControlConsequence' => 'Ez eltávolítja a vezérlőt minden olyan keretrendszerből, amelyhez leképezték.',
-    'DeleteControlsConsequence' => 'Ez eltávolítja az összes kiválasztott vezérlőt minden olyan keretrendszerből, amelyhez leképezték.',
+    'DeleteFrameworkConsequence' => 'Ez eltávolítja a keretrendszert és az összes kontrollleképezését.',
+    'DeleteControlConsequence' => 'Ez eltávolítja a kontrollt minden olyan keretrendszerből, amelyhez hozzá van rendelve.',
+    'DeleteControlsConsequence' => 'Ez eltávolítja az összes kiválasztott kontrollt minden olyan keretrendszerből, amelyhez leképezték.',
     // Task 9: empty states (design-system.md §10) -- the four intents on
     // Define Control Frameworks. Reuses existing keys where the copy already
     // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
     // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
     // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
     // with no existing match are added below.
-    'NoControlsMatch' => 'Egyik vezérlő sem felel meg a szűrőknek',
-    'CouldNotLoadControls' => 'Nem sikerült betölteni a vezérlőket',
+    'NoControlsMatch' => 'Egyik kontroll sem felel meg a szűrőknek',
+    'CouldNotLoadControls' => 'Nem sikerült betölteni a kontrollokat',
     'ControlsYouAddWillAppearHere' => 'A hozzáadott vezérlők itt jelennek meg.',
     'NoFrameworksYet' => 'Még nincsenek keretrendszerek',
     'FrameworksYouAddWillAppearHere' => 'A hozzáadott vagy importált keretrendszerek itt jelennek meg.',
@@ -4139,7 +4139,7 @@ $lang = array(
     // the same labels the governance dashboard's maturity-gap widgets already
     // carry -- and the column chip renders those same three strings, so the
     // filter and the cell can never read differently.
-    'AnyMaturity' => 'Bármely lejárat',
+    'AnyMaturity' => 'Bármely érettségi szint',
     // Task 46: accessible name for the control table's pager landmark
     // (governance-frameworks.js's renderPager()). The pager's own buttons
     // reuse the existing Previous/Next keys Define Tests' pager already
@@ -4220,9 +4220,9 @@ $lang = array(
     // while "Select all N" escalates to the whole filtered result set -- the two
     // genuinely differ once the table pages, and a note that blurred them would
     // let the user write 1,535 decisions believing they had written 25.
-    'ApplicabilityScopeNote' => 'Ez a döntés csak a "{$framework}" keretrendszeren belül érvényes. Ugyanez a vezérlőelem egy másik keretrendszerben is alkalmazható maradhat.',
-    'ApplicabilityAppliesToSelected' => 'Az ezen az oldalon kiválasztott {$n} vezérlőelem(ek)hez lesz rögzítve.',
-    'ApplicabilityAppliesToAllFiltered' => 'Ez az összes {$n} vezérlőelemhez lesz rögzítve, amelyek megfelelnek az aktuális szűrőknek, beleértve a többi oldalon találhatóakat is.',
+    'ApplicabilityScopeNote' => 'Ez a döntés csak a "{$framework}" keretrendszeren belül érvényes. Ugyanez a kontroll egy másik keretrendszerben is alkalmazható maradhat.',
+    'ApplicabilityAppliesToSelected' => 'Az ezen az oldalon kiválasztott {$n} kontrollhoz lesz rögzítve.',
+    'ApplicabilityAppliesToAllFiltered' => 'Ez az összes {$n} kontrollhoz lesz rögzítve, amelyek megfelelnek az aktuális szűrőknek, beleértve a többi oldalon találhatóakat is.',
     // Per-state hints under the segmented control. The "applicable" one is the
     // load-bearing sentence of the whole modal, and the SoA audit-readiness work
     // rewrote it: an applicable control MAY now carry its own reasons and
@@ -4235,13 +4235,13 @@ $lang = array(
     'ApplicabilityNotApplicableHint' => 'Kontroll kizárása a keretrendszer hatóköréből. Indoklás és írásos indoklás is szükséges.',
     'ApplicabilityInheritedHint' => 'Valaki más végzi el ezt az ellenőrzést a nevedben. Nevezd meg, és mondd el, mit csinál.',
     'ApplicabilityNarrativeHint' => 'Megjelenik az Alkalmazhatósági Nyilatkozatban. Írja le, hogy mire lenne szüksége egy könyvvizsgálónak a döntés elfogadásához.',
-    'ApplicabilityProviderHint' => 'Az irányítást végző szervezet: felhőszolgáltató, felügyelt szolgáltatás, anyavállalat.',
+    'ApplicabilityProviderHint' => 'A kontrollt végző szervezet: felhőszolgáltató, felügyelt szolgáltatás, anyavállalat.',
     'ChooseAReason' => 'Válasszon egy okot',
     'ApplicabilityNoReason' => 'Nincs ok',
     // Result toasts. Both interpolate a COUNT taken from the API response and
     // nothing else -- no submitted text is ever reflected into a toast, which
     // toastr renders as HTML.
-    'ApplicabilitySetResult' => 'Alkalmazhatóság frissítve a {$n} vezérlő(k)re.',
+    'ApplicabilitySetResult' => 'Alkalmazhatóság frissítve {$n} kontroll esetében.',
     'ApplicabilityClearResult' => 'Az alkalmazhatóság visszaállítva az {$n} vezérlő(k)re vonatkozó érvényes értékre.',
     // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
     // final either way the delete engine implements it: a control with test
@@ -4258,11 +4258,11 @@ $lang = array(
     // stop reading. Every {$...} is a count from the API response; no user
     // text is ever interpolated, which matters because toastr renders HTML.
     'DeleteControlsPreviewChecking' => 'Ellenőrzése, hogy mi kerül törlésre...',
-    'DeleteControlsPreviewSplit' => '{$n} vezérlőelem törlődik. Ez nem vonható vissza. {$m} teszteredményei megmaradnak az audit előzmények számára.',
-    'DeleteControlsPreviewKeptOnly' => 'Minden {$n} vezérlőelem törlődik. Ez nem vonható vissza. A teszteredmények megmaradnak az audit előzményeihez.',
-    'DeleteControlsPreviewRemovedOnly' => '{$n} vezérlőelem(ek) törlésre kerülnek. Ez a művelet nem vonható vissza.',
-    'DeleteControlsPreviewNone' => 'Nincs mit törölni: a kiválasztott vezérlő(k) már nem léteznek.',
-    'ControlsDeletedResult' => '{$n} vezérlő(k) törölve.',
+    'DeleteControlsPreviewSplit' => '{$n} kontroll törlődik. Ez nem vonható vissza. {$m} teszteredményei megmaradnak az audit előzmények számára.',
+    'DeleteControlsPreviewKeptOnly' => 'Mind a(z) {$n} kontroll törlődik. Ez nem vonható vissza. A teszteredmények megmaradnak az audit előzményeihez.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} kontroll törlésre kerül. Ez a művelet nem vonható vissza.',
+    'DeleteControlsPreviewNone' => 'Nincs mit törölni: a kiválasztott kontroll(ok) már nem léteznek.',
+    'ControlsDeletedResult' => '{$n} kontroll törölve.',
 
     // The Add/Edit framework modal's Status field. The label reuses the existing
     // 'Status' key -- the same word the rail's Active/Inactive/All filter already
@@ -4271,7 +4271,7 @@ $lang = array(
     // to retire a framework (unlike Delete, which cannot be undone), and that the
     // change cascades through the hierarchy, which is what update_framework_status()
     // has always done and is genuinely surprising when a parent is deactivated.
-    'FrameworkStatusHint' => 'Az inaktív keretrendszerek megtartják az összes vezérlőjüket és leképezésüket, de rejtve maradnak az alapértelmezett keretrendszer-listában, és nem jelennek meg az irányítási irányítópulton. Egy keretrendszer inaktiválása az alatta lévő összes keretrendszert is deaktiválja; egy aktiválása a szülőkereteket is aktiválja.',
+    'FrameworkStatusHint' => 'Az inaktív keretrendszerek megtartják az összes kontrolljukat és leképezésüket, de rejtve maradnak az alapértelmezett keretrendszer-listában, és nem jelennek meg az irányítási irányítópulton. Egy keretrendszer inaktiválása az alatta lévő összes keretrendszert is deaktiválja; egy aktiválása a szülőkereteket is aktiválja.',
 
     // Task 60: the same #applicability--set modal, opened from ONE control's row
     // action instead of the selection bulk bar. The button's own label reuses
@@ -4292,7 +4292,7 @@ $lang = array(
     // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
     // when there is a competing selection to reassure anyone about.
     'SetApplicabilityForControl' => 'Alkalmazhatóság beállítása: {$name}',
-    'ApplicabilityAppliesToControl' => 'Csak a "{$name}" karakterrel lesz rögzítve.',
+    'ApplicabilityAppliesToControl' => 'Csak a "{$name}" elemhez lesz rögzítve.',
 
     // Task 17: the Statement of Applicability report itself
     // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
@@ -4351,7 +4351,7 @@ $lang = array(
     // identical rows of boilerplate is entitled to ask whose risk assessment it
     // refers to.
     'SoaMissingFieldsTitle' => 'Ennek a nyilatkozatnak hiányoznak a borító részletei',
-    'SoaMissingScopeStatement' => 'Ehhez a keretrendszerhez nem került rögzítésre hatókör-meghatározás. A megbízhatósági nyilatkozatnak (SOA) meg kell jelölnie azt a hatókört, amelyre vonatkozik.',
+    'SoaMissingScopeStatement' => 'Ehhez a keretrendszerhez nem került rögzítésre hatókör-meghatározás. Az alkalmazhatósági nyilatkozatnak (SoA) meg kell jelölnie azt a hatókört, amelyre vonatkozik.',
     'SoaMissingInclusionJustification' => 'Nincs rögzített alapértelmezett belefoglalási indoklás. Az alkalmazható, kockázattal nem rendelkező kontrollok egy általános állításra hivatkoznak a sajátod helyett.',
     'SoaEditFrameworkToAdd' => 'Add hozzá őket a keretrendszerhez',
 
@@ -4383,8 +4383,8 @@ $lang = array(
 
     // A framework with no controls mapped into it. Not an error -- it is a real
     // and recoverable state, and saying so beats an empty table.
-    'SoaNoControls' => 'Ennek a keretrendszernek nincsenek vezérlői',
-    'SoaNoControlsHint' => 'A vezérlőelemek keretrendszerbe való leképezése és az alkalmazhatósági nyilatkozat felsorolja azokat.',
+    'SoaNoControls' => 'Ennek a keretrendszernek nincsenek kontrolljai',
+    'SoaNoControlsHint' => 'Képezze le a kontrollokat a keretrendszerbe, és az alkalmazhatósági nyilatkozat fel fogja sorolni azokat.',
 
     // The second half of the statement-of-applicability launcher's affordance
     // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
@@ -4403,7 +4403,7 @@ $lang = array(
     // Placeholder/help text under that field, and the reason it is worth
     // filling in: without it the Statement of Applicability has nothing to
     // print but the source catalogue's name for its own control.
-    'ReferenceSubjectHint' => "A keretrendszer saját címe ehhez a vezérlőhöz.",
+    'ReferenceSubjectHint' => "A keretrendszer saját címe ehhez a kontrollhoz.",
 
     // Task 63: the row-scoped population sentence in the Set applicability
     // modal, in the one situation where the plain
@@ -4416,7 +4416,7 @@ $lang = array(
     // about to overwrite it, and {$n} is the count of the OTHER selected
     // controls -- the target is excluded, because it is very often ticked too
     // and a promise that included it would be false.
-    'ApplicabilityAppliesToControlNotSelection' => 'Csak a "{$name}" elemhez lesz rögzítve — a kiválasztott {$n} vezérlő(ke)t ez nem érinti.',
+    'ApplicabilityAppliesToControlNotSelection' => 'Csak a "{$name}" elemhez lesz rögzítve — a kiválasztott {$n} kontroll(ok)t ez nem érinti.',
 
     // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
     // sentence ('GenerateStatementOfApplicability' above) stays as the button's
@@ -4470,14 +4470,14 @@ $lang = array(
     // someone who cannot take it.
     'HowDoYouWantToAddAFramework' => 'Hogyan szeretnél keretrendszert hozzáadni?',
     'CreateFrameworkManually' => 'Hozzon létre egyet manuálisan',
-    'CreateFrameworkManuallyHint' => 'Nevezd el a keretrendszert magad, majd add hozzá vagy képezd le a vezérlőit.',
+    'CreateFrameworkManuallyHint' => 'Nevezd el a keretrendszert magad, majd add hozzá vagy képezd le a kontrolljait.',
     // Named for the framework rather than for its vendor. The hint was reworded
     // at the same time: it used to end "...load its Secure Controls Framework
     // controls", which read as a stutter once the label carried those words.
     'GetFrameworkFromScf' => 'Szerezzen be egyet a Secure Controls Framework-től',
     'GetFrameworkFromScfHint' => 'Válasszon ki egy közzétett keretrendszert, és töltse be a hozzárendelt vezérlőit egyetlen lépésben.',
     'ImportFrameworkFromCatalog' => 'Importáljon egyet',
-    'ImportFrameworkFromCatalogHint' => 'Telepítsen egy keretrendszert és annak vezérlőit a SimpleRisk tartalomkatalógusból.',
+    'ImportFrameworkFromCatalogHint' => 'Telepítsen egy keretrendszert és annak kontrolljait a SimpleRisk tartalomkatalógusból.',
 
     // The framework acquisition chooser's third route, which now offers the
     // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
@@ -4486,7 +4486,7 @@ $lang = array(
     // customer maintaining a custom lang.<locale>.php still reconciles by tail
     // diff.
     'ImportFrameworkFromSpreadsheet' => 'Importáljon egyet egy táblázatból',
-    'ImportFrameworkFromSpreadsheetHint' => 'Tölts fel egy táblázatot a vezérlőkről, amely elnevezi a keretrendszert, és mindkettő létrejön.',
+    'ImportFrameworkFromSpreadsheetHint' => 'Tölts fel egy táblázatot a kontrollokról, amely elnevezi a keretrendszert, és mindkettő létrejön.',
 
     // The Define Control Frameworks rail's second synthetic scope: the controls
     // mapped to no framework at all. Its first, "All controls", reuses the
@@ -4506,23 +4506,23 @@ $lang = array(
     // owns -- naming the ALLOWED values rather than echoing the rejected one is
     // deliberate (it is both safe and more useful than repeating a typo).
     'ApplicabilityErrUnknownState' => 'Ismeretlen alkalmazhatósági állapot. A következők egyikét várta a rendszer: {$states}.',
-    'ApplicabilityErrNarrativeRequired' => 'A \'{$state} \' karakterhez narratíva szükséges.',
+    'ApplicabilityErrNarrativeRequired' => 'A \'{$state}\' esetén narratíva szükséges.',
     'ApplicabilityErrNarrativeTooLong' => 'A narratíva hosszabb, mint {$bytes} bájt.',
-    'ApplicabilityErrReasonRequired' => 'Kizárási ok megadása szükséges egy vezérlőelem nem alkalmazhatóként való megjelöléséhez.',
+    'ApplicabilityErrReasonRequired' => 'Kizárási ok megadása szükséges egy kontroll nem alkalmazhatóként való megjelöléséhez.',
     'ApplicabilityErrProviderRequired' => 'Egy szolgáltatónak örököltként kell megjelölnie egy vezérlőt.',
     'ApplicabilityErrProviderTooLong' => 'A szolgáltató neve hosszabb, mint {$bytes} bájt.',
     'ApplicabilityErrReasonsNotFound' => 'Ezek az alkalmazhatósági okok nem léteznek: {$ids}.',
     'ApplicabilityErrReasonsNotOffered' => 'Ezek az alkalmazhatósági okok nem állnak rendelkezésre ehhez az állapothoz: {$ids}.',
     'ApplicabilityErrFrameworkNotFound' => 'A {$framework} keretrendszer nem létezik.',
-    'ApplicabilityErrControlsNotFound' => 'Ezek a vezérlőazonosítók nem léteznek: {$ids}.',
+    'ApplicabilityErrControlsNotFound' => 'Ezek a kontrollazonosítók nem léteznek: {$ids}.',
     // Controls/Risks import result messages (validation gate, individual bad-row
     // alerts, and the batched submitted/created/updated summaries)
-    'ControlIdOrShortNameFieldRequired' => 'Vagy a Vezérlőazonosító, vagy a Vezérlő rövid neve mezőt kell leképezni -- egy sor nem azonosítható ezek nélkül.',
+    'ControlIdOrShortNameFieldRequired' => 'Vagy a Kontrollazonosító, vagy a Kontroll rövid neve mezőt kell leképezni -- egy sor nem azonosítható ezek nélkül.',
     'RiskImportSubjectNull' => 'Kockázatazonosító {$risk_id}: Nem frissült, mert a Tárgy mező üres vagy hiányzik.',
     'RiskImportSummary' => 'Benyújtott {$submitted} kockázat(ok) és frissített {$updated} kockázat(ok).',
-    'ControlImportSummary' => 'Létrehoztam {$created} vezérlő(ke)t és frissítettem {$updated} vezérlő(ke)t.',
+    'ControlImportSummary' => 'Létrehozva {$created} kontroll, frissítve {$updated} kontroll.',
     'ImportAdditionalIssuesSuppressed' => '{$count} további sor(ok)ban olyan problémák merültek fel, amelyek itt egyenként nem láthatók.',
-    'EncryptionPipelineStalledTask' => 'Egy titkosítási folyamat ( #{$id}, {$type}feladat) leálltnak tűnik — szokatlanul hosszú ideje {$status} nincs folyamatban. Ez általában azt jelenti, hogy a háttérben futó várólista-feldolgozó nem fut; ellenőrizze, hogy ütemezve van-e, majd próbálja újra, miután feldolgozta a leállt feladatot.',
+    'EncryptionPipelineStalledTask' => 'Egy titkosítási folyamat (feladat #{$id}, {$type}) leállni látszik — szokatlanul hosszú ideje {$status} állapotban van, előrehaladás nélkül. Ez általában azt jelenti, hogy a háttérben futó várólista-feldolgozó nem fut; ellenőrizze, hogy ütemezve van-e, majd próbálja újra, miután feldolgozta a leállt feladatot.',
     'EncryptionPipelineStalledState' => 'Egy titkosítási folyamat leálltnak tűnik – szokatlanul hosszú ideje folyamatban lévőként van megjelölve, és nincs megfelelő háttérfeladat, amire mutathatna. Ez általában azt jelenti, hogy a várólista-feldolgozó nem fut, vagy egy korábbi folyamat fejeződött be anélkül, hogy ezt megfelelően frissítette volna. Ellenőrizze a hibakeresési naplót, mielőtt újra próbálkozna.',
     // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
     // of the operations that would spoil the demo for the next visitor
@@ -4537,7 +4537,7 @@ $lang = array(
     // not put the original back
     // Shown when the database was brought up to date but the application files
     // could not be replaced, so the instance has NOT moved to the new release
-    'UpdateAppFailed' => 'Az alkalmazásfájlok nem lettek frissítve, így ez a példány továbbra is az előző kiadását futtatja. Ellenőrizze a SimpleRisk naplóját az ok okáért, majd futtassa újra a frissítést.',
+    'UpdateAppFailed' => 'Az alkalmazásfájlok nem lettek frissítve, így ez a példány továbbra is az előző kiadását futtatja. Az ok kiderítéséhez ellenőrizze a SimpleRisk naplóját, majd futtassa újra a frissítést.',
     // The one-click upgrade progress screen
     'UpgradeInProgress' => 'Folyamatban van',
     'UpgradeStepNotNeeded' => 'Nem szükséges',
@@ -4587,7 +4587,7 @@ $lang = array(
     'UpgradeCorrectionUnknownVersionFinding' => 'Az adatbázis a következő verziót jelenti: \'{$version}\', amely nem nevez meg SimpleRisk kiadást. A frissítés nem választhat kiindulópontot ebből.',
     'UpgradeCorrectionUnknownVersionGuidance' => 'Állítsd a db_version beállítást arra a kiadásra, amelynek a sémája az adatbázis ténylegesen megtalálható, majd futtasd újra a frissítést: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Ha az érték egy helyőrző, például 2026XXXX-001, akkor a helyes érték szinte mindig a frissítés futtatása előtt telepített legújabb valódi kiadás.',
     'UpgradeCorrectionLegacySessionsTitle' => 'A munkamenetek táblája nem éli túl a frissítés karakterkészlet-konverzióját.',
-    'UpgradeCorrectionLegacySessionsFinding' => 'A `sessions`.`id` változó VARCHAR({$width}) egy MyISAM táblában. Ha utf8mb4-re konvertálnánk (ami a 20230106-001-es és újabb kiadásokban már lehetséges), az meghaladná a MyISAM 1000 bájtos indexkorlátját, és a frissítés sikertelen lenne.',
+    'UpgradeCorrectionLegacySessionsFinding' => 'A `sessions`.`id` VARCHAR({$width}) típusú egy MyISAM táblában. Az utf8mb4-re konvertálása, amelyet a 20230106-001-es és újabb kiadások elvégeznek, meghaladná a MyISAM 1000 bájtos indexkorlátját, és a frissítés sikertelen lenne.',
     'UpgradeCorrectionLegacySessionsGuidance' => 'Egy vagy több aktív munkamenet 128 karakternél hosszabb azonosítót használ. Az oszlop szűkítése most kijelentkeztetné ezeket a felhasználókat, ezért ezt a részt nem állítottuk be. Próbálja meg újra a frissítést, ha ezek a munkamenetek lejártak.',
     'UpgradeCorrectionApplied' => 'Javítva.',
     'UpgradeCorrectionFailed' => 'Ez a javítás nem alkalmazható. Az okot a SimpleRisk naplójában találja.',
@@ -4724,7 +4724,7 @@ $lang = array(
     'ApproveExceptionQuestion' => 'Jóváhagyja ezt a kivételt?',
     'ApproveExceptionConfirmBody' => 'Ez a(z) „{name}” értéket Jóváhagyva értékre állítja.',
     'UnapproveExceptionQuestion' => 'Visszavonja a kivétel jóváhagyását?',
-    'UnapproveExceptionConfirmBody' => 'Ez a(z) „{name}” értéket visszaállítja Füőben lévő állapotba.',
+    'UnapproveExceptionConfirmBody' => 'Ez a(z) „{name}” értéket visszaállítja Függőben lévő állapotba.',
     'ApproveSelectedExceptionsQuestion' => 'Jóváhagyja a {n} kiválasztott kivételt?',
     'ApproveSelectedExceptionsConfirmBody' => 'Ez jóváhagyja a {n} kiválasztott kivételt.',
     'SearchExceptionsPlaceholder' => 'Kivételek keresése...',
@@ -4738,7 +4738,7 @@ $lang = array(
     'ReviewCadence' => 'Kadencia áttekintése',
     'ExceptionDetails' => 'Kivétel részletei',
     'DescriptionJustification' => 'Leírás és indoklás',
-    'ChooseAControl' => 'Válasszon egy vezérlőt',
+    'ChooseAControl' => 'Válasszon egy kontrollt',
     'CantDeleteDocumentCategoryInUse' => 'Ez a dokumentumtípus nem törölhető, mert jelenleg vannak hozzá tartozó dokumentumok.',
     'ExceptionDoesNotExist' => 'Dokumentumkivétel nem létezik',
     'DocumentAuditTrailReport' => 'Dokumentumellenőrzési jelentés',
@@ -4766,7 +4766,7 @@ $lang = array(
     'AllDocuments' => 'Minden dokumentum',
     'AllUsers' => 'Minden felhasználó',
     'SearchAuditTrailPlaceholder' => 'Keresési napló',
-    'NoAuditLogEntries' => 'Még nincsenek naplóbejegyzések',
+    'NoAuditLogEntries' => 'Még nincsenek bejegyzések az auditnaplóban',
     'NoAuditLogEntriesBody' => 'Az ezen az oldalon található dokumentumokkal kapcsolatos tevékenységek itt jelennek meg.',
     'NoAuditLogEntriesMatchFilters' => 'Nincsenek a keresésnek megfelelő bejegyzések',
     'NoAuditLogEntriesMatchFiltersBody' => 'Próbáljon ki egy másik keresési kifejezést, dátumtartományt vagy szűrőt.',
@@ -4792,7 +4792,7 @@ $lang = array(
     'UnlockCustomizationLink' => 'Nézd meg, mit ad hozzá',
     'UnlockActivateCustomizationNote' => 'A Testreszabási extra telepítve van, de nincs bekapcsolva.',
     'UnlockActivateCustomizationLink' => 'Kapcsold be',
-    'ExceptionsOverdueForReview' => 'Felülvizsgálatra váró kivételek',
+    'ExceptionsOverdueForReview' => 'Felülvizsgálatra lejárt határidejű kivételek',
     'ExceptionsDueSoonForReview' => 'Hamarosan esedékes kivételek felülvizsgálata',
     'PendingApproval' => 'Jóváhagyás függőben',
     'AllExceptions' => 'Minden kivétel',
@@ -4804,7 +4804,7 @@ $lang = array(
     'AutomatedNotificationOfRisksSent' => 'A felül nem vizsgált és lejárt kockázatokról szóló automatikus értesítés elküldésre került.',
     'AutomatedNotificationOfAuditsSent' => 'Az auditokról szóló automatikus értesítés elküldve.',
     'AutomatedNotificationOfMitigationsSent' => 'Az enyhítésekről szóló automatikus értesítés elküldve.',
-    'AutomatedNotificationOfUnmitigatedRisksSent' => 'A nem mérsékelhető kockázatokról szóló automatikus értesítés elküldve.',
+    'AutomatedNotificationOfUnmitigatedRisksSent' => 'A nem mérsékelt kockázatokról szóló automatikus értesítés elküldve.',
     'AutomatedNotificationOfPolicyControlExceptionsSent' => 'A felül nem vizsgált és lejárt határidejű szabályzat- és ellenőrzési kivételekről szóló automatikus értesítés elküldve.',
     'AutomatedNotificationOfDocumentReviewsSent' => 'A dokumentum-ellenőrzésekről szóló automatikus értesítés elküldve.',
     'NoWorkflowsDefinedYet' => 'Még nincsenek definiált munkafolyamatok. Kattintson az Új munkafolyamat gombra egy létrehozásához.',
@@ -4967,6 +4967,669 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Nincs engedélye a kockázatok lezárására.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Kérjük, válaszoljon az összes kötelező kérdésre a felmérés kitöltése előtt.',
+    'AuditLog_ControlStatusAutoSynced' => 'A(z) "{$short_name}" kontroll állapota automatikusan "{$status_text}" értékre frissült a legutóbbi teszteredmény(ek) alapján.',
+    'EnableCSPHelp' => 'A tartalombiztonsági szabályzat (CSP) korlátozza a böngészőt, hogy csak a SimpleRisk-től tölthessen be szkripteket, stílusokat, képeket és betűtípusokat, és blokkolja az oldalkeretezést és a kereszt-eredeti űrlapok beküldését. Ez a legerősebb beépített védelem a webhelyek közötti szkriptelés ellen. Hagyja engedélyezve, kivéve, ha ütközik egy proxyval, böngészőbővítménnyel vagy harmadik féltől származó integrációval a környezetében.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Standard mezők',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Adminisztrátor',
+    'AccountDetails' => 'Fiókadatok',
+    'YourPermissions' => 'Az Ön engedélyei',
+    'RoleAndTeamsGrantAccess' => 'Mihez biztosít hozzáférést a szerepköre és a csapatai',
+    'AllGranted' => 'Minden megadva',
+    'PermissionsCountLabel' => '$count jogosultságok',
+    'ManagedByYourAdministrator' => 'Ezeket az adatokat az adminisztrátor kezeli. Lépjen kapcsolatba vele, ha bármi itt módosításra szorul.',
+    'MultiFactorAuthenticationHint' => 'Adjon hozzá egy második lépcsőt a bejelentkezéshez, hogy biztonságosabbá tegye fiókját.',
+    'ChangingPasswordSignsOutEverywhere' => 'A jelszó megváltoztatásával mindenhol máshol kijelentkezteti Önt.',
+    'APIKeyHint' => 'Saját szkriptek és integrációk hitelesítésére szolgál a SimpleRisk API-val szemben.',
+    'ResetDisplaySettingsHint' => 'Visszaállítja az egyéni oszlopkijelöléseket az alapértelmezett értékekre.',
+    'CardGeneral' => 'Általános',
+    'CardClassification' => 'Osztályozás',
+    'CardScoring' => 'Pontozás',
+    'CardAdditionalInformation' => 'További információk',
+    'CardCustomFields' => 'Egyéni mezők',
+    'CardCustomFieldsHint' => 'Ezeket a mezőket egy kártyára kell rendezni',
+    'LayoutEditorHint' => 'Húzzon egy mezőt egy másik kártyára az áthelyezéshez, húzzon egy kártyán belül az átrendezéshez vagy átméretezéshez, és húzással vagy átméretezéssel módosítsa a kártya pozícióját az oldalon.',
+    'ScoringNotYetAvailableInThisView' => 'A pontozási konfiguráció még nem érhető el ebben a nézetben.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Húzással átméretezhető',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} mező(k) nem férnek bele ebbe a kártyába. Méretezd át a kártyát, hogy láthatóak legyenek.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Mérséklési stratégia',
+    'CardMitigationSolution' => 'Mérséklő megoldás',
+    'CardMitigationControls' => 'Kockázatcsökkentő vezérlők',
+    'CardReview' => 'Felülvizsgálat',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Űrlap visszaállítása',
+    'SaveAndNew' => 'Mentés és új',
+    'SaveAndView' => 'Mentés és megtekintés',
+    'ResetFormConfirmTitle' => 'Elveti ezt a kockázati bejelentést?',
+    'ResetFormConfirmBody' => 'Minden megadott információ elveszik.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Az alapértelmezett elrendezés visszaállítása?',
+    'RestoreTemplateConfirmBodyRisk' => 'Ez visszaállítja a Részletek, Mérséklés és Felülvizsgálat lapokon található összes mezőt az alapértelmezett értékre ehhez a sabloncsoporthoz. A többi sabloncsoportot ez nem érinti.',
+    'RestoreTemplateConfirmBody' => 'Ez visszaállítja a sablon összes mezőjét az alapértelmezett értékekre, amelyek erre a sabloncsoportra vonatkoznak. A többi sabloncsoportot ez nem érinti.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Speciális metrikák',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Alap pontszámú kihasználhatósági mutatók',
+    'BaseScoreImpactMetrics' => 'Alappontszám hatásmutatói',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Hogyan lehet hozzáférni a sebezhetőséghez.\n• Helyi: helyi hozzáférést igényel, például konzolt vagy shell-t.\n• Szomszédos hálózat: a támadónak ugyanazon a fizikai vagy logikai hálózati szegmensen kell lennie.\n• Hálózat: távolról, hálózaton keresztül kihasználható, helyi vagy szomszédos hozzáférés nélkül.",
+    "AttackComplexityHelp" => "Mennyire összetett a támadás, miután a támadó hozzáfér a célponthoz.\n• Magas: speciális feltételeket igényel, amelyeket nehéz megvalósítani.\n• Közepes: bizonyos feltételeknek teljesülniük kell, de a kihasználás nem nehéz, ha egyszer teljesülnek.\n• Alacsony: nincsenek speciális feltételek.",
+    "AuthenticationHelp" => "Azon alkalmak száma, ahányszor a támadónak hitelesítenie kell magát a célpontnál a sérülékenység kihasználásához.\n• Többszörös: a hitelesítés kétszer vagy többször szükséges, még ugyanazokkal a hitelesítő adatokkal is.\n• Egyszeres: a hitelesítés egyszer szükséges.\n• Nincs: nincs szükség hitelesítésre.",
+    "ConfidentialityImpactHelp" => "A rendszer által feldolgozott adatok bizalmas jellegére gyakorolt hatás visszaélés esetén.\n• Nincs: nincs hatás.\n• Részleges: bizonyos információk nyilvánosságra hozatala, de a támadó nem ellenőrzi, hogy mi, vagy a veszteség korlátozott.\n• Teljes: a rendszeren található összes információ teljes nyilvánosságra hozatala.",
+    "IntegrityImpactHelp" => "A rendszer integritására gyakorolt hatás, ha a támadót kihasználják.\n• Nincs: nincs hatás.\n• Részleges: bizonyos adatok módosíthatók, de a támadó nem ellenőrzi, hogy mit, vagy a hatókör korlátozott.\n• Teljes: a rendszer integritásának teljes veszélyeztetése; a támadó bármilyen fájlt módosíthat.",
+    "AvailabilityImpactHelp" => "A rendszer rendelkezésre állására gyakorolt hatás kihasználás esetén.\n• Nincs: nincs hatás.\n• Részleges: csökkent teljesítmény vagy megszakadások a rendelkezésre állásban.\n• Teljes: az érintett erőforrás teljes leállítása.",
+    "RemediationLevelHelp" => "A sebezhetőségre elérhető javítási szint.\n• Hivatalos javítás: elérhető egy teljes gyártói megoldás.\n• Ideiglenes javítás: elérhető egy hivatalos, de ideiglenes javítás.\n• Megoldás: létezik egy nem hivatalos, nem gyártói megoldás.\n• Nem érhető el: nincs elérhető megoldás, vagy egyik sem alkalmazható.",
+    "ReportConfidenceHelp" => "A sebezhetőség létezésébe vetett bizalom mértéke és technikai részleteinek hitelessége.\n• Megerősítetlen: egyetlen, meg nem erősített forrásjelentés; az alapjául szolgáló probléma spekulatív.\n• Meg nem erősített: több független forrás is ugyanarról a viselkedésről számol be, de a kiváltó ok nincs megerősítve.\n• Megerősített: a gyártó elismerte a problémát, vagy azt forráskód- vagy exploit-elemzés megerősítette.",
+    "CollateralDamagePotentialHelp" => "A sebezhetőség kihasználása esetén fennáll az életvesztés, a fizikai eszközök elvesztésének vagy a pénzügyi veszteség lehetősége.\n• Nincs: ilyen veszteség valószínűtlen.\n• Alacsonytól közepesig: mérsékelt veszteség lehetséges.\n• Magas: katasztrofális hatás a szervezet eszközeire, bevételére vagy biztonságára.",
+    "TargetDistributionHelp" => "A környezetedben található sebezhető rendszerek aránya.\n• Nincs: nincsenek célrendszerek.\n• Alacsony: A rendszerek 1-25%-a sebezhető.\n• Közepes: 26-75%-uk sebezhető.\n• Magas: 76-100%-uk sebezhető.",
+    "ConfidentialityRequirementHelp" => "Mennyire fontos az érintett eszköz bizalmas kezelése a szervezete számára.\n• Alacsony: a bizalmas adatvesztésnek korlátozott hatása van.\n• Közepes: súlyos hatása van.\n• Magas: katasztrofális hatása van.",
+    "IntegrityRequirementHelp" => "Mennyire fontos az érintett eszköz integritása a szervezete számára.\n• Alacsony: az integritásvesztésnek korlátozott hatása van.\n• Közepes: súlyos hatása van.\n• Magas: katasztrofális hatása van.",
+    "AvailabilityRequirementHelp" => "Mennyire fontos az érintett eszköz rendelkezésre állása a szervezete számára.\n• Alacsony: a rendelkezésre állási kiesésnek korlátozott hatása van.\n• Közepes: súlyos hatása van.\n• Magas: katasztrofális hatása van.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Hogyan kellene egy támadónak elérnie és aktiválnia ezt a sebezhetőséget: hol kell lennie, mennyire összetett a támadás, és hogy először hitelesítenie kell-e magát.',
+    'BaseScoreImpactMetricsDescription' => 'Mi történik, ha a sebezhetőséget sikeresen kihasználják: milyen hatással van az érintett rendszer bizalmasságára, integritására és rendelkezésre állására.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Hogyan változik az idő múlásával a sebezhetőség valós fenyegetése: a kihasználható kód jelenlegi állapota, milyen megoldások állnak rendelkezésre, és mennyire megbízhatóak a jelentések a létezéséről.',
+    'EnvironmentalScoreMetricsDescription' => 'Hogyan függ a sebezhetőség kockázata a környezettől: a valós károk lehetősége, és hogy a rendszereid közül hányat érint a probléma.',
+    'ImpactSubscoreModifiersDescription' => 'Súlyozza az alap pontszám hatását azzal, hogy mennyire fontos a bizalmasság, az integritás és a rendelkezésre állás az adott eszköz esetében.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Mekkora kárt okoz, ha egy fenyegetést kihasználnak?' . "\n" . '0 = Semmi' . "\n" . '5 = Az egyéni felhasználói adatok veszélybe kerültek vagy érintettek.' . "\n" . '10 = Teljes rendszer- vagy adatmegsemmisítés',
+    'ReproducibilityHelp' => 'Mennyire könnyű reprodukálni a fenyegetést?' . "\n" . '0 = Nagyon nehéz vagy lehetetlen, még az alkalmazás adminisztrátorai számára is.' . "\n" . '5 = Egy vagy két lépés szükséges, esetleg jogosult felhasználóra van szükség.' . "\n" . '10 = Elég egy webböngésző és a címsor, hitelesítés nélkül.',
+    'ExploitabilityHelp' => 'Mi szükséges ennek a fenyegetésnek a kihasználásához?' . "\n" . '0 = Haladó programozási és hálózati ismeretek, egyedi vagy haladó támadási eszközökkel.' . "\n" . '5 = Kártevő létezik az interneten, vagy a sérülékenység könnyen kihasználható a rendelkezésre álló támadóeszközökkel.' . "\n" . '10 = Csak egy webböngésző',
+    'AffectedUsersHelp' => 'Hány felhasználót érint majd?' . "\n" . '0 = Nincs' . "\n" . '5 = Néhány felhasználó, de nem mindenki' . "\n" . '10 = Minden felhasználó',
+    'DiscoverabilityHelp' => 'Mennyire könnyű felfedezni ezt a fenyegetést?' . "\n" . '0 = Nagyon nehéz vagy lehetetlen; forráskódot vagy adminisztrátori hozzáférést igényel.' . "\n" . '5 = Találgatással vagy hálózati nyomkövetések figyelésével ki tudja deríteni.' . "\n" . '9 = Az ehhez hasonló hibák részletei már nyilvánosak, és könnyen megtalálhatók egy keresőmotor segítségével.' . "\n" . '10 = Az információ látható a webböngésző címsorában vagy egy űrlapon.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'DREAD pontszám',
+    'DreadMetrics' => 'DREAD metrikák',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Mennyire képzett technikailag ez a fenyegető ügynökökből álló csoport?' . "\n" . '1 = Nincsenek technikai készségek' . "\n" . '3 = Néhány technikai készség' . "\n" . '5 = Haladó számítógép-felhasználó' . "\n" . '6 = Hálózati és programozási ismeretek' . "\n" . '9 = Biztonsági behatolási készségek',
+    'MotiveHelp' => 'Mennyire motivált ez a fenyegetéseket kiváltó ügynökökből álló csoport, hogy megtalálja és kihasználja ezt a sebezhetőséget?' . "\n" . '1 = Alacsony vagy nincs jutalom' . "\n" . '4 = Lehetséges jutalom' . "\n" . '9 = Magas jutalom',
+    'OpportunityHelp' => 'Milyen erőforrásokra és lehetőségekre van szüksége ahhoz, hogy ez a fenyegető csoport megtalálja és kihasználja ezt a sebezhetőséget?' . "\n" . '0 = Teljes hozzáférés vagy drága erőforrások szükségesek' . "\n" . '4 = Speciális hozzáférés vagy erőforrások szükségesek' . "\n" . '7 = Bizonyos hozzáférés vagy erőforrások szükségesek' . "\n" . '9 = Nincs szükség hozzáférésre vagy erőforrásokra',
+    'SizeHelp' => 'Mekkora ez a fenyegető ügynökökből álló csoport?' . "\n" . '2 = Fejlesztők' . "\n" . '2 = Rendszergazdák' . "\n" . '4 = Intranet felhasználók' . "\n" . '5 = Partnerek' . "\n" . '6 = Hitelesített felhasználók' . "\n" . '9 = Névtelen internetfelhasználók',
+    'EaseOfDiscoveryHelp' => 'Mennyire könnyű ennek a fenyegetéseket kiberbűnöző csoportnak felfedezni ezt a sebezhetőséget?' . "\n" . '1 = Gyakorlatilag lehetetlen' . "\n" . '3 = Nehéz' . "\n" . '7 = Könnyű' . "\n" . '9 = Elérhető automatizált eszközök',
+    'EaseOfExploitHelp' => 'Mennyire könnyű ennek a fenyegetésből álló csoportnak kihasználni ezt a sebezhetőséget?' . "\n" . '1 = Elméleti' . "\n" . '3 = Nehéz' . "\n" . '5 = Könnyű' . "\n" . '9 = Elérhető automatizált eszközök',
+    'AwarenessHelp' => 'Mennyire ismert ez a sebezhetőség ezen fenyegető ágensek csoportja számára?' . "\n" . '1 = Ismeretlen' . "\n" . '4 = Rejtett' . "\n" . '6 = Nyilvánvaló' . "\n" . '9 = Köztudott',
+    'IntrusionDetectionHelp' => 'Mekkora az esélye egy támadás felfedezésének?' . "\n" . '1 = Aktív észlelés az alkalmazásban' . "\n" . '3 = Naplózva és felülvizsgálva' . "\n" . '8 = Felülvizsgálat nélkül naplózva' . "\n" . '9 = Nincs naplózva',
+    'LossOfConfidentialityHelp' => 'Mennyi adat hozható nyilvánosságra, és mennyire érzékenyek?' . "\n" . '2 = Minimális mennyiségű nem érzékeny adat közzététele' . "\n" . '6 = Minimálisan közzétett kritikus adatok' . "\n" . '6 = Kiterjedt, nem érzékeny adatok nyilvánosságra hozatala' . "\n" . '7 = Kiterjedt kritikus adatok nyilvánosságra hozatala' . "\n" . '9 = Minden adat nyilvánosságra hozva',
+    'LossOfIntegrityHelp' => 'Mennyi adat sérülhet meg, és mennyire sérültek?' . "\n" . '1 = Minimális, enyhén sérült adatok' . "\n" . '3 = Minimális, súlyosan sérült adatmennyiség' . "\n" . '5 = Kiterjedt, enyhén sérült adatok' . "\n" . '7 = Kiterjedt, súlyosan sérült adatok' . "\n" . '9 = Minden adat teljesen sérült',
+    'LossOfAvailabilityHelp' => 'Mennyi szolgáltatás veszhet el, és mennyire létfontosságú?' . "\n" . '1 = Minimális másodlagos szolgáltatások megszakítva' . "\n" . '5 = Minimális elsődleges szolgáltatások megszakítva' . "\n" . '5 = Kiterjedt másodlagos szolgáltatások megszakadtak' . "\n" . '7 = Kiterjedt elsődleges szolgáltatások megszakadtak' . "\n" . '9 = Minden szolgáltatás teljesen megszakadt',
+    'LossOfAccountabilityHelp' => 'A fenyegető ügynökök cselekedetei nyomon követhetők-e egy adott személyig?' . "\n" . '1 = Teljesen nyomon követhető' . "\n" . '7 = Valószínűleg nyomon követhető' . "\n" . '9 = Teljesen anonim',
+    'FinancialDamageHelp' => 'Mekkora anyagi kár keletkezhet egy visszaélésből?' . "\n" . '1 = Kevesebb, mint a sebezhetőség javításának költsége' . "\n" . '3 = Kismértékű hatás az éves nyereségre' . "\n" . '7 = Jelentős hatás az éves nyereségre' . "\n" . '9 = Csőd',
+    'ReputationDamageHelp' => 'Egy kihasználás olyan hírnévromlást eredményezne, amely károsítaná a vállalkozást?' . "\n" . '1 = Minimális sebzés' . "\n" . '4 = Főbb ügyfelek elvesztése' . "\n" . '5 = Jó hírnév elvesztése' . "\n" . '9 = Márkakárosodás',
+    'NonComplianceHelp' => 'Mekkora kockázatot jelent a szabályok be nem tartása?' . "\n" . '2 = Kisebb szabálysértés' . "\n" . '5 = Egyértelmű szabálysértés' . "\n" . '7 = Magas szintű szabálysértés',
+    'PrivacyViolationHelp' => 'Mennyi személyazonosításra alkalmas információ hozható nyilvánosságra?' . "\n" . '3 = Egy személy' . "\n" . '5 = Több száz ember' . "\n" . '7 = Több ezer ember' . "\n" . '9 = Emberek milliói',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP pontszám',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Becsüli meg egy sikeres támadás valószínűségét ezen fenyegető ügynökök csoportja által.',
+    'VulnerabilityFactorsDescription' => 'Becsüli annak valószínűségét, hogy ezt a sebezhetőséget felfedezik és kihasználják.',
+    'TechnicalImpactDescription' => 'A hatást titoktartás, integritás, rendelkezésre állás és elszámoltathatóság szerint bontja le.',
+    'BusinessImpactDescription' => 'Tükrözi, hogy mi számít az üzlet számára a nyers technikai hatáson túl.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Az exploit technikák vagy a kód elérhetőségének jelenlegi állapota.\n• Bizonyítatlan: nincs elérhető exploit kód, vagy a kihasználás elméleti.\n• Koncepcióbizonyítás: létezik exploit kód, de a legtöbb támadó számára nem praktikus.\n• Funkcionális: a funkcionális exploit kód a legtöbb helyzetben működik.\n• Magas: a kihasználás megbízható és vagy automatizált (pl. egy féreg), vagy egyáltalán nem igényel exploit kódot.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Klasszikus pontszám',
+    'ClassicLikelihoodDescription' => 'Mekkora a valószínűsége ennek a kockázatnak.',
+    'ClassicImpactDescription' => 'Milyen súlyos következményekkel járna, ha ez a kockázat bekövetkezne.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Egyéni pontszám',
+    'CustomValueDescription' => 'Az egyéni érték 0 és 10 közötti decimális érték lehet.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Mekkora a valószínűsége ennek a kockázatnak.',
+    'ContributingRiskDescription' => 'Az alábbi tényezők mindegyike relatív fontosságával van súlyozva – válassza ki, hogy az egyes tényezők mennyire befolyásolják ezt a kockázatot.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Az OWASP kockázatértékelési módszertanának részletes leírása megtalálható a következő címen:',
+    'Here' => 'itt',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} × 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= (Súly x Hatás x 5 / Max) összege',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Letöltés képként',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'A CVSS 2.0-s verziójának pontozásával kapcsolatos részletes információk megtalálhatók itt.',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Érvénytelen kontrollazonosító.',
+    'ValidationOwner' => 'Érvényesítési tulajdonos',
+    'ValidationStatus' => 'Érvényesítési állapot',
+    'NotStarted' => 'Nincs elindítva',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Lehetséges, hogy a keresett kockázatot törölték, vagy a hivatkozás hibás.',
+    'MitigationControlsRequiresGovernance' => 'A megtekintéshez Felügyeleti engedély szükséges.',
+    'ViewControlValidation' => 'Nézetvezérlő érvényesítése',
+    'EditControlValidation' => 'Kontroll érvényesítésének szerkesztése',
+    'SupportingDocumentationRequiresSubmitRisk' => 'A fájlok feltöltéséhez Kockázatbeküldés engedély szükséges.',
+    'SupportingDocumentationRequiresModifyRisks' => 'A fájlok kezeléséhez Kockázatok módosítása engedély szükséges.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Tervcsökkentési engedély szükséges a fájlok kezeléséhez.',
+    'MitigationSubmittedBy' => 'Enyhítés beküldője',
+    'UseADifferentDate' => 'Használjon másik dátumot',
+    'AssetGroup' => 'Eszközcsoport',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Érvénytelen fcsoport.',
+    'CustomizationCardsLayoutApiScopeError' => 'A Testreszabási kártyák elrendezésének API-ja csak az fgroup=risk, tab_index=1, tab_index=2 vagy tab_index=3 értékekhez érhető el.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Eszközök felfedezése',
+    'DiscoveryRuns' => 'Felfedező futások',
+    'DiscoveryRangeHint' => 'Egy cím, egy kezdő-vég tartomány vagy IPv4 CIDR',
+    'DiscoveryResolveNames' => 'Keresse meg a gazdagépneveket',
+    'DiscoveryAddAs' => 'Új eszközök hozzáadása mint',
+    'DiscoveryStart' => 'Felfedezés indítása',
+    'DiscoveryBackgroundNote' => 'A háttérben fut. A már létező címeket kihagyja.',
+    'DiscoveryRangeInvalid' => 'Adjon meg egy érvényes IPv4-címet, tartományt vagy CIDR-blokkot.',
+    'DiscoveryRangeTooLarge' => 'Ez a tartomány túl nagy. A korlát {$max} cím.',
+    'DiscoveryRunQueued' => 'A felfedezés elkezdődött.',
+    'DiscoveryRunCompleted' => 'Felfedezés befejezve: {$new} új eszköz.',
+    'AssetBulkSelectAll' => 'Válassza ki az összes {$count} elemet',
+    'AssetBulkAssignTeams' => 'Csapatok hozzárendelése…',
+    'AssetBulkAddToGroup' => 'Hozzáadás a csoporthoz…',
+    'AssetBulkDeleteConfirmTitle' => 'Törölni a {$count} elemet?',
+    'AbleToEditAssets' => 'Eszközök szerkesztésére képes',
+    'AbleToDeleteAssets' => 'Képes eszközök törlésére',
+    'AbleToVerifyAssets' => 'Képes ellenőrizni az eszközöket',
+    'AbleToRunAssetDiscovery' => 'Képes eszközfelderítést futtatni',
+    'AbleToCreateAssetGroups' => 'Eszközcsoportok létrehozásának lehetősége',
+    'AbleToEditAssetGroups' => 'Eszközcsoportok szerkesztésének lehetősége',
+    'AbleToDeleteAssetGroups' => 'Eszközcsoportok törlése lehetséges',
+    'ViewAsset' => 'Eszköz megtekintése',
+    'AssetUnverifiedByEditLog' => 'A(z) „{$name}” elemet visszaállították az ellenőrizetlen állapotba, mert a(z) „{$user}” felhasználó megváltoztatta a nevét vagy IP-címét az elemek ellenőrzéséhez szükséges engedély nélkül.',
+    'AssetTeamsAssignedLog' => 'A(z) „{$name}” elemet a(z) „{$teams}” csapat(ok)hoz rendelte a(z) „{$user} ” felhasználó.',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Eszköz hozzáadása',
+    'SearchAssetsPlaceholder' => 'Keresés név vagy IP-cím alapján',
+    'AllLocations' => 'Minden helyszín',
+    'AllTags' => 'Minden címke',
+    'AllAssetGroups' => 'Minden eszközcsoport',
+    'AssetFields' => 'Eszközmezők',
+    'AssetBulkAllSelected' => 'Minden {$count} egyező elem kiválasztva',
+    'AssetDeleteConfirmTitle' => 'Törölni a(z) "{$name} " elemet?',
+    'DeleteAsset' => 'Eszköz törlése',
+    'DeleteAssets' => 'Eszközök törlése',
+    'AssetBulkAssignTeamsTitle' => 'Csapatok hozzárendelése {$count} eszközhöz',
+    'AssetAssignTeamsHint' => 'A kiválasztott csapatok hozzáadódtak. Az eszközön már szereplő csapatok maradnak.',
+    'AssetAddToGroupTitle' => '{$count} elem hozzáadása egy csoporthoz',
+    'AssetChooseTeams' => 'Válassz csapatokat',
+    'AssetChooseGroup' => 'Válasszon egy csoportot',
+    'Assign' => 'Hozzárendelés',
+    'AssetBulkVerifiedSummary' => '{$ok} ellenőrizve, {$failed} kihagyva',
+    'AssetBulkDeletedSummary' => '{$ok} törölve, {$failed} kihagyva',
+    'AssetBulkTeamsSummary' => 'A {$ok} eszközhöz rendelt csapatok, {$failed} kihagyva',
+    'AssetBulkGroupSummary' => '{$ok} hozzáadva a csoporthoz, {$failed} kihagyva',
+    'AssetBulkSkippedList' => 'Kihagyva: {$list}',
+    'AssetBulkReasonNotFound' => 'nem található',
+    'NoAssetsYet' => 'Még nincsenek eszközök',
+    'NoAssetsYetHint' => 'Az Ön által hozzáadott vagy felfedezett eszközök itt jelennek meg.',
+    'NoAssetsMatchFilters' => 'Nincsenek a szűrőknek megfelelő elemek',
+    'CouldNotLoadAssets' => 'Nem sikerült betölteni az elemeket. Az adatai biztonságban vannak.',
+    'AllValuations' => 'Minden értékelés',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Csoport hozzáadása',
+    'EditAssetGroup' => 'Csoport szerkesztése',
+    'DeleteAssetGroup' => 'Csoport törlése',
+    'ViewGroupMembers' => 'Tagok megtekintése',
+    'SearchAssetGroupsPlaceholder' => 'Csoportok keresése név szerint',
+    'HighestValuation' => 'Legmagasabb értékelés',
+    'LinkedRisks' => 'Kapcsolódó kockázatok',
+    'RemoveFromGroup' => 'Eltávolítás a csoportból',
+    'AssetGroupMoreMembers' => '+ {$count} több',
+    'ViewAllInAssetsTab' => 'Összes megtekintése az Eszközök lapon',
+    'NoAssetsInGroup' => 'Nincsenek eszközök ebben a csoportban.',
+    'CouldNotLoadGroupMembers' => 'Nem sikerült betölteni a csoport tagjait.',
+    'AssetGroupMembers' => 'Tagok',
+    'AssetGroupMembersHint' => 'Csak azok az eszközök jelennek meg a listában, amelyeket te látsz. Azok a tagok, akiket nem látsz, a csoportban maradnak.',
+    'ChooseAssets' => 'Eszközök kiválasztása',
+    'AddOrRemoveAssets' => 'Eszközök hozzáadása vagy eltávolítása…',
+    'UseTheseAssets' => 'Használja ezeket az eszközöket',
+    'AllAssets' => 'Minden eszköz',
+    'Valuation' => 'Értékelés',
+    'PickerShowingFirstN' => 'A {$total}első {$count} elemét mutatja. Keressen vagy szűkítse a találatokat a többi megtalálásához.',
+    'AssetGroupDeleteConfirmTitle' => 'Törölni a(z) "{$name} " csoportot?',
+    'AssetGroupDeleteKeepsAssets' => 'Az ebben a csoportban lévő eszközök nem törlődnek. Csak maga a csoport kerül eltávolításra.',
+    'NoAssetGroupsYet' => 'Még nincsenek eszközcsoportok',
+    'NoAssetGroupsYetHint' => 'Csoportosítsa az eszközöket, hogy együtt térképezhesse fel őket, és jelentést készíthessen róluk.',
+    'NoAssetGroupsMatchSearch' => 'Egyetlen eszközcsoport sem felel meg a keresésnek',
+    'CouldNotLoadAssetGroups' => 'Nem sikerült betölteni az eszközcsoportokat. Az adatai biztonságban vannak.',
+    'DiscoveryAssignTeams' => 'Csapatokhoz rendelés',
+    'DiscoveryAssignTeamsHint' => 'Opcionális. Minden új eszköz hozzáadódik ezekhez a csapatokhoz.',
+    'DiscoveryAddAsHint' => 'Az Ön engedélyével állította be az eszközök ellenőrzésére.',
+    'DiscoveryTeamsInvalid' => 'Olyan csapatokat válassz, amelyek léteznek és amelyekhez tartozol.',
+    'DiscoveryResolveNamesInvalid' => 'A hosztnevek keresésének be- vagy kikapcsolt állapotban kell lennie.',
+    'DiscoveryTooManyActiveRuns' => 'Már van {$max} felderítési futtatása folyamatban. Várjon, amíg az egyik befejeződik, vagy szakítsa meg.',
+    'DiscoveryRunNotFound' => 'A felderítő futtatás nem található.',
+    'DiscoveryRunAlreadyFinished' => 'Ez a felderítési futtatás már befejeződött.',
+    'DiscoveryRunCancelled' => 'A felderítő futást törölték.',
+    'DiscoveryRunFailedToast' => 'A {$range} felfedezése sikertelen.',
+    'DiscoveryStatusQueued' => 'Sorban álló',
+    'DiscoveryProgress' => '{$scanned} a {$total}-ból',
+    'DiscoveryLiveHosts' => 'Élő gazdagépek',
+    'DiscoveryNewAssets' => 'Új eszközök',
+    'DiscoveryStartedAt' => 'Elindítva',
+    'DiscoveryCancelRun' => 'Futtatás megszakítása',
+    'CouldNotLoadDiscoveryRuns' => 'Nem sikerült betölteni a felderítési futtatásokat.',
+    'DiscoveryRangeReserved' => 'Ez a tartomány magában foglalja a fenntartott címeket (loopback, link-local, multicast vagy 0.0.0.0/8), amelyeket nem lehet beolvasni.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Már {$max} felderítési futtatás van folyamatban. Próbáld újra, ha az egyik befejeződött.',
+    'DiscoveryErrorScan' => 'A vizsgálat hiba miatt leállt. A részletekért tekintse meg a rendszernaplókat.',
+    'DiscoveryErrorWorkerLost' => 'A háttérben futó sor leállította a futtatás feldolgozását.',
+    'DiscoveryErrorRequesterInactive' => 'A futtatást indító felhasználó már nem aktív.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Küldd el a tömeges műveletet JSON törzsként.',
+    'AssetBulkActionRequired' => 'Válasszon egy tömeges műveletet.',
+    'AssetBulkUnknownAction' => 'Ez a tömeges művelet nem érhető el.',
+    'AssetBulkSelectionRequired' => 'Válasszon ki eszközöket azonosító vagy szűrő alapján.',
+    'AssetBulkIdsRequired' => 'Válasszon ki legalább egy elemet.',
+    'AssetBulkIdsInvalid' => 'Az eszközazonosítóknak egész számoknak kell lenniük.',
+    'AssetBulkTooManyAssets' => 'Egyszerre legfeljebb {$max} elemen dolgozhatsz. Szűkítsd a kiválasztást, és próbáld újra.',
+    'AssetBulkFilterInvalid' => 'A szűrő érvénytelen. Töltse be újra az oldalt, és próbálja újra.',
+    'AssetBulkFilterUnknownKey' => 'A(z) "{$key}" szűrő nem ismert fel.',
+    'AssetBulkFilterBadValue' => 'A(z) "{$key}" szűrő érvénytelen értéket tartalmaz.',
+    'AssetBulkFilterTooManyValues' => 'A "{$key}" szűrő legfeljebb {$max} értéket tud listázni.',
+    'AssetBulkFilterAllAlone' => 'Az összes eszköz kiválasztása nem kombinálható más szűrőkkel.',
+    'AssetBulkFilterEmpty' => 'Válasszon egy szűrőt, vagy jelölje ki az összes elemet a tömeges művelet futtatása előtt.',
+    'AssetBulkExpectedCountInvalid' => 'Az eszközök várható számának egész számnak kell lennie.',
+    'AssetBulkParamsInvalid' => 'A tömeges művelet beállításai érvénytelenek.',
+    'AssetBulkTeamsRequired' => 'Válassz legalább egy csapatot.',
+    'AssetBulkTeamsNotFound' => 'Ezen csapatok közül egy vagy több már nem létezik.',
+    'AssetBulkTeamsNotMember' => 'Csak azokat a csapatokat jelölheted ki, amelyekhez tartozol.',
+    'AssetBulkGroupNotFound' => 'Az eszközcsoport már nem létezik.',
+    'AssetBulkNoMatch' => 'Egyetlen eszköz sem felel meg a kiválasztásnak.',
+    'AssetBulkCountMismatch' => 'A megfelelő elemek {$expected} értékről {$actual} értékre változtak a kiválasztásuk óta. Tekintse át a listát, és próbálja újra.',
+    'AssetColumnSettingsBodyInvalid' => 'Küldje el az oszlopbeállításokat JSON törzsként oszlopokkal vagy sorrenddel.',
+    'AssetColumnSettingsSaveFailed' => 'Nem sikerült menteni az oszlopokat. Kérjen meg egy rendszergazdát, hogy fejezze be a SimpleRisk frissítését.',
+    'DiscoveryRunQueueFailed' => 'Nem sikerült a felderítési futtatást várólistára helyezni. Próbáld újra.',
+    'DiscoveryRunStartedLog' => 'A(z) {$range} tartomány (#{$id}) eszközfelderítési futtatását ({$count} cím) a(z) "{$user}" felhasználó indította el.',
+    'DiscoveryRunCancelledLog' => 'A(z) #{$id} / {$range} eszközfelderítési futtatását a(z) "{$user} " felhasználó megszakította.',
+    'AssetBulkTooManyToDelete' => 'Egyszerre legfeljebb {$max} elemet törölhet. Szűkítse a kijelölést, és próbálja újra.',
+    'AssetBulkFilterNotApplied' => 'A(z) "{$key}" szűrőt nem lehetett az elküldött formában alkalmazni, ezért semmi sem változott.',
+    'AssetBulkExpectedCountRequired' => 'A szűrő szerinti eszközök törléséhez meg kell adnia a törölni kívánt eszközök számát.',
+    'AssetBulkReasonNotAttempted' => 'nem próbálták meg',
+    'MoreActions' => 'További műveletek',
+    'AssetCreateNewGroupOption' => 'Új csoport létrehozása…',
+    'AssetNewGroupName' => 'Új csoportnév',
+    'AssetFilterByTeam' => 'Szűrés csapat szerint {$name}',
+    'AssetFilterByValuation' => 'Szűrés értékelés szerint {$name}',
+    'AssetFilterByTag' => 'Szűrés címke szerint {$name}',
+    'AssetFilterByLocation' => 'Szűrés helyszín/helyszín szerint {$name}',
+    'AssetFilteringByTeam' => 'Szűrés csapat szerint {$name}',
+    'AssetFilteringByValuation' => 'Szűrés értékelés szerint {$name}',
+    'AssetFilteringByTag' => 'Szűrés címke szerint {$name}',
+    'AssetFilteringByLocation' => 'Szűrés helyszín/helyszín szerint {$name}',
+    'AssetShowOnlyVerified' => 'Csak ellenőrzött eszközök megjelenítése',
+    'AssetShowOnlyUnverified' => 'Csak nem ellenőrzött eszközök megjelenítése',
+    'AssetShowingVerified' => 'Ellenőrzött eszközök megjelenítése',
+    'AssetShowingUnverified' => 'Nem ellenőrzött eszközök megjelenítése',
+    'CustomizationLayoutPayloadRejected' => 'Az elrendezést nem sikerült menteni, mert olyan mezőket vagy kártyákat tartalmaz, amelyek nem tartoznak ehhez a sablonhoz. Semmi sem változott.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Ez a sablon hatóköre nem menthető az elrendezésszerkesztőből. Semmi sem változott.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Az elrendezés nem tartalmaz érvényes mezőket, ezért nem lett mentve. Semmi sem változott.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'A sablon mentése minden mezőt eltávolítana, ezért a sablon nem lett mentve. Töltse be újra az oldalt, és próbálja újra.',
+    'CustomizationLayoutRejectedRequiredField' => 'Kötelező mező nem távolítható el az elrendezésből. Semmi sem változott.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Az elrendezés mentése a sablonmezők nagy részét eltávolítaná anélkül, hogy itt el kellene távolítania őket. Töltse be újra az oldalt, és próbálja újra. Semmi sem változott.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'A sabloncsoport nem létezik, vagy egy másik típusú rekordhoz tartozik. Semmi sem változott.',
+    'CustomizationLayoutLegacySaveRefused' => 'Ez a sablon az elrendezésszerkesztővel szerkeszthető, és nem menthető a korábbi panel végpontján keresztül.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Adjon meg legfeljebb {$max} TCP portot 1 és 65535 között, vesszővel elválasztva.',
+    'DiscoveryErrorProbeUnavailable' => 'A futtatás kezdetén használt próbametódus már nem érhető el a háttérben dolgozók számára. Indítson új futtatást.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping (nem privilegizált socket)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping (nyers socket)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (ping parancs)',
+    'DiscoveryProbeTcpConnect' => 'TCP-kapcsolat',
+    'DiscoveryProbeMethod' => 'Vizsgálati módszer: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'A webszerver észlelte. A háttérfolyamat más módszert használhat.',
+    'DiscoveryTcpProbeWarning' => 'A rendszer csak akkor találja meg a hosztokat, ha a beolvasott TCP portok egyikén válaszolnak, így azokat a hosztokat, amelyek ezeket a portokat blokkolják, nem fogja megtalálni. A teljes eredmény érdekében engedélyezze a szervernek az ICMP ping parancs küldését: engedélyezze a nem privilegizált ping socketeket vagy a NET_RAW képességet, vagy telepítse a ping parancsot.',
+    'DiscoveryTcpPortsForRun' => 'TCP portok ehhez a futtatáshoz',
+    'DiscoveryTcpPortsHint' => 'Vesszővel elválasztva, legfeljebb {$max} portig. Hagyja üresen az alapértelmezett {$ports} használatához.',
+    'DiscoveryDefaultTcpPorts' => 'Eszközfelderítési TCP portok',
+    'DiscoveryDefaultTcpPortsHint' => 'Akkor használatos, ha a háttérben dolgozó nem tud ICMP ping parancsot küldeni. Vesszővel elválasztva, legfeljebb {$max} portig.',
+    'DiscoveryErrorTcpUnreliable' => 'A vizsgálat leállt, mert a hálózat olyan címekre válaszol TCP-kapcsolatokra, amelyek nem lehetnek valódi gazdagépek (proxy vagy tűzfal akadályozza), így minden cím élőnek tűnne. Kérje meg a rendszergazdát, hogy engedélyezze a szervernek ICMP ping parancs küldését.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'Az eszközfelderítési TCP portokat a(z) "{$user}" felhasználó alaphelyzetbe állította.',
+    'DiscoveryNotConfigured' => 'A felderítés nincs konfigurálva. Kérje meg a rendszergazdát, hogy állítsa be az engedélyezett tartományokat a config.php fájlban.',
+    'DiscoveryRangeNotAllowed' => 'Ez a tartomány kívül esik a discovery által beolvasható tartományokon.',
+    'DiscoveryAllowedRangesList' => 'Megengedett tartományok: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Ez az elem nem érhető el. Lehet, hogy törölték, vagy lehet, hogy nincs hozzáférésed hozzá.',
+    'AssetCustomFieldNotInTemplate' => 'Egy vagy több egyéni mező nem tartozik ehhez az elemhez tartozó sablonhoz. Semmi sem változott.',
+    'AssetMappedControlsInvalid' => 'A leképezett vezérlőket nem sikerült menteni. Minden sorhoz érettségi szint és legalább egy meglévő vezérlő szükséges. Semmi sem változott.',
+    'AssetMappedControlsTooMany' => 'Egy eszköz legfeljebb {$max} kontrollhoz rendelhető hozzá. Semmi sem változott.',
+    'AddControlsAtAnotherMaturity' => 'Kontrollok hozzáadása egy másik érettségi szinten',
+    'ChoosingControlsNeedsGovernancePermission' => 'A kontrollok kiválasztásához a Felügyelet engedélye szükséges.',
+    'NControls' => '{n} vezérlő(k)',
+    'SavingKeepsTheCurrentControlMappings' => 'A mentés megőrzi az aktuális vezérlési leképezéseket.',
+    'LoadingControls' => 'Kontrollok betöltése…',
+    'ControlListCouldNotBeLoaded' => 'A kontrolllista nem tölthető be, ezért a leképezett kontrollok jelenleg nem módosíthatók.',
+    'RemoveControlsAtMaturity' => 'Kontrollok eltávolítása {maturity} érettségi szinten',
+    'ControlIdUnavailable' => '#{id} (nem elérhető)',
+    'AssetRecordEdit' => 'Eszköz szerkesztése',
+    'AssetRecordIdN' => 'Eszköz #{$id}',
+    'AssetRecordCopyLink' => 'Link másolása ehhez az eszközhöz',
+    'AssetRecordLinkCopied' => 'Link másolva.',
+    'AssetRecordLinkCopyFailed' => 'A linket nem sikerült másolni. Másold ki inkább a címsorból.',
+    'AssetRecordMarkUnverified' => 'Megjelölés ellenőrizetlenként',
+    'AssetRecordViewAuditTrail' => 'Auditnapló megtekintése',
+    'AssetRecordAuditTrailTitle' => 'Auditnapló',
+    'AssetRecordAuditTrailEmpty' => 'Ebben az időszakban nem történt aktivitás rögzítése ehhez az eszközhöz.',
+    'AssetRecordAuditTrailFailed' => 'Az auditnapló betöltése sikertelen.',
+    'AssetRecordBackToAsset' => 'Vissza az eszközhöz',
+    'AssetRecordSave' => 'Eszköz mentése',
+    'AssetRecordProvenanceVerified' => 'Ellenőrzött · hozzáadva {$date}',
+    'AssetRecordProvenanceUnverified' => 'Nincs ellenőrizve: még nem erősítette meg olyan személy, aki ellenőrizheti az eszközöket · hozzáadva {$date}',
+    'AssetRecordUnsavedHint' => 'A nem mentett módosításokkal való bezárás először megerősítést kér.',
+    'AssetRecordDiscardQuestion' => 'Elveti a nem mentett módosításokat?',
+    'AssetRecordKeepEditing' => 'Szerkesztés folytatása',
+    'AssetRecordDiscardChanges' => 'Változtatások elvetése',
+    'AssetRecordVerificationCard' => 'Ellenőrzés',
+    'AssetRecordVerificationTag' => 'Szükséges az eszközök ellenőrzésére vonatkozó engedély',
+    'AssetRecordVerifiedHint' => 'Egy felelős személy áttekintette ezt az elemet. Ha az elem nevét vagy IP-címét az elem ellenőrzésére vonatkozó engedély nélkül módosítja, akkor az elem nem ellenőrzött állapotba kerül vissza.',
+    'AssetRecordLoadFailed' => 'A forrásanyag nem tölthető be. Próbáld újra.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'A Testreszabási kártyák elrendezése API csak az fgroup=risk (tab_index 1, 2 vagy 3) és az fgroup=asset (tab_index 1) esetén érhető el.',
+    'DiscoveryErrorRequesterNotPermitted' => 'A futtatást indító felhasználónak már nincs engedélye az eszközfelderítés futtatására.',
+    'AssetRecordEditField' => 'Szerkesztés {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Titoktartás',
+    'Integrity' => 'Integritás',
+    'Availability' => 'Elérhetőség',
+    'AssetScoringLevelLow' => 'Alacsony',
+    'AssetScoringLevelModerate' => 'Mérsékelt',
+    'AssetScoringLevelHigh' => 'Magas',
+    'AssetScoringValueInvalid' => 'A titoktartás, az integritás és a rendelkezésre állás alacsony, közepes vagy magas értékű lehet (a titoktartás a „nem alkalmazható” jelölést is elfogadja).',
+    'AssetScoringChangedLog' => 'A(z) "{$name}" eszköz {$objective} értékét {$from} értékről {$to} értékre módosította a(z) "{$user}" felhasználó.',
+    'FIPSCategorization' => 'FIPS kategorizálás',
+    'WeightedScore' => 'Súlyozott pontszám',
+    'WeightedBand' => 'Súlyozott szalag',
+    'AllCategorizations' => 'Minden kategória',
+    'AllBands' => 'Minden zenekar',
+    'AssetFilterByCategorization' => 'Szűrés FIPS kategorizálás szerint {$name}',
+    'AssetFilteringByCategorization' => 'Szűrés FIPS kategorizálás szerint {$name}',
+    'AssetFilterByBand' => 'Szűrés súlyozott sáv szerint {$name}',
+    'AssetFilteringByBand' => 'Szűrés súlyozott sáv szerint {$name}',
+    'AssetScoring' => 'Eszközök pontozása',
+    'AssetScoringSettingsHint' => 'Minden eszköz Alacsony, Közepes vagy Magas besorolást kap a bizalmasság, az integritás és az elérhetőség tekintetében, a bizalmasság pedig ehelyett „Nem alkalmazható” besorolást is kaphat, ami kihagyja mindkét eredményből. FIPS-besorolása a három besorolás közül a legmagasabb. Súlyozott pontszáma a három szintérték súlyozott átlaga, és a sávküszöbök ezt a pontszámot Alacsony, Közepes vagy Magas sávba sorolják. Ezen beállítások módosítása minden eszközt azonnal újrapontoz.',
+    'Weights' => 'Súlyok',
+    'AssetScoringWeightsHint' => 'Az egyes célkitűzések súlyozott pontszámba való beleszámítása: 0-tól 100-ig, legfeljebb két tizedesjegyig. 0 súly esetén az adott célkitűzés kimarad. Az integritás és az elérhetőség nem lehet egyszerre 0, mert a „Nem alkalmazható” bizalmasság mindig kimarad.',
+    'LevelValues' => 'Szintértékek',
+    'AssetScoringLevelValuesHint' => 'Az egyes értékelések súlyozott pontszámhoz való hozzájárulásának száma: 0 felett és legfeljebb 100-ig, legfeljebb két tizedesjegyig, valamint Alacsony, Közepes alatt, Magas alatt. Az alapértelmezett értékek: Alacsony 1, Közepes 2 és Magas 3.',
+    'BandThresholds' => 'Sávküszöbök',
+    'AssetScoringBandThresholdsHint' => 'A küszöbértéken vagy afelett lévő súlyozott pontszám az adott sávban van, míg a Mérsékelt küszöbérték alatti pontszám Alacsony. A Mérsékeltnek az Alacsony érték felett kell kezdődnie, a Magasnak pedig a Mérsékelt felett és legfeljebb a Magas értéknél kell kezdődnie.',
+    'ModerateStartsAt' => 'Mérsékelt kezdés:',
+    'HighStartsAt' => 'A magas szint innentől kezdődik',
+    'DefaultScoringForNewAssets' => 'Új eszközök alapértelmezett pontozása',
+    'AssetScoringDefaultsHint' => 'Előre kiválasztja ezeket az értékeléseket, amikor valaki hozzáad egy eszközt az eszköz űrlapján. A felderítés, importálás vagy az API által létrehozott eszközök pontozatlanok maradnak, kivéve, ha a felhasználó megadja a saját értékelését. Ha ezt kikapcsolja, hagyja mindhármat „Nincs beállítva” állapotban.',
+    'AssetScoringWeightsInvalid' => 'Az eszközpontozási súlyoknak 0 és 100 közötti számoknak kell lenniük, legfeljebb két tizedesjegyig, és az integritás és az elérhetőség nem lehet egyszerre 0.',
+    'AssetScoringValuesInvalid' => 'Az eszközpontozási szint értékeinek 0-nál nagyobb, legfeljebb 100 értékű számoknak kell lenniük, legfeljebb két tizedesjeggyel, ahol az Alacsony kisebb, mint a Közepes, a Közepes pedig kisebb, mint a Magas.',
+    'AssetScoringThresholdsInvalid' => 'Az eszközpontozási sáv küszöbértékei legfeljebb két tizedesjegyet tartalmazhatnak, ahol a Mérsékelt az Alacsony érték felett, a Magas a Mérsékelt érték felett, a Magas pedig nem magasabban kezdődik, mint a Magas érték.',
+    'AssetScoringDefaultsInvalid' => 'Az új eszközök alapértelmezett pontozásának meg kell egyeznie az egyes célkitűzések által kínált szinttel.',
+    'AssetScoringSettingsNotSaved' => 'Az eszközpontozási beállításokat nem sikerült menteni. Semmi sem változott.',
+    'AssetScoringSettingsChangedLog' => 'Az eszközpontozási beállításokat a(z) "{$user} " felhasználó módosította.',
+    'AssetScoringNotSet' => 'Nincs beállítva',
+    'NotScored' => 'Nincs pontozva',
+    'AssetScoringNotScoredHint' => 'Válaszolj mindhárom célkitűzésre a pont megszerzéséhez.',
+    'ImportAssetScoringValueIgnored' => 'A(z) „{$asset_name}” elem {$objective} értéke „{$value}” nem érvényes értékelés, ezért figyelmen kívül hagytuk.',
+    'AssetScoringSecurityObjectives' => 'Biztonsági célok',
+    'AssetScoringConfidentialityHelp' => 'Mi a lehetséges hatása, ha jogosulatlanul nyilvánosságra hozzák az eszközön található információkat?',
+    'AssetScoringIntegrityHelp' => 'Mi a lehetséges hatása, ha jogosulatlanul módosítják vagy megsemmisítik az ezen az eszközön található információkat?',
+    'AssetScoringAvailabilityHelp' => 'Milyen lehetséges hatással járhat, ha a hozzáférés vagy a használat megszakad?',
+    'AssetScoringHelpHigh' => 'Súlyos vagy katasztrofális káros hatás',
+    'AssetScoringHelpModerate' => 'Súlyos káros hatás',
+    'AssetScoringHelpLow' => 'Korlátozott vagy semmilyen káros hatás',
+    'AssetScoringHelpNotApplicable' => 'A titoktartás nem szempont ennél az eszköznél (például nyilvános információknál).',
+    'AssetScoringHelpLabel' => '{$objective} értékelési útmutató',
+    'AssetScoringMeterValue' => '{$score}, {$band} sáv',
+    'AssetScoringNoWeightedScore' => 'Nincs súlyozott pontszám',
+    'AssetScoringNoWeightedScoreNote' => 'Nincs súlyozott pontszám: minden számító célkitűzés 0 súllyal bír.',
+    'AssetScoringUpgradePending' => 'Az eszközpontozás nem menthető, amíg a SimpleRisk adatbázis frissítése le nem fut. Semmi sem változott.',
+    'AssetScoringResultHelpLabel' => '{$result} magyarázat',
+    'AssetScoringScoreHelp' => 'A súlyozott pontszám a három értékelést egyetlen számmá egyesíti {$low} -tól {$high}-ig. Minden értékelés lesz a beállított értéke, és mindegyiket megszorozzák a célkitűzés súlyával. Az eredményeket összeadják, és elosztják a súlyok összegével. A „Nem alkalmazható” titoktartási státusz kimarad a súlyával együtt. A beállított értékeket és a súlyokat a Beállításokban lehet konfigurálni. Mindhárom célkitűzést értékelni kell, mielőtt a pontszám megjelenne.',
+    'AssetScoringCategorizationHelp' => 'A FIPS 199 biztonsági kategorizálás a legmagasabb értékelési szint: a legmagasabb értékelés az alkalmazható célok közül. Egyetlen Magas értékelés Magas értékelést ad az eszköznek, bármi legyen is a többi. A Nem alkalmazható értéket figyelmen kívül hagyja a rendszer.',
+    'AssetScoringBandHelp' => 'A sáv a súlyozott pontszámot Alacsony, Közepes vagy Magas skálán helyezi el. A {$moderate} alatti pontszám Alacsony, a {$moderate} és {$highAt} közötti érték Közepes, a {$highAt} vagy annál nagyobb érték Magas. A küszöbértékek a Beállításokban konfigurálhatók.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Minden titoktartási besorolás',
+    'AllIntegrityRatings' => 'Minden integritási értékelés',
+    'AllAvailabilityRatings' => 'Minden elérhetőségi értékelés',
+    'AssetFilterByConfidentiality' => 'Szűrés titoktartás szerint {$name}',
+    'AssetFilteringByConfidentiality' => 'Szűrés bizalmasság alapján {$name}',
+    'AssetFilterByIntegrity' => 'Szűrés integritás szerint {$name}',
+    'AssetFilteringByIntegrity' => 'Integritás szerinti szűrés {$name}',
+    'AssetFilterByAvailability' => 'Szűrés elérhetőség szerint {$name}',
+    'AssetFilteringByAvailability' => 'Szűrés elérhetőség szerint {$name}',
+    'HighestFIPSCategorization' => 'Legmagasabb FIPS besorolás',
+    'HighestWeightedScore' => 'Legmagasabb súlyozott pontszám',
+    'HighestWeightedBand' => 'Legmagasabb súlyozott sáv',
+    'AssetGroupFields' => 'Eszközcsoport mezők',
+    'NoAssetGroupsMatchFilters' => 'Egyetlen eszközcsoport sem felel meg a szűrőknek',
+    'AssetGroupFilterByHighestCategorization' => 'Szűrés a legmagasabb FIPS besorolás szerint {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Szűrés a legmagasabb FIPS kategorizálás szerint {$name}',
+    'AssetGroupFilterByHighestBand' => 'Szűrés a legmagasabb súlyozott sáv szerint {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Szűrés a legmagasabb súlyozott sáv szerint {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Válasszon eszközcsoportokat azonosító vagy szűrő alapján.',
+    'AssetGroupBulkIdsRequired' => 'Válasszon ki legalább egy eszközcsoportot.',
+    'AssetGroupBulkIdsInvalid' => 'Az eszközcsoport-azonosítóknak egész számoknak kell lenniük.',
+    'AssetGroupBulkFilterAllAlone' => 'Az összes eszközcsoport kiválasztása nem kombinálható más szűrőkkel.',
+    'AssetGroupBulkFilterEmpty' => 'Törlés előtt válasszon egy szűrőt, vagy jelölje ki az összes eszközcsoportot.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Az eszközcsoportok várható számának egész számnak kell lennie.',
+    'AssetGroupBulkExpectedCountRequired' => 'Az eszközcsoportok szűrő szerinti törléséhez a törölni kívánt csoportok száma szükséges.',
+    'AssetGroupBulkNoMatch' => 'Egyetlen eszközcsoport sem felel meg a kiválasztásodnak.',
+    'AssetGroupBulkCountMismatch' => 'Az egyező eszközcsoportok {$expected} értékről {$actual} értékre változtak a kiválasztásuk óta. Tekintse át a listát, és próbálja újra.',
+    'AssetGroupBulkTooManyToDelete' => 'Egyszerre legfeljebb {$max} eszközcsoportot törölhet. Szűkítse a kiválasztást, és próbálja újra.',
+    'AssetGroupBulkSelectAll' => 'Válassza ki az összes {$count} eszközcsoportot',
+    'AssetGroupBulkAllSelected' => 'Minden {$count} egyező eszközcsoport kiválasztva',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Törölni szeretnéd az {$count} eszközcsoportot?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Az ezekben a csoportokban lévő eszközök nem törlődnek. Csak maguk a csoportok kerülnek eltávolításra.',
+    'DeleteAssetGroups' => 'Csoportok törlése',
+    'AssetGroupBulkDeletedSummary' => '{$ok} csoport törölve, {$failed} kihagyva',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'A kapcsolódó kockázatok kiválasztásához kockázatkezelési engedély szükséges.',
+    'NAssociatedRisks' => '{n} kapcsolódó kockázat(ok)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'A mentés megtartja a jelenlegi kapcsolódó kockázatokat.',
+    'UpgradePhpPartialTarget' => 'Frissítés erre: {$target}, a legújabb kiadás, amelyet a PHP {$php} támogat. A {$blocked} és újabb kiadásokhoz PHP {$needed} vagy újabb verzió szükséges.',
+    'UpgradeNoPhpCli' => 'A frissítéshez a PHP parancssori felületére van szükség a pdo_mysql kiterjesztéssel az adatbázis frissítéséhez, és ezen a szerveren nem található ilyen. Semmi sem változott. Telepítsd (a SimpleRisk ütemezett feladataihoz is szükség van rá), majd futtasd újra a frissítést.',
+    'UpgradeDatabaseStepFailed' => 'Az adatbázis frissítése sikertelen. Az adatbázis verziója: {$reached}. Tekintse meg a fenti üzeneteket és a SimpleRisk naplót, majd futtassa újra a frissítést.',
+    'UpgradeReplacingVendorDirectory' => 'A vendor könyvtár cseréje.',
+    'AdvancedSearchLockedPlaceholder' => 'Keresés a teljes programban',
+    'AdvancedSearchLockedAria' => 'Keresés a teljes programban. Zárolt: ehhez a Speciális keresés extra szükséges.',
+    'AdvancedSearchLockedPitch' => 'Keressen egy kockázatot, kontrollt, dokumentumot vagy eszközt egy mezőből, és ugorjon a hozzá kapcsolódó rekordokra.',
+    'AdvancedSearchUnlocksLabel' => 'Feloldja a keresést a következőn:',
+    'RequiresAdvancedSearchExtra' => 'Szükséges hozzá a Speciális keresés extra.',
+    'UnlockAdvancedSearchLink' => 'Nézd meg, mit ad hozzá',
+    'UnlockActivateAdvancedSearchNote' => 'A Speciális keresés extra telepítve van, de nincs bekapcsolva.',
+    'UnlockActivateAdvancedSearchLink' => 'Kapcsold be',
+    'AdvancedSearchControlCount' => 'Kontrollok: {$count}',
+    'AdvancedSearchAssetCount' => 'Eszközök: {$count}',
+    'AdvancedSearchValuationRange' => '{$min} - {$max}',
+    'AdvancedSearchTypes' => 'Típusok',
+    'AdvancedSearchTypesToggle' => 'Típusok · {$count}',
+    'AdvancedSearchViewAll' => 'Összes megtekintése',
+    'AdvancedSearchMatchedIn' => 'Egyező itt: {$field}:',
+    'AdvancedSearchMatchedInFilter' => 'Egyező',
+    'AdvancedSearchAnyField' => 'Bármely mező',
+    'AdvancedSearchSortBest' => 'Legjobb találat',
+    'AdvancedSearchSummary' => 'Eredmények: {$count}',
+    'AdvancedSearchSummaryTypes' => 'Keresett típusok: {$types}',
+    'AdvancedSearchNoResultsTitle' => 'Nincs találat a(z) „{$q} ” kifejezésre',
+    'AdvancedSearchNoResultsTip' => 'Ellenőrizd a helyesírást, vagy próbálj kevesebb szót használni.',
+    'AdvancedSearchFailedTitle' => 'Jelenleg nem sikerült keresni',
+    'AdvancedSearchFailedBody' => 'Adatai biztonságban vannak. Próbálja újra egy pillanat múlva.',
+    'AdvancedSearchIncompleteTitle' => 'Az eredmények hiányosak lehetnek.',
+    'AdvancedSearchIncompleteDetail' => 'Ez a típus csak a legfrissebb bejegyzéseket kereste. Szűkítse a keresést, ha többet szeretne látni.',
+    'AdvancedSearchTimeLimitNote' => 'A keresés a gyorsaság megőrzése érdekében korán leállt, ezért bizonyos típusokat nem kerestünk. Szűkítse a keresést, hogy ezek is szerepeljenek benne.',
+    'AdvancedSearchNotSearched' => 'Nem keresett',
+    'AdvancedSearchMinChars' => 'Írjon be legalább {$count} karaktert a kereséshez.',
+    'AdvancedSearchEmptyPrompt' => 'Kockázatok, kontrollok, dokumentumok, eszközök és egyebek keresése.',
+    'AdvancedSearchFirstPage' => 'Első oldal',
+    'AdvancedSearchNoAccess' => 'A fiókoddal nem lehet keresni semmilyen rekordtípusban. Kérj hozzáférést egy rendszergazdától.',
+    'AdvancedSearchSort' => 'Rendezés',
+    'AdvancedSearchConnectedRecords' => 'Kapcsolódó rekordok',
+    'AdvancedSearchConnectedRecordsNote' => 'Csak azokat a rekordokat jeleníti meg, amelyekhez hozzáférése van.',
+    'AdvancedSearchNoConnections' => 'Nincsenek látható összekapcsolt rekordok.',
+    'AdvancedSearchConnectionsFailed' => 'Nem sikerült betölteni a csatlakoztatott rekordokat.',
+    'AdvancedSearchShowConnections' => 'Kapcsolódó rekordok megjelenítése ehhez: {$title}',
+    'AdvancedSearchExploreConnections' => 'Kapcsolatok felfedezése',
+    'AdvancedSearchCopyLink' => 'Link másolása',
+    'AdvancedSearchMoreCount' => '+{$count} több',
+    'AdvancedSearchCopyLinkFailed' => 'Nem sikerült a linket másolni.',
+    'AdvancedSearchOpenRecord' => 'Nyit',
+    'ControlDeepLinkUnavailable' => 'Ez a kontroll nem érhető el. Lehet, hogy törölték, vagy lehet, hogy nincs hozzáférésed hozzá.',
+    'ExceptionDeepLinkUnavailable' => 'Ez a kivétel itt nem nyitható meg. Lehet, hogy nincs hozzáférése a szabályzatához.',
+    // Advanced Search: the topbar typeahead
+    'AdvancedSearchSeeAll' => 'Az összes találat megtekintése a(z) „{$q} ” kifejezésre',
+    'AdvancedSearchTopHit' => 'Első találat',
+    'AdvancedSearchKeyMove' => 'Mozog',
+    'AdvancedSearchKeyEsc' => 'esc',
+    'AdvancedSearchSuggestions' => 'Keresési javaslatok',
+    'AdvancedSearchAssessmentSubtitle' => '{$contact} · {$percent}% kész',
+    'AdvancedSearchScannerId' => 'Szkenner azonosító',
+    'AdvancedSearchVendor' => 'Gyártó',
+    'AdvancedSearchProduct' => 'Termék',
+    'AdvancedSearchSeverityLevel' => 'Súlyosság {$level}',
+    'AdvancedSearchFromYourExtras' => 'Az extrák közül',
+    'UpdateAnExistingUser' => 'Meglévő felhasználó frissítése',
+    'UserImportProgressTitle' => 'Felhasználók importálása',
+    'UserImportQueued' => 'Várakozásba helyezve. Az importálás egy pillanat múlva elindul…',
+    'UserImportProgressCount' => '{$processed} / {$total} feldolgozott sorok…',
+    'UserImportComplete' => 'Importálás befejeződött.',
+    'UserImportFailed' => 'Az importálás nem fejezhető be.',
+    'UserImportSummary' => '{$created} létrehozva, {$updated} frissítve, {$failed} nincs importálva.',
+    'UserImportRowInvalid' => '{$row}sor: nincs importálva. Felhasználónév, teljes név és érvényes e-mail cím szükséges.',
+    'UserImportRowError' => '{$row}sor: váratlan hiba miatt nem importálódott.',
+    'UserImportRevealPasswords' => 'Ideiglenes jelszavak megjelenítése',
+    'UserImportPasswordsOnce' => 'Az új felhasználók ideiglenes jelszavai egyszer láthatók, majd törlődnek. Másolja le őket most, és adja át biztonságosan minden felhasználónak a sajátját. Minden felhasználónak meg kell változtatnia azt az első bejelentkezéskor.',
+    'UserImportPasswordsShownOnce' => 'Ezeket az ideiglenes jelszavakat törölték a SimpleRisk rendszeréből, és nem jeleníthetők meg újra. Másolja le őket most. Minden felhasználónak meg kell változtatnia a sajátját az első bejelentkezéskor.',
+    'UserImportPasswordsUnavailable' => 'Az ideiglenes jelszavak többé nem jeleníthetők meg. Egyszer jelennek meg, csak az importálást indító rendszergazda számára és csak a böngésző azon lapján, amelyik elindította, és a SimpleRisk nem tárol semmit, ami újra megjeleníthetné őket. Állítson be új jelszót minden új felhasználóhoz a felhasználó szerkesztésével.',
+    'UserImportBackgroundNote' => 'Ez az oldal magától frissül, és az importálás folytatódik, ha kilépsz. Nyisd meg újra az oldalt az eredmény megtekintéséhez.',
+    'AuditAdditionalStakeholdersSetOnTest' => 'További érdekelt felek vannak beállítva a teszten. Módosításukhoz szerkessze a tesztet a {$page}alatt; a módosítás azonnal érvényes lesz erre az auditra.',
+    'QuestionnaireDraftSomeFilesNotSaved' => 'A válaszokat mentettük, de egy vagy több mellékletet nem. Lehetséges, hogy a fájl túl nagy, vagy nem engedélyezett típusú.',
+    'UploadFileTooBigForDatabase' => 'A feltöltött fájl túl nagy az adatbázis számára. Egy SimpleRisk rendszergazda megemelheti a max_allowed_packet és az innodb_log_file_size értékeket a MySQL konfigurációban.',
+    'UploadErrorIniSize' => 'A feltöltött fájl mérete meghaladja a php.ini fájlban található upload_max_filesize direktívát.',
+    'UploadErrorFormSize' => 'A feltöltött fájl mérete meghaladja a HTML űrlapon megadott MAX_FILE_SIZE direktívát.',
+    'UploadErrorPartial' => 'A feltöltött fájl csak részben lett feltöltve.',
+    'UploadErrorNoFile' => 'Nem került feltöltésre fájl.',
+    'UploadErrorNoTmpDir' => 'Hiányzik egy ideiglenes mappa.',
+    'UploadErrorCantWrite' => 'Nem sikerült a fájlt lemezre írni.',
+    'UploadErrorExtension' => 'Egy PHP kiterjesztés megállította a fájl feltöltését.',
+    'MaxUploadSizeNeedsInteger' => 'A maximális feltöltési fájlméretnek nullánál nagyobb egész szám bájtnak kell lennie.',
+    'MaxUploadSizeUpdated' => 'A maximális feltöltési fájlméret frissítése sikeresen megtörtént.',
+    'MaxUploadSizeCapped' => 'A mentett érték magasabb, mint amit ez a szerver engedélyez, ezért a nagyobb fájlokat elutasítja, amíg a PHP és MySQL korlátokat meg nem emelik, vagy ezt az értéket nem csökkentik. A jelenleg elfogadott legnagyobb fájl mérete bájtban:',
+    'PleaseEnterAValidEmailAddress' => 'Kérjük, adjon meg egy érvényes e-mail címet.',
+    'RiskImportedClosedWithoutCloseReason' => 'A {$risk_id} kockázat ("{$subject}") Lezárt állapottal lett importálva, de Lezárás oka nem volt megadva, így a lezárási információi hiányosak. Adjon hozzá Lezárás okát a fájlhoz, és importálja újra, vagy fejezze be a lezárást a kockázat oldalról.',
+    // SR-115: HTTP Strict Transport Security (HSTS)
+    'EnableHSTS' => 'HTTP szigorú átviteli biztonság (HSTS) engedélyezése',
+    'EnableHSTSHelp' => 'Azt jelzi a böngészőknek, hogy csak a lenti maximális élettartamig csatlakozzanak a SimpleRiskhez HTTPS-en keresztül. Csak akkor engedélyezze ezt, ha a HTTPS megbízhatóan működik ezen az oldalon: a fejlécet látó böngészők elutasítják a sima HTTP-t, és a hibás tanúsítványt nem lehet megkerülni a maximális élettartam lejárta előtt. Kezdjen egy rövid maximális élettartammal, például 300 másodperccel, és emelje meg, miután a HTTPS ellenőrzése megtörtént.',
+    'HSTSMaxAge' => 'HSTS maximális életkor (másodperc)',
+    'HSTSMaxAgeInvalid' => 'A HSTS maximális élettartamának 0 és 63072000 közötti egész másodpercnek kell lennie.',
+    'HSTSIncludeSubdomains' => 'HSTS alkalmazása az összes aldomainre',
+    'HSTSIncludeSubdomainsHelp' => 'A HTTPS-t is kikényszeríti a gazdagép minden aldomainjén. Hagyja kikapcsolva, ha bármelyik aldomain sima HTTP-n keresztül van kiszolgálva.',
     '' => '',
 );
 ?>

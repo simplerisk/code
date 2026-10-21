@@ -33,6 +33,8 @@
 	$current_app_version = current_version("app");
 
     // Check if a risk ID was sent
+    $id = 0;
+    $risk = [];
     if (isset($_GET['id'])) {
 
         // Test that the ID is a numeric value
@@ -52,273 +54,80 @@
 
         // Get the details of the risk
         $risk = get_risk_by_id($id);
-
-        // If the risk was found use the values for the risk
-        if (count($risk) != 0) {
-
-            $submitted_by = $risk[0]['submitted_by'];
-            $status = $risk[0]['status'];
-            $subject = $risk[0]['subject'];
-            $reference_id = $risk[0]['reference_id'];
-            $regulation = $risk[0]['regulation'];
-            $control_number = $risk[0]['control_number'];
-            $location = $risk[0]['location_names'];
-            $source = $risk[0]['source'];
-            $category = $risk[0]['category'];
-            $team = $risk[0]['team_names'];
-            $additional_stakeholders = $risk[0]['additional_stakeholder_names'];
-            $technology = $risk[0]['technology_names'];
-            $owner = $risk[0]['owner'];
-            $manager = $risk[0]['manager'];
-            $assessment = $risk[0]['assessment'];
-            $notes = $risk[0]['notes'];
-            $submission_date = $risk[0]['submission_date'];
-            $tags = $risk[0]['risk_tags'];
-            $mitigation_id = $risk[0]['mitigation_id'];
-            $mgmt_review = $risk[0]['mgmt_review'];
-            $calculated_risk = $risk[0]['calculated_risk'];
-            $residual_risk = $risk[0]['residual_risk'];
-            $next_review = $risk[0]['next_review'];
-            $color = get_risk_color($calculated_risk);
-            $residual_color = get_risk_color($residual_risk);
-            $risk_level = get_risk_level_name($calculated_risk);
-            $residual_risk_level = get_risk_level_name($residual_risk);
-            $scoring_method = $risk[0]['scoring_method'];
-            $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
-            $CLASSIC_impact = $risk[0]['CLASSIC_impact'];
-            $AccessVector = $risk[0]['CVSS_AccessVector'];
-            $AccessComplexity = $risk[0]['CVSS_AccessComplexity'];
-            $Authentication = $risk[0]['CVSS_Authentication'];
-            $ConfImpact = $risk[0]['CVSS_ConfImpact'];
-            $IntegImpact = $risk[0]['CVSS_IntegImpact'];
-            $AvailImpact = $risk[0]['CVSS_AvailImpact'];
-            $Exploitability = $risk[0]['CVSS_Exploitability'];
-            $RemediationLevel = $risk[0]['CVSS_RemediationLevel'];
-            $ReportConfidence = $risk[0]['CVSS_ReportConfidence'];
-            $CollateralDamagePotential = $risk[0]['CVSS_CollateralDamagePotential'];
-            $TargetDistribution = $risk[0]['CVSS_TargetDistribution'];
-            $ConfidentialityRequirement = $risk[0]['CVSS_ConfidentialityRequirement'];
-            $IntegrityRequirement = $risk[0]['CVSS_IntegrityRequirement'];
-            $AvailabilityRequirement = $risk[0]['CVSS_AvailabilityRequirement'];
-            $DREADDamagePotential = $risk[0]['DREAD_DamagePotential'];
-            $DREADReproducibility = $risk[0]['DREAD_Reproducibility'];
-            $DREADExploitability = $risk[0]['DREAD_Exploitability'];
-            $DREADAffectedUsers = $risk[0]['DREAD_AffectedUsers'];
-            $DREADDiscoverability = $risk[0]['DREAD_Discoverability'];
-            $OWASPSkillLevel = $risk[0]['OWASP_SkillLevel'];
-            $OWASPMotive = $risk[0]['OWASP_Motive'];
-            $OWASPOpportunity = $risk[0]['OWASP_Opportunity'];
-            $OWASPSize = $risk[0]['OWASP_Size'];
-            $OWASPEaseOfDiscovery = $risk[0]['OWASP_EaseOfDiscovery'];
-            $OWASPEaseOfExploit = $risk[0]['OWASP_EaseOfExploit'];
-            $OWASPAwareness = $risk[0]['OWASP_Awareness'];
-            $OWASPIntrusionDetection = $risk[0]['OWASP_IntrusionDetection'];
-            $OWASPLossOfConfidentiality = $risk[0]['OWASP_LossOfConfidentiality'];
-            $OWASPLossOfIntegrity = $risk[0]['OWASP_LossOfIntegrity'];
-            $OWASPLossOfAvailability = $risk[0]['OWASP_LossOfAvailability'];
-            $OWASPLossOfAccountability = $risk[0]['OWASP_LossOfAccountability'];
-            $OWASPFinancialDamage = $risk[0]['OWASP_FinancialDamage'];
-            $OWASPReputationDamage = $risk[0]['OWASP_ReputationDamage'];
-            $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
-            $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
-            $custom = $risk[0]['Custom'];
-            $risk_catalog_mapping = $risk[0]['risk_catalog_mapping'];
-            $threat_catalog_mapping = $risk[0]['threat_catalog_mapping'];
-            $template_group_id  = $risk[0]['template_group_id'];
-		
-		// If the risk was not found use null values
-        } else {
-
-            $submitted_by = "";
-
-            // If Risk ID exists.
-            if(check_risk_by_id($id)) {
-
-                $status = $lang["RiskDisplayPermission"];
-			
-			// If Risk ID does not exist.
-            } else {
-
-                $status = $lang["RiskIdDoesNotExist"];
-
-            }
-
-            $subject = "N/A";
-            $reference_id = "N/A";
-            $regulation = "";
-            $control_number = "N/A";
-            $location = "";
-            $source = "";
-            $category = "";
-            $team = "";
-            $additional_stakeholders = "";
-            $technology = "";
-            $owner = "";
-            $manager = "";
-            $assessment = "";
-            $notes = "";
-            $submission_date = "";
-            $tags = "";
-
-            $mitigation_id = "";
-            $mgmt_review = "";
-            $calculated_risk = "0.0";
-
-            $residual_risk = "";
-            $next_review = "";
-            $color = "";
-            $residual_color = "";
-
-            $risk_level = "";
-            $residual_risk_level = "";
-            $scoring_method = "";
-            $CLASSIC_likelihood = "";
-            $CLASSIC_impact = "";
-            $AccessVector = "";
-            $AccessComplexity = "";
-            $Authentication = "";
-
-            $ConfImpact = "";
-            $IntegImpact = "";
-            $AvailImpact = "";
-            $Exploitability = "";
-            $RemediationLevel = "";
-            $ReportConfidence = "";
-            $CollateralDamagePotential = "";
-            $TargetDistribution = "";
-            $ConfidentialityRequirement = "";
-            $IntegrityRequirement = "";
-            $AvailabilityRequirement = "";
-            $DREADDamagePotential = "";
-            $DREADReproducibility = "";
-            $DREADExploitability = "";
-            $DREADAffectedUsers = "";
-            $DREADDiscoverability = "";
-            $OWASPSkillLevel = "";
-            $OWASPMotive = "";
-            $OWASPOpportunity = "";
-            $OWASPSize = "";
-            $OWASPEaseOfDiscovery = "";
-            $OWASPEaseOfExploit = "";
-            $OWASPAwareness = "";
-            $OWASPIntrusionDetection = "";
-            $OWASPLossOfConfidentiality = "";
-            $OWASPLossOfIntegrity = "";
-            $OWASPLossOfAvailability = "";
-            $OWASPLossOfAccountability = "";
-            $OWASPFinancialDamage = "";
-            $OWASPReputationDamage = "";
-            $OWASPNonCompliance = "";
-            $OWASPPrivacyViolation = "";
-            $custom = "";
-            $risk_catalog_mapping = "";
-            $threat_catalog_mapping = "";
-            $template_group_id  = "";
-        }
-
-
-        if ($submission_date == "") {
-            $submission_date = "N/A";
-        } else {
-			$submission_date = date(get_default_datetime_format("g:i A T"), strtotime($submission_date));
-		}
-
-        // Get the mitigation for the risk
-        $mitigation = get_mitigation_by_id($id);
-
-        // If no mitigation exists for this risk
-        if ($mitigation == false) {
-
-            // Set the values to empty
-            $mitigation_date = "N/A";
-            $mitigation_date = "";
-            $planning_strategy = "";
-            $mitigation_effort = "";
-            $mitigation_cost = 1;
-            $mitigation_owner = 0;
-            $mitigation_team = 0;
-            $mitigation_percent = 0;
-            $current_solution = "";
-            $security_requirements = "";
-            $security_recommendations = "";
-            $planning_date = "";
-            $mitigation_percent = "";
-		
-		// If a mitigation exists
-        } else {
-
-            // Set the mitigation values
-            $mitigation_date = $mitigation[0]['submission_date'];
-            $mitigation_date = date(get_default_datetime_format("g:i A T"), strtotime($mitigation_date));
-            $planning_strategy = $mitigation[0]['planning_strategy'];
-            $mitigation_effort = $mitigation[0]['mitigation_effort'];
-            $mitigation_cost = $mitigation[0]['mitigation_cost'];
-            $mitigation_owner = $mitigation[0]['mitigation_owner'];
-            $mitigation_team = $mitigation[0]['mitigation_team'];
-            $current_solution = $mitigation[0]['current_solution'];
-            $security_requirements = $mitigation[0]['security_requirements'];
-            $security_recommendations = $mitigation[0]['security_recommendations'];
-            $planning_date = format_date($mitigation[0]['planning_date']);
-            $mitigation_percent = (isset($mitigation[0]['mitigation_percent']) && $mitigation[0]['mitigation_percent'] >= 0 && $mitigation[0]['mitigation_percent'] <= 100) ? $mitigation[0]['mitigation_percent'] : 0;
-        }
-
-        // Get the management reviews for the risk
-        $mgmt_reviews = get_review_by_id($id);
-
-        // If no mitigation exists for this risk
-        if ($mgmt_reviews == false) {
-
-            // Set the values to empty
-            $review_date = "N/A";
-            $review = "";
-            $review_id = "";
-            $next_step = "";
-            $reviewer = "";
-            $comments = "";
-			
-		// If a mitigation exists
-        } else {
-
-            // Set the mitigation values
-            $review_date = $mgmt_reviews[0]['submission_date'];
-            $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
-            $review = $mgmt_reviews[0]['review'];
-            $review_id = $mgmt_reviews[0]['id'];
-            $next_step = $mgmt_reviews[0]['next_step'];
-
-            // If next_review_date_uses setting is Residual Risk.
-            if(get_setting('next_review_date_uses') == "ResidualRisk") {
-
-                $next_review = next_review($residual_risk_level, $id-1000, $next_review, false);
-			
-			// If next_review_date_uses setting is Inherent Risk.
-            } else {
-
-                $next_review = next_review($risk_level, $id-1000, $next_review, false);
-            
-			}
-            
-            $reviewer = $mgmt_reviews[0]['reviewer'];
-            $comments = $mgmt_reviews[0]['comments'];
-        }
     }
-?>
 
+    // Only $id/$subject/$status/$calculated_risk are needed here now --
+    // Details/Mitigation/Review no longer render from a pile of individually
+    // extracted $risk[0][...] fields (view_print_risk_details()/
+    // view_print_mitigation_details()/view_print_mitigation_controls()/
+    // view_print_review_details(), includes/display.php); RiskDetailsView
+    // (js/simplerisk/common/risk-details-view.js) renders all three tabs
+    // client-side from the same /api/v2/ui/risk/{id}/* endpoints the live
+    // Cards view (management/view.php) uses, so this page only needs enough
+    // server-side data for the top summary table.
+    $display_risk = (count($risk) != 0);
+    if ($display_risk) {
+        $subject = $risk[0]['subject'];
+        $status = $risk[0]['status'];
+        $calculated_risk = $risk[0]['calculated_risk'];
+    } else {
+        $subject = "N/A";
+        $calculated_risk = "0.0";
+
+        // If Risk ID exists but this session can't see it vs. doesn't exist at all.
+        $status = check_risk_by_id($id) ? $lang["RiskDisplayPermission"] : $lang["RiskIdDoesNotExist"];
+    }
+
+    // The exact key list CUSTOM:common/risk-details-view.js and
+    // CUSTOM:common/risk-details-form.js (the latter loaded only for its
+    // shared window.CvssRiskLevelPill/window.ClassicScoring-family bridges --
+    // RiskDetailsForm.init() is never called on this read-only page) need,
+    // resolved via the SAME get_localization_required_by_scripts() map
+    // header.php's render_header_and_sidebar() uses -- see that function's
+    // own docblock (includes/functions.php) for why it's callable standalone.
+    // This page renders its own <head> instead of going through
+    // render_header_and_sidebar() (no sidebar/topbar/breadcrumb chrome --
+    // design-system.md's print view is deliberately bare), so it resolves
+    // this itself rather than dragging that whole helper in.
+    $print_required_scripts = ['CUSTOM:common/risk-details-view.js', 'CUSTOM:common/risk-details-form.js'];
+    $print_localization_keys = resolve_required_localization_keys(
+        $print_required_scripts,
+        [],
+        get_localization_required_by_scripts()
+    );
+    $print_lang_json = encode_js_lang_subset(build_js_lang_subset($print_localization_keys, $lang));
+?>
 <!doctype html>
 <html>
 	<head>
 		<title>SimpleRisk: Enterprise Risk Management Simplified</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-		
+
 		<!-- Favicon icon -->
 		<?php setup_favicon("..");?>
-        
+
 		<!-- Bootstrap CSS -->
         <link rel="stylesheet" href="../css/style.min.css?<?= $current_app_version ?>" />
-        
+
 		<!-- extra css -->
 		<link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?= $current_app_version ?>">
+
+		<!-- DataTables (Mitigation Controls list inside the Mitigation tab's Cards) -->
+		<link rel="stylesheet" href="../vendor/node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css?<?= $current_app_version ?>">
+
+		<script type="text/javascript">
+			var BASE_URL = '<?= $escaper->escapeHtml(rtrim(($_SESSION['base_url'] ?? get_setting("simplerisk_base_url")), '/'))?>';
+		</script>
+
+		<!-- _lang/L() -- same baseline shape header.php's own (always-emitted,
+		     never-deferred) block establishes, so any of the loaded engines'
+		     _lang['X']/L('X') reads degrade to the key name instead of
+		     throwing before any deferred script runs. -->
+		<script type="text/javascript">
+			var _lang = <?= $print_lang_json ?>;
+			window.L = window.L || function (k) { return (window._lang && window._lang[k]) || k; };
+		</script>
 
 		<!-- jQuery Javascript -->
 		<script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
@@ -327,8 +136,65 @@
 		<script src="../vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
 
 		<script language="javascript" src="../js/basescript.js?<?= $current_app_version ?>" type="text/javascript" defer></script>
+
+		<!-- Chart.js (Details tab's Risk Scoring History widget) -->
+		<script src="../vendor/node_modules/chart.js/dist/chart.umd.js?<?= $current_app_version ?>" id="script_chartjs" defer></script>
+
+		<!-- DataTables (Mitigation Controls list) -- mirrors header.php's own
+		     'datatables' case verbatim (the defaults/Show-All-button wiring is
+		     page-wide setup, not sidebar-coupled, so it's safe to duplicate
+		     here rather than drag render_header_and_sidebar()'s whole sidebar/
+		     breadcrumb chrome in just to reach it). -->
+		<script src="../vendor/node_modules/datatables.net/js/dataTables.min.js?<?= $current_app_version ?>" defer></script>
+		<script src="../vendor/node_modules/datatables.net-bs5/js/dataTables.bootstrap5.min.js?<?= $current_app_version ?>" id="script_datatables" defer></script>
+		<script src="../js/simplerisk/dataTables.renderers.js?<?= $current_app_version ?>" id="script_datatables_renderers" defer></script>
+		<script>
+			$('#script_datatables').on('load', function () {
+				Object.assign(DataTable.defaults, {
+					lengthMenu: [[10, 25, 50, -1], [10, 25, 50, _lang['All']]],
+					lengthChange: true,
+					filter: true,
+					processing: true,
+					serverSide: true,
+					layout: {
+						topStart: 'pageLength',
+						topEnd: {div: {className: 'col-sm-12 col-md-12 settings'}},
+						bottomStart: 'info',
+						bottomEnd: {
+							className: 'd-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto paginate',
+							features: ['paging']
+						},
+					},
+				});
+				Object.assign(DataTable.defaults.language, {
+					paginate: {
+						first: _lang['First'],
+						previous: _lang['Previous'],
+						next: _lang['Next'],
+						last: _lang['Last'],
+					}
+				});
+			});
+		</script>
+
+		<!-- Read-only Cards engines (Details/Mitigation/Review), matching
+		     management/view.php's own load order requirements: the scoring
+		     helper scripts (each defines window.<Method>Scoring, read by
+		     both risk-details-form.js and risk-details-view.js at BUILD
+		     time) must precede both engines. risk-details-form.js is loaded
+		     ONLY for the shared window.CvssRiskLevelPill bridge it defines --
+		     RiskDetailsForm.init() is never called on this read-only page,
+		     so none of its GridStack/WYSIWYG/multiselect/selectize
+		     dependencies are needed here. -->
+		<script src="../js/simplerisk/common/cvss-v2-scoring.js?<?= $current_app_version ?>" defer></script>
+		<script src="../js/simplerisk/common/dread-scoring.js?<?= $current_app_version ?>" defer></script>
+		<script src="../js/simplerisk/common/owasp-scoring.js?<?= $current_app_version ?>" defer></script>
+		<script src="../js/simplerisk/common/classic-scoring.js?<?= $current_app_version ?>" defer></script>
+		<script src="../js/simplerisk/common/contributing-risk-scoring.js?<?= $current_app_version ?>" defer></script>
+		<script src="../js/simplerisk/common/risk-details-form.js?<?= $current_app_version ?>" defer></script>
+		<script src="../js/simplerisk/common/risk-details-view.js?<?= $current_app_version ?>" defer></script>
 	</head>
-	<body>
+	<body class="sr-print-page">
 		<div class="preloader">
             <div class="lds-ripple">
                 <div class="lds-pos"></div>
@@ -340,53 +206,74 @@
             <div class="page-wrapper" style="top: 0px;">
             	<div class="scroll-content">
             		<div class="content-wrapper">
-						<div class='page-breadcrumb'>
-							<div class='row'>
-								<div class='col-12 d-flex no-block align-items-center'>
-									<h4 class='page-title'>
-										<?= $escaper->escapeHtml($lang['RiskDetails']) ?>
-									</h4>
-								</div>
-							</div>
-						</div>
 						<!-- container - It's the direct container of all the -->
-						<div class='content container-fluid'>
+						<!-- No '.content' class -- that rule (scss/core/layout/layout.scss)
+						     margins a WHITE box in from .page-wrapper's own grey fill,
+						     reading as a grey border/ring around the page instead of the
+						     grey canvas the Cards design language wants underneath. -->
+						<div class='container-fluid'>
 							<div class='row'>
 								<div class='col-12'>
-									<div class='card-body border my-2'>
-	<?php 
-										view_print_top_table($id, $calculated_risk, $subject, $status);
-	?>
+									<div class="risk-session overview clearfix">
+										<div class='row'>
+											<div class='col-12'>
+<?php
+												// The SAME record-header component the live Cards view
+												// (management/view.php, via management/partials/overview.php)
+												// uses -- view_top_table(), includes/display.php -- so the
+												// score tiles and ID/Status/Subject card look identical
+												// here. The trailing `false` is display_risk/show-actions:
+												// print has no Actions dropdown or inline Edit Subject
+												// affordance to wire up (risk.js isn't loaded), regardless
+												// of whether the risk itself was found.
+												view_top_table($id, $calculated_risk, $subject, $status, false, 0, false);
+?>
+											</div>
+										</div>
 									</div>
-									<div class='card-body border my-2'>
-	<?php 
-										view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags, $submitted_by, $source, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id); 
-	?>
+<?php if ($display_risk): ?>
+									<!-- No outer card/border here -- RiskDetailsView.init() already
+									     renders its own .sr-qcards-stack of .sr-qcard cards into each
+									     mount (General/Scoring/etc.), so wrapping the whole tab in a
+									     SECOND bordered box just double-boxed it. The heading sits
+									     directly on the grey canvas, same as the record header above. -->
+									<div class='mb-4'>
+										<h3 class='mb-3'><?= $escaper->escapeHtml($lang['Details']) ?></h3>
+										<div id="print-details-view"></div>
 									</div>
-									<div class='card-body border my-2'>
-	<?php 
-										view_print_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_percent, $template_group_id); 
-	?>
+									<div class='mb-4'>
+										<h3 class='mb-3'><?= $escaper->escapeHtml($lang['Mitigation']) ?></h3>
+										<div id="print-mitigation-view"></div>
 									</div>
-									<div class='mitigation-controls-container card-body border my-2'>
-	<?php 
-										view_print_mitigation_controls($mitigation); 
-	?>
+									<div class='mb-4'>
+										<h3 class='mb-3'><?= $escaper->escapeHtml($lang['Review']) ?></h3>
+										<div id="print-review-view"></div>
 									</div>
-									<div class='card-body border my-2'>
-	<?php
-										// @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $next_review here is either pre-escaped (returned by next_review(..., false) when management reviews exist) or DB-constrained to a DATE value (mgmt_reviews.next_review column); view_print_review_details defensively re-escapes either way, which Phan flags. The function keeps the defensive escape so future callers and any schema drift remain safe.
-										view_print_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id);
-	?>
+									<!-- Comments/Audit Trail have no Cards renderer of their own
+									     (get_comments()/get_audit_trail_html() are plain server-
+									     rendered HTML) -- they get an explicit .sr-qcard here, the
+									     same card component the record header and every Details/
+									     Mitigation/Review card above use, instead of Bootstrap's bare
+									     .card-body (no background of its own -- invisible against the
+									     grey canvas; it used to look fine only because it sat inside
+									     the old .content rule's own white fill). -->
+									<div class='sr-qcard mb-4'>
+										<div class='sr-qcard-head'><h3 class='sr-qcard-title'><?= $escaper->escapeHtml($lang['Comments']) ?></h3></div>
+										<div class='sr-qcard-body comments-container'>
+											<?php get_comments($id); ?>
+										</div>
 									</div>
-									<div class='comments-container card-body border my-2'>
-										<h4><?= $lang['Comments']; ?></h4>
-										<?php get_comments($id); ?>
+									<div class='sr-qcard mb-4'>
+										<div class='sr-qcard-head'><h3 class='sr-qcard-title'><?= $escaper->escapeHtml($lang['AuditTrail']) ?></h3></div>
+										<div class='sr-qcard-body audit-trail-container'>
+											<?php get_audit_trail_html($id, 36500, 'risk'); ?>
+										</div>
 									</div>
-									<div class='audit-trail-container card-body border my-2'>
-										<h4><?= $lang['AuditTrail']; ?></h4>
-										<?php get_audit_trail_html($id,36500,'risk'); ?>
+<?php else: ?>
+									<div class='sr-qcard mb-4'>
+										<div class='sr-qcard-body'><strong><?= $escaper->escapeHtml($status) ?></strong></div>
 									</div>
+<?php endif; ?>
 								</div>
 							</div>
 						</div>
@@ -398,11 +285,71 @@
           <!-- End Page wrapper  -->
         </div>
         <!-- End Wrapper -->
+<?php if ($display_risk): ?>
+		<script>
+			// Forces open every accordion RiskDetailsView renders (the Details/
+			// Mitigation/Review cards themselves already render expanded by
+			// default -- see risk-details-view.js's renderCards() -- this
+			// covers the nested ones that don't: the CVSS "Advanced Metrics"
+			// accordion, the Risk Scoring History widget, and the Mitigation
+			// Controls list). A plain CSS class add is not enough on its own:
+			// the Scoring History widget lazily builds its Chart.js chart on
+			// the FIRST 'show.bs.collapse' event (so the live page never pays
+			// for a chart nobody expanded), and that event is a plain jQuery
+			// custom event -- .trigger()ing it fires the same handler without
+			// needing a real bootstrap.Collapse instance behind it.
+			function expandAllAccordionsIn(containerSelector) {
+				$(containerSelector).find('.accordion-collapse.collapse:not(.show)').each(function () {
+					var $body = $(this).addClass('show');
+					$body.trigger('show.bs.collapse').trigger('shown.bs.collapse');
+					var id = $body.attr('id');
+					if (id) {
+						$('[data-bs-toggle="collapse"][data-bs-target="#' + id + '"]')
+							.removeClass('collapsed')
+							.attr('aria-expanded', 'true');
+					}
+				});
+
+				// Print/export means "everything", not "the first page" -- a
+				// server-side-paged DataTable (Mitigation Controls) otherwise
+				// silently drops every row past its default page length.
+				$(containerSelector).find('table').each(function () {
+					if ($.fn.DataTable.isDataTable(this)) {
+						$(this).DataTable().page.len(-1).draw();
+					}
+				});
+			}
+
+			$(function () {
+				RiskDetailsView.init('#print-details-view', <?= (int)$id ?>, function () {
+					expandAllAccordionsIn('#print-details-view');
+				});
+				RiskDetailsView.init('#print-mitigation-view', <?= (int)$id ?>, function () {
+					expandAllAccordionsIn('#print-mitigation-view');
+				}, {
+					tabIndex: 2,
+					valuesPath: '/ui/risk/<?= (int)$id ?>/mitigation-values',
+					supportingDocumentationHtmlKey: 'mitigation_supporting_documentation_html'
+				});
+				RiskDetailsView.init('#print-review-view', <?= (int)$id ?>, function () {
+					expandAllAccordionsIn('#print-review-view');
+				}, {
+					tabIndex: 3,
+					valuesPath: '/ui/risk/<?= (int)$id ?>/review-values',
+					reviewHistoryHtmlKey: 'review_history_html'
+				});
+
+				// Fading out the preloader once everything is done rendering
+				$(".preloader").fadeOut();
+			});
+		</script>
+<?php else: ?>
 		<script>
 			$(function() {
 				// Fading out the preloader once everything is done rendering
 				$(".preloader").fadeOut();
 			});
 		</script>
+<?php endif; ?>
 	</body>
 </html>

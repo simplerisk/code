@@ -160,6 +160,16 @@ class Clazz extends AddressableElement
     private $did_finish_parsing = true;
 
     /**
+     * @var bool true while hydrateOnce() runs (it imports the constants, properties and methods of the ancestors)
+     */
+    private $is_hydrating = false;
+
+    /**
+     * @var int the number of times that classes were hydrated (for PHAN_VERIFY_SKIPPED_CHECKS=1)
+     */
+    private static $hydration_count = 0;
+
+    /**
      * @var ?UnionType for Type->asExpandedTypes()
      *
      * TODO: This won't reverse in daemon mode?
@@ -1976,11 +1986,17 @@ class Clazz extends AddressableElement
      * @param Option<Type> $type_option
      * A possibly defined type used to define template
      * parameter types when importing the method
+     *
+     * @param ?array<string,UnionType> $template_parameter_type_map
+     * If non-null, the result of `$type_option->get()->getTemplateParameterTypeMap($code_base)`.
+     * If null and that is needed, it is computed and stored here,
+     * so that callers adding several methods with the same $type_option compute it once.
      */
     public function addMethod(
         CodeBase $code_base,
         Method $method,
-        Option $type_option
+        Option $type_option,
+        ?array &$template_parameter_type_map = null
     ): void {
         $method_fqsen = FullyQualifiedMethodName::make(
             $this->fqsen,
@@ -2032,7 +2048,7 @@ class Clazz extends AddressableElement
             // return type and parameter types through it
             if ($type_option->isDefined()) {
                 $method = $method->cloneWithTemplateParameterTypeMap(
-                    $type_option->get()->getTemplateParameterTypeMap($code_base)
+                    $template_parameter_type_map ??= $type_option->get()->getTemplateParameterTypeMap($code_base)
                 );
             } else {
                 $method = clone($method);
@@ -2046,6 +2062,8 @@ class Clazz extends AddressableElement
 
             // Make inferred return type for a method affect inherited methods
             $method->ensureClonesReturnType($original_method);
+            // Analysis\CloneReplay may replay the declaration analysis of $original_method for this clone
+            $method->setCloneSource($original_method);
         }
         if ($method->hasYield()) {
             // There's no phpdoc standard for template types of Generators at the moment.
@@ -2712,28 +2730,30 @@ class Clazz extends AddressableElement
      */
     public function getAncestorClassListRecursive(CodeBase $code_base): array
     {
-        return $this->memoize(__METHOD__, /** @return list<Clazz> */ function () use ($code_base): array {
-            $result = [];
-            $seen = [];
-            $queue = [$this];
+        // Same as memoize(), without allocating a closure on every call (this is called for every method in getOverriddenMethods())
+        if (\array_key_exists(__METHOD__, $this->memoized_data)) {
+            return $this->memoized_data[__METHOD__];
+        }
+        $result = [];
+        $seen = [];
+        $queue = [$this];
 
-            while ($queue) {
-                $current = \array_shift($queue);
+        while ($queue) {
+            $current = \array_shift($queue);
 
-                // Get immediate ancestors of current class
-                foreach ($current->getAncestorClassList($code_base) as $ancestor) {
-                    $ancestor_fqsen = $ancestor->getFQSEN()->__toString();
-                    if (isset($seen[$ancestor_fqsen])) {
-                        continue;
-                    }
-                    $seen[$ancestor_fqsen] = true;
-                    $result[] = $ancestor;
-                    $queue[] = $ancestor;
+            // Get immediate ancestors of current class
+            foreach ($current->getAncestorClassList($code_base) as $ancestor) {
+                $ancestor_fqsen = $ancestor->getFQSEN()->__toString();
+                if (isset($seen[$ancestor_fqsen])) {
+                    continue;
                 }
+                $seen[$ancestor_fqsen] = true;
+                $result[] = $ancestor;
+                $queue[] = $ancestor;
             }
+        }
 
-            return $result;
-        });
+        return $this->memoized_data[__METHOD__] = $result;
     }
 
     /**
@@ -3388,9 +3408,11 @@ class Clazz extends AddressableElement
         )) {
             return;
         }
-        $next_class_fqsen = $class_fqsen->withAlternateId($class_fqsen->getAlternateId() + 1);
-        if (!$this->isPHPInternal() && $code_base->hasClassWithFQSEN($next_class_fqsen)) {
-            $this->warnAboutAmbiguousInheritance($code_base, $class, $next_class_fqsen);
+        if (!$this->isPHPInternal() && $code_base->mayHaveAlternatesOfClass($class_fqsen)) {
+            $next_class_fqsen = $class_fqsen->withAlternateId($class_fqsen->getAlternateId() + 1);
+            if ($code_base->hasClassWithFQSEN($next_class_fqsen)) {
+                $this->warnAboutAmbiguousInheritance($code_base, $class, $next_class_fqsen);
+            }
         }
 
         if ($attribute_list = $class->getAttributeList()) {
@@ -3439,7 +3461,9 @@ class Clazz extends AddressableElement
             );
         }
 
-        // Copy methods
+        // Copy methods.
+        // The template parameter type map of $type_option is computed when first needed, then reused for the remaining methods.
+        $template_parameter_type_map = null;
         foreach ($class->getMethodMap($code_base) as $method) {
             if (!\is_null($trait_adaptations) && count($trait_adaptations->hidden_methods) > 0) {
                 $method_name_key = \strtolower($method->getName());
@@ -3457,7 +3481,7 @@ class Clazz extends AddressableElement
                 // which would prevent template resolution in addMethod
                 if ($type_option->isDefined()) {
                     $method = $method->cloneWithTemplateParameterTypeMap(
-                        $type_option->get()->getTemplateParameterTypeMap($code_base)
+                        $template_parameter_type_map ??= $type_option->get()->getTemplateParameterTypeMap($code_base)
                     );
                 }
                 $method = $this->adaptInheritedMethodFromTrait($method);
@@ -3465,7 +3489,8 @@ class Clazz extends AddressableElement
             $this->addMethod(
                 $code_base,
                 $method,
-                $is_trait ? None::instance() : $type_option
+                $is_trait ? None::instance() : $type_option,
+                $template_parameter_type_map
             );
         }
 
@@ -3491,6 +3516,12 @@ class Clazz extends AddressableElement
         $method->setRealReturnType(
             $method->getRealReturnType()->withSelfResolvedInContext($context)
         );
+        $conditional_return_type = $method->getConditionalReturnType();
+        if ($conditional_return_type) {
+            $method->setConditionalReturnType($conditional_return_type->mapTypes(static function (UnionType $type) use ($context): UnionType {
+                return $type->withSelfResolvedInContext($context);
+            }));
+        }
         $parameter_list = $method->getParameterList();
         $changed = false;
         foreach ($parameter_list as $i => $parameter) {
@@ -3947,9 +3978,14 @@ class Clazz extends AddressableElement
 
         foreach ($this->getAncestorFQSENList() as $fqsen) {
             if ($code_base->hasClassWithFQSEN($fqsen)) {
-                $code_base->getClassByFQSENWithoutHydrating(
-                    $fqsen
-                )->hydrate($code_base);
+                $ancestor = $code_base->getClassByFQSENWithoutHydrating($fqsen);
+                $ancestor->hydrate($code_base);
+                if ($ancestor->is_hydrating) {
+                    // The hydration of this ancestor is not finished (an inheritance cycle, or this class is hydrated
+                    // as a side effect of hydrating the ancestor), so the ancestor may add methods to its class map
+                    // after this class imported its methods.
+                    $code_base->recordClassHydratedBeforeAncestor();
+                }
             }
         }
 
@@ -4429,7 +4465,11 @@ class Clazz extends AddressableElement
         }
         $this->is_hydrated = true;
 
+        // (If hydrateOnce() throws, is_hydrating stays true, which only makes CodeBase::sawClassHydratedBeforeAncestor() more likely to be true.)
+        $this->is_hydrating = true;
+        ++self::$hydration_count;
         $this->hydrateOnce($code_base);
+        $this->is_hydrating = false;
     }
 
     /**
@@ -4450,8 +4490,19 @@ class Clazz extends AddressableElement
         }
         $this->is_hydrated = true;
 
+        $this->is_hydrating = true;
+        ++self::$hydration_count;
         $this->hydrateOnce($code_base);
+        $this->is_hydrating = false;
         return true;
+    }
+
+    /**
+     * @return int the number of times that classes were hydrated so far (any class, for PHAN_VERIFY_SKIPPED_CHECKS=1)
+     */
+    public static function getHydrationCount(): int
+    {
+        return self::$hydration_count;
     }
 
     /**

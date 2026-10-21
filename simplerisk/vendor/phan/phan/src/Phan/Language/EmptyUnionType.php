@@ -264,6 +264,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function isStaticResolutionNoOp(): bool
+    {
+        return true;
+    }
+
     /**
      * @return UnionType
      * A new UnionType *plus* any references to 'self' (but not 'static') resolved
@@ -1662,6 +1667,11 @@ final class EmptyUnionType extends UnionType
     public function listTypesStrictCast(): UnionType
     {
         return UnionType::fromFullyQualifiedRealString('list');
+    }
+
+    public function nonEmptyAssociativeArrayTypesStrictCast(): UnionType
+    {
+        return UnionType::fromFullyQualifiedRealString('non-empty-associative-array');
     }
 
     public function arrayTypesStrictCastAllowEmpty(): UnionType

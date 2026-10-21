@@ -19,11 +19,19 @@
     // render_header_and_sidebar()), which is exactly the fragile chain
     // CLAUDE.md's reachability rule says a direct consumer must not rely on.
     require_once(realpath(__DIR__ . '/../includes/assets.php'));
+    // The asset discovery TCP ports field: its validator and default.
+    require_once(realpath(__DIR__ . '/../includes/assets_discovery_probe.php'));
+    // assets_discovery_save_default_tcp_ports() (the TCP ports preference save).
+    require_once(realpath(__DIR__ . '/../includes/assets_discovery.php'));
+    // The Asset Scoring section: its validator/saver and the live settings.
+    require_once(realpath(__DIR__ . '/../includes/asset_scoring.php'));
     // The WYSIWYG bundle is ~460KB (HugeRTE + its skin) and is only ever
     // attached to the system-use-notice field, which exists only when the
     // Customization Extra is active. Loading it unconditionally made every
     // admin on this page pay for an editor most of them never see.
-    $preferences_scripts = ['blockUI', 'CUSTOM:common.js', 'tabs:logic'];
+    // asset_valuation.js keeps neighbouring Manual Asset Valuation levels in
+    // step as a boundary is edited (SR-86).
+    $preferences_scripts = ['blockUI', 'CUSTOM:common.js', 'tabs:logic', 'CUSTOM:asset_valuation.js'];
     $preferences_localization = [];
 
     if (customization_extra()) {
@@ -210,6 +218,35 @@
         $current_auto_verify_new_assets = get_setting("auto_verify_new_assets");
         if ($auto_verify_new_assets != $current_auto_verify_new_assets) {
             $changed = update_setting("auto_verify_new_assets", $auto_verify_new_assets) || $changed;
+        }
+
+        // Update the asset discovery TCP ports (Asset Management): the ports the
+        // TCP probe tries when the worker cannot send ICMP ping. Validated the
+        // same way as the per-run override; stored normalised.
+        // A blank field goes back to the built-in default (the setting row is
+        // removed, so a later change of the default applies too).
+        $tcp_ports_save = assets_discovery_save_default_tcp_ports(
+            isset($_POST['asset_discovery_tcp_ports']) && is_scalar($_POST['asset_discovery_tcp_ports']) ? (string)$_POST['asset_discovery_tcp_ports'] : null
+        );
+        if ($tcp_ports_save['error'] !== null) {
+            // set_alert() output is escaped when it is read, so the raw lookup.
+            set_alert(true, "bad", _lang_raw('DiscoveryPortsInvalid', ['max' => ASSETS_DISCOVERY_MAX_TCP_PORTS]));
+            $error = true;
+        }
+        $changed = $tcp_ports_save['changed'] || $changed;
+
+        // Asset Scoring (Asset Management): weights, level values, band
+        // thresholds and the Add form's default scoring, validated as a set --
+        // an invalid set writes none of them. Skipped until the database
+        // upgrade has added the scoring columns (the section is not shown).
+        if (asset_scoring_schema_ready()) {
+            $asset_scoring_save = asset_scoring_save_settings($_POST['asset_scoring'] ?? null);
+            if ($asset_scoring_save['error'] !== null) {
+                // set_alert() output is escaped when it is read, so the raw lookup.
+                set_alert(true, "bad", $lang[$asset_scoring_save['error']]);
+                $error = true;
+            }
+            $changed = $asset_scoring_save['changed'] || $changed;
         }
 
         // Update the 'Document Exception update resets its approval' setting (Governance)
@@ -814,6 +851,13 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row form-group mt-2">
+                            <div class="col-6">
+                                <label for="asset_discovery_tcp_ports"><?= $escaper->escapeHtml($lang['DiscoveryDefaultTcpPorts']); ?> :</label>
+                                <input type="text" name="asset_discovery_tcp_ports" id="asset_discovery_tcp_ports" class="form-control" maxlength="200" inputmode="numeric" spellcheck="false" aria-describedby="asset_discovery_tcp_ports_hint" value="<?= $escaper->escapeHtmlAttr(get_setting('asset_discovery_tcp_ports', ASSETS_DISCOVERY_DEFAULT_TCP_PORTS)); ?>"/>
+                                <small class="form-text text-muted" id="asset_discovery_tcp_ports_hint"><?= $escaper->escapeHtml(_lang_raw('DiscoveryDefaultTcpPortsHint', ['max' => ASSETS_DISCOVERY_MAX_TCP_PORTS])); ?></small>
+                            </div>
+                        </div>
                     </div>
 <?php
                     // Asset Valuation mode persists as a setting (default
@@ -824,6 +868,9 @@
                     if (!in_array($asset_valuation_mode, ['linear', 'exponential', 'manual'], true)) {
                         $asset_valuation_mode = 'manual';
                     }
+                    // The Default Currency Symbol prefixes the range inputs, as it
+                    // does the Manual table's boundaries (SR-2075).
+                    $valuation_currency = (string)get_setting('currency');
 ?>
                     <div class="card-body my-2 border">
                         <h4><?= $escaper->escapeHtml($lang['AssetValuation']); ?></h4>
@@ -840,14 +887,24 @@
                         <div id="asset-valuation-automatic" class="<?= in_array($asset_valuation_mode, ['linear', 'exponential'], true) ? '' : 'd-none' ?>">
                             <div class="row form-group">
                                 <div class="col-6">
-                                    <label><?= $escaper->escapeHtml($lang['MinimumValue']); ?> :</label>
-                                    <input id="dollarsign_min" type="number" name="min_value" min="0" size="20" value="<?= asset_min_value(); ?>" class="form-control"/>
+                                    <label for="dollarsign_min"><?= $escaper->escapeHtml($lang['MinimumValue']); ?> :</label>
+                                    <div class="input-group">
+<?php if ($valuation_currency !== '') { ?>
+                                        <span class="input-group-text"><?= $escaper->escapeHtml($valuation_currency); ?></span>
+<?php } ?>
+                                        <input id="dollarsign_min" type="number" name="min_value" min="0" size="20" value="<?= asset_min_value(); ?>" class="form-control"/>
+                                    </div>
                                 </div>
                             </div>
                             <div class="row form-group">
                                 <div class="col-6">
-                                    <label><?= $escaper->escapeHtml($lang['MaximumValue']); ?> :</label>
-                                    <input id="dollarsign_max" type="number" name="max_value" size="20" value="<?= asset_max_value(); ?>" class="form-control"/>
+                                    <label for="dollarsign_max"><?= $escaper->escapeHtml($lang['MaximumValue']); ?> :</label>
+                                    <div class="input-group">
+<?php if ($valuation_currency !== '') { ?>
+                                        <span class="input-group-text"><?= $escaper->escapeHtml($valuation_currency); ?></span>
+<?php } ?>
+                                        <input id="dollarsign_max" type="number" name="max_value" size="20" value="<?= asset_max_value(); ?>" class="form-control"/>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -857,6 +914,78 @@
 ?>
                         </div>
                     </div>
+<?php
+                    // Asset Scoring: shown only once the database upgrade has
+                    // added the scoring columns (the save above is gated the same way).
+                    if (asset_scoring_schema_ready()) {
+                        $asset_scoring = asset_scoring_settings();
+                        $asset_scoring_levels = asset_scoring_level_labels();
+                        $asset_scoring_objectives = asset_scoring_objective_labels();
+                        // One labelled two-decimal number input; every value is escaped once here.
+                        $asset_scoring_number = function (string $id, string $name, int $hundredths, string $label, string $min, string $hint_id) use ($escaper): string {
+                            return '<div class="col-md-4"><label for="' . $escaper->escapeHtmlAttr($id) . '">' . $escaper->escapeHtml($label) . ' :</label>'
+                                . '<input type="number" step="0.01" min="' . $escaper->escapeHtmlAttr($min) . '" max="100" inputmode="decimal" class="form-control"'
+                                . ' id="' . $escaper->escapeHtmlAttr($id) . '" name="' . $escaper->escapeHtmlAttr($name) . '"'
+                                . ' aria-describedby="' . $escaper->escapeHtmlAttr($hint_id) . '"'
+                                . ' value="' . $escaper->escapeHtmlAttr(asset_scoring_format_hundredths($hundredths)) . '"></div>';
+                        };
+?>
+                    <div class="card-body my-2 border" id="asset-scoring-settings">
+                        <h4><?= $escaper->escapeHtml($lang['AssetScoring']); ?></h4>
+                        <p class="form-text text-muted"><?= $escaper->escapeHtml($lang['AssetScoringSettingsHint']); ?></p>
+                        <h5 class="mt-3"><?= $escaper->escapeHtml($lang['Weights']); ?></h5>
+                        <div class="row form-group">
+<?php
+                        foreach (ASSET_SCORING_OBJECTIVES as $o) {
+                            echo $asset_scoring_number("asset_scoring_weight_{$o}", "asset_scoring[weight][{$o}]", $asset_scoring['weights'][$o], $asset_scoring_objectives[$o], '0', 'asset_scoring_weights_hint');
+                        }
+?>
+                            <div class="col-12"><small class="form-text text-muted" id="asset_scoring_weights_hint"><?= $escaper->escapeHtml($lang['AssetScoringWeightsHint']); ?></small></div>
+                        </div>
+                        <h5 class="mt-3"><?= $escaper->escapeHtml($lang['LevelValues']); ?></h5>
+                        <div class="row form-group">
+<?php
+                        foreach (ASSET_SCORING_LEVELS as $l) {
+                            echo $asset_scoring_number("asset_scoring_value_{$l}", "asset_scoring[value][{$l}]", $asset_scoring['values'][$l], $asset_scoring_levels[$l], '0.01', 'asset_scoring_values_hint');
+                        }
+?>
+                            <div class="col-12"><small class="form-text text-muted" id="asset_scoring_values_hint"><?= $escaper->escapeHtml($lang['AssetScoringLevelValuesHint']); ?></small></div>
+                        </div>
+                        <h5 class="mt-3"><?= $escaper->escapeHtml($lang['BandThresholds']); ?></h5>
+                        <div class="row form-group">
+<?php
+                        echo $asset_scoring_number('asset_scoring_threshold_moderate', 'asset_scoring[threshold][moderate]', $asset_scoring['thresholds']['moderate'], $lang['ModerateStartsAt'], '0.01', 'asset_scoring_thresholds_hint');
+                        echo $asset_scoring_number('asset_scoring_threshold_high', 'asset_scoring[threshold][high]', $asset_scoring['thresholds']['high'], $lang['HighStartsAt'], '0.01', 'asset_scoring_thresholds_hint');
+?>
+                            <div class="col-12"><small class="form-text text-muted" id="asset_scoring_thresholds_hint"><?= $escaper->escapeHtml($lang['AssetScoringBandThresholdsHint']); ?></small></div>
+                        </div>
+                        <h5 class="mt-3"><?= $escaper->escapeHtml($lang['DefaultScoringForNewAssets']); ?></h5>
+                        <div class="row form-group">
+<?php
+                        foreach (ASSET_SCORING_OBJECTIVES as $o) {
+?>
+                            <div class="col-md-4">
+                                <label for="asset_scoring_default_<?= $escaper->escapeHtmlAttr($o) ?>"><?= $escaper->escapeHtml($asset_scoring_objectives[$o]); ?> :</label>
+                                <select class="form-select" id="asset_scoring_default_<?= $escaper->escapeHtmlAttr($o) ?>" name="asset_scoring[default][<?= $escaper->escapeHtmlAttr($o) ?>]" aria-describedby="asset_scoring_defaults_hint">
+                                    <option value=""><?= $escaper->escapeHtml($lang['AssetScoringNotSet']); ?></option>
+<?php
+                            foreach (asset_scoring_allowed_values($o) as $code) {
+?>
+                                    <option value="<?= $escaper->escapeHtmlAttr($code) ?>" <?= $asset_scoring['defaults'][$o] === $code ? 'selected' : '' ?>><?= $escaper->escapeHtml($asset_scoring_levels[$code]); ?></option>
+<?php
+                            }
+?>
+                                </select>
+                            </div>
+<?php
+                        }
+?>
+                            <div class="col-12"><small class="form-text text-muted" id="asset_scoring_defaults_hint"><?= $escaper->escapeHtml($lang['AssetScoringDefaultsHint']); ?></small></div>
+                        </div>
+                    </div>
+<?php
+                    }
+?>
                 </div>
             </div>
             <div class="card-body my-2 border">

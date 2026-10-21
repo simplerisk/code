@@ -184,6 +184,17 @@ if (incident_management_extra())
     }
 }
 
+// If the advanced search extra is enabled
+if (advanced_search_extra())
+{
+    if (file_exists(realpath(__DIR__ . '/../../../extras/advanced_search/includes/api_documentation.php')))
+    {
+        // Add the advanced search extra API documentation
+        require_once realpath(__DIR__ . '/../../../extras/advanced_search/includes/api_documentation.php');
+        $scan_directories[] = realpath(__DIR__ . '/../../../extras/advanced_search/includes/api_documentation.php');
+    }
+}
+
 // If the workflows extra is enabled
 if (workflows_extra())
 {
@@ -192,6 +203,28 @@ if (workflows_extra())
         // Add the workflows extra API documentation
         require_once realpath(__DIR__ . '/../../../extras/workflows/includes/api_documentation.php');
         $scan_directories[] = realpath(__DIR__ . '/../../../extras/workflows/includes/api_documentation.php');
+    }
+}
+
+// If the customization extra is enabled
+if (customization_extra())
+{
+    if (file_exists(realpath(__DIR__ . '/../../../extras/customization/includes/api_documentation.php')))
+    {
+        // Add the customization extra API documentation
+        require_once realpath(__DIR__ . '/../../../extras/customization/includes/api_documentation.php');
+        $scan_directories[] = realpath(__DIR__ . '/../../../extras/customization/includes/api_documentation.php');
+    }
+}
+
+// If the Import-Export Extra is enabled
+if (import_export_extra())
+{
+    if (file_exists(realpath(__DIR__ . '/../../../extras/import-export/includes/api_documentation.php')))
+    {
+        // Add the Import-Export Extra API documentation
+        require_once realpath(__DIR__ . '/../../../extras/import-export/includes/api_documentation.php');
+        $scan_directories[] = realpath(__DIR__ . '/../../../extras/import-export/includes/api_documentation.php');
     }
 }
 

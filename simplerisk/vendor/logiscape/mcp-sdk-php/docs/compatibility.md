@@ -48,7 +48,7 @@ worth reporting.
 | ----------- | ----------------------------------------------------------- |
 | `ext-json`  | Required. MCP is JSON-RPC; this is non-negotiable.          |
 | `ext-curl`  | Required. Used by the HTTP client transport.                |
-| `ext-pcntl` | **Optional.** Improves process control for the stdio server runner. Shared hosts often disable it; the SDK degrades cleanly when it's missing. |
+| `ext-pcntl` | **Optional.** Improves process control for the stdio server runner and lets a *CLI* client hold the standalone SSE stream in a forked helper (the client never forks under a web SAPI, with or without it). Shared hosts often disable it; the SDK degrades cleanly when it's missing. |
 | `ext-mbstring` | Recommended. Some content types (e.g. multi-byte text) round-trip more safely with it enabled. |
 
 If your shared host disables `ext-pcntl`, stdio servers still run but lose

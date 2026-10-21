@@ -6,6 +6,7 @@
 
 return [
     'core_ai_context_update' => true,
+    'core_asset_discovery' => true,
     'core_audit_initiate' => true,
     'core_control_update' => true,
     'core_countries_update' => true,

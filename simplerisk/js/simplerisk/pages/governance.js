@@ -599,8 +599,9 @@ jQuery(document).ready(function($){
         });
 
         $.ajax({
-            url: BASE_URL + '/api/v2/ai/document/create?document_type=' + document_type + '&document_name=' + document_name,
-            type: 'GET',
+            url: BASE_URL + '/api/v2/ai/document/create',
+            type: 'POST',
+            data: { document_type: document_type, document_name: document_name },
             dataType: 'json',
             complete: function() {
                 $.unblockUI();

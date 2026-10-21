@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Користувацькі сеанси',
     'SessionActivityTimeout' => 'Таймаут сесії діяльності',
     'Security' => 'Безпека',
-    'EnableCSP' => 'Увімкнути безпеку політику щодо вмісту (це порушив Chrome у минулому)',
+    'EnableCSP' => 'Увімкнути політику безпеки контенту (рекомендовано)',
     'EnableDebugLogging' => 'Увімкнути журналювання налагодження',
     'seconds' => 'секунд',
     'FieldSample' => 'Поле вибірки',
@@ -1984,10 +1984,10 @@ $lang = array(
     'NotificationTemplate' => 'Шаблон сповіщення',
     'JiraUpdateDetails' => 'Деталі оновлення Jira',
     'YouNeedToSpecifyTheTemplateNameParameter' => 'Вам потрібно вказати параметр назви шаблону!',
-    'QuestionsLackingAubjectEdited' => 'Запитання без теми було відредаговано, щоб не намагатися надсилати тему з порожнім ризиком.',
+    'QuestionsLackingAubjectEdited' => 'Запитання без теми було відредаговано, щоб не намагатися надсилати порожню тему ризику.',
     'AdminSelfEditWarning' => 'Користувачі з правами адміністратора не можуть скасовувати власні права адміністратора або блокувати себе.',
     'Value' => 'Значення',
-    'ControlDetails' => 'Деталі керування',
+    'ControlDetails' => 'Деталі контролю',
     'CannotDeleteLastItem' => 'Неможливо видалити останній елемент.',
     'FieldChangeTemplate' => '`{$field_name}` (`{$before}` => `{$after}`)',
     'AuditLog_TestAuditReopen' => 'Аудит «{$test_audit_name}» (ID: {$test_audit_id}) було повторно відкрито користувачем «{$user_name}».',
@@ -2024,7 +2024,7 @@ $lang = array(
     'User' => 'Користувач',
     'QuestionnaireResultShareAuditLog' => 'Користувач "{$user_name}" поділився анкетою "{$questionnaire_name}" (надіслано контакту "{$contact_name}" на "{$date}") результат з коментарем "{$comment}". Спільно з "{$shared_with_contacts}".',
     'QuestionnaireResultStopSharingAuditLog' => 'Користувач "{$user_name}" припинив обмін опитуванням "{$questionnaire_name}" (надіслано контакту "{$contact_name}" щодо результату "{$date}"). Припинив обмін з "{$stopped_sharing_with_contacts}".',
-    'QuestionnaireResultShareOpenedAuditLog' => 'Результат спільної анкети "{$questionnaire_name}" (надіслано контакту "{$contact_name}" на "{$date}", спільний доступ до "{$shared_with_contact_name}" було відкрито.',
+    'QuestionnaireResultShareOpenedAuditLog' => 'Результат спільної анкети "{$questionnaire_name}" (надіслано контакту "{$contact_name}" "{$date}", спільний доступ надано "{$shared_with_contact_name}") було відкрито.',
     'Pending' => 'Очікує на розгляд',
     'PasswordResetRequestsExceeded' => 'Для цього користувача вже було надіслано запит на скидання пароля. Будь ласка, зачекайте 10 хвилин, перш ніж надсилати ще один запит на скидання пароля.',
     'Backups' => 'Резервні копії',
@@ -2043,7 +2043,7 @@ $lang = array(
     'BackupSettingsUpdated' => 'Налаштування резервного копіювання було оновлено користувачем "{$user_name}".',
     'BackupInitiatedByUser' => 'Резервне копіювання ініційовано користувачем "{$user_name}".',
     'BackupInitiated' => 'Розпочато резервне копіювання. Це може тривати кілька хвилин.',
-    'NoControlsAvailable' => 'Немає доступних елементів керування',
+    'NoControlsAvailable' => 'Немає доступних заходів контролю',
     'AdminCantDisableItself' => 'Адміністратор не може сам себе вимкнути.',
     'AdminCantDeleteItself' => 'Адміністратор не може видалити себе.',
     'NoFrameworksFromGithub' => 'Немає жодних вказаних фреймворків, імпортованих з github',
@@ -2515,14 +2515,14 @@ $lang = array(
     'EnterAValuationLevelName' => 'Введіть назву рівня оцінки.',
     'TheNameFieldCannotBeEmptyOrContainOnlySpaces' => 'Поле імені не може бути порожнім або містити лише пробіли.',
     'EditAsset' => 'Редагувати ресурс',
-    'TheSelectedControlsWereDeletedSuccessfully' => 'Вибрані елементи керування успішно видалено.',
-    'NothingControlsForDeletingWereSelected' => 'Не вибрано жодних елементів керування для видалення.',
+    'TheSelectedControlsWereDeletedSuccessfully' => 'Вибрані заходи контролю успішно видалено.',
+    'NothingControlsForDeletingWereSelected' => 'Не вибрано жодних засобів контролю для видалення.',
     'PleaseSelectARoleBeforeDeleting' => 'Будь ласка, виберіть роль перед видаленням.',
     'DocumentInstallation' => 'Встановлення документа',
     'DocumentControlMapping' => 'Зіставлення документа з контролем',
-    'DocumentControlMappingHelp'=>'У цьому звіті показано всі зіставлення документів з елементами керування',
+    'DocumentControlMappingHelp'=>'У цьому звіті показано всі зіставлення документів із засобами контролю',
     'DocumentID' => 'Ідентифікатор документа',
-    'Score' => 'Рахунок',
+    'Score' => 'Оцінка',
     'TFIDFSimilarity' => 'Подібність TF-IDF',
     'MatchingKeywords' => 'Відповідні ключові слова',
     'AIMatch' => 'Збіг ШІ',
@@ -2536,7 +2536,7 @@ $lang = array(
     'Recommendation' => 'Рекомендація',
     'AddControlToPolicy' => 'Додати контроль до політики',
     'ConsiderAddingControl' => 'Розгляньте можливість додавання контролю',
-    'RemoveControlFromPolicy' => 'Видалити керування з політики',
+    'RemoveControlFromPolicy' => 'Видалити засіб контролю з політики',
     'NoActionRequired' => 'Жодних дій не потрібно',
     'DefiniteMatch' => 'Однозначна відповідність',
     'LikelyMatch' => 'Ймовірний збіг',
@@ -2544,7 +2544,7 @@ $lang = array(
     'UnlikelyMatch' => 'Малоймовірний збіг',
     'NotAMatch' => 'Не відповідає',
     'ReviewManually' => 'Переглянути вручну',
-    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Відповіді на запитання зі зв’язаними елементами керування оновлять тип елемента керування на',
+    'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Відповіді на запитання зі зв’язаними засобами контролю оновлять тип засобу контролю на',
     'AuditLog_IncidentUpdated' => 'Інцидент «{$incident_summary}» (ID: {$incident_id}) було оновлено користувачем «{$user_name}». Зміни: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'Відповіді будуть автоматично збережені в оцінюваннях',
     'SecondsAssessmentsAreAutoSaved' => 'Оцінки секунд зберігаються автоматично',
@@ -2599,7 +2599,7 @@ $lang = array(
     'EnableLoggingDebug' => 'НАЛАГОДЖЕННЯ: Детальна діагностична інформація для розробників.',
     'QueueMonitor' => 'Монітор черги',
     'PleaseEnterAValidTimezone' => 'Будь ласка, введіть дійсний часовий пояс.',
-    'TFIDFMatch' => 'Матч TF-IDF',
+    'TFIDFMatch' => 'Збіг TF-IDF',
     'CompletionDate' => 'Дата завершення',
     'AssetsAndControls' => 'Активи та засоби контролю',
     'AssetsByControl' => 'Активи за контролем',
@@ -2627,19 +2627,19 @@ $lang = array(
     'ATestEmailHasBeenSentUsingTheCurrentSettings' => 'Тестовий електронний лист надіслано з використанням поточних налаштувань.',
     'ControlPassFailStatus' => 'Стан контролю пройдено/не пройдено',
     'GovernanceDashboard' => 'Панель керування',
-    'GovernanceDashboardDescription' => 'Ця діаграма відображає поточний рівень зрілості всіх елементів керування.',
+    'GovernanceDashboardDescription' => 'Ця діаграма відображає поточний рівень зрілості всіх засобів контролю.',
     'GovernanceControlsByFrameworkMaturityStacked' => 'Контролі за структурою та поточним рівнем зрілості',
     'Custom' => 'Користувацька',
     'SimpleRiskCustomScheduledNotifications' => 'Налаштовані заплановані сповіщення SimpleRisk',
     'AddCustomScheduledNotification' => 'Додати власне заплановане сповіщення',
     'ReportName' => 'Назва звіту',
     'SelectPeriod' => 'Виберіть період',
-    'NoCustomScheduledNotificationsConfigured' => 'Не налаштовано жодних запланованих сповіщень.',
+    'NoCustomScheduledNotificationsConfigured' => 'Не налаштовано жодних власних запланованих сповіщень.',
     'CustomScheduledNotificationWasAddedSuccessfully' => 'Спеціальне заплановане сповіщення успішно додано.',
     'FailedToAddCustomScheduledNotification' => 'Не вдалося додати власне заплановане сповіщення.',
     'AreYouSureYouWantToDeleteThisNotification' => 'Ви впевнені, що хочете видалити це сповіщення?',
     'FailedToDeleteCustomScheduledNotification' => 'Не вдалося видалити заплановане власне сповіщення.',
-    'FailedToDuplicateCustomScheduledNotification' => 'Не вдалося скопіювати заплановане налаштування сповіщення.',
+    'FailedToDuplicateCustomScheduledNotification' => 'Не вдалося скопіювати користувацьке заплановане сповіщення.',
     'CustomScheduledNotificationWasDuplicatedSuccessfully' => 'Спеціальне заплановане сповіщення успішно продубльовано.',
     'CustomScheduledNotificationWasDeletedSuccessfully' => 'Спеціальне заплановане сповіщення успішно видалено.',
     'CustomScheduledNotificationWasSentSuccessfully' => 'Спеціальне заплановане сповіщення успішно надіслано.',
@@ -2684,7 +2684,7 @@ $lang = array(
     'RiskTrendDesc'                           => 'Сукупні показники відкритих та закритих ризиків, відображені з плином часу.',
     'DynamicRiskReportDesc'                   => 'Налаштовуваний, експортований конструктор звітів для спеціальних запитів щодо ризиків.',
     'GraphicalRiskAnalysisDesc'               => 'Візуалізуйте ризики в різних вимірах за допомогою лінійних та стовпчастих діаграм.',
-    'RiskAverageOverTimeDesc'                 => 'Середній бал невід\'ємного та залишкового ризику з плином часу, за категорією або командою.',
+    'RiskAverageOverTimeDesc'                 => 'Середній бал притаманного та залишкового ризику з плином часу, за категорією або командою.',
     'MeanTimeToRemediateDesc'                 => 'Скільки часу потрібно для зменшення або закриття відкритих ризиків, сегментованих за рівнем серйозності.',
     'LikelihoodImpactDesc'                    => 'Теплова карта відкритих ризиків, нанесена на сітці ймовірності та впливу.',
     'RiskAdviceDesc'                          => 'Розподіл рівня залишкового ризику з пріоритетними рекомендаціями щодо пом\'якшення наслідків на основі співвідношення зусиль до впливу.',
@@ -2710,7 +2710,7 @@ $lang = array(
     'DynamicAuditReportDesc'                  => 'Налаштовуваний звіт про хід аудиту з фільтрами фреймворку та контролю.',
     'AuditTimelineDesc'                       => 'Хронологічний огляд аудиторської діяльності, змін статусу та висновків.',
     'AuditRemediationCycleTimeDesc'           => 'Середній час від висновку аудиту до усунення недоліків, за рамковою програмою.',
-    'ControlGapAnalysisDesc'                  => 'Елементи керування, яким бракує тестів, власників або вони застаріли.',
+    'ControlGapAnalysisDesc'                  => 'Засоби контролю, яким бракує тестів, власників або які застаріли.',
     'DocumentProgramReportDesc'               => 'Стан програми документів: кількість, затвердження та очікування на розгляд.',
     'ExceptionReportDesc'                     => 'Відкриті винятки з датами закінчення терміну дії та станом затвердження.',
     'ConnectivityVisualizerDesc'              => 'Інтерактивний графік взаємозв\'язку ризиків, активів, засобів контролю та структур.',
@@ -2776,13 +2776,13 @@ $lang = array(
     'ImportExportExtraDesc'               => 'Додаткова функція імпорту-експорту надає можливість імпортувати дані в SimpleRisk шляхом зіставлення полів у CSV-файлі з полями в базі даних SimpleRisk. Її можна використовувати для імпорту результатів аудиту з електронної таблиці стороннього розробника, результатів сканування вразливостей з іншого інструменту, ресурсів з вашої CMDB тощо. Додаткова функція також надає можливість експортувати CSV-файли з SimpleRisk, що містять ризики, заходи пом\'якшення, огляди або комбінований звіт про всі три.',
     'JiraExtraDesc'                       => 'Додатковий модуль інтеграції Jira надає користувачам можливість двонаправленої інтеграції з екземпляром Jira. Він дозволяє пов\'язувати ризики з проблемами Jira, а також синхронізувати їхні дані, статус та коментарі.',
     'APIExtraDesc'                        => 'API Extra дозволяє клієнтам використовувати RESTful API для створення сценарійних взаємодій з іншими програмами, щоб отримати розширену автоматизацію та використовувати існуючу інфраструктуру.',
-    'AdvancedSearchExtraDesc'             => "Додатковий розширений пошук розширює функціональність поля пошуку у верхній панелі, щоб можна було знаходити ризики за допомогою текстового пошуку в даних про ризики.",
+    'AdvancedSearchExtraDesc'             => "Додаток «Розширений пошук» перетворює поле пошуку у верхній панелі на єдиний пошук за ризиками, фреймворками, елементами контролю, документами, винятками, тестами, аудитами, активами та групами активів, з повноцінною сторінкою пошуку для роботи з результатами. Він відображає лише ті записи, які користувач має право переглядати.",
     'AssessmentsExtraDesc'                => 'Додаткова функція оцінки ризиків надає користувачам можливість визначати контакти, створювати запитання (включно з логікою), об\'єднувати кілька запитань за допомогою шаблону анкети, створювати анкети та надсилати їх контактам, переглядати результати анкети, додавати ризики на основі цих результатів та порівнювати результати з часом, імпортувати та експортувати зовнішні налаштовані оцінки, а також переглядати журнал аудиту оцінки ризиків.',
     'ActiveAssessmentsDesc'               => 'Переглядайте та керуйте оцінюваннями, які зараз тривають.',
     'WorkflowsExtraDesc'                  => 'Workflows Extra надає візуальний, керований подіями механізм робочих процесів, який автоматизує дії з управління ризиками у відповідь на події в SimpleRisk. Ви можете розробляти робочі процеси, які запускаються при змінах, таких як надсилання, оновлення або перевірка ризику, для маршрутизації затверджень, призначення роботи та підтримки вашого процесу без ручного втручання.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'Unified Compliance Framework (UCF) Extra – це інтеграція на рівні API між Unified Compliance Framework та SimpleRisk. Її ввімкнення дозволяє імпортувати вибрані фреймворки та керувати зіставленнями безпосередньо з UCF.',
+    'UCFExtraDesc'                        => 'Unified Compliance Framework (UCF) Extra – це інтеграція на рівні API між Unified Compliance Framework та SimpleRisk. Її ввімкнення дозволяє імпортувати вибрані фреймворки та зіставлення контролів безпосередньо з UCF.',
     'SCFExtraDesc'                        => "Secure Controls Framework (SCF) Extra – це пряма інтеграція між Secure Controls Framework та SimpleRisk. Він імпортує каталог елементів керування SCF та їх зіставлення з широким спектром рамок відповідності та кібербезпеки у функціональність управління SimpleRisk, щоб ви могли впроваджувати потрібні вам рамкові системи та керувати їхніми елементами керування, не створюючи їх вручну.",
 
     // Configure Hub - tile descriptions (maintenance category)
@@ -2812,7 +2812,7 @@ $lang = array(
 
     // Configure Hub - Activation modal (Phase 3)
     // 'Activate' (line 357) and 'Cancel' (line 489) are reused as-is.
-    'ActivateExtraTitle'                  => 'Активувати Додатково',
+    'ActivateExtraTitle'                  => 'Активувати Extra',
     'ActivateExtraBody'                   => 'Активувати додаткову функцію {name} ? Це одразу активує її функціональність. Ви можете деактивувати її пізніше з тієї ж плитки.',
     'ActivateExtraError'                  => 'Не вдалося активувати додаткову функцію. Будь ласка, перевірте сторінку перевірки справності для отримання діагностичних даних.',
 
@@ -2893,7 +2893,7 @@ $lang = array(
     'EncryptionActivationAlreadyRunning' => 'Активація шифрування вже триває. Зачекайте її завершення або скористайтеся відновленням з резервної копії.',
     'EncryptionActivationEnqueued'           => 'Активацію шифрування Extra поставлено в чергу. Інтерфейс адміністратора відстежуватиме прогрес, поки база даних шифрується.',
     'EncryptionActivationEnqueueFailed'      => 'Не вдалося поставити завдання активації шифрування в чергу. Перегляньте журнал налагодження для отримання детальної інформації.',
-    'EncryptionDeactivationEnqueued'         => 'Шифрування. Додаткову деактивацію поставлено в чергу. Інтерфейс адміністратора відстежуватиме прогрес розшифрування бази даних.',
+    'EncryptionDeactivationEnqueued'         => 'Деактивацію Encryption Extra поставлено в чергу. Інтерфейс адміністратора відстежуватиме прогрес розшифрування бази даних.',
     'EncryptionDeactivationEnqueueFailed'    => 'Не вдалося поставити завдання деактивації шифрування в чергу. Перегляньте журнал налагодження для отримання детальної інформації.',
     'EncryptionPipelineInProgress'           => 'Наразі виконується процес шифрування (активація, деактивація або відновлення). Зачекайте його завершення, перш ніж повторити спробу.',
     'EncryptionPipelineInProgressTask'       => 'Наразі виконується конвеєр шифрування (завдання #{id}, {type}). Зачекайте його завершення, перш ніж повторити спробу.',
@@ -2972,11 +2972,11 @@ $lang = array(
     'ContextQuestions' => 'Контекстні питання',
     'AIProviderNotConfiguredWarning' => 'Постачальника штучного інтелекту не налаштовано. Неможливо отримати результати в реальному часі, доки ви не встановите постачальника та ключ API на вкладці «Конфігурація постачальника».',
     'AutoProcessSCFUpdates' => 'Автоматично обробляти нові випуски Secure Controls Framework (SCF)',
-    'AddNewControls' => 'Додати нові елементи керування SCF',
-    'UpdateExistingControls' => 'Оновлення існуючих елементів керування SCF',
-    'DeleteRemovedControls' => 'Видалити видалені елементи керування SCF',
-    'CreateEvidenceRequests' => 'Створення запитів на докази для елементів керування SCF',
-    'SelectSCFFrameworks' => 'Виберіть SCF Frameworks',
+    'AddNewControls' => 'Додати нові засоби контролю SCF',
+    'UpdateExistingControls' => 'Оновити наявні заходи контролю SCF',
+    'DeleteRemovedControls' => 'Видалити вилучені засоби контролю SCF',
+    'CreateEvidenceRequests' => 'Створення запитів на докази для засобів контролю SCF',
+    'SelectSCFFrameworks' => 'Виберіть фреймворки SCF',
     'SCFReleaseProcessing' => 'Обробка випуску SCF',
     'NotFrameworkDescription' => 'Віджет нижче відображає всі заголовки, знайдені в електронній таблиці Secure Controls Framework (SCF). Використовуйте його, щоб вибрати, які стовпці містять дані фреймворків, а які не належать до фреймворків.',
     'Note' => 'Примітка',
@@ -2993,11 +2993,11 @@ $lang = array(
     'FailedToFetchCVEInformation' => 'Не вдалося отримати інформацію CVE. Перевірте ідентифікатор CVE та спробуйте ще раз.',
     'ComplianceDashboard' => 'Панель керування відповідностю',
     'DynamicAuditReportHelp' => 'У цьому звіті відображаються всі аудити та їх статуси.',
-    'ComplianceDashboardDescription' => 'На цій діаграмі показано кількість елементів керування в кожному фреймворку, причому зеленим позначено елементи керування, що пройшли перевірку, а червоним – ті, що не пройшли перевірку.',
+    'ComplianceDashboardDescription' => 'На цій діаграмі показано кількість заходів контролю в кожному фреймворку, причому зеленим позначено заходи контролю, що пройшли перевірку, а червоним – ті, що не пройшли перевірку.',
     'PassingControls' => 'Виконані засоби контролю',
-    'FailingControls' => 'Невдалі елементи керування',
-    'ControlsByFramework' => 'Елементи керування за допомогою фреймворку',
-    'NumberOfControls' => 'Кількість елементів керування',
+    'FailingControls' => 'Невдалі засоби контролю',
+    'ControlsByFramework' => 'Контролі за фреймворком',
+    'NumberOfControls' => 'Кількість заходів контролю',
     'PasswordResetTokenExpirationPeriod' => 'Термін дії токена скидання пароля',
     'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'Термін дії токена скидання пароля має бути більше 5 хвилин.',
     'MeanTimeToRemediate' => 'Середній час усунення несправностей',
@@ -3101,7 +3101,7 @@ $lang = array(
     'QuestionnaireNamePlaceholder' => 'наприклад, Огляд безпеки постачальників 2026 року',
     'AddTeamPlaceholder' => 'Додати команду…',
     'AddStakeholderPlaceholder' => 'Додати зацікавлену сторону…',
-    'AddControlTypePlaceholder' => 'Додати тип керування…',
+    'AddControlTypePlaceholder' => 'Додати тип засобу контролю…',
     'AddLocationPlaceholder' => 'Додати місцезнаходження…',
     'NotifyWhenNotCompleteLabel' => 'Повідомити, коли не завершено',
     'NotifyWhenNotCompleteDescription' => 'Нагадайте контактам, які ще не завершили оцінювання.',
@@ -3114,7 +3114,7 @@ $lang = array(
     'NewSelfAssessment' => 'Нова самооцінка',
     'SelfAssessmentPrereqIntro' => 'Самооцінювання дозволяє вам оцінити вашу організацію за рамковою системою безпечного контролю та автоматично генерувати ризики на основі невдалих заходів контролю. Спочатку необхідно виконати два кроки налаштування:',
     'RegisterYourInstance' => 'Зареєструйте свій екземпляр',
-    'RegisterYourInstanceHelp' => 'Реєстрація пов\'язує цей екземпляр із сервісом ліцензування SimpleRisk, тому можна завантажити безкоштовні додаткові матеріали (включно з SCF).',
+    'RegisterYourInstanceHelp' => 'Реєстрація пов\'язує цей екземпляр із сервісом ліцензування SimpleRisk, тому можна завантажити безкоштовні додаткові модулі (включно з SCF).',
     'InstallTheSCF' => 'Встановлення системи безпечного контролю',
     'InstallTheSCFHelp' => 'SCF – це безкоштовний додатковий компонент, який надає структури, контрольні питання та схеми ризиків, за якими оцінюється ця функція. Інсталяція працює у фоновому режимі та може тривати кілька хвилин.',
     'GoToRegistration' => 'Перейти до реєстрації',
@@ -3124,7 +3124,7 @@ $lang = array(
     'EnabledFrameworks' => 'Увімкнені фреймворки',
     'AllScfFrameworks' => 'Усі рамки SCF',
     'Start' => 'Початок',
-    'Resume' => 'Резюме',
+    'Resume' => 'Продовжити',
     'ControlQuestion' => 'Контрольне питання',
     'NotApplicable' => 'Немає даних',
     'SaveProgress' => 'Зберегти прогрес',
@@ -3132,19 +3132,19 @@ $lang = array(
     'AnsweredOfTotal' => 'відповів',
     'FailedSoFar' => 'поки що не вдалося',
     'StartedBy' => 'Розпочато',
-    'FailedControls' => 'Невдалі елементи керування',
+    'FailedControls' => 'Невдалі засоби контролю',
     'PushToRisk' => 'Підштовхнути до ризику',
     'ConfirmDeleteSelfAssessment' => 'Видалити цю самооцінку? Цю дію неможливо скасувати.',
     'ConfirmCompleteSelfAssessment' => 'Позначити цю оцінку як завершену? Ризики виникнуть через невдалі заходи контролю.',
     'NoSelfAssessmentsYet' => 'Поки що немає самооцінювання. Почніть його для початку.',
     'RequestFailed' => 'Запит не вдалося виконати. Спробуйте ще раз.',
     'NoPendingRisks' => 'Немає незавершених ризиків. Проведіть оцінку, щоб створити ризики, що виникають внаслідок невдалих заходів контролю.',
-    'NoFailedControls' => 'Для цього фільтра немає результатів керування.',
-    'ControlResultsTruncated' => 'Показано найновіші результати за 2000 років. Звузьте фільтр, щоб побачити більше.',
+    'NoFailedControls' => 'Для цього фільтра немає результатів засобів контролю.',
+    'ControlResultsTruncated' => 'Показано 2000 найновіших результатів. Звузьте фільтр, щоб побачити більше.',
     'GeneratedFromSelfAssessment' => 'Згенеровано на основі самооцінки',
     'SelfAssessmentMitigationSolution' => 'Впровадьте заходи контролю, перелічені нижче, які були визначені як неефективні під час цієї самооцінки, щоб зменшити цей ризик.',
     'NSelected' => '{n} вибрано',
-    'FilterByControl' => 'Фільтрувати за елементом керування',
+    'FilterByControl' => 'Фільтрувати за контролем',
     'Pushing' => 'Натискання…',
     'Deleting' => 'Видалення…',
     'ConfirmPushSelectedPendingRisks' => 'Перемістити {n} вибраних ризиків, що очікують розв\'язання, до списку ризиків?',
@@ -3159,17 +3159,17 @@ $lang = array(
     'HomeKpiUnmitigated' => 'Незм\'якшений',
     'HomeKpiClosedRisks' => 'Закриті Ризики',
     'HomeKpiControlPassRate' => 'Коефіцієнт успішного проходження контролю',
-    'HomeKpiFailingControls' => 'Невдалі елементи керування',
+    'HomeKpiFailingControls' => 'Невдалі засоби контролю',
     'HomeKpiOpenAudits' => 'Відкриті аудити',
-    'HomeKpiTestsDueSoon' => 'Тести мають бути здані найближчим часом',
+    'HomeKpiTestsDueSoon' => 'Тести, термін яких спливає найближчим часом',
     'HomeKpiActiveFrameworks' => 'Активної рамки',
-    'HomeKpiTotalControls' => 'Повний контроль',
+    'HomeKpiTotalControls' => 'Усього засобів контролю',
     // Home dashboard — What's Next feed
     'WhatsNext' => 'Що далі?',
     'WhatsNextAllCaughtUp' => 'Ви все встигли.',
     'WhatsNextRegisterInstance' => 'Зареєструйте свій екземпляр SimpleRisk',
     'WhatsNextSubmitFirstRisk' => 'Надішліть свій перший ризик',
-    'WhatsNextLoadFramework' => 'Завантаження системи керування',
+    'WhatsNextLoadFramework' => 'Завантажити фреймворк засобів контролю',
     'WhatsNextUnreviewedRisks' => 'Ризики, які слід переглянути',
     'WhatsNextUnmitigatedRisks' => 'Ризики, які слід пом\'якшити',
     'WhatsNextInitiateAudits' => 'Аудити для початку',
@@ -3191,10 +3191,10 @@ $lang = array(
     'ListExpiringExceptions' => 'Винятки, термін дії яких закінчується',
     'ImKpiOpenIncidents' => 'Всього відкрито',
     'ImKpiOverdue' => 'Прострочено',
-    'ImKpiMttr30' => 'Середня роздільна здатність',
-    'ImKpiMttrQuarter' => 'Середня роздільна здатність (90 днів)',
-    'ImKpiMttrYear' => 'Середня роздільна здатність (1 рік)',
-    'ImKpiMttrAll' => 'Середня роздільна здатність (усі)',
+    'ImKpiMttr30' => 'Середній час вирішення',
+    'ImKpiMttrQuarter' => 'Середній час вирішення (90 днів)',
+    'ImKpiMttrYear' => 'Середній час вирішення (1 рік)',
+    'ImKpiMttrAll' => 'Середній час вирішення (усі)',
     'ImKpiResolved30' => 'Вирішено',
     'ImChartBySeverity' => 'За ступенем серйозності',
     'ImChartByStatus' => 'За статусом',
@@ -3231,7 +3231,7 @@ $lang = array(
     'GSHide' => 'Приховати початок роботи',
     'GSDismissStep' => 'Відхилити цей крок',
     'GSAllSet' => 'Ви готові — чудова робота!',
-    'GSWalkthrough' => '30-хвилинна прогулянка',
+    'GSWalkthrough' => '30-хвилинний покроковий огляд',
     'Explore' => 'Дослідити',
     'Learn' => 'Дізнатися',
     'AdminGuide' => 'Посібник адміністратора',
@@ -3258,7 +3258,7 @@ $lang = array(
     'GSReviewDesc' => 'Перегляньте ризик та визначте його наступний крок.',
     'GSReviewCta' => 'Виконати огляд',
     'GSDefineTestTitle' => 'Визначте контрольний тест',
-    'GSDefineTestDesc' => 'Налаштуйте, як тестуватиметься елемент керування.',
+    'GSDefineTestDesc' => 'Налаштуйте, як тестуватиметься захід контролю.',
     'GSDefineTestCta' => 'Визначити тест',
     'GSInitiateAuditTitle' => 'Ініціювати аудит',
     'GSInitiateAuditDesc' => 'Розпочніть цикл тестування або аудиту.',
@@ -3272,7 +3272,7 @@ $lang = array(
     'GSNextCards' => 'Показати наступні кроки',
     'WhatsNextInstallSCF' => 'Встановлення системи безпечного контролю',
     'GSActivateScfTitle' => 'Активуйте систему безпечного контролю',
-    'GSActivateScfDesc' => 'Увімкніть встановлений SCF, щоб завантажити його елементи керування у вашу бібліотеку.',
+    'GSActivateScfDesc' => 'Увімкніть встановлений SCF, щоб завантажити його засоби контролю у вашу бібліотеку.',
     'GSActivateScfCta' => 'Активувати SCF',
     'WhatsNextActivateSCF' => 'Активуйте систему безпечного контролю',
     'GSEnableFrameworksTitle' => 'Увімкнути відповідні фреймворки',
@@ -3285,26 +3285,26 @@ $lang = array(
     'WhatsNextTakeSelfAssessment' => 'Пройдіть самооцінку',
     'WhatsNextConfigureAI' => 'Налаштуйте ШІ',
     'ListUnreviewedRisks' => 'Непереглянуті ризики',
-    'ControlsByDomain' => 'Елементи керування за доменом',
-    'ControlsByClass' => 'Елементи керування за класом',
-    'ControlsByPhase' => 'Керування за фазою',
-    'ControlsByPriority' => 'Елементи керування за пріоритетом',
-    'ControlsByCurrentMaturity' => 'Контролі за поточним терміном погашення',
+    'ControlsByDomain' => 'Засоби контролю за доменом',
+    'ControlsByClass' => 'Заходи контролю за класом',
+    'ControlsByPhase' => 'Засоби контролю за фазою',
+    'ControlsByPriority' => 'Засоби контролю за пріоритетом',
+    'ControlsByCurrentMaturity' => 'Контролі за поточним рівнем зрілості',
     'ControlStatusOverTime' => 'Стан контролю з плином часу',
-    'ComplianceTotalControls' => 'Повний контроль',
+    'ComplianceTotalControls' => 'Усього засобів контролю',
     'HomeKpiOverdueTests' => 'Прострочені тести',
     'Total' => 'Всього',
     'StartTheTest' => 'Розпочати тест',
     'TestStartsAutomatically' => 'Тест починається автоматично',
     'GoToTest' => 'Перейти до тесту',
     'NotTested' => 'Не протестовано',
-    'PassingPercent' => '% пасів',
-    'ListFailingControls' => 'Невдалі елементи керування',
+    'PassingPercent' => '% успішності',
+    'ListFailingControls' => 'Невдалі засоби контролю',
     'Exceptions' => 'Винятки',
     'Documents' => 'Документи',
-    'ControlsBelowMaturity' => 'Контрольні заходи нижче вікової межі зрілості',
+    'ControlsBelowMaturity' => 'Контролі нижче рівня зрілості',
     'ControlsAtMaturity' => 'Контроль на етапі зрілості',
-    'ControlsAboveMaturity' => 'Контроль, що перевищує термін зрілості',
+    'ControlsAboveMaturity' => 'Засоби контролю вище рівня зрілості',
     'Maturity' => 'Зрілість',
     'AllTime' => 'Весь час',
     'Last7Days' => 'Останні 7 днів',
@@ -3345,8 +3345,8 @@ $lang = array(
     'AICapFairAnalysisDesc' => 'Штучний інтелект оцінює параметри збитків за бета-PERT; SimpleRisk проводить 10 000-ітераційний метод Монте-Карло для кількісної оцінки ризику в доларах.',
     'AICapDocumentCustomization' => 'Налаштування документів',
     'AICapDocumentCustomizationDesc' => 'Заповнює заповнювачі та очищує текст політики у шаблонах документів, щоб шаблонна політика читалася як ваша.',
-    'AICapDocumentControlMatching' => 'Зіставлення документів ↔ з елементами керування',
-    'AICapDocumentControlMatchingDesc' => 'Автоматично зіставляє елементи керування з документами політики з оцінкою достовірності та обґрунтуванням, яке ви можете переглянути.',
+    'AICapDocumentControlMatching' => 'Зіставлення документів ↔ засобів контролю',
+    'AICapDocumentControlMatchingDesc' => 'Автоматично зіставляє засоби контролю з документами політики з оцінкою достовірності та обґрунтуванням, яке ви можете переглянути.',
     'AICapDocumentTemplates' => 'Бібліотека шаблонів документів',
     'AICapDocumentTemplatesDesc' => 'Встановіть шаблони кураторських політик, інструкцій та процедур з бібліотеки SimpleRisk.',
     'AICapControlReferenceEnhancement' => 'Покращення контрольних посилань',
@@ -3355,7 +3355,7 @@ $lang = array(
     'AICapAiChatDesc' => 'Помічник GRC, який відповідає на запитання в контексті будь-де в SimpleRisk.',
     'AICapSurfacedRecommendations' => 'Сторінка штучного інтелекту',
     'AICapSurfacedRiskView' => 'Огляд ризиків — Деталі та пом\'якшення наслідків',
-    'AICapSurfacedFairTab' => 'Перегляд ризиків — вкладка СПРАВЕДЛИВІСТЬ',
+    'AICapSurfacedFairTab' => 'Перегляд ризиків — вкладка FAIR',
     'AICapSurfacedDocuments' => 'Управління — Документи',
     'AICapSurfacedControls' => 'Відповідність — Контроль',
     'AICapSurfacedEveryPage' => 'Кожна сторінка — плаваючий помічник',
@@ -3363,7 +3363,7 @@ $lang = array(
     'AICapSearchPlaceholder' => 'Пошук можливостей штучного інтелекту…',
     'AICapFilterDomain' => 'Домен',
     'AICapFilterTier' => 'Рівень',
-    'AICapFilterState' => 'Штат',
+    'AICapFilterState' => 'Стан',
     'AICapTierExtra' => 'ШІ Додатково',
     'AICapStateLocked' => 'Заблоковано',
     'AICapIncludedInExtra' => 'Включено до додаткового опції AI',
@@ -3371,7 +3371,7 @@ $lang = array(
     'AICapNeedsProvider' => 'Потрібне налаштування постачальника',
     'AICapNoMatch' => 'Немає відповідності можливостей',
     'AICapNoMatchHint' => 'Спробуйте інший домен, рівень або пошуковий термін.',
-    'AICapCountSingular' => 'можливості',
+    'AICapCountSingular' => 'можливість',
     'AICapCountPlural' => 'можливості',
     'DomainAssistant' => 'Помічник',
     'AICapLoadError' => 'Не вдалося завантажити можливості штучного інтелекту. Спробуйте ще раз.',
@@ -3391,7 +3391,7 @@ $lang = array(
     'AICtxDataRegulatory' => 'Чи поширюються на вас якісь особливі регуляторні вимоги у вашій галузі?',
     'AICtxDataThirdParties' => 'Чи маєте ви якісь відносини з третіми сторонами або аутсорсингові послуги, які потребують нагляду за дотриманням вимог?',
     'AICtxMaturityIssues' => 'Чи стикалися ви з будь-якими суттєвими проблемами з дотриманням вимог, порушеннями безпеки або ризикованими подіями протягом останніх 3-5 років?',
-    'AICtxMaturityConcerns' => 'Чи є якісь конкретні проблемні області або області, що викликають покращення, які ви визначили у ваших поточних процесах GRC?',
+    'AICtxMaturityConcerns' => 'Чи є якісь конкретні проблемні області або області, що потребують покращення, які ви визначили у ваших поточних процесах GRC?',
     'AICtxMaturityAppetite' => 'Яка схильність до ризику та толерантність вашої організації?',
     'AICtxMaturityLevel' => 'Який ваш поточний рівень зрілості з точки зору корпоративного управління, управління ризиками та практики дотримання вимог?',
     'AICtxImplementationChanges' => 'Чи плануються якісь майбутні зміни у вашій бізнес-моделі, технологічній інфраструктурі або ринку, які можуть вплинути на ваші потреби у дотриманні вимог?',
@@ -3438,7 +3438,7 @@ $lang = array(
     'ScheduleInterval' => 'Інтервал',
     'ScheduleCalendar' => 'Календар',
     'Cadence' => 'Каденція',
-    'CadenceBiweekly' => 'Двотижневик',
+    'CadenceBiweekly' => 'Раз на два тижні',
     'CadenceSemiAnnually' => 'Півріччя',
     'AnchorDate' => 'Дата прив\'язки',
     'UpcomingOccurrences' => 'Майбутні події',
@@ -3459,15 +3459,15 @@ $lang = array(
     'LastResult' => 'Останній результат',
     'NextDue' => 'Наступний термін',
     'DueSoon' => 'Термін виконання незабаром',
-    'Retired' => 'На пенсії',
+    'Retired' => 'Виведено з експлуатації',
     'MyTests' => 'Мої тести',
     'Failing' => 'Невдача',
     'Untested' => 'Неперевірений',
     'ShowRetired' => 'Показати виведені з експлуатації',
     'Tests' => 'Тести',
     'NoTestsForThisControl' => 'Для цього контролю ще немає тестів.',
-    'NoControlsDefinedYet' => 'Елементи керування ще не визначені',
-    'NoControlsDefinedYetBody' => 'Визначте елементи керування в розділі «Управління» перед додаванням тестів.',
+    'NoControlsDefinedYet' => 'Засоби контролю ще не визначені',
+    'NoControlsDefinedYetBody' => 'Визначте засоби контролю в розділі «Управління» перед додаванням тестів.',
     'NoTestsMatchFilters' => 'Немає тестів, що відповідають вашим фільтрам',
     'NoTestsMatchFiltersBody' => 'Спробуйте змінити пошук або фільтри.',
     'CouldNotLoadTests' => 'Не вдалося завантажити тести',
@@ -3475,28 +3475,28 @@ $lang = array(
     'ShowingXToYOfZ' => 'Показано {$start}–{$end} з {$total}',
     // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
     'Reference' => 'Довідка',
-    'NoFrameworksMapped' => 'Жодних фреймворків, пов\'язаних з цим елементом керування, не зіставлено.',
+    'NoFrameworksMapped' => 'До цього засобу контролю не зіставлено жодних фреймворків.',
     // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
-    'Retire' => 'Вихід на пенсію',
+    'Retire' => 'Вивести з експлуатації',
     'ReassignTester' => 'Перепризначити тестувальника',
     'SetSchedule' => 'Встановити розклад',
     'ConfirmRetireSelectedTests' => 'Вилучити {n} вибраних тестів?',
     'ConfirmDeleteSelectedTests' => 'Видалити вибрані тести ( {n} )? Цю дію не можна скасувати.',
     // Define Tests grid -- Coverage toolbar select (Issue 4)
     'Coverage' => 'Покриття',
-    'CoverageWithTests' => 'Контроль за допомогою тестів',
-    'CoverageAllControls' => 'Усі елементи керування',
+    'CoverageWithTests' => 'Контролі з тестами',
+    'CoverageAllControls' => 'Усі засоби контролю',
     'CoverageGaps' => 'Прогалини',
     // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
     // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
     // chips above (identical text) rather than duplicated here.
     'DtTotalTests' => 'Загальна кількість тестів',
     'DtCoverageGaps' => 'Прогалини в охопленні',
-    'DtAcrossNControls' => 'Серед елементів керування {$n}',
-    'DtControlsWithNoTest' => 'Контрольні групи без тесту',
+    'DtAcrossNControls' => 'Серед {$n} засобів контролю',
+    'DtControlsWithNoTest' => 'Заходи контролю без тесту',
     'DtNeedInitiationNow' => 'Потрібна ініціація зараз',
     'DtWithinLeadInWindow' => 'У межах підготовчого вікна',
-    'DtLastResultFailed' => 'Останній результат не вдалося',
+    'DtLastResultFailed' => 'Останній результат завершився невдало',
     'InvalidTestMethod' => 'Метод тестування має бути одним із наступних: Дослідження, Спостереження, Інспекція або Повторне виконання!',
     'TesterCannotBeApprover' => 'Тестера також не можна вказати як схвалювача для цього тесту.',
     'ApproverNotEligible' => 'Один або декілька вибраних осіб, що затверджують, не мають обов\'язку «Затверджувати тести».',
@@ -3527,11 +3527,11 @@ $lang = array(
     'ReturnedForReworkBannerText' => 'Цей аудит було відхилено та повернуто на доопрацювання.',
     'RejectReason' => 'Причина відхилення',
     'AreYouSureYouWantToApproveThisAudit' => 'Ви впевнені, що хочете схвалити цей аудит?',
-    'AtLeastOneControlRequired' => 'Потрібен принаймні один елемент керування.',
-    'DtNCommonAcrossNControls' => '{$common} загальні · {$n} елементи керування',
+    'AtLeastOneControlRequired' => 'Потрібен принаймні один засіб контролю.',
+    'DtNCommonAcrossNControls' => '{$common} спільних · {$n} засобів контролю',
     'DtUntestedControls' => 'Неперевірені засоби контролю',
     'DtControlsInScopeNoCoverage' => 'Без покриття',
-    'Passing' => 'Пасування',
+    'Passing' => 'Пройдено',
     'DtLastResultPassed' => 'Останній результат прийнято',
     'AllFamilies' => 'Усі родини',
     'SearchTestsPlaceholder' => 'Пошук тестів, контролів та фреймворків',
@@ -3541,13 +3541,13 @@ $lang = array(
     'Common' => 'Звичайний',
     'ValidatesAcrossMappedFrameworks' => 'Перевіряє в різних зіставлених фреймворках',
     'EditTest' => 'Редагувати тест',
-    'ControlHasNoTestCoverage' => 'Цей елемент керування в області застосування ще не має тестового покриття.',
+    'ControlHasNoTestCoverage' => 'Цей засіб контролю в області застосування ще не має тестового покриття.',
     'AddTheFirstTest' => 'Додайте перший тест',
-    'ApplyCommonTestHint' => 'Застосуйте один або декілька існуючих тестів до цього елемента керування. Кожен тест зберігає свої поточні елементи керування та стає загальним тестом, що охоплює також і цей.',
-    'CommonTestApplied' => 'Тест, застосований до цього елемента керування.',
-    'CouldNotApplyCommonTest' => 'Не вдалося застосувати тест до цього елемента керування.',
+    'ApplyCommonTestHint' => 'Застосуйте один або декілька існуючих тестів до цього засобу контролю. Кожен тест зберігає свої поточні засоби контролю та стає загальним тестом, що охоплює також і цей.',
+    'CommonTestApplied' => 'Тест, застосований до цього засобу контролю.',
+    'CouldNotApplyCommonTest' => 'Не вдалося застосувати тест до цього заходу контролю.',
     'SelectOneOrMoreTests' => 'Виберіть один або декілька тестів',
-    'CommonTestsApplied' => '{n} тестів, застосованих до цього елемента керування.',
+    'CommonTestsApplied' => '{n} тестів, застосованих до цього засобу контролю.',
     'ApplyCommonTests' => 'Застосовуйте поширені тести…',
     'History' => 'Історія',
     'Result' => 'Результат',
@@ -3555,10 +3555,10 @@ $lang = array(
     'ThisTestHasNotBeenRunYet' => 'Цей тест ще не проводився.',
     'CouldNotLoadTestHistory' => 'Не вдалося завантажити історію цього тесту.',
     'Identity' => 'Ідентичність',
-    'IdentitySectionHint' => 'Ім\'я, тестер та елементи керування, які він перевіряє',
+    'IdentitySectionHint' => 'Ім\'я, тестер та заходи контролю, які він перевіряє',
     'WhenTheAuditInitiates' => 'Коли починається аудит',
     'ProcedureAndEvidence' => 'Процедура та докази',
-    'CommonTestControlsHint' => 'Один тест може перевірити багато елементів керування — поширений тест. Відкриття цього з пункту керування «+ Додати тест» попередньо вибирає його тут.',
+    'CommonTestControlsHint' => 'Один тест може перевірити багато заходів контролю — поширений тест. Відкриття цього з пункту «+ Додати тест» заходу контролю попередньо вибирає його тут.',
     'SeparationOfDutiesNote' => 'Розподіл обов\'язків — особа, яка затверджує, не може бути одночасно і тестувальником.',
     'CommonTestEditScopeHint' => 'Зміни застосовуються скрізь, де використовується цей загальний тест.',
     'Mode' => 'Режим',
@@ -3572,7 +3572,7 @@ $lang = array(
     'UntestedControls' => 'Неперевірені засоби контролю',
     'OverdueByXDays' => 'Прострочено · {n} днів',
     'OverdueByOneDay' => 'Прострочено · 1 день',
-    'DueInXDays' => 'Термін сплати {n} днів',
+    'DueInXDays' => 'Термін виконання через {n} днів',
     'DueTomorrow' => 'Термін подання завтра',
     'DueToday' => 'Термін сплати сьогодні',
     'ScheduledForX' => 'Заплановано · {date}',
@@ -3580,23 +3580,23 @@ $lang = array(
     'AllStatuses' => 'Усі статуси',
     'OnTrack' => 'На правильному шляху',
     'NextTestDateDerivedHint' => 'Розраховується на основі дати останнього тестування плюс частота тестування. Встановіть частоту, щоб запланувати його автоматично, або залиште поле частоти порожнім, щоб встановити цю дату самостійно.',
-    'DueStatus' => 'Статус виконання',
+    'DueStatus' => 'Статус терміну виконання',
     'AllResults' => 'Усі результати',
     // Remove a test from one control (Define Tests grid unlink row action)
-    'RemoveFromThisControl' => 'Видалити з цього елемента керування',
+    'RemoveFromThisControl' => 'Видалити з цього заходу контролю',
     'RemoveTestFromControl' => 'Видалити тест з контролю',
     'RemoveTestFromControlConfirm' => 'Видалити "{test_name}" з {control_name}?',
-    'RemoveTestFromControlStays' => 'Тест залишається на своїх {n} інших елементах керування. Нічого не видаляється.',
+    'RemoveTestFromControlStays' => 'Тест залишається для своїх {n} інших заходів контролю. Нічого не видаляється.',
     'RemoveTestFromControlStaysOne' => 'Тест залишається на 1 іншому контрольному елементі. Нічого не видаляється.',
     'CannotRemoveTestsOnlyControl' => 'Тест має належати принаймні до одного елемента керування. Натомість скасуйте або видаліть тест.',
     'TestRemovedFromControl' => 'Тест було вилучено з контролю.',
     'CouldNotRemoveTestFromControl' => 'Тест не вдалося видалити з контролю.',
     'TestRemovedFromControlAuditLogMessage' => 'Тест «{$test_name}» (ID: {$test_id}) було видалено з контролю (ID: {$control_id}) користувачем «{$user}».',
-    'DeleteTestUsedByNControls' => 'Він використовується елементами керування {n} і буде видалений з усіх них.',
-    'BulkDeleteSharedTestsNote' => '{n} з них використовуються іншими елементами керування та будуть видалені з них також.',
-    'BulkRetireSharedTestsNote' => '{n} з них використовуються іншими елементами керування та будуть вилучені там також.',
-    'BulkDeleteOneSharedTestNote' => 'Один з них використовується іншими елементами керування та буде видалений і з них.',
-    'BulkRetireOneSharedTestNote' => 'Один з них використовується іншими елементами керування і там також буде вилучено.',
+    'DeleteTestUsedByNControls' => 'Він використовується {n} засобами контролю і буде видалений з усіх них.',
+    'BulkDeleteSharedTestsNote' => '{n} з них використовуються іншими засобами контролю та будуть видалені з них також.',
+    'BulkRetireSharedTestsNote' => '{n} з них використовуються іншими засобами контролю та будуть вилучені там також.',
+    'BulkDeleteOneSharedTestNote' => 'Один з них використовується іншими контролями та буде видалений і з них.',
+    'BulkRetireOneSharedTestNote' => 'Один з них використовується іншими засобами контролю і там також буде вилучено.',
     'CouldNotLoadTest' => 'Не вдалося завантажити цей тест.',
     'Expand' => 'Розгорнути',
     'SearchMappings' => 'Пошук фреймворків та посилань',
@@ -3604,16 +3604,16 @@ $lang = array(
     'Insights' => 'Статистика',
     'ShowInsights' => 'Показати плитки з аналітикою',
     'HideInsights' => 'Згорнути плитки аналітики до рядка зведення',
-    'ChooseControls' => 'Вибір елементів керування',
+    'ChooseControls' => 'Вибір засобів контролю',
     'UseTheseControls' => 'Використовуйте ці елементи керування',
     'SearchControlsPlaceholder' => 'Пошук за номером або іменем',
     'PickerKeyboardHint' => 'Вгору/вниз для переміщення, Enter для вибору, Esc для скасування',
     'NoControlsMatchFilters' => 'Тут нічого не знайдено. Розширте пошук на крок ліворуч або очистіть пошук.',
     'NoControlsSelectedYet' => 'Ще нічого не вибрано.',
-    'AllControls' => 'Усі елементи керування',
+    'AllControls' => 'Усі засоби контролю',
     'AddOrRemoveControls' => 'Додати або видалити елементи керування…',
     'LastTested' => 'Останнє тестування',
-    'LastTestDateAnchorHint' => 'Інтервал прив’язки до графіка (ця дата плюс частота). Після того, як тест зафіксує результати, у сітці замість цього відображається дата найновішого результату.',
+    'LastTestDateAnchorHint' => 'Визначає опорну дату для планування за інтервалами (ця дата плюс частота). Після того, як тест зафіксує результати, у сітці замість цього відображається дата найновішого результату.',
     'Filters' => 'Фільтри',
     'ShowFilters' => 'Показати фільтри',
     'HideFilters' => 'Приховати фільтри',
@@ -3629,7 +3629,7 @@ $lang = array(
     'ClickToDisable' => 'Натисніть, щоб вимкнути',
     'ClickToEnable' => 'Натисніть, щоб увімкнути',
     'ENABLED' => 'УВІМКНЕНО',
-    'DISABLED' => 'ІНВАЛІД',
+    'DISABLED' => 'ВИМКНЕНО',
     'BackToWorkflows' => 'Назад до робочих процесів',
     'BackToHistory' => 'Назад до історії',
     'NewWorkflow' => 'Новий робочий процес',
@@ -3655,11 +3655,11 @@ $lang = array(
     'AICapSurfacedControlTestGeneration' => 'Відповідність — Визначення тестів',
     'AIControlTestGenUnavailable' => 'ПОСЛУГА НЕДОСТУПНА: Адміністратор повинен увімкнути цю функцію в налаштуваннях ШІ.',
     'AIControlTestGenInvalidId' => 'НЕПРАВИЛЬНИЙ ЗАПИТ: Потрібен ідентифікатор позитивного контролю.',
-    'AIControlTestGenNotFound' => 'НЕ ЗНАЙДЕНО: Вказаний елемент керування не знайдено.',
-    'AIControlTestGenConflict' => 'КОНФЛІКТ: Генерація вже поставлена в чергу для цього елемента керування.',
+    'AIControlTestGenNotFound' => 'НЕ ЗНАЙДЕНО: Вказаний захід контролю не знайдено.',
+    'AIControlTestGenConflict' => 'КОНФЛІКТ: Генерація вже поставлена в чергу для цього контролю.',
     'AIControlTestGenQueued' => 'ПРИЙНЯТО: Генерація контрольного тесту поставлена в чергу.',
     'AIControlTestGenFailed' => 'ВНУТРІШНЯ ПОМИЛКА СЕРВЕРА: Не вдалося поставити в чергу створення тесту керування.',
-    'AIControlTestGenCheckFailed' => 'ПОМИЛКА: Не вдалося перевірити елемент керування перед постановкою в чергу.',
+    'AIControlTestGenCheckFailed' => 'ПОМИЛКА: Не вдалося перевірити засіб контролю перед постановкою в чергу.',
     'GenerateTestsWithAI' => 'Генеруйте тести за допомогою штучного інтелекту',
     'ShowAiSuggestedTests' => 'Тести, запропоновані ШІ',
     'AiSuggested' => 'Штучний інтелект запропонував',
@@ -3698,7 +3698,7 @@ $lang = array(
     'RankedBySeverity' => 'Рейтинг за тяжкістю',
     'RankedByName' => 'Рейтинг за назвою',
     'NodeTypeSelfAssessmentResult' => 'Результат самооцінювання',
-    'Relationship' => 'Стосунки',
+    'Relationship' => 'Зв\'язок',
     'Exception' => 'Виняток',
     'DesiredMaturity' => 'Бажана зрілість',
     'ApprovalState' => 'Стан схвалення',
@@ -3854,30 +3854,30 @@ $lang = array(
     // THE REMEDIATION BLOCK -- what is being done about a control that reads
     // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
     // rather than becoming one.
-    'SoaRemediation' => 'Рекультивація',
+    'SoaRemediation' => 'Усунення',
     // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
     // linked to no risk, so no treatment plan traces back to it. Dropping such a
     // row for want of a risk to join to would render it as a blank cell, which
     // reads as "nothing to report".
-    'SoaRemediationUnplanned' => 'Без ризику',
+    'SoaRemediationUnplanned' => 'Немає пов\'язаного ризику',
 
     // THE LEGEND. Required in both variants and every export format, because six
     // implementation states plus three markers is more nuanced than the
     // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
     // reader to guess unfavourably.
     'SoaLegendTitle' => 'Як читати це твердження',
-    'SoaLegendYes' => 'Кожен тест, визначений для цього елемента керування, пройшов успішно під час його останнього запуску.',
-    'SoaLegendPartial' => 'Тести контрольної групи розходяться в думках: принаймні один пройшов успішно, а принаймні один не пройшов або не дав жодного висновку.',
+    'SoaLegendYes' => 'Кожен тест, визначений для цього заходу контролю, пройшов успішно під час його останнього запуску.',
+    'SoaLegendPartial' => 'Тести заходу контролю розходяться: принаймні один пройшов успішно, а принаймні один не пройшов або не дав жодного висновку.',
     'SoaLegendNo' => 'Жоден тест цього контролю не пройшов успішно під час його останнього запуску, і принаймні один не пройшов.',
     // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
     // and the labels alone do not quite carry that -- so the legend spells it
     // out. This is the distinction the whole six-state set exists for.
-    'SoaLegendNoTestDefined' => 'Для цього елемента керування не було визначено жодного тесту, тому його роботу ніколи не перевірялося. Це не твердження про відсутність елемента керування або його невдачу – лише те, що це твердження не демонструє цього. Прогалина в управлінні: ніхто не вирішив, як перевіряється цей елемент керування.',
-    'SoaLegendNeverRun' => 'Для цього елемента керування існують тести, але жоден з них ніколи не проводився, тому його робота тут не демонструється. Це не означає, що елемент керування відсутній або що він не працює. Операційна прогалина: перевірки були прийняті, але не були проведені.',
-    'SoaLegendNotApplicable' => 'Цей елемент керування виключено з області застосування цієї системи, тому він не має статусу реалізації.',
+    'SoaLegendNoTestDefined' => 'Для цього заходу контролю не визначено жодного тесту, тому його функціонування ніколи не перевірялося. Це не твердження про те, що захід контролю відсутній або не працює, – лише те, що це твердження цього не підтверджує. Прогалина в управлінні: ніхто не вирішив, як перевіряється цей захід контролю.',
+    'SoaLegendNeverRun' => 'Для цього засобу контролю існують тести, але жоден з них ніколи не проводився, тому його робота тут не демонструється. Це не означає, що засіб контролю відсутній або що він не працює. Операційна прогалина: перевірки були визначені, але не були проведені.',
+    'SoaLegendNotApplicable' => 'Цей засіб контролю виключено з області застосування цього фреймворку, тому він не має статусу реалізації.',
     // The one most in need of explaining: with nothing to define it, this reads
     // as an admission about the control rather than as what it is.
-    'SoaLegendUnknown' => 'SimpleRisk не зміг позначити записаний статус, тому реалізація тут не продемонстрована. Це дефект програмного забезпечення, який нічого не говорить про керування – ні про те, що воно працює, ні про те, що воно не працює.',
+    'SoaLegendUnknown' => 'SimpleRisk не зміг позначити записаний статус, тому реалізація тут не продемонстрована. Це дефект програмного забезпечення, який нічого не говорить про захід контролю – ні про те, що він працює, ні про те, що він не працює.',
     'SoaLegendOverdue' => 'Показаний результат залишається в силі, але принаймні один з тестів, що лежать в його основі, вже пройшов наступну дату тестування. Докази застаріли.',
     'SoaLegendNoEvidence' => 'Контроль входить до сфери застосування, і жодних посилань на його підтвердження не було: жодного підтвердженого документа та жодного тесту, який би дав результат.',
     'SoaLegendEvidenceNotExpected' => 'Не очікується жодних доказів, оскільки контроль виключено з сфери застосування.',
@@ -4030,7 +4030,7 @@ $lang = array(
     // The Evidence column's four bullet glyphs. Load-bearing since the visible
     // result word was dropped from pass and fail bullets, and until now defined
     // nowhere at all.
-    'SoaLegendEvidencePass' => 'Тест цього елемента керування пройшов успішно під час останнього запуску. Дата поруч із ним вказує на дату запуску.',
+    'SoaLegendEvidencePass' => 'Тест цього засобу контролю пройшов успішно під час останнього запуску. Дата поруч із ним вказує на дату запуску.',
     'SoaLegendEvidenceFail' => 'Тест цього контролю під час останнього запуску показав невдачу. Додаток R містить план лікування, якщо такий є.',
     'SoaLegendEvidenceInconclusive' => 'Тест цього контролю було проведено, але результат не був отриманий. Той самий знак використовується для результату, який цей документ не розпізнає, і в такому випадку сам результат друкується поруч.',
     // The TERM beside the § glyph. Not a document type -- the four types
@@ -4049,7 +4049,7 @@ $lang = array(
     'SoaSheetCover' => 'Обкладинка',
 
     'SearchFrameworks' => 'Пошукові фреймворки',
-    'SearchControls' => 'Елементи керування пошуком',
+    'SearchControls' => 'Пошук засобів контролю',
     'AddFramework' => 'Додати фреймворк',
     'Applicability' => 'Застосовність',
     'AnyFamily' => 'Будь-яка сім\'я',
@@ -4062,24 +4062,24 @@ $lang = array(
     'SelectAllN' => 'Вибрати все {n}',
     'Classification' => 'Класифікація',
     'Placement' => 'Розміщення',
-    'OwnershipAndMaturity' => 'Власність та термін зрілості',
+    'OwnershipAndMaturity' => 'Власність та зрілість',
     'MappingsAndGuidance' => 'Картування та інструкції',
     'DeleteFrameworkTitle' => 'Видалити фреймворк \'{$name}\'?',
-    'DeleteControlTitle' => 'Видалити елемент керування \'{$name}\'?',
-    'DeleteControlsTitle' => 'Видалити елементи керування {$n}?',
+    'DeleteControlTitle' => 'Видалити захід контролю \'{$name}\'?',
+    'DeleteControlsTitle' => 'Видалити {$n} засобів контролю?',
     'DeleteCannotBeUndone' => 'Цього не можна скасувати.',
     'DeleteFrameworkConsequence' => 'Це видаляє фреймворк та всі його схеми керування.',
-    'DeleteControlConsequence' => 'Це видаляє керування з кожного фреймворку, на який воно пов\'язане.',
-    'DeleteControlsConsequence' => 'Це видаляє кожен вибраний елемент керування з кожного фреймворку, з яким він зіставлений.',
+    'DeleteControlConsequence' => 'Це видаляє контроль з кожного фреймворку, до якого його прив\'язано.',
+    'DeleteControlsConsequence' => 'Це видаляє кожен вибраний засіб контролю з кожного фреймворку, з яким його зіставлено.',
     // Task 9: empty states (design-system.md §10) -- the four intents on
     // Define Control Frameworks. Reuses existing keys where the copy already
     // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
     // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
     // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
     // with no existing match are added below.
-    'NoControlsMatch' => 'Немає елементів керування, що відповідають вашим фільтрам',
-    'CouldNotLoadControls' => 'Не вдалося завантажити елементи керування',
-    'ControlsYouAddWillAppearHere' => 'Додані вами елементи керування з’являтимуться тут.',
+    'NoControlsMatch' => 'Немає засобів контролю, що відповідають вашим фільтрам',
+    'CouldNotLoadControls' => 'Не вдалося завантажити засоби контролю',
+    'ControlsYouAddWillAppearHere' => 'Додані вами засоби контролю з’являтимуться тут.',
     'NoFrameworksYet' => 'Поки що немає фреймворків',
     'FrameworksYouAddWillAppearHere' => 'Додані або імпортовані вами фреймворки з’являться тут.',
     'CouldNotLoadFrameworks' => 'Не вдалося завантажити фреймворки',
@@ -4139,7 +4139,7 @@ $lang = array(
     // the same labels the governance dashboard's maturity-gap widgets already
     // carry -- and the column chip renders those same three strings, so the
     // filter and the cell can never read differently.
-    'AnyMaturity' => 'Будь-який термін погашення',
+    'AnyMaturity' => 'Будь-який рівень зрілості',
     // Task 46: accessible name for the control table's pager landmark
     // (governance-frameworks.js's renderPager()). The pager's own buttons
     // reuse the existing Previous/Next keys Define Tests' pager already
@@ -4220,9 +4220,9 @@ $lang = array(
     // while "Select all N" escalates to the whole filtered result set -- the two
     // genuinely differ once the table pages, and a note that blurred them would
     // let the user write 1,535 decisions believing they had written 25.
-    'ApplicabilityScopeNote' => 'Це рішення застосовується лише в межах "{$framework}". Той самий елемент керування може залишатися застосовним в іншій платформі.',
-    'ApplicabilityAppliesToSelected' => 'Його буде записано для елемента(ів) керування {$n} , вибраного(их) на цій сторінці.',
-    'ApplicabilityAppliesToAllFiltered' => 'Його буде записано для всіх елементів керування {$n} , що відповідають поточним фільтрам, включаючи ті, що знаходяться на інших сторінках.',
+    'ApplicabilityScopeNote' => 'Це рішення застосовується лише в межах "{$framework}". Той самий захід контролю може залишатися застосовним в іншому фреймворку.',
+    'ApplicabilityAppliesToSelected' => 'Його буде записано для вибраних на цій сторінці засобів контролю ({$n}).',
+    'ApplicabilityAppliesToAllFiltered' => 'Його буде записано для всіх заходів контролю ({$n}), що відповідають поточним фільтрам, включаючи ті, що знаходяться на інших сторінках.',
     // Per-state hints under the segmented control. The "applicable" one is the
     // load-bearing sentence of the whole modal, and the SoA audit-readiness work
     // rewrote it: an applicable control MAY now carry its own reasons and
@@ -4235,14 +4235,14 @@ $lang = array(
     'ApplicabilityNotApplicableHint' => 'Виключення контролю зі сфери застосування цієї структури. Потрібні як причина, так і письмове обґрунтування.',
     'ApplicabilityInheritedHint' => 'Хтось інший виконує цей контроль від вашого імені. Назвіть їх і скажіть, що вони роблять.',
     'ApplicabilityNarrativeHint' => 'Міститься у Заяві про застосовність. Напишіть, що потрібно аудитору для прийняття рішення.',
-    'ApplicabilityProviderHint' => 'Організація, яка здійснює керування: хмарний постачальник, керований сервіс, материнська компанія.',
+    'ApplicabilityProviderHint' => 'Організація, яка здійснює контроль: хмарний постачальник, керований сервіс, материнська компанія.',
     'ChooseAReason' => 'Виберіть причину',
     'ApplicabilityNoReason' => 'Без причини',
     // Result toasts. Both interpolate a COUNT taken from the API response and
     // nothing else -- no submitted text is ever reflected into a toast, which
     // toastr renders as HTML.
     'ApplicabilitySetResult' => 'Застосовність оновлено для {$n} елементів керування.',
-    'ApplicabilityClearResult' => 'Застосовність скинуто до застосовної для {$n} елементів керування.',
+    'ApplicabilityClearResult' => 'Застосовність скинуто до застосовної для {$n} заходів контролю.',
     // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
     // final either way the delete engine implements it: a control with test
     // history is soft-deleted (framework_controls.deleted = 1) to keep test
@@ -4258,11 +4258,11 @@ $lang = array(
     // stop reading. Every {$...} is a count from the API response; no user
     // text is ever interpolated, which matters because toastr renders HTML.
     'DeleteControlsPreviewChecking' => 'Перевірка того, що буде видалено...',
-    'DeleteControlsPreviewSplit' => '{$n} елементів керування буде видалено. Цю дію неможливо скасувати. Результати тестування для {$m} з них зберігаються для історії аудиту.',
-    'DeleteControlsPreviewKeptOnly' => 'Усі елементи керування {$n} будуть видалені. Цю дію неможливо скасувати. Результати тестів зберігаються для історії аудиту.',
-    'DeleteControlsPreviewRemovedOnly' => '{$n} елементів керування буде видалено. Цю дію не можна скасувати.',
-    'DeleteControlsPreviewNone' => 'Немає чого видаляти: вибрані елементи керування більше не існують.',
-    'ControlsDeletedResult' => '{$n} елементів керування видалено.',
+    'DeleteControlsPreviewSplit' => '{$n} засобів контролю буде видалено. Цю дію неможливо скасувати. Результати тестування для {$m} з них зберігаються для історії аудиту.',
+    'DeleteControlsPreviewKeptOnly' => 'Усі засоби контролю ({$n}) будуть видалені. Цю дію неможливо скасувати. Результати тестів зберігаються для історії аудиту.',
+    'DeleteControlsPreviewRemovedOnly' => 'Буде видалено заходів контролю: {$n}. Цю дію не можна скасувати.',
+    'DeleteControlsPreviewNone' => 'Немає чого видаляти: вибрані засоби контролю більше не існують.',
+    'ControlsDeletedResult' => 'Видалено засобів контролю: {$n}.',
 
     // The Add/Edit framework modal's Status field. The label reuses the existing
     // 'Status' key -- the same word the rail's Active/Inactive/All filter already
@@ -4271,7 +4271,7 @@ $lang = array(
     // to retire a framework (unlike Delete, which cannot be undone), and that the
     // change cascades through the hierarchy, which is what update_framework_status()
     // has always done and is genuinely surprising when a parent is deactivated.
-    'FrameworkStatusHint' => 'Неактивні фреймворки зберігають усі свої елементи керування та зіставлення, але приховані від списку фреймворків за замовчуванням та виключені з панелі керування. Деактивація фреймворку також деактивує всі фреймворки під ним; активація одного з них також активує його батьківські фреймворки.',
+    'FrameworkStatusHint' => 'Неактивні фреймворки зберігають усі свої засоби контролю та зіставлення, але приховані від списку фреймворків за замовчуванням та виключені з панелі керування. Деактивація фреймворку також деактивує всі фреймворки під ним; активація одного з них також активує його батьківські фреймворки.',
 
     // Task 60: the same #applicability--set modal, opened from ONE control's row
     // action instead of the selection bulk bar. The button's own label reuses
@@ -4307,7 +4307,7 @@ $lang = array(
     // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
     // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
     // existing home are added here.
-    'StatementOfApplicabilityDesc' => 'Для однієї структури: кожен елемент керування, чи він застосовується, чому його було включено чи виключено, і чи він реалізований.',
+    'StatementOfApplicabilityDesc' => 'Для одного фреймворку: кожен засіб контролю, чи він застосовується, чому його було включено чи виключено, і чи він реалізований.',
     // The header button on Define Control Frameworks. The verb is "generate"
     // rather than "view" because the document is assembled at the moment it is
     // asked for -- there is no stored SoA that could be out of date.
@@ -4350,8 +4350,8 @@ $lang = array(
     // generic sentence is not the organization's own, and an auditor reading 1,500
     // identical rows of boilerplate is entitled to ask whose risk assessment it
     // refers to.
-    'SoaMissingFieldsTitle' => 'У цій заяві відсутні супровідні дані',
-    'SoaMissingScopeStatement' => 'Для цієї структури не було записано жодної заяви про обсяг застосування. У заяві про оцінку (SoA) має бути зазначена сфера застосування, для якої вона складена.',
+    'SoaMissingFieldsTitle' => 'У цій заяві відсутні відомості на титульній сторінці',
+    'SoaMissingScopeStatement' => 'Для цієї структури не було записано жодної заяви про обсяг застосування. У заяві про застосовність (SoA) має бути зазначена сфера застосування, для якої вона складена.',
     'SoaMissingInclusionJustification' => 'Не було зафіксовано жодного обґрунтування включення за замовчуванням. Застосовувані засоби контролю без пов\'язаних ризиків будуть використовувати загальне твердження, а не ваше власне.',
     'SoaEditFrameworkToAdd' => 'Додайте їх до фреймворку',
 
@@ -4383,8 +4383,8 @@ $lang = array(
 
     // A framework with no controls mapped into it. Not an error -- it is a real
     // and recoverable state, and saying so beats an empty table.
-    'SoaNoControls' => 'Цей фреймворк не має жодних елементів керування',
-    'SoaNoControlsHint' => 'Зв\'яжіть елементи керування з фреймворком, і його твердження про застосовність їх перерахує.',
+    'SoaNoControls' => 'Цей фреймворк не має жодних засобів контролю',
+    'SoaNoControlsHint' => 'Зв\'яжіть заходи контролю з фреймворком, і його положення про застосовність їх перерахує.',
 
     // The second half of the statement-of-applicability launcher's affordance
     // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
@@ -4403,7 +4403,7 @@ $lang = array(
     // Placeholder/help text under that field, and the reason it is worth
     // filling in: without it the Statement of Applicability has nothing to
     // print but the source catalogue's name for its own control.
-    'ReferenceSubjectHint' => "Власна назва фреймворку для цього елемента керування.",
+    'ReferenceSubjectHint' => "Власна назва фреймворку для цього заходу контролю.",
 
     // Task 63: the row-scoped population sentence in the Set applicability
     // modal, in the one situation where the plain
@@ -4416,7 +4416,7 @@ $lang = array(
     // about to overwrite it, and {$n} is the count of the OTHER selected
     // controls -- the target is excluded, because it is very often ticked too
     // and a promise that included it would be false.
-    'ApplicabilityAppliesToControlNotSelection' => 'Запис буде здійснено лише для "{$name}" — вибрані вами елементи керування {$n} залишаться в силі.',
+    'ApplicabilityAppliesToControlNotSelection' => 'Запис буде здійснено лише для "{$name}" — вибраних вами засобів контролю ({$n}) це не стосується.',
 
     // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
     // sentence ('GenerateStatementOfApplicability' above) stays as the button's
@@ -4453,7 +4453,7 @@ $lang = array(
     // under two clause numbers, and the rail excludes deleted controls), and the
     // number to promise is the one the user is looking at when they click and
     // the one the clone's own rail row will show afterwards.
-    'ClonedFromFrameworkNotice' => 'Клоновано з "{$name}". Його елементи керування {$n} будуть скопійовані до нового фреймворку, причому кожен з них буде застосовним спочатку — жодне з рішень щодо застосовності не переноситься. Опис області застосування навмисно порожній: вкажіть область застосування, яку охоплює цей фреймворк, перш ніж створювати його Опис області застосування.',
+    'ClonedFromFrameworkNotice' => 'Клоновано з "{$name}". Його {$n} засобів контролю буде скопійовано до нового фреймворку, причому кожен із них спочатку буде застосовним — жодне з рішень щодо застосовності не переноситься. Опис області застосування навмисно порожній: вкажіть область застосування, яку охоплює цей фреймворк, перш ніж створювати його Опис області застосування.',
     // Seeds the name field so the clone can be saved without a rename --
     // framework names are unique, so a verbatim copy is refused on save.
     'CloneOfFrameworkName' => '{$name} (Клон)',
@@ -4470,14 +4470,14 @@ $lang = array(
     // someone who cannot take it.
     'HowDoYouWantToAddAFramework' => 'Як ви хочете додати фреймворк?',
     'CreateFrameworkManually' => 'Створіть його вручну',
-    'CreateFrameworkManuallyHint' => 'Назвіть фреймворк самостійно, а потім додайте або зіставте його елементи керування.',
+    'CreateFrameworkManuallyHint' => 'Назвіть фреймворк самостійно, а потім додайте або зіставте його заходи контролю.',
     // Named for the framework rather than for its vendor. The hint was reworded
     // at the same time: it used to end "...load its Secure Controls Framework
     // controls", which read as a stutter once the label carried those words.
     'GetFrameworkFromScf' => 'Отримайте його з Secure Controls Framework',
-    'GetFrameworkFromScfHint' => 'Виберіть опублікований фреймворк та завантажте його відображені елементи керування за один крок.',
+    'GetFrameworkFromScfHint' => 'Виберіть опублікований фреймворк та завантажте його відображені засоби контролю за один крок.',
     'ImportFrameworkFromCatalog' => 'Імпортувати один',
-    'ImportFrameworkFromCatalogHint' => 'Встановіть фреймворк та його елементи керування з каталогу контенту SimpleRisk.',
+    'ImportFrameworkFromCatalogHint' => 'Встановіть фреймворк та його засоби контролю з каталогу контенту SimpleRisk.',
 
     // The framework acquisition chooser's third route, which now offers the
     // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
@@ -4486,7 +4486,7 @@ $lang = array(
     // customer maintaining a custom lang.<locale>.php still reconciles by tail
     // diff.
     'ImportFrameworkFromSpreadsheet' => 'Імпортувати з електронної таблиці',
-    'ImportFrameworkFromSpreadsheetHint' => 'Завантажте електронну таблицю з елементами керування, яка містить назву фреймворку, і обидва будуть створені.',
+    'ImportFrameworkFromSpreadsheetHint' => 'Завантажте електронну таблицю із засобами контролю, яка містить назву фреймворку, і обидва будуть створені.',
 
     // The Define Control Frameworks rail's second synthetic scope: the controls
     // mapped to no framework at all. Its first, "All controls", reuses the
@@ -4495,7 +4495,7 @@ $lang = array(
     // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
     // is left in place and unreferenced by that page: other surfaces still use
     // it, and every locale carries it.
-    'UnassignedControls' => 'Непризначені елементи керування',
+    'UnassignedControls' => 'Непризначені заходи контролю',
     // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
     // returns the exception's message as the API status message and the page
     // renders it in a toast, so a hardcoded English literal here would be
@@ -4508,22 +4508,22 @@ $lang = array(
     'ApplicabilityErrUnknownState' => 'Невідомий стан застосовності. Очікується один із таких станів: {$states}.',
     'ApplicabilityErrNarrativeRequired' => 'Для \'{$state} \' потрібен описовий текст.',
     'ApplicabilityErrNarrativeTooLong' => 'Розмір оповіді перевищує {$bytes} байтів.',
-    'ApplicabilityErrReasonRequired' => 'Щоб позначити елемент керування як непридатний, потрібна причина виключення.',
-    'ApplicabilityErrProviderRequired' => 'Постачальник повинен позначити елемент керування як успадкований.',
+    'ApplicabilityErrReasonRequired' => 'Щоб позначити засіб контролю як незастосовний, потрібна причина виключення.',
+    'ApplicabilityErrProviderRequired' => 'Постачальник повинен позначити засіб контролю як успадкований.',
     'ApplicabilityErrProviderTooLong' => 'Назва постачальника довша за {$bytes} байтів.',
     'ApplicabilityErrReasonsNotFound' => 'Ці причини застосовності не існують: {$ids}.',
     'ApplicabilityErrReasonsNotOffered' => 'Ці причини застосовності не наведено для цього стану: {$ids}.',
     'ApplicabilityErrFrameworkNotFound' => 'Фреймворк {$framework} не існує.',
-    'ApplicabilityErrControlsNotFound' => 'Ці ідентифікатори елементів керування не існують: {$ids}.',
+    'ApplicabilityErrControlsNotFound' => 'Ці ідентифікатори заходів контролю не існують: {$ids}.',
     // Controls/Risks import result messages (validation gate, individual bad-row
     // alerts, and the batched submitted/created/updated summaries)
-    'ControlIdOrShortNameFieldRequired' => 'Поле «Ідентифікатор елемента керування» або «Коротка назва елемента керування» має бути зіставлене – рядок не можна ідентифікувати без одного з них.',
+    'ControlIdOrShortNameFieldRequired' => 'Поле «Ідентифікатор контролю» або «Коротка назва контролю» має бути зіставлене – рядок не можна ідентифікувати без одного з них.',
     'RiskImportSubjectNull' => 'Ідентифікатор ризику {$risk_id}: Не оновлено, оскільки поле «Тема» порожнє або відсутнє.',
     'RiskImportSummary' => 'Надіслано {$submitted} ризик(ів) та оновлено {$updated} ризик(ів).',
-    'ControlImportSummary' => 'Створено {$created} елементів керування та оновлено {$updated} елементів керування.',
+    'ControlImportSummary' => 'Створено {$created} засобів контролю та оновлено {$updated} засобів контролю.',
     'ImportAdditionalIssuesSuppressed' => '{$count} додаткових рядків мали проблеми, які тут не показано окремо.',
-    'EncryptionPipelineStalledTask' => 'Конвеєр шифрування (завдання #{$id}, {$type}) виглядає зупиненим — воно {$status} було виконано незвично довго без прогресу. Зазвичай це означає, що фоновий обробник черги не працює; перевірте, чи він запланований, а потім спробуйте ще раз, коли він обробить зупинене завдання.',
-    'EncryptionPipelineStalledState' => 'Конвеєр шифрування, схоже, зупинився — він був позначений як виконаний протягом надзвичайно тривалого часу без відповідного фонового завдання, на яке можна було б вказати. Зазвичай це означає, що обробник черги не працює або попередній конвеєр завершився без його коректного оновлення. Перевірте журнал налагодження, перш ніж повторити спробу.',
+    'EncryptionPipelineStalledTask' => 'Конвеєр шифрування (завдання #{$id}, {$type}) виглядає зупиненим — він незвично довго перебуває в стані {$status} без прогресу. Зазвичай це означає, що фоновий обробник черги не працює; перевірте, чи він запланований, а потім спробуйте ще раз, коли він обробить зупинене завдання.',
+    'EncryptionPipelineStalledState' => 'Конвеєр шифрування, схоже, зупинився — він позначений як такий, що виконується, протягом надзвичайно тривалого часу без відповідного фонового завдання, на яке можна було б вказати. Зазвичай це означає, що обробник черги не працює або попередній конвеєр завершився без його коректного оновлення. Перевірте журнал налагодження, перш ніж повторити спробу.',
     // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
     // of the operations that would spoil the demo for the next visitor
     'ActionDisabledOnDemoInstance' => 'Ця дія вимкнена в демонстраційному екземплярі SimpleRisk.',
@@ -4569,7 +4569,7 @@ $lang = array(
     'UpgradeDatabaseHeading' => 'Оновлення бази даних',
     'UpgradeDatabaseComplete' => 'Оновлення бази даних завершено.',
     'UpgradeHideWhatItDid' => 'Приховати, що воно зробило',
-    'UpgradeStateRunning' => 'Біг',
+    'UpgradeStateRunning' => 'Виконується',
     'UpgradeSessionExpired' => 'Термін дії вашого сеансу минув. Увійдіть знову, щоб побачити оновлення.',
     'UpgradeLostContact' => 'Втрачено зв\'язок із сервером. Перезавантажте цю сторінку, щоб знову приєднатися до оновлення.',
     'UpgradeDatabaseAlreadyCurrent' => 'База даних вже є у версії програми.',
@@ -4682,7 +4682,7 @@ $lang = array(
     // (includes/governance.php)
     'CouldNotLoadMappedFrameworks' => 'Не вдалося завантажити зіставлені фреймворки.',
     'NoMappedFrameworksFound' => 'Не знайдено жодних зіставлених фреймворків.',
-    'SearchMappedFrameworks' => 'Пошук фреймворків або елементів керування',
+    'SearchMappedFrameworks' => 'Пошук фреймворків або засобів контролю',
     'CommentNotAddedToAudit' => 'Ваш коментар не вдалося додати до аудиту.',
     'AssetIdsRequired' => 'НЕПРАВИЛЬНИЙ ЗАПИТ: обов\'язковий asset_ids[].',
     'TheDefaultBusinessUnitCannotBeDeleted' => 'Бізнес-одиницю за замовчуванням видалити неможливо.',
@@ -4693,7 +4693,7 @@ $lang = array(
     'BackupTargetChangedOrExists' => 'Відмова записувати резервну копію в "{$dir}": ціль несподівано змінилася або вже існує.',
     'BackupDirectoryUnsafe' => 'Відмова у використанні резервного каталогу "{$location}": це символічне посилання або він належить іншому обліковому запису.',
     'DocumentAuditLogApprove' => 'Документ «{$document_name}» було схвалено {$user}.',
-    'DocumentAuditLogUnapprove' => 'Документ «{$document_name}» було скасовано {$user}.',
+    'DocumentAuditLogUnapprove' => 'Затвердження документа «{$document_name}» було скасовано користувачем {$user}.',
     'NoApproveDocumentationPermission' => 'Ви не маєте дозволу затверджувати документи.',
     'DocumentApproved' => 'Документ було схвалено.',
     'DocumentUnapproved' => 'Документ не був затверджений.',
@@ -4723,7 +4723,7 @@ $lang = array(
     'CouldNotLoadExceptionsBody' => 'Під час завантаження сітки "Визначення винятків" сталася помилка.',
     'ApproveExceptionQuestion' => 'Схвалити цей виняток?',
     'ApproveExceptionConfirmBody' => 'Це встановлює для "{name}" значення "Схвалено".',
-    'UnapproveExceptionQuestion' => 'Скасувати цей виняток?',
+    'UnapproveExceptionQuestion' => 'Скасувати схвалення цього винятку?',
     'UnapproveExceptionConfirmBody' => 'Це повертає "{name}" назад до статусу "Очікує".',
     'ApproveSelectedExceptionsQuestion' => 'Схвалити {n} вибраних винятків?',
     'ApproveSelectedExceptionsConfirmBody' => 'Це схвалює {n} вибраних винятків.',
@@ -4738,7 +4738,7 @@ $lang = array(
     'ReviewCadence' => 'Каденція перегляду',
     'ExceptionDetails' => 'Деталі винятку',
     'DescriptionJustification' => 'Опис та обґрунтування',
-    'ChooseAControl' => 'Виберіть елемент керування',
+    'ChooseAControl' => 'Виберіть засіб контролю',
     'CantDeleteDocumentCategoryInUse' => 'Неможливо видалити цей тип документа, оскільки під ним наразі є документи, що зберігаються в ньому.',
     'ExceptionDoesNotExist' => 'Виняток документа не існує',
     'DocumentAuditTrailReport' => 'Звіт про журнал аудиту документів',
@@ -4765,7 +4765,7 @@ $lang = array(
     'Uploaded' => 'Завантажено',
     'AllDocuments' => 'Усі документи',
     'AllUsers' => 'Усі користувачі',
-    'SearchAuditTrailPlaceholder' => 'Пошуковий журнал аудиту',
+    'SearchAuditTrailPlaceholder' => 'Пошук у журналі аудиту',
     'NoAuditLogEntries' => 'Поки що немає записів у журналі аудиту',
     'NoAuditLogEntriesBody' => 'Активність у документах цієї сторінки відображатиметься тут.',
     'NoAuditLogEntriesMatchFilters' => 'Немає записів, що відповідають вашому пошуку',
@@ -4845,13 +4845,13 @@ $lang = array(
     'FieldCreatedAndAddedToTab' => 'Створено {field} та додано його до {tab}.',
     'DeleteCustomFieldTitle' => 'Видалити поле \'{field}\'?',
     // Review Risk page (SR-2068 and others -- see design spec)
-    'ReviewRisk' => 'Ризик огляду',
+    'ReviewRisk' => 'Огляд ризику',
     'NeedsColumn' => 'Потреби',
     'RiskScoreColumn' => 'Оцінка ризику',
     'ReassignRiskOwner' => 'Перепризначити відповідального за ризики',
     'ReassignMitigationOwner' => 'Перепризначити відповідального за пом\'якшення наслідків',
     'NoActionItemsTitle' => 'Немає ризиків, що відповідають вашим фільтрам',
-    'NoActionItemsBody' => 'Ніщо не потребує пом’якшення чи перегляду, якщо у вас є особистий дозвіл на вжиття заходів. Спробуйте зняти прапорець «Показувати мої завдання», щоб побачити повну чергу команди.',
+    'NoActionItemsBody' => 'Немає нічого, що потребує пом’якшення чи перегляду і щодо чого у вас є особистий дозвіл на вжиття заходів. Спробуйте зняти прапорець «Показувати мої завдання», щоб побачити повну чергу команди.',
     'BulkChangeStatusTitle' => 'Змінити статус для %s вибраних ризиків',
     'BulkReassignRiskOwnerTitle' => 'Перепризначити відповідального за ризики для %s вибраних ризиків',
     'BulkReassignMitigationOwnerTitle' => 'Перепризначити відповідального за зменшення ризиків для %s вибраних ризиків',
@@ -4878,7 +4878,7 @@ $lang = array(
     // user-facing string still needs to flow through a lookup per CLAUDE.md,
     // even one where the English and translated value would typically match.
     'CVSS' => 'CVSS',
-    'DREAD' => 'СТРАХ',
+    'DREAD' => 'DREAD',
     'OWASP' => 'ОВАСП',
     'MyActionItems' => 'Мої завдання',
     'AddRisk' => 'Додати ризик',
@@ -4911,7 +4911,7 @@ $lang = array(
     'AllBusinessOwners' => 'Усі власники бізнесу',
     'AllDataClassifications' => 'Усі класифікації даних',
     'AnyDueStatus' => 'Будь-який статус простроченості',
-    'NoDueDate' => 'Без терміну погашення',
+    'NoDueDate' => 'Без терміну виконання',
     'AddProject' => 'Додати проєкт',
     'AssignToProject' => 'Призначити проєкту',
     'RemoveFromProject' => 'Видалити з проєкту',
@@ -4920,7 +4920,7 @@ $lang = array(
     'NoProjectsYetHint' => 'Проєкти групують пов\'язані ризики, щоб ви могли разом планувати та визначати пріоритети їх обробки.',
     'NoProjectsMatchFilters' => 'Немає проектів, що відповідають вашим фільтрам',
     'NoRisksInThisProject' => 'Поки що немає ризиків у цьому проєкті',
-    'NoRisksWaitingForProject' => 'Без ризиків, пов\'язаних з очікуванням проекту',
+    'NoRisksWaitingForProject' => 'Немає ризиків, що очікують на проєкт',
     'NoRisksWaitingForProjectHint' => 'Ризики, переглянуті як «Розглянути для проекту», відображаються тут, доки їх не буде призначено.',
     'NMoreRisks' => '{n} більше ризиків',
     'ChangeProjectStatus' => 'Змінити статус проекту',
@@ -4967,6 +4967,669 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'У вас немає дозволу на закриття ризиків.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Будь ласка, дайте відповіді на всі необхідні запитання, перш ніж завершувати оцінювання.',
+    'AuditLog_ControlStatusAutoSynced' => 'Статус контролю «{$short_name}» було автоматично оновлено до «{$status_text}» на основі результатів його останнього тестування.',
+    'EnableCSPHelp' => 'Політика безпеки контенту (CSP) обмежує браузер завантаженням скриптів, стилів, зображень та шрифтів лише з самого SimpleRisk, а також блокує фреймування сторінок та надсилання форм з різних джерел. Це найсильніший вбудований захист від міжсайтового скриптингу. Залиште цю функцію ввімкненою, якщо вона не конфліктує з проксі-сервером, розширенням браузера або інтеграцією сторонніх розробників у вашому середовищі.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Стандартні поля',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Адміністратор',
+    'AccountDetails' => 'Дані облікового запису',
+    'YourPermissions' => 'Ваші дозволи',
+    'RoleAndTeamsGrantAccess' => 'До чого вам надається доступ завдяки вашій ролі та командам',
+    'AllGranted' => 'Все надано',
+    'PermissionsCountLabel' => '$count дозволи',
+    'ManagedByYourAdministrator' => 'Цими даними керує ваш адміністратор. Зверніться до нього, якщо тут потрібно щось змінити.',
+    'MultiFactorAuthenticationHint' => 'Додайте другий крок до входу, щоб захистити свій обліковий запис.',
+    'ChangingPasswordSignsOutEverywhere' => 'Зміна пароля виводить вас із системи скрізь.',
+    'APIKeyHint' => 'Використовується для автентифікації власних скриптів та інтеграцій з API SimpleRisk.',
+    'ResetDisplaySettingsHint' => 'Скидає вибрані вами значення стовпців за замовчуванням.',
+    'CardGeneral' => 'Загальні',
+    'CardClassification' => 'Класифікація',
+    'CardScoring' => 'Підрахунок очок',
+    'CardAdditionalInformation' => 'Додаткова інформація',
+    'CardCustomFields' => 'Настроювані поля',
+    'CardCustomFieldsHint' => 'Ці поля потрібно відсортувати в картку',
+    'LayoutEditorHint' => 'Перетягніть поле на іншу картку, щоб перепризначити його, перетягніть у межах картки, щоб змінити його порядок або розмір, і перетягніть або змініть розмір картки, щоб змінити її положення на сторінці.',
+    'ScoringNotYetAvailableInThisView' => 'Налаштування оцінювання ще недоступне в цьому режимі перегляду.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Перетягніть, щоб змінити розмір',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'Поля {n} не поміщаються на цій картці. Змініть розмір картки, щоб їх було видно.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Стратегія пом\'якшення наслідків',
+    'CardMitigationSolution' => 'Рішення для пом\'якшення наслідків',
+    'CardMitigationControls' => 'Пом\'якшення елементів керування',
+    'CardReview' => 'Перевірка',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Скинути форму',
+    'SaveAndNew' => 'Зберегти та створити новий',
+    'SaveAndView' => 'Зберегти та переглянути',
+    'ResetFormConfirmTitle' => 'Відхилити це повідомлення про ризик?',
+    'ResetFormConfirmBody' => 'Будь-яка введена вами інформація буде втрачена.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Відновити макет за замовчуванням?',
+    'RestoreTemplateConfirmBodyRisk' => 'Це скидає всі поля на вкладках «Відомості», «Пом’якшення» та «Перегляд» до значень за замовчуванням для цієї групи шаблонів. Інші групи шаблонів залишаються в силі.',
+    'RestoreTemplateConfirmBody' => 'Це скидає кожне поле цього шаблону до значень за замовчуванням для цієї групи шаблонів. Інші групи шаблонів не зазнають змін.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Розширені показники',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Базові показники придатності до експлуатації',
+    'BaseScoreImpactMetrics' => 'Базові показники впливу',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Як можна отримати доступ до вразливості.\n• Локальний: потрібен локальний доступ, наприклад, консоль або оболонка.\n• Суміжна мережа: зловмисник повинен знаходитися в тому ж фізичному або логічному сегменті мережі.\n• Мережа: можна використовувати віддалено через мережу, без необхідності локального або суміжного доступу.",
+    "AttackComplexityHelp" => "Наскільки складною є атака, коли зловмисник отримує доступ до цілі.\n• Високий: вимагає спеціальних умов, які важко забезпечити.\n• Середній: деякі умови мають бути виконані, але експлуатація не є складною, як тільки вони будуть виконані.\n• Низький: жодних спеціальних умов не потрібно.",
+    "AuthenticationHelp" => "Кількість разів, коли зловмисник повинен автентифікуватися на цілі, щоб скористатися її можливостями.\n• Кілька разів: автентифікація потрібна два або більше разів, навіть з однаковими обліковими даними.\n• Одинарний: автентифікація потрібна один раз.\n• Немає: автентифікація не потрібна.",
+    "ConfidentialityImpactHelp" => "Вплив на конфіденційність даних, які система обробляє у разі злому.\n• Немає: жодного впливу.\n• Часткове: певне розкриття інформації, але зловмисник не контролює, яку саме, або втрати обмежені.\n• Повне: повне розкриття всієї інформації в системі.",
+    "IntegrityImpactHelp" => "Вплив на цілісність системи у разі злому.\n• Немає: жодного впливу.\n• Часткове: деякі дані можна змінити, але зловмисник не контролює які, або обсяг змін обмежений.\n• Повне: повне порушення цілісності системи; зловмисник може змінювати будь-які файли.",
+    "AvailabilityImpactHelp" => "Вплив на доступність системи у разі використання зловмисника.\n• Немає: жодного впливу.\n• Частковий: зниження продуктивності або переривання доступності.\n• Повний: повне вимкнення ураженого ресурсу.",
+    "RemediationLevelHelp" => "Рівень доступного виправлення для вразливості.\n• Офіційне виправлення: доступне повне рішення від постачальника.\n• Тимчасове виправлення: доступне офіційне, але тимчасове виправлення.\n• Тимчасове рішення: існує неофіційне тимчасове рішення, не від постачальника.\n• Недоступно: рішення недоступне або його не можна застосувати.",
+    "ReportConfidenceHelp" => "Ступінь впевненості в існуванні вразливості та достовірність її технічних деталей.\n• Непідтверджено: повідомлення з одного непідтвердженого джерела; основна проблема є спекулятивною.\n• Непідтверджено: кілька незалежних джерел повідомляють про однакову поведінку, але першопричина не підтверджена.\n• Підтверджено: постачальник визнав проблему, або вона підтверджена аналізом вихідного коду чи експлойту.",
+    "CollateralDamagePotentialHelp" => "Потенціал втрати життя, фізичних активів або фінансових збитків у разі використання вразливості.\n• Немає: такі втрати малоймовірні.\n• Від низького до середнього: можливі помірні втрати.\n• Високий: катастрофічний вплив на активи, доходи або безпеку організації.",
+    "TargetDistributionHelp" => "Частка вразливих систем у вашому середовищі.\n• Немає: цільових систем не існує.\n• Низький: 1-25% систем вразливі.\n• Середній: 26-75% вразливі.\n• Високий: 76-100% вразливі.",
+    "ConfidentialityRequirementHelp" => "Наскільки важлива конфіденційність ураженого активу для вашої організації.\n• Низький: втрата конфіденційності має обмежений вплив.\n• Середній: має серйозний вплив.\n• Високий: має катастрофічний вплив.",
+    "IntegrityRequirementHelp" => "Наскільки важлива цілісність ураженого активу для вашої організації.\n• Низький: втрата цілісності має обмежений вплив.\n• Середній: має серйозний вплив.\n• Високий: має катастрофічний вплив.",
+    "AvailabilityRequirementHelp" => "Наскільки важлива доступність ураженого активу для вашої організації.\n• Низький: втрата доступності має обмежений вплив.\n• Середній: має серйозний вплив.\n• Високий: має катастрофічний вплив.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Як зловмиснику потрібно буде дістатися до цієї вразливості та активувати її: де він має бути, наскільки складна атака та чи потрібно йому спочатку пройти автентифікацію.',
+    'BaseScoreImpactMetricsDescription' => 'Що станеться, якщо вразливість буде успішно використано: вплив на конфіденційність, цілісність та доступність ураженої системи.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Як реальна загроза цієї вразливості змінюється з часом: поточний стан коду експлойту, які доступні способи виправлення та наскільки впевнені звіти про її існування.',
+    'EnvironmentalScoreMetricsDescription' => 'Як ризик цієї вразливості залежить від вашого середовища: потенціал для реальної шкоди та скільки ваших систем фактично постраждали.',
+    'ImpactSubscoreModifiersDescription' => 'Зважте вплив Базового балу залежно від того, наскільки конфіденційність, цілісність та доступність насправді важливі для цього конкретного активу.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Якщо станеться використання загрози, яка шкода буде завдана?' . "\n" . '0 = Нічого' . "\n" . '5 = Індивідуальні дані користувача скомпрометовані або пошкоджені.' . "\n" . '10 = Повне знищення системи або даних',
+    'ReproducibilityHelp' => 'Наскільки легко відтворити експлойт загрози?' . "\n" . '0 = Дуже важко або неможливо, навіть для адміністраторів програми.' . "\n" . '5 = Потрібно виконати один або два кроки, можливо, знадобиться авторизований користувач.' . "\n" . '10 = Достатньо лише веббраузера та адресного рядка, без автентифікації.',
+    'ExploitabilityHelp' => 'Що потрібно, щоб використати цю загрозу?' . "\n" . '0 = Розширені знання програмування та мереж, з використанням спеціальних або розширених інструментів для атак.' . "\n" . '5 = Шкідливе програмне забезпечення існує в Інтернеті, або його можна легко здійснити за допомогою доступних інструментів атаки.' . "\n" . '10 = Просто веббраузер',
+    'AffectedUsersHelp' => 'Скільки користувачів це вплине?' . "\n" . '0 = Немає' . "\n" . '5 = Деякі користувачі, але не всі' . "\n" . '10 = Усі користувачі',
+    'DiscoverabilityHelp' => 'Наскільки легко виявити цю загрозу?' . "\n" . '0 = Дуже важко або неможливо; потрібен вихідний код або адміністративний доступ.' . "\n" . '5 = Можна з\'ясувати це, здогадуючись або моніторячи мережеві траси.' . "\n" . '9 = Деталі таких несправностей вже є загальнодоступними та їх можна легко знайти за допомогою пошукової системи.' . "\n" . '10 = Інформація відображається в адресному рядку веб-браузера або у формі.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'Оцінка DREAD',
+    'DreadMetrics' => 'Метрики DREAD',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Наскільки технічно кваліфікована ця група агентів-злочинців?' . "\n" . '1 = Немає технічних навичок' . "\n" . '3 = Деякі технічні навички' . "\n" . '5 = Досвідчений користувач комп\'ютера' . "\n" . '6 = Навички роботи з мережами та програмування' . "\n" . '9 = Навички проникнення в систему безпеки',
+    'MotiveHelp' => 'Наскільки мотивована ця група агентів-злочинців знаходити та використовувати цю вразливість?' . "\n" . '1 = Низька винагорода або її відсутність' . "\n" . '4 = Можлива винагорода' . "\n" . '9 = Висока винагорода',
+    'OpportunityHelp' => 'Які ресурси та можливості потрібні цій групі агентів загроз, щоб знайти та використати цю вразливість?' . "\n" . '0 = Повний доступ або необхідні дорогі ресурси' . "\n" . '4 = Потрібен спеціальний доступ або ресурси' . "\n" . '7 = Потрібен певний доступ або ресурси' . "\n" . '9 = Доступ або ресурси не потрібні',
+    'SizeHelp' => 'Наскільки великою є ця група агентів загроз?' . "\n" . '2 = Розробники' . "\n" . '2 = Системні адміністратори' . "\n" . '4 = Користувачі інтрамережі' . "\n" . '5 = Партнери' . "\n" . '6 = Автентифіковані користувачі' . "\n" . '9 = Анонімні користувачі Інтернету',
+    'EaseOfDiscoveryHelp' => 'Наскільки легко цій групі агентів зловмисників виявити цю вразливість?' . "\n" . '1 = Практично неможливо' . "\n" . '3 = Складно' . "\n" . '7 = Легко' . "\n" . '9 = Доступні автоматизовані інструменти',
+    'EaseOfExploitHelp' => 'Наскільки легко цій групі агентів зловмисників фактично скористатися цією вразливістю?' . "\n" . '1 = Теоретичний' . "\n" . '3 = Складно' . "\n" . '5 = Легко' . "\n" . '9 = Доступні автоматизовані інструменти',
+    'AwarenessHelp' => 'Наскільки добре відома ця вразливість цій групі агентів загроз?' . "\n" . '1 = Невідомо' . "\n" . '4 = Приховано' . "\n" . '6 = Очевидний' . "\n" . '9 = Загальнодоступне знання',
+    'IntrusionDetectionHelp' => 'Яка ймовірність виявлення експлойту?' . "\n" . '1 = Активне виявлення в застосунку' . "\n" . '3 = Зареєстровано та перевірено' . "\n" . '8 = Зареєстровано без перевірки' . "\n" . '9 = Не зареєстровано',
+    'LossOfConfidentialityHelp' => 'Скільки даних може бути розкрито та наскільки вони конфіденційні?' . "\n" . '2 = Мінімальна кількість розкритих неконфіденційних даних' . "\n" . '6 = Розкрито мінімальну кількість критичних даних' . "\n" . '6 = Розкрито широкий обсяг неконфіденційних даних' . "\n" . '7 = Розкрито широкий спектр критично важливих даних' . "\n" . '9 = Усі дані розкрито',
+    'LossOfIntegrityHelp' => 'Скільки даних може бути пошкоджено і наскільки вони пошкоджені?' . "\n" . '1 = Мінімально незначно пошкоджені дані' . "\n" . '3 = Мінімально серйозно пошкоджені дані' . "\n" . '5 = Значна кількість незначно пошкоджених даних' . "\n" . '7 = Значний обсяг серйозно пошкоджених даних' . "\n" . '9 = Усі дані повністю пошкоджені',
+    'LossOfAvailabilityHelp' => 'Скільки послуг може бути втрачено і наскільки вони життєво важливі?' . "\n" . '1 = Мінімальні вторинні послуги перервано' . "\n" . '5 = Мінімальні перерви в наданні основних послуг' . "\n" . '5 = Значно перервано роботу вторинних послуг' . "\n" . '7 = Значно перервано надання основних послуг' . "\n" . '9 = Усі послуги повністю втрачені',
+    'LossOfAccountabilityHelp' => 'Чи можна відстежити дії агентів загроз до окремої особи?' . "\n" . '1 = Повністю відстежуваний' . "\n" . '7 = Можливо, простежується' . "\n" . '9 = Повністю анонімний',
+    'FinancialDamageHelp' => 'Який фінансовий збиток буде завдано внаслідок експлуатації?' . "\n" . '1 = Менше, ніж вартість виправлення вразливості' . "\n" . '3 = Незначний вплив на річний прибуток' . "\n" . '7 = Значний вплив на річний прибуток' . "\n" . '9 = Банкрутство',
+    'ReputationDamageHelp' => 'Чи призведе експлойт до пошкодження репутації, яке зашкодить бізнесу?' . "\n" . '1 = Мінімальна шкода' . "\n" . '4 = Втрата основних рахунків' . "\n" . '5 = Втрата ділової репутації' . "\n" . '9 = Пошкодження бренду',
+    'NonComplianceHelp' => 'Який рівень ризику створює недотримання вимог?' . "\n" . '2 = Незначне порушення' . "\n" . '5 = Очевидне порушення' . "\n" . '7 = Порушення високого рівня',
+    'PrivacyViolationHelp' => 'Скільки персональних даних можна розкрити?' . "\n" . '3 = Одна особа' . "\n" . '5 = Сотні людей' . "\n" . '7 = Тисячі людей' . "\n" . '9 = Мільйони людей',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'Оцінка OWASP',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Оцінює ймовірність успішної атаки цієї групи агентів загрози.',
+    'VulnerabilityFactorsDescription' => 'Оцінює ймовірність того, що цю вразливість буде виявлено та використано.',
+    'TechnicalImpactDescription' => 'Розподіляє вплив за такими критеріями, як конфіденційність, цілісність, доступність та підзвітність.',
+    'BusinessImpactDescription' => 'Відображає те, що важливо для бізнесу, окрім простого технічного впливу.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Поточний стан методів експлойту або доступності коду.\n• Непідтверджено: код експлойту відсутній або експлойт є теоретичним.\n• Доказ концепції: код експлойту існує, але він не є практичним для більшості зловмисників.\n• Функціональний: функціональний код експлойту працює в більшості ситуацій.\n• Високий: експлойт є надійним та або автоматизованим (наприклад, черв'як), або взагалі не потребує коду експлойту.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Класична оцінка',
+    'ClassicLikelihoodDescription' => 'Наскільки ймовірна ця загроза.',
+    'ClassicImpactDescription' => 'Наскільки серйозними будуть наслідки, якщо цей ризик виникне.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Користувацький бал',
+    'CustomValueDescription' => 'Користувацьке значення може бути десятковим числом від 0 до 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Наскільки ймовірна ця загроза.',
+    'ContributingRiskDescription' => 'Кожен фактор нижче зважено за його відносною важливістю – виберіть, наскільки кожен з них впливає на цей ризик.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Повну інформацію про методологію оцінки ризиків OWASP можна знайти',
+    'Here' => 'тут',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Сума (Вага x Вплив x 5 / Макс.)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Завантажити як зображення',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Повну інформацію про оцінювання CVSS версії 2.0 можна знайти',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Недійсний ідентифікатор засобу контролю.',
+    'ValidationOwner' => 'Власник перевірки',
+    'ValidationStatus' => 'Статус перевірки',
+    'NotStarted' => 'Не розпочато',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Можливо, ризик, який ви шукаєте, був видалений, або посилання неправильне.',
+    'MitigationControlsRequiresGovernance' => 'Для перегляду потрібен дозвіл від Управління.',
+    'ViewControlValidation' => 'Перевірка керування переглядом',
+    'EditControlValidation' => 'Редагувати перевірку засобу контролю',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Для завантаження файлів потрібен дозвіл на надання ризику.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Для керування файлами потрібен дозвіл на зміну ризиків.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Для керування файлами потрібен дозвіл на пом’якшення наслідків плану.',
+    'MitigationSubmittedBy' => 'Пом\'якшення надано ким',
+    'UseADifferentDate' => 'Використати іншу дату',
+    'AssetGroup' => 'Група активів',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Недійсна f-група.',
+    'CustomizationCardsLayoutApiScopeError' => 'API макета карток налаштування доступний лише для fgroup=risk, tab_index=1, tab_index=2 або tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Відкрийте для себе ресурси',
+    'DiscoveryRuns' => 'Запуски Discovery',
+    'DiscoveryRangeHint' => 'Одна адреса, початково-кінцевий діапазон або IPv4 CIDR',
+    'DiscoveryResolveNames' => 'Пошук імен хостів',
+    'DiscoveryAddAs' => 'Додати нові активи як',
+    'DiscoveryStart' => 'Розпочати пошук',
+    'DiscoveryBackgroundNote' => 'Працює у фоновому режимі. Адреси, які вже існують, пропускаються.',
+    'DiscoveryRangeInvalid' => 'Введіть дійсну адресу IPv4, діапазон або блок CIDR.',
+    'DiscoveryRangeTooLarge' => 'Цей діапазон занадто великий. Ліміт адрес становить {$max}.',
+    'DiscoveryRunQueued' => 'Розпочалося відкриття.',
+    'DiscoveryRunCompleted' => 'Відкриття завершено: {$new} нових ресурсів.',
+    'AssetBulkSelectAll' => 'Вибрати всі ресурси {$count}',
+    'AssetBulkAssignTeams' => 'Призначити команди…',
+    'AssetBulkAddToGroup' => 'Додати до групи…',
+    'AssetBulkDeleteConfirmTitle' => 'Видалити {$count} ресурсів?',
+    'AbleToEditAssets' => 'Можливість редагувати ресурси',
+    'AbleToDeleteAssets' => 'Можливість видалення активів',
+    'AbleToVerifyAssets' => 'Здатний перевіряти активи',
+    'AbleToRunAssetDiscovery' => 'Здатний проводити виявлення активів',
+    'AbleToCreateAssetGroups' => 'Можливість створювати групи активів',
+    'AbleToEditAssetGroups' => 'Можливість редагування груп активів',
+    'AbleToDeleteAssetGroups' => 'Можливість видалення груп активів',
+    'ViewAsset' => 'Переглянути актив',
+    'AssetUnverifiedByEditLog' => 'Актив "{$name}" повернуто до статусу неперевіреного, оскільки користувач "{$user}" змінив своє ім\'я або IP-адресу без дозволу на перевірку активів.',
+    'AssetTeamsAssignedLog' => 'Актив "{$name}" було призначено команді(ам) "{$teams}" користувачем "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Додати ресурс',
+    'SearchAssetsPlaceholder' => 'Пошук за іменем або IP-адресою',
+    'AllLocations' => 'Усі місця розташування',
+    'AllTags' => 'Усі теги',
+    'AllAssetGroups' => 'Усі групи активів',
+    'AssetFields' => 'Поля активів',
+    'AssetBulkAllSelected' => 'Вибрано всі {$count} відповідні об\'єкти',
+    'AssetDeleteConfirmTitle' => 'Видалити ресурс "{$name}"?',
+    'DeleteAsset' => 'Видалити ресурс',
+    'DeleteAssets' => 'Видалити ресурси',
+    'AssetBulkAssignTeamsTitle' => 'Призначити команди для {$count} ресурсів',
+    'AssetAssignTeamsHint' => 'Вибрані команди додано. Команди, які вже мають актив, залишаються.',
+    'AssetAddToGroupTitle' => 'Додати {$count} ресурсів до групи',
+    'AssetChooseTeams' => 'Виберіть команди',
+    'AssetChooseGroup' => 'Виберіть групу',
+    'Assign' => 'Призначити',
+    'AssetBulkVerifiedSummary' => '{$ok} перевірено, {$failed} пропущено',
+    'AssetBulkDeletedSummary' => '{$ok} видалено, {$failed} пропущено',
+    'AssetBulkTeamsSummary' => 'Командам призначено {$ok} ресурсів, {$failed} пропущено',
+    'AssetBulkGroupSummary' => '{$ok} додано до групи, {$failed} пропущено',
+    'AssetBulkSkippedList' => 'Пропущено: {$list}',
+    'AssetBulkReasonNotFound' => 'не знайдено',
+    'NoAssetsYet' => 'Поки що немає активів',
+    'NoAssetsYetHint' => 'Тут відображаються ресурси, які ви додаєте або знаходите.',
+    'NoAssetsMatchFilters' => 'Немає ресурсів, що відповідають вашим фільтрам',
+    'CouldNotLoadAssets' => 'Не вдалося завантажити ресурси. Ваші дані в безпеці.',
+    'AllValuations' => 'Усі оцінки',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Додати групу',
+    'EditAssetGroup' => 'Редагувати групу',
+    'DeleteAssetGroup' => 'Видалити групу',
+    'ViewGroupMembers' => 'Переглянути учасників',
+    'SearchAssetGroupsPlaceholder' => 'Пошук груп за назвою',
+    'HighestValuation' => 'Найвища оцінка',
+    'LinkedRisks' => 'Пов\'язані ризики',
+    'RemoveFromGroup' => 'Видалити з групи',
+    'AssetGroupMoreMembers' => '+ {$count} більше',
+    'ViewAllInAssetsTab' => 'Переглянути всі на вкладці "Активи"',
+    'NoAssetsInGroup' => 'У цій групі немає активів.',
+    'CouldNotLoadGroupMembers' => 'Не вдалося завантажити учасників цієї групи.',
+    'AssetGroupMembers' => 'Члени',
+    'AssetGroupMembersHint' => 'У списку відображаються лише ті ресурси, які ви можете бачити. Учасники, яких ви не бачите, залишаються в групі.',
+    'ChooseAssets' => 'Виберіть активи',
+    'AddOrRemoveAssets' => 'Додати або видалити ресурси…',
+    'UseTheseAssets' => 'Використовуйте ці ресурси',
+    'AllAssets' => 'Усі активи',
+    'Valuation' => 'Оцінка',
+    'PickerShowingFirstN' => 'Показано перші {$count} з {$total}. Пошукайте або звузьте пошук, щоб знайти решту.',
+    'AssetGroupDeleteConfirmTitle' => 'Видалити групу "{$name}"?',
+    'AssetGroupDeleteKeepsAssets' => 'Активи в цій групі не видаляються. Видаляється лише група.',
+    'NoAssetGroupsYet' => 'Груп активів поки що немає',
+    'NoAssetGroupsYetHint' => 'Групуйте активи, щоб мати змогу разом відображати їх на карті та звітувати про них.',
+    'NoAssetGroupsMatchSearch' => 'Немає груп активів, що відповідають вашому пошуковому запиту',
+    'CouldNotLoadAssetGroups' => 'Не вдалося завантажити групи активів. Ваші дані в безпеці.',
+    'DiscoveryAssignTeams' => 'Призначити командам',
+    'DiscoveryAssignTeamsHint' => 'Необов\'язково. Кожен новий ресурс додається до цих команд.',
+    'DiscoveryAddAsHint' => 'Встановлено з вашого дозволу на перевірку активів.',
+    'DiscoveryTeamsInvalid' => 'Оберіть команди, які існують і до яких ви належите.',
+    'DiscoveryResolveNamesInvalid' => 'Пошук імен хостів має бути увімкнено або вимкнено.',
+    'DiscoveryTooManyActiveRuns' => 'У вас вже є {$max} запущених пошуків. Зачекайте, поки один з них завершиться, або скасуйте його.',
+    'DiscoveryRunNotFound' => 'Запуск виявлення не знайдено.',
+    'DiscoveryRunAlreadyFinished' => 'Цей пошуковий запуск вже завершено.',
+    'DiscoveryRunCancelled' => 'Запуск виявлення скасовано.',
+    'DiscoveryRunFailedToast' => 'Не вдалося знайти {$range}.',
+    'DiscoveryStatusQueued' => 'У черзі',
+    'DiscoveryProgress' => '{$scanned} з {$total}',
+    'DiscoveryLiveHosts' => 'Активні хости',
+    'DiscoveryNewAssets' => 'Нові активи',
+    'DiscoveryStartedAt' => 'Розпочато',
+    'DiscoveryCancelRun' => 'Скасувати запуск',
+    'CouldNotLoadDiscoveryRuns' => 'Не вдалося завантажити результати пошуку.',
+    'DiscoveryRangeReserved' => 'Цей діапазон включає зарезервовані адреси (loopback, link-local, multicast або 0.0.0.0/8), які не можна сканувати.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Вже виконується {$max} запуску пошуку. Спробуйте ще раз, коли один із них завершиться.',
+    'DiscoveryErrorScan' => 'Сканування зупинено через помилку. Перегляньте системні журнали для отримання детальної інформації.',
+    'DiscoveryErrorWorkerLost' => 'Фонова черга припинила обробку цього запуску.',
+    'DiscoveryErrorRequesterInactive' => 'Користувач, який розпочав цей запуск, більше неактивний.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Надішліть масову дію як тіло JSON.',
+    'AssetBulkActionRequired' => 'Виберіть масову дію.',
+    'AssetBulkUnknownAction' => 'Ця масова дія недоступна.',
+    'AssetBulkSelectionRequired' => 'Виберіть активи або за ідентифікатором, або за фільтром.',
+    'AssetBulkIdsRequired' => 'Виберіть принаймні один об\'єкт.',
+    'AssetBulkIdsInvalid' => 'Ідентифікатори активів мають бути цілими числами.',
+    'AssetBulkTooManyAssets' => 'Ви можете одночасно виконувати дії щонайбільше з {$max} об’єктами. Звузьте вибір і повторіть спробу.',
+    'AssetBulkFilterInvalid' => 'Фільтр недійсний. Перезавантажте сторінку та спробуйте ще раз.',
+    'AssetBulkFilterUnknownKey' => 'Фільтр «{$key}» не розпізнано.',
+    'AssetBulkFilterBadValue' => 'Фільтр "{$key}" має недійсне значення.',
+    'AssetBulkFilterTooManyValues' => 'Фільтр «{$key}» може вивести щонайбільше {$max} значень.',
+    'AssetBulkFilterAllAlone' => 'Вибір усіх ресурсів не можна поєднувати з іншими фільтрами.',
+    'AssetBulkFilterEmpty' => 'Перш ніж виконувати масову дію, виберіть фільтр або виділіть усі ресурси.',
+    'AssetBulkExpectedCountInvalid' => 'Очікувана кількість активів має бути цілим числом.',
+    'AssetBulkParamsInvalid' => 'Параметри для цієї масової дії недійсні.',
+    'AssetBulkTeamsRequired' => 'Оберіть хоча б одну команду.',
+    'AssetBulkTeamsNotFound' => 'Одна або декілька з цих команд більше не існують.',
+    'AssetBulkTeamsNotMember' => 'Ви можете призначати лише ті команди, до яких ви належите.',
+    'AssetBulkGroupNotFound' => 'Цієї групи активів більше не існує.',
+    'AssetBulkNoMatch' => 'Немає ресурсів, що відповідають вашому вибору.',
+    'AssetBulkCountMismatch' => 'Відповідні об’єкти змінилися з {$expected} на {$actual} з моменту їх вибору. Перегляньте список і повторіть спробу.',
+    'AssetColumnSettingsBodyInvalid' => 'Надішліть налаштування стовпців як тіло JSON зі стовпцями або порядком.',
+    'AssetColumnSettingsSaveFailed' => 'Не вдалося зберегти ваші стовпці. Попросіть адміністратора завершити оновлення SimpleRisk.',
+    'DiscoveryRunQueueFailed' => 'Не вдалося поставити завдання на пошук. Спробуйте ще раз.',
+    'DiscoveryRunStartedLog' => 'Користувач "{$user}" розпочав пошук активів #{$id} з {$range} ({$count} адрес).',
+    'DiscoveryRunCancelledLog' => 'Виконання пошуку активів #{$id} з {$range} було скасовано користувачем "{$user}".',
+    'AssetBulkTooManyToDelete' => 'Ви можете видалити щонайбільше {$max} ресурсів одночасно. Звузьте вибір і повторіть спробу.',
+    'AssetBulkFilterNotApplied' => 'Фільтр «{$key}» не вдалося застосувати у надісланому вигляді, тому нічого не змінилося.',
+    'AssetBulkExpectedCountRequired' => 'Для видалення об’єктів за фільтром потрібна кількість об’єктів, яку ви плануєте видалити.',
+    'AssetBulkReasonNotAttempted' => 'не намагався',
+    'MoreActions' => 'Більше дій',
+    'AssetCreateNewGroupOption' => 'Створити нову групу…',
+    'AssetNewGroupName' => 'Нова назва групи',
+    'AssetFilterByTeam' => 'Фільтрувати за командою {$name}',
+    'AssetFilterByValuation' => 'Фільтрувати за оцінкою {$name}',
+    'AssetFilterByTag' => 'Фільтрувати за тегом {$name}',
+    'AssetFilterByLocation' => 'Фільтрувати за сайтом/місцезнаходженням {$name}',
+    'AssetFilteringByTeam' => 'Фільтрування за командою {$name}',
+    'AssetFilteringByValuation' => 'Фільтрування за оцінкою {$name}',
+    'AssetFilteringByTag' => 'Фільтрування за тегом {$name}',
+    'AssetFilteringByLocation' => 'Фільтрування за сайтом/місцезнаходженням {$name}',
+    'AssetShowOnlyVerified' => 'Показувати лише перевірені ресурси',
+    'AssetShowOnlyUnverified' => 'Показувати лише неперевірені активи',
+    'AssetShowingVerified' => 'Показано перевірені активи',
+    'AssetShowingUnverified' => 'Показано неперевірені активи',
+    'CustomizationLayoutPayloadRejected' => 'Макет не вдалося зберегти, оскільки він містить поля або картки, які не належать до цього шаблону. Нічого не змінено.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Цей шаблон області видимості неможливо зберегти з редактора макета. Нічого не змінено.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Макет не має дійсних полів, тому його не було збережено. Нічого не змінено.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Збереження цього макета призведе до видалення всіх полів із шаблону, тому його не було збережено. Перезавантажте сторінку та повторіть спробу.',
+    'CustomizationLayoutRejectedRequiredField' => 'Обов\'язкове поле не можна видалити з макета. Нічого не змінено.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Збереження цього макета призведе до видалення більшості полів шаблону без необхідності їх видалення тут. Перезавантажте сторінку та спробуйте ще раз. Нічого не змінилося.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Група шаблонів не існує або належить до іншого типу запису. Нічого не змінено.',
+    'CustomizationLayoutLegacySaveRefused' => 'Цей шаблон редагується за допомогою редактора макета та не може бути збережений через кінцеву точку панелі застарілої версії.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Введіть до {$max} TCP-портів від 1 до 65535, розділених комами.',
+    'DiscoveryErrorProbeUnavailable' => 'Метод зондування, з якого розпочався цей запуск, більше недоступний для фонового виконавця. Розпочніть новий запуск.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP-пінг (непривілейований сокет)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP-пінг (необроблений сокет)',
+    'DiscoveryProbePingCommand' => 'ICMP-пінг (команда ping)',
+    'DiscoveryProbeTcpConnect' => 'TCP-з\'єднання',
+    'DiscoveryProbeMethod' => 'Метод зондування: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Виявлено веб-сервером. Фоновий виконавець може використовувати інший метод.',
+    'DiscoveryTcpProbeWarning' => 'Хости знаходять, лише якщо вони відповідають на одному зі сканованих TCP-портів, тому хости, які блокують ці порти, не будуть знайдені. Для отримання повних результатів дозвольте серверу надсилати ICMP-запит ping: дозвольте непривілейовані сокети ping або функцію NET_RAW, або встановіть ping.',
+    'DiscoveryTcpPortsForRun' => 'TCP-порти для цього запуску',
+    'DiscoveryTcpPortsHint' => 'Розділено комами, до {$max} портів. Залиште поле порожнім, щоб використовувати значення за замовчуванням: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'TCP-порти виявлення активів',
+    'DiscoveryDefaultTcpPortsHint' => 'Використовується, коли фоновий виконавець не може надіслати ICMP-запит ping. Розділено комами, до {$max} портів.',
+    'DiscoveryErrorTcpUnreliable' => 'Сканування зупинено, оскільки мережа відповідає на TCP-з’єднання для адрес, які не можуть бути реальними хостами (через проксі-сервер або брандмауер), тому кожна адреса виглядатиме як активна. Попросіть свого адміністратора дозволити серверу надсилати ICMP-запит ping.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'TCP-порти виявлення активів були скинуті до значень за замовчуванням користувачем "{$user}".',
+    'DiscoveryNotConfigured' => 'Виявлення не налаштовано. Зверніться до системного адміністратора, щоб встановити дозволені діапазони у config.php.',
+    'DiscoveryRangeNotAllowed' => 'Цей діапазон знаходиться поза межами діапазонів, дозволених для сканування.',
+    'DiscoveryAllowedRangesList' => 'Дозволені діапазони: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Цей ресурс недоступний. Можливо, його було видалено, або у вас немає до нього доступу.',
+    'AssetCustomFieldNotInTemplate' => 'Одне або декілька користувацьких полів не належать до шаблону цього ресурсу. Нічого не змінено.',
+    'AssetMappedControlsInvalid' => 'Не вдалося зберегти зіставлені елементи керування. Для кожного рядка потрібні рівень зрілості та принаймні один існуючий елемент керування. Нічого не змінено.',
+    'AssetMappedControlsTooMany' => 'Актив можна зіставити з максимум {$max} засобами контролю. Нічого не змінено.',
+    'AddControlsAtAnotherMaturity' => 'Додати засоби контролю для іншого рівня зрілості',
+    'ChoosingControlsNeedsGovernancePermission' => 'Для вибору засобів контролю потрібен дозвіл на керування.',
+    'NControls' => '{n} заходів контролю',
+    'SavingKeepsTheCurrentControlMappings' => 'Збереження зберігає поточні зіставлення засобів контролю.',
+    'LoadingControls' => 'Завантаження засобів контролю…',
+    'ControlListCouldNotBeLoaded' => 'Список засобів контролю не вдалося завантажити, тому зіставлені засоби контролю зараз не можна змінити.',
+    'RemoveControlsAtMaturity' => 'Видалити засоби контролю після досягнення зрілості {maturity}',
+    'ControlIdUnavailable' => '#{id} (недоступно)',
+    'AssetRecordEdit' => 'Редагувати об\'єкт',
+    'AssetRecordIdN' => 'Актив #{$id}',
+    'AssetRecordCopyLink' => 'Копіювати посилання на цей ресурс',
+    'AssetRecordLinkCopied' => 'Посилання скопійовано.',
+    'AssetRecordLinkCopyFailed' => 'Не вдалося скопіювати посилання. Скопіюйте його з адресного рядка.',
+    'AssetRecordMarkUnverified' => 'Позначити як неперевірене',
+    'AssetRecordViewAuditTrail' => 'Переглянути журнал аудиту',
+    'AssetRecordAuditTrailTitle' => 'Аудиторський слід',
+    'AssetRecordAuditTrailEmpty' => 'За цей період для цього активу не було зафіксовано жодної активності.',
+    'AssetRecordAuditTrailFailed' => 'Не вдалося завантажити журнал аудиту.',
+    'AssetRecordBackToAsset' => 'Назад до активу',
+    'AssetRecordSave' => 'Зберегти ресурс',
+    'AssetRecordProvenanceVerified' => 'Перевірено · додано {$date}',
+    'AssetRecordProvenanceUnverified' => 'Неперевірено: ще не підтверджено особою, яка може перевірити активи · додано {$date}',
+    'AssetRecordUnsavedHint' => 'Закриття з незбереженими змінами спочатку вимагає підтвердження.',
+    'AssetRecordDiscardQuestion' => 'Відхилити незбережені зміни?',
+    'AssetRecordKeepEditing' => 'Продовжити редагування',
+    'AssetRecordDiscardChanges' => 'Відхилити зміни',
+    'AssetRecordVerificationCard' => 'Перевірка',
+    'AssetRecordVerificationTag' => 'Потрібен дозвіл на перевірку активів',
+    'AssetRecordVerifiedHint' => 'Відповідальна особа перевірила цей ресурс. Зміна його назви або IP-адреси без дозволу на перевірку ресурсів повертає його до стану «неперевірений».',
+    'AssetRecordLoadFailed' => 'Не вдалося завантажити ресурс. Спробуйте ще раз.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'API макета карток налаштування доступний лише для fgroup=risk (tab_index 1, 2 або 3) та fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'Користувач, який розпочав цей запуск, більше не має дозволу на виконання пошуку активів.',
+    'AssetRecordEditField' => 'Редагувати {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Конфіденційність',
+    'Integrity' => 'Цілісність',
+    'Availability' => 'Наявність',
+    'AssetScoringLevelLow' => 'Низький',
+    'AssetScoringLevelModerate' => 'Помірний',
+    'AssetScoringLevelHigh' => 'Високий',
+    'AssetScoringValueInvalid' => 'Конфіденційність, цілісність та доступність приймаються як низький, помірний або високий (конфіденційність також приймається як не застосовується).',
+    'AssetScoringChangedLog' => 'Ресурс «{$name}» {$objective} було змінено з {$from} на {$to} користувачем «{$user}».',
+    'FIPSCategorization' => 'Категоризація FIPS',
+    'WeightedScore' => 'Зважений бал',
+    'WeightedBand' => 'Зважена смуга',
+    'AllCategorizations' => 'Усі категорії',
+    'AllBands' => 'Усі діапазони',
+    'AssetFilterByCategorization' => 'Фільтрувати за категорією FIPS {$name}',
+    'AssetFilteringByCategorization' => 'Фільтрування за категоризацією FIPS {$name}',
+    'AssetFilterByBand' => 'Фільтрувати за зваженою смугою {$name}',
+    'AssetFilteringByBand' => 'Фільтрація за зваженою смугою {$name}',
+    'AssetScoring' => 'Оцінка активів',
+    'AssetScoringSettingsHint' => 'Кожен актив має рейтинг Низький, Помірний або Високий за конфіденційністю, цілісністю та доступністю, а конфіденційність може бути оцінена як Не застосовується, що виключає його з обох результатів. Його категоризація FIPS є найвищою з трьох оцінок. Його зважений бал – це середньозважене значення трьох рівнів, а порогові значення діапазонів перетворюють цей бал на низький, помірний або високий діапазон. Зміна цих налаштувань миттєво переоцінює кожен актив.',
+    'Weights' => 'Ваги',
+    'AssetScoringWeightsHint' => 'Яка вага кожної цілі у зваженій оцінці: від 0 до 100, з точністю до двох знаків після коми. Вага 0 не враховує цю ціль. Цілісність та доступність не можуть одночасно дорівнювати 0, оскільки конфіденційність «Не застосовується» завжди не враховується.',
+    'LevelValues' => 'Значення рівня',
+    'AssetScoringLevelValuesHint' => 'Число, яке кожна оцінка вносить у зважений бал: вище 0 і до 100, з точністю до двох знаків після коми, та Низький нижче Помірний нижче Високого. Значення за замовчуванням: Низький 1, Помірний 2 та Високий 3.',
+    'BandThresholds' => 'Пороги діапазону',
+    'AssetScoringBandThresholdsHint' => 'Зважений бал на рівні або вище порогового значення знаходиться в цьому діапазоні, а бал нижче порогового значення – низький. Помірний бал повинен починатися вище низького значення, а високий – вище помірного та не вище високого значення.',
+    'ModerateStartsAt' => 'Помірний починається з',
+    'HighStartsAt' => 'Високий рівень починається з',
+    'DefaultScoringForNewAssets' => 'Оцінювання за замовчуванням для нових активів',
+    'AssetScoringDefaultsHint' => 'Попередньо вибирає ці оцінки, коли хтось додає ресурс у форму ресурсу. Ресурси, створені шляхом виявлення, імпорту або API, залишаються без оцінок, якщо вони не надають власні оцінки. Щоб вимкнути цю функцію, залиште всі три параметри налаштуванням «Не встановлено».',
+    'AssetScoringWeightsInvalid' => 'Вагові коефіцієнти оцінювання активів повинні бути числами від 0 до 100 з максимум двома знаками після коми, а Цілісність та Доступність не можуть одночасно дорівнювати 0.',
+    'AssetScoringValuesInvalid' => 'Значення рівня оцінки активів повинні бути числами від 0 до 100 з точністю щонайбільше до двох знаків після коми, причому Низький нижче Помірного нижче Високого.',
+    'AssetScoringThresholdsInvalid' => 'Порогові значення діапазону оцінювання активів повинні мати щонайбільше два знаки після коми, причому помірне значення починається вище низького, високе – вище помірного, а високе – не вище високого значення.',
+    'AssetScoringDefaultsInvalid' => 'Рівень оцінювання за замовчуванням для нових ресурсів має бути на рівні, який пропонує кожна ціль.',
+    'AssetScoringSettingsNotSaved' => 'Не вдалося зберегти налаштування оцінювання активів. Нічого не змінено.',
+    'AssetScoringSettingsChangedLog' => 'Налаштування оцінювання активів було змінено користувачем "{$user}".',
+    'AssetScoringNotSet' => 'Не встановлено',
+    'NotScored' => 'Не оцінено',
+    'AssetScoringNotScoredHint' => 'Дайте відповідь на всі три цілі, щоб оцінити цей актив.',
+    'ImportAssetScoringValueIgnored' => 'Значення {$objective} "{$value}" для ресурсу "{$asset_name}" не є дійсною оцінкою та було проігноровано.',
+    'AssetScoringSecurityObjectives' => 'Цілі безпеки',
+    'AssetScoringConfidentialityHelp' => 'Який потенційний вплив може мати несанкціоноване розголошення інформації про цей актив?',
+    'AssetScoringIntegrityHelp' => 'Який потенційний вплив може мати несанкціонована зміна або знищення інформації на цьому активі?',
+    'AssetScoringAvailabilityHelp' => 'Який потенційний вплив може мати порушення доступу до цього активу або його використання?',
+    'AssetScoringHelpHigh' => 'Серйозний або катастрофічний несприятливий вплив',
+    'AssetScoringHelpModerate' => 'Серйозний негативний вплив',
+    'AssetScoringHelpLow' => 'Обмежений або відсутній негативний вплив',
+    'AssetScoringHelpNotApplicable' => 'Конфіденційність не є проблемою для цього активу (наприклад, публічної інформації)',
+    'AssetScoringHelpLabel' => '{$objective} рекомендації щодо оцінювання',
+    'AssetScoringMeterValue' => '{$score}, {$band} діапазон',
+    'AssetScoringNoWeightedScore' => 'Без зваженої оцінки',
+    'AssetScoringNoWeightedScoreNote' => 'Без зваженої оцінки: кожна ціль, яка враховується, має вагу 0.',
+    'AssetScoringUpgradePending' => 'Оцінку активів неможливо зберегти, доки не буде виконано оновлення бази даних SimpleRisk. Нічого не змінено.',
+    'AssetScoringResultHelpLabel' => '{$result} пояснення',
+    'AssetScoringScoreHelp' => 'Зважена оцінка об\'єднує три оцінки в одне число від {$low} до {$high}. Кожна оцінка стає своїм встановленим значенням, і кожна множиться на вагу своєї мети. Результати додаються та діляться на загальну суму ваг. Поле конфіденційності «Не застосовується» опускається разом із його вагою. Встановлені значення та ваги налаштовуються в налаштуваннях. Усі три цілі мають бути оцінені, перш ніж буде відображено оцінку.',
+    'AssetScoringCategorizationHelp' => 'Категорія безпеки FIPS 199 є максимальною: найвищий рейтинг серед застосовних цілей. Один високий рейтинг робить актив високим, незалежно від інших. Не застосовується ігнорується.',
+    'AssetScoringBandHelp' => 'Смуга розміщує зважений бал за шкалою Низький, Помірний або Високий. Бал нижче {$moderate} – низький, від {$moderate} до {$highAt} – помірний, а {$highAt} або більше – високий. Пороги налаштовуються в налаштуваннях.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Усі рейтинги конфіденційності',
+    'AllIntegrityRatings' => 'Усі рейтинги цілісності',
+    'AllAvailabilityRatings' => 'Усі рейтинги доступності',
+    'AssetFilterByConfidentiality' => 'Фільтрувати за конфіденційністю {$name}',
+    'AssetFilteringByConfidentiality' => 'Фільтрування за конфіденційністю {$name}',
+    'AssetFilterByIntegrity' => 'Фільтрувати за цілісністю {$name}',
+    'AssetFilteringByIntegrity' => 'Фільтрування за цілісністю {$name}',
+    'AssetFilterByAvailability' => 'Фільтрувати за наявністю {$name}',
+    'AssetFilteringByAvailability' => 'Фільтрування за доступністю {$name}',
+    'HighestFIPSCategorization' => 'Найвища категоризація FIPS',
+    'HighestWeightedScore' => 'Найвищий зважений бал',
+    'HighestWeightedBand' => 'Найвища зважена смуга',
+    'AssetGroupFields' => 'Поля групи активів',
+    'NoAssetGroupsMatchFilters' => 'Немає груп активів, що відповідають вашим фільтрам',
+    'AssetGroupFilterByHighestCategorization' => 'Фільтрувати за найвищою категорією FIPS {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Фільтрування за найвищою категоризацією FIPS {$name}',
+    'AssetGroupFilterByHighestBand' => 'Фільтрувати за найвищим зваженим діапазоном {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Фільтрація за найвище зваженим діапазоном {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Виберіть групи активів або за ідентифікатором, або за фільтром.',
+    'AssetGroupBulkIdsRequired' => 'Виберіть принаймні одну групу активів.',
+    'AssetGroupBulkIdsInvalid' => 'Ідентифікатори груп активів мають бути цілими числами.',
+    'AssetGroupBulkFilterAllAlone' => 'Вибір усіх груп активів не можна поєднувати з іншими фільтрами.',
+    'AssetGroupBulkFilterEmpty' => 'Перед видаленням виберіть фільтр або виберіть усі групи активів.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Очікувана кількість груп активів має бути цілим числом.',
+    'AssetGroupBulkExpectedCountRequired' => 'Для видалення груп активів за фільтром потрібна кількість груп, яку ви плануєте видалити.',
+    'AssetGroupBulkNoMatch' => 'Немає груп активів, що відповідають вашому вибору.',
+    'AssetGroupBulkCountMismatch' => 'Відповідні групи активів змінилися з {$expected} на {$actual} з моменту їх вибору. Перегляньте список і повторіть спробу.',
+    'AssetGroupBulkTooManyToDelete' => 'Ви можете видалити щонайбільше {$max} груп ресурсів одночасно. Звузьте вибір і повторіть спробу.',
+    'AssetGroupBulkSelectAll' => 'Вибрати всі групи активів {$count}',
+    'AssetGroupBulkAllSelected' => 'Вибрано всі {$count} відповідні групи активів',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Видалити {$count} груп ресурсів?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Ресурси в цих групах не видаляються. Видаляються лише самі групи.',
+    'DeleteAssetGroups' => 'Видалити групи',
+    'AssetGroupBulkDeletedSummary' => '{$ok} груп видалено, {$failed} пропущено',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Вибір пов\'язаних ризиків потребує дозволу від Управління ризиками.',
+    'NAssociatedRisks' => '{n} пов\'язаний(і) ризик(и)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Збереження зберігає поточні пов\'язані ризики.',
+    'UpgradePhpPartialTarget' => 'Оновлення до {$target} — найновішого релізу, який підтримує PHP {$php}. Реліз {$blocked} і пізніші вимагають PHP {$needed} або новіше.',
+    'UpgradeNoPhpCli' => 'Для оновлення потрібен інтерфейс командного рядка PHP з розширенням pdo_mysql для оновлення бази даних, але на цьому сервері його не знайдено. Нічого не змінено. Встановіть його (він також потрібен для запланованих завдань SimpleRisk), а потім знову запустіть оновлення.',
+    'UpgradeDatabaseStepFailed' => 'Не вдалося оновити базу даних. База даних має версію {$reached}. Перегляньте наведені вище повідомлення та журнал SimpleRisk, а потім знову запустіть оновлення.',
+    'UpgradeReplacingVendorDirectory' => 'Заміна каталогу vendor.',
+    'AdvancedSearchLockedPlaceholder' => 'Пошук по всій програмі',
+    'AdvancedSearchLockedAria' => 'Пошук по всій програмі. Заблоковано: потрібен додатковий розширений пошук.',
+    'AdvancedSearchLockedPitch' => 'Знайдіть ризик, елемент контролю, документ або актив в одному полі та перейдіть до пов’язаних із ним записів.',
+    'AdvancedSearchUnlocksLabel' => 'Розблоковує пошук по всьому',
+    'RequiresAdvancedSearchExtra' => 'Потрібен додатковий параметр «Розширений пошук».',
+    'UnlockAdvancedSearchLink' => 'Подивіться, що це додає',
+    'UnlockActivateAdvancedSearchNote' => 'Додатковий розширений пошук встановлено, але не ввімкнено.',
+    'UnlockActivateAdvancedSearchLink' => 'Увімкніть це',
+    'AdvancedSearchControlCount' => 'Засоби контролю: {$count}',
+    'AdvancedSearchAssetCount' => 'Активи: {$count}',
+    'AdvancedSearchValuationRange' => '{$min} до {$max}',
+    'AdvancedSearchTypes' => 'Типи',
+    'AdvancedSearchTypesToggle' => 'Типи · {$count}',
+    'AdvancedSearchViewAll' => 'Переглянути всі',
+    'AdvancedSearchMatchedIn' => 'Збіг у {$field}:',
+    'AdvancedSearchMatchedInFilter' => 'Збіг у',
+    'AdvancedSearchAnyField' => 'Будь-яке поле',
+    'AdvancedSearchSortBest' => 'Найкращий збіг',
+    'AdvancedSearchSummary' => 'Результати: {$count}',
+    'AdvancedSearchSummaryTypes' => 'Типи пошуку: {$types}',
+    'AdvancedSearchNoResultsTitle' => 'Немає результатів для запиту «{$q}»',
+    'AdvancedSearchNoResultsTip' => 'Перевірте орфографію або спробуйте менше слів.',
+    'AdvancedSearchFailedTitle' => 'Не вдалося виконати пошук зараз',
+    'AdvancedSearchFailedBody' => 'Ваші дані в безпеці. Спробуйте ще раз за мить.',
+    'AdvancedSearchIncompleteTitle' => 'Результати можуть бути неповними.',
+    'AdvancedSearchIncompleteDetail' => 'Цей тип шукав лише найновіші записи. Звузьте пошук, щоб побачити більше.',
+    'AdvancedSearchTimeLimitNote' => 'Пошук було зупинено раніше, щоб залишатися швидким, тому деякі типи не були знайдені. Звузьте пошук, щоб включити їх.',
+    'AdvancedSearchNotSearched' => 'Не шукали',
+    'AdvancedSearchMinChars' => 'Введіть щонайменше {$count} символів для пошуку.',
+    'AdvancedSearchEmptyPrompt' => 'Пошук ризиків, засобів контролю, документів, активів тощо.',
+    'AdvancedSearchFirstPage' => 'Перша сторінка',
+    'AdvancedSearchNoAccess' => 'Ваш обліковий запис не може шукати жодні типи записів. Зверніться до адміністратора для надання доступу.',
+    'AdvancedSearchSort' => 'Сортувати',
+    'AdvancedSearchConnectedRecords' => 'Підключені записи',
+    'AdvancedSearchConnectedRecordsNote' => 'Відображає лише ті записи, до яких у вас є доступ.',
+    'AdvancedSearchNoConnections' => 'Немає підключених записів, які ви можете побачити.',
+    'AdvancedSearchConnectionsFailed' => 'Не вдалося завантажити підключені записи.',
+    'AdvancedSearchShowConnections' => 'Показати пов\'язані записи для {$title}',
+    'AdvancedSearchExploreConnections' => 'Дослідіть зв\'язки',
+    'AdvancedSearchCopyLink' => 'Копіювати посилання',
+    'AdvancedSearchMoreCount' => '+{$count} більше',
+    'AdvancedSearchCopyLinkFailed' => 'Не вдалося скопіювати посилання.',
+    'AdvancedSearchOpenRecord' => 'Відкрити',
+    'ControlDeepLinkUnavailable' => 'Цей засіб контролю недоступний. Можливо, його було видалено, або у вас немає до нього доступу.',
+    'ExceptionDeepLinkUnavailable' => 'Цей виняток не можна відкрити тут. Можливо, у вас немає доступу до його документа з політикою.',
+    // Advanced Search: the topbar typeahead
+    'AdvancedSearchSeeAll' => 'Переглянути всі результати для «{$q}»',
+    'AdvancedSearchTopHit' => 'Найкращий результат',
+    'AdvancedSearchKeyMove' => 'Перемістити',
+    'AdvancedSearchKeyEsc' => 'esc',
+    'AdvancedSearchSuggestions' => 'Пошукові пропозиції',
+    'AdvancedSearchAssessmentSubtitle' => '{$contact} · {$percent}% виконання',
+    'AdvancedSearchScannerId' => 'Ідентифікатор сканера',
+    'AdvancedSearchVendor' => 'Постачальник',
+    'AdvancedSearchProduct' => 'Продукт',
+    'AdvancedSearchSeverityLevel' => 'Ступінь серйозності {$level}',
+    'AdvancedSearchFromYourExtras' => 'З ваших додаткових функцій',
+    'UpdateAnExistingUser' => 'Оновлення існуючого користувача',
+    'UserImportProgressTitle' => 'Імпорт користувачів',
+    'UserImportQueued' => 'Поставлено в чергу. Імпорт розпочнеться за мить…',
+    'UserImportProgressCount' => '{$processed} з {$total} оброблених рядків…',
+    'UserImportComplete' => 'Імпорт завершено.',
+    'UserImportFailed' => 'Не вдалося завершити імпорт.',
+    'UserImportSummary' => '{$created} створено, {$updated} оновлено, {$failed} не імпортовано.',
+    'UserImportRowInvalid' => 'Рядок {$row}: не імпортовано. Потрібно вказати ім\'я користувача, повне ім\'я та дійсну адресу електронної пошти.',
+    'UserImportRowError' => 'Рядок {$row}: не імпортовано через неочікувану помилку.',
+    'UserImportRevealPasswords' => 'Показати тимчасові паролі',
+    'UserImportPasswordsOnce' => 'Тимчасові паролі нових користувачів відображаються один раз, а потім стираються. Скопіюйте їх зараз і безпечно надайте кожному користувачеві свої паролі. Кожен користувач повинен змінити їх під час першого входу в систему.',
+    'UserImportPasswordsShownOnce' => 'Ці тимчасові паролі було видалено з SimpleRisk і їх не можна буде знову відобразити. Скопіюйте їх зараз. Кожен користувач повинен змінити свій під час першого входу в систему.',
+    'UserImportPasswordsUnavailable' => 'Тимчасові паролі більше не відображаються. Вони відображаються один раз, лише адміністратору, який розпочав імпорт, і лише у вкладці браузера, яка його розпочала, і SimpleRisk не зберігає нічого, що могло б показати їх знову. Встановіть новий пароль для кожного нового користувача, редагуючи користувача.',
+    'UserImportBackgroundNote' => 'Ця сторінка оновлюється самостійно, а імпорт продовжується, якщо ви залишите її. Відкрийте сторінку знову, щоб побачити результат.',
+    'AuditAdditionalStakeholdersSetOnTest' => 'Для тесту встановлено додаткових зацікавлених сторін. Щоб змінити їх, відредагуйте тест у розділі {$page}; зміни одразу застосовуються до цього аудиту.',
+    'QuestionnaireDraftSomeFilesNotSaved' => 'Ваші відповіді збережено, але один або декілька вкладень не збережено. Можливо, файл занадто великий або недозволеного типу.',
+    'UploadFileTooBigForDatabase' => 'Завантажений файл занадто великий для зберігання в базі даних. Адміністратор SimpleRisk може збільшити значення max_allowed_packet та innodb_log_file_size в конфігурації MySQL.',
+    'UploadErrorIniSize' => 'Завантажений файл перевищує розмір, дозволений директивою upload_max_filesize у php.ini.',
+    'UploadErrorFormSize' => 'Розмір завантаженого файлу перевищує директиву MAX_FILE_SIZE, вказану у HTML-формі.',
+    'UploadErrorPartial' => 'Завантажений файл було завантажено лише частково.',
+    'UploadErrorNoFile' => 'Жоден файл не було завантажено.',
+    'UploadErrorNoTmpDir' => 'Відсутня тимчасова папка.',
+    'UploadErrorCantWrite' => 'Не вдалося записати файл на диск.',
+    'UploadErrorExtension' => 'Розширення PHP зупинило завантаження файлу.',
+    'MaxUploadSizeNeedsInteger' => 'Максимальний розмір файлу для завантаження має бути цілим числом байтів, більшим за нуль.',
+    'MaxUploadSizeUpdated' => 'Максимальний розмір файлу для завантаження успішно оновлено.',
+    'MaxUploadSizeCapped' => 'Збережене значення вище, ніж дозволяє цей сервер, тому файли більшого розміру відхиляються, доки не будуть збільшені обмеження PHP та MySQL або це значення не буде знижено. Найбільший файл, який наразі прийнято, у байтах:',
+    'PleaseEnterAValidEmailAddress' => 'Будь ласка, введіть дійсну адресу електронної пошти.',
+    'RiskImportedClosedWithoutCloseReason' => 'Ризик {$risk_id} ("{$subject}") було імпортовано зі статусом "Закрито", але без причини закриття, тому інформація про його закриття неповна. Додайте причину закриття до файлу та імпортуйте його знову або завершіть закриття на сторінці ризику.',
+    // SR-115: HTTP Strict Transport Security (HSTS)
+    'EnableHSTS' => 'Увімкнути сувору безпеку транспортування HTTP (HSTS)',
+    'EnableHSTSHelp' => 'Наказує браузерам підключатися до SimpleRisk лише через HTTPS протягом максимального віку, зазначеного нижче. Увімкніть це лише після того, як HTTPS працюватиме надійно на цьому сайті: браузери, які бачили заголовок, відхилять звичайний HTTP, а пошкоджений сертифікат не можна буде обійти, доки не закінчиться максимальний вік. Почніть з короткого максимального віку, наприклад, 300 секунд, і збільште його після перевірки HTTPS.',
+    'HSTSMaxAge' => 'Максимальний вік HSTS (секунди)',
+    'HSTSMaxAgeInvalid' => 'Максимальний вік HSTS має бути цілим числом секунд від 0 до 63072000.',
+    'HSTSIncludeSubdomains' => 'Застосувати HSTS до всіх піддоменів',
+    'HSTSIncludeSubdomainsHelp' => 'Також примусово використовувати HTTPS на кожному піддомені цього хоста. Не встановлюйте цей прапорець, якщо будь-який піддомен обслуговується через звичайний HTTP.',
     '' => '',
 );
 ?>

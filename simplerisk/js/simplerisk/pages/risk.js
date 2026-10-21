@@ -7,8 +7,14 @@ $.fn.extend({
             return;
         }
 
-        let tabs = this.parents('.tab-pane');
-        let activeTabs = this.parents('.tab-pane.active');
+        // .sr-tab-pane/.is-active, not Bootstrap's .tab-pane/.active --
+        // management/partials/viewhtml.php's Associated Exceptions tabs
+        // (this function's only caller) deliberately don't use Bootstrap's
+        // tab classes, so header.php's sitewide 'tabs:logic' script (which
+        // assumes one tab hierarchy per page) never touches them; see that
+        // markup's own comment for the two page-breaking bugs this avoided.
+        let tabs = this.parents('.sr-tab-pane');
+        let activeTabs = this.parents('.sr-tab-pane.is-active');
 
         // Can't initialize if not all of the parent tabs(if there's any) active
         // because the treegrid doesn't properly initialize in the background
@@ -73,34 +79,68 @@ function addRisk($this){
     }
 
     var getForm = $this.closest("form");
+    // new FormData(form) already serializes every `file[]` input in the form
+    // -- and the file-uploader widget's inputs (common.js) live inside it, so
+    // there is nothing extra to collect. This used to also loop over
+    // `input[type=file]` and re-append each File as `file[<j>]`, which
+    // produced a body like
+    //   file[]=<empty placeholder>, file[]=f2, file[]=f1, file[0]=f2, file[0]=f1
+    // PHP's multipart parser resolves that to $_FILES['file'] =
+    // [0=>f1, 1=>f2, 2=>f1] -- the explicit `file[0]` parts OVERWRITE the
+    // empty placeholder slot at index 0 (verified against a live PHP 8.3
+    // request, not inferred). The retired management/index.php handler
+    // happened to survive that because it unconditionally skipped index 0;
+    // addRisk() correctly skips only UPLOAD_ERR_NO_FILE slots, so the
+    // duplicate parts would upload the last file twice. Dropping the loop
+    // leaves $_FILES['file'] = [0=>UPLOAD_ERR_NO_FILE, 1=>f2, 2=>f1], which
+    // addRisk() handles exactly right: one upload per selected file.
     var form = new FormData($(getForm)[0]);
-    $.each($("input[type=file]", tabContainer), function(i, obj) {
-        $.each(obj.files, function(j, file){
-            form.append('file['+j+']', file);
-        })
-    });
-    
+
     // Check valiation and stop if failed
     if(!checkAndSetValidation(tabContainer)) {
         return false;
     }
     $.blockUI({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>', baseZ:'10001'});
+    // POST /api/v2/risks (addRisk(), simplerisk/includes/api.php) is the one
+    // maintained risk-creation path. This used to POST to
+    // /management/index.php, whose inline handler was a near-duplicate of
+    // addRisk(); that handler was retired when Submit Risk became a
+    // client-rendered page, so the old URL now answers with an HTML page
+    // shell instead of the JSON envelope this callback reads.
+    //
+    // The request is unchanged: still a FormData snapshot of the same form,
+    // with contentType/processData false. No explicit CSRF token is added
+    // here -- csrf-magic.js patches XMLHttpRequest.send (and therefore
+    // jQuery's transport) to inject the token on every same-origin POST,
+    // which is exactly how submit-risk.js reaches the same endpoint.
+    //
+    // addRisk()'s response carries data.risk_id, data.associate_test and a
+    // status_message that is ALWAYS populated on success -- it has to be, since
+    // most of that endpoint's callers are sessionless API-key integrations that
+    // have no session alert to fall back on. In this browser flow it is a
+    // second copy of a message set_alert() has also queued in the session, so
+    // it is only rendered where a toast can actually be read: see the branches
+    // in success: below.
     $.ajax({
         type: "POST",
-        url: BASE_URL + "/management/index.php",
+        url: BASE_URL + "/api/v2/risks",
         data: form,
         async: true,
         cache: false,
         contentType: false,
         processData: false,
         success: function(data){
-            if(data.status_message){
-                showAlertsFromArray(data.status_message);
-            }
-
             var risk_id = data.data.risk_id;
             var associate_test = data.data.associate_test;
             if(associate_test == 1) {
+                // addRisk() hands this flow the alert-ARRAY shape and CLEARS
+                // the session copy, precisely because the form#edit-test
+                // submit below reloads the page: rendering it here is the only
+                // chance to show it, and a leftover session copy would replay
+                // it on the page that submit lands on.
+                if(data.status_message){
+                    showAlertsFromArray(data.status_message);
+                }
                 $("#modal-new-risk").modal("hide");
                 $("#associate_new_risk_id").val(risk_id);
                 $('form#edit-test').submit();
@@ -119,6 +159,11 @@ function addRisk($this){
             // its grid, etc. This must be checked before the default
             // full-page redirect below, since that redirect is exactly what
             // an embedded-modal context needs to avoid.
+            //
+            // No toast on this branch or the redirect below: for both of them
+            // addRisk() left its success message queued in the session, so
+            // rendering data.status_message here would show it a second time
+            // on the next page the user loads.
             var saveModal = getForm.closest('[data-on-save="refresh-and-close"]');
             if (saveModal.length) {
                 saveModal.modal("hide");
@@ -377,8 +422,20 @@ $(document).ready(function(){
                     $('.show-score').hide();
                     $('.hide-score').show();
                 }
-                if(data.status_message){                    
+                if(data.status_message){
                     showAlertsFromArray(data.status_message);
+                }
+                // This legacy header only re-renders its own overview-container
+                // above -- the Cards Details tab (risk-view-details.js) holds a
+                // SEPARATE, independently-fetched copy of Subject in its own
+                // read-mode cache (cachedViewData), which a Subject save here
+                // never touches. Without this, the Details tab's General card
+                // silently shows the pre-save Subject until a full page reload.
+                // window.RiskViewDetails.render() is the same re-fetch hook
+                // details.php's own inline <script> already calls after Change
+                // Status/Close Risk/etc. re-render the whole details partial.
+                if (window.RiskViewDetails && typeof window.RiskViewDetails.render === 'function') {
+                    window.RiskViewDetails.render();
                 }
             }
         })
@@ -391,7 +448,7 @@ $(document).ready(function(){
             }
         });
     }
-    
+
     $('body').on('click', 'button[name=update_subject]', function(e){
         e.preventDefault();
 
@@ -402,54 +459,63 @@ $(document).ready(function(){
     $('body').on('click', ".add-comment-menu", function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
-        $commentsContainer = $(".comment-form", tabContainer).parents('.accordion-collapse');
-        $commentsContainer.slideDown('400');
-        $(".comment-text", tabContainer).focus();
+        var collapseEl = $(".comment-form", tabContainer).parents('.accordion-collapse')[0];
+
+        function focusCommentText() {
+            $(".comment-text", tabContainer).focus();
+        }
+
+        // Comments is a standard Bootstrap accordion (management/partials/
+        // viewhtml.php: .accordion-button[data-bs-toggle=collapse] +
+        // .accordion-collapse), already auto-wired by Bootstrap's own JS --
+        // a raw .slideDown() on the collapse div here bypassed that
+        // component entirely, so the button's own .collapsed class and
+        // aria-expanded stayed stale (its chevron never rotated) even once
+        // the body was visibly open, and nothing scrolled the section into
+        // view. bootstrap.Collapse is the same API new bootstrap.Tab()
+        // above already uses for an identical reason -- driving the real
+        // component instead of faking its visual effect by hand.
+        if (collapseEl.classList.contains('show')) {
+            // Already open (e.g. a second click from the menu) -- .show()
+            // itself is a safe no-op here, but 'shown.bs.collapse' won't
+            // fire again to focus the textarea, so do that immediately.
+            focusCommentText();
+        } else {
+            collapseEl.addEventListener('shown.bs.collapse', function onShown() {
+                collapseEl.removeEventListener('shown.bs.collapse', onShown);
+                focusCommentText();
+            });
+        }
+        bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).show();
+
+        // The trigger button's own position is stable throughout the
+        // expand animation (only the body below it grows), so this can
+        // scroll immediately rather than waiting on 'shown.bs.collapse'
+        // the way focusing the textarea inside the body has to.
+        collapseEl.closest('.accordion-item').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     
-    $('body').on('click', '.show-score', function(e){
-        e.preventDefault();
-        var tabContainer = $(this).parents('.tab-data');
-        $('.scoredetails', tabContainer).show();
-        $('.hide-score', tabContainer).show();
-        $('.show-score', tabContainer).hide();
-        return false;
-    })
-
-    $('body').on('click', '.hide-score', function(e){
-        e.preventDefault();
-        var tabContainer = $(this).parents('.tab-data');
-        $('.scoredetails', tabContainer).hide();
-        $('.updatescore', tabContainer).hide();
-        $('.hide-score', tabContainer).hide();
-        $('.show-score', tabContainer).show();
-        return false;
-    })
-
-    $('body').on('click', '.update-score', function(e){
-        e.preventDefault();
-        var tabContainer = $(this).parents('.tab-data');
-        $(".scoredetails", tabContainer).hide();
-        $(".updatescore", tabContainer).show();
-
-    });
-
-    $('body').on('click', '.cancel-update', function(e){
-        e.preventDefault();
-        var tabContainer = $(this).parents('.tab-data');
-        $('#score-container-accordion-body').addClass('show');
-        $(".scoredetails", tabContainer).show();
-        $(".updatescore", tabContainer).hide();
-
-    })
-
     /**** start details ****/
-    $('body').on('click', '[name=edit_details], .edit-risk', function(e){
+    // '.edit-risk' (the Actions-menu "Edit Risk" link, view_top_table(),
+    // includes/display.php) used to share this selector -- removed because
+    // this handler's own AJAX-partial-refresh target (.content-container)
+    // predates the Cards redesign and no longer matches what's actually on
+    // the page, so intercepting the click here only prevented the link's
+    // real href (view.php?action=editdetail&id=X) from ever navigating.
+    // risk-view-details.js now owns '.edit-risk' directly (its own
+    // maybeAutoOpenFromDeepLink(), reading that same query param, plus a
+    // direct handler for the same-page case -- see that file for both).
+    // '[name=edit_details]' has no live matching markup today (its one
+    // definition, view_risk_details() in includes/display.php, has zero
+    // callers) but is left bound here rather than removed, since nothing in
+    // this task depends on deleting it and a future re-introduction of that
+    // markup would otherwise silently lose this handler.
+    $('body').on('click', '[name=edit_details]', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
         var risk_id = $('.risk-id', tabContainer).html();
         var $this = $(this);
-        
+
         editDetailsRequest(risk_id, tabContainer);
     })
     
@@ -571,7 +637,16 @@ $(document).ready(function(){
     
     
     /**** start mitigation *****/
-    $('body').on('click', '[name=edit_mitigation], .edit-mitigation', function(e){
+    // '.edit-mitigation' (the Actions-menu "Plan a Mitigation" link,
+    // view_top_table(), includes/display.php) used to share this selector --
+    // removed for the same reason '.edit-risk' was (see that handler's own
+    // comment above): this handler's .content-container replacement target
+    // predates the Cards redesign. risk-view-mitigation.js now owns
+    // '.edit-mitigation' directly. '[name=edit_mitigation]' has no live
+    // matching markup today (view_mitigation_details() in includes/
+    // display.php has zero callers) but is left bound, same reasoning as
+    // '[name=edit_details]' above.
+    $('body').on('click', '[name=edit_mitigation]', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
         var risk_id = $('.risk-id', tabContainer).html();
@@ -825,67 +900,209 @@ $(document).ready(function(){
     /***** end review ******/
     
     /*************** start close risk ******************/
-    function closeRisk($this){
-        var tabContainer = $this.parents('.tab-data');
-        var risk_id = $('.risk-id', tabContainer).html();
+    // Close Risk as a real sr-modal (design-system.md #8's Form-in-modal
+    // type) -- replaces the old .close-risk/.save-close-risk pair, which
+    // fetched a legacy Reason-dropdown+note form and injected it into
+    // .content-container, a target that predates the Cards redesign and no
+    // longer holds tab content the same way (the same broken shape
+    // .edit-risk/.edit-mitigation had -- see those fixes' own commits).
+    //
+    // Built lazily, once, on first open -- not up front on every page load --
+    // matching this file's own established "build once, reuse the singleton"
+    // shape (the Status inline editor above does the same). The Reason
+    // dropdown's OPTIONS are extracted from closeriskHtmlForm()'s existing
+    // GET response (management/partials/close.php) the exact same way the
+    // Status editor already extracts its own <select> from a fetched
+    // fragment -- reusing that server-side option list as-is rather than
+    // building a second, parallel options endpoint for one dropdown.
+    var $closeRiskModal = null;
+    var closeRiskOptionsLoaded = false;
 
-        tabContainer.block({
-            message: 'Processing',
-            css: { border: '1px solid black', background: '#ffffff'},
-            baseZ:'10001'
-        });
+    function buildCloseRiskModal() {
+        if ($closeRiskModal) {
+            return $closeRiskModal;
+        }
 
-        
-        var getForm = $this.parents('form', tabContainer);
-        var form = new FormData($(getForm)[0]);
-        $.ajax({
-            type: "POST",
-            url: BASE_URL + "/api/v2/management/risk/closerisk?id=" + risk_id,
-            data: form,
-            async: true,
-            cache: false,
-            contentType: false,
-            processData: false,
-            success: function(data){
-                tabContainer.unblock();
+        var $reasonSelect = $('<select>', { 'class': 'form-select', name: 'close_reason' });
+        var $noteTextarea = $('<textarea>', { 'class': 'form-control', name: 'note', rows: 3 });
+
+        var $cancelBtn = $('<button>', { type: 'button', 'class': 'btn btn-dark', 'data-bs-dismiss': 'modal' }).text(_lang['Cancel']);
+        var $saveBtn = $('<button>', { type: 'button', 'class': 'btn btn-submit close-risk-modal-save' }).text(_lang['Submit']);
+
+        $closeRiskModal = $('<div>', { 'class': 'modal fade sr-modal', tabindex: '-1', 'aria-hidden': 'true' }).append(
+            $('<div>', { 'class': 'modal-dialog modal-dialog-centered' }).append(
+                $('<div>', { 'class': 'modal-content' }).append(
+                    $('<div>', { 'class': 'modal-header' })
+                        .append($('<span>', { 'class': 'sr-modal-icon' }).append($('<i>', { 'class': 'fa fa-lock', 'aria-hidden': 'true' })))
+                        .append($('<h4>', { 'class': 'modal-title' }).text(_lang['CloseRisk']))
+                        .append($('<button>', { type: 'button', 'class': 'btn-close', 'data-bs-dismiss': 'modal', 'aria-label': _lang['Cancel'] })),
+                    // .sr-qcard-body is required by design-system.md #8's
+                    // canonical shape (see the compliance.php #apply-common-
+                    // test reference modal) -- without it the fields sat
+                    // flush against the card's own edges with zero interior
+                    // padding, reading as a bare white rectangle rather than
+                    // a section card on the modal's grey canvas.
+                    //
+                    // Deliberately NO .sr-qcard-head here, unlike every
+                    // reference implementation: at this modal's compact
+                    // size (short header immediately followed by the card,
+                    // almost no grey canvas visible between them) a second
+                    // icon+bold-title+border-bottom bar directly under the
+                    // real modal header read as nested modal chrome, not a
+                    // section label -- confirmed live, twice (first with the
+                    // head re-titled 'Reason' to de-duplicate the literal
+                    // "Close Risk"/"Close Risk" text, which still looked
+                    // like two modals stacked). Two fields with self-
+                    // explanatory labels don't need a section grouping label
+                    // to begin with; the plain .sr-qcard-body's padding/
+                    // border alone is what this modal needed.
+                    $('<div>', { 'class': 'modal-body' }).append(
+                        $('<section>', { 'class': 'sr-qcard' })
+                            .append(
+                                $('<div>', { 'class': 'sr-qcard-body' }).append(
+                                    $('<div>', { 'class': 'sr-qgrid' })
+                                        .append(
+                                            $('<div>', { 'class': 'sr-qfield sr-qfield--full' })
+                                                .append($('<label>', { 'class': 'sr-qlabel' }).text(_lang['Reason']))
+                                                .append($reasonSelect)
+                                        )
+                                        .append(
+                                            $('<div>', { 'class': 'sr-qfield sr-qfield--full' })
+                                                .append($('<label>', { 'class': 'sr-qlabel' }).text(_lang['CloseOutInformation']))
+                                                .append($noteTextarea)
+                                        )
+                                )
+                            )
+                    ),
+                    $('<div>', { 'class': 'modal-footer' }).append($cancelBtn).append($saveBtn)
+                )
+            )
+        ).appendTo('body');
+
+        $closeRiskModal.data('reasonSelect', $reasonSelect);
+        $closeRiskModal.data('noteTextarea', $noteTextarea);
+
+        $saveBtn.on('click', function (e) {
+            e.preventDefault();
+            var risk_id = $closeRiskModal.data('riskId');
+            // NOT $('.tab-data').first() -- management/view.php also renders
+            // a bare, permanently-hidden `<div class='tab-data hide'>`
+            // template that sorts first in document order, so `.first()`
+            // silently targets it instead of the real, visible container.
+            // NOT $('#tab-content-container') either -- that id belongs to
+            // the AI-recommendations accordion's OWN inner div (viewhtml.php),
+            // not the Details/Mitigation/Review tab holder; it happens to
+            // carry the bare 'tab-data' class too, which is what makes the
+            // next mistake possible. It is ALSO only rendered when
+            // $_ai_show_section is true (an existing ai_recommendations_risk
+            // row for this risk id) -- for every risk with no AI
+            // recommendation yet, which includes every freshly submitted
+            // risk, that whole accordion branch is never emitted, so
+            // $('#tab-content-container') resolves to an empty set and
+            // .parents('.tab-data') off an empty set is empty too. The POST
+            // still succeeds and the modal still closes, but
+            // tabContainer.html(data.data) below silently no-ops on an empty
+            // jQuery collection: nothing on the page updates, so the Status
+            // pill is left showing its pre-close value. Confirmed live via
+            // risk-view-record-header.spec.ts SCENARIO-2 against a throwaway
+            // risk (no AI recommendation row).
+            //
+            // NOT $('.tab-data').not('.hide') either, even though it looks
+            // like the obvious fix and DOES correctly update the status
+            // pill -- it still matched TWO elements (that #tab-content-
+            // container div AND the real outer wrapper it happens to sit
+            // inside), in DOCUMENT order: [outer, inner]. jQuery's .html()
+            // on a multi-element set reuses the parsed fragment's real,
+            // script-bearing nodes for the LAST element and gives every
+            // earlier element an inert clone -- so the OUTER container (the
+            // one that actually survives) got the clone, and the embedded
+            // `$(function(){ RiskViewDetails.render(); })` script (from
+            // management/partials/details.php, only emitted when $isAjax is
+            // true) only ran on the doomed INNER copy. Confirmed live: the
+            // status pill updated correctly, but risk-view-details.js's
+            // Cards never re-rendered -- General/Scoring silently vanished
+            // after Close Risk, leaving only the AI Assistant/Associated
+            // Exceptions/Comments/Audit Trail sections that render outside
+            // the Cards mount.
+            //
+            // .overview-container (viewhtml.php) is the fix: it renders
+            // UNCONDITIONALLY (view_top_table()'s Status pill/risk-id header
+            // lives there, regardless of AI-recommendation state or
+            // $display_risk), and it sits in a completely different branch
+            // of the tree from the AI accordion's #tab-content-container, so
+            // .parents('.tab-data') from it can never accidentally pick up
+            // that conditional div the way #tab-content-container's own id
+            // could. Every OTHER handler in this file reaches a SINGLE
+            // element via `$this.parents('.tab-data')` from a click that
+            // originates INSIDE the tree -- .parents() walks up from there,
+            // so it never includes the starting element itself even when
+            // that element also carries the class. This modal is
+            // <body>-appended, outside that tree, so it starts from this
+            // known, always-present descendant and asks for its ANCESTOR
+            // with the class -- .parents(), not .closest() (closest() checks
+            // the starting element FIRST, and would return that same element
+            // straight back if it ever gained the class) -- yielding exactly
+            // one match: the real outer wrapper, with its script-bearing
+            // content intact.
+            var tabContainer = $('.overview-container').parents('.tab-data');
+
+            $saveBtn.prop('disabled', true);
+            $.ajax({
+                type: 'POST',
+                url: BASE_URL + '/api/v2/management/risk/closerisk?id=' + risk_id,
+                data: $.param({ close_reason: $reasonSelect.val(), note: $noteTextarea.val() }),
+                cache: false
+            }).done(function (data) {
+                bootstrap.Modal.getOrCreateInstance($closeRiskModal[0]).hide();
                 tabContainer.html(data.data);
                 callbackAfterRefreshTab(tabContainer);
-                if(data.status_message){
+                if (data.status_message) {
                     showAlertsFromArray(data.status_message);
                 }
-            }
-        })
-        .fail(function(xhr, textStatus){
-            tabContainer.unblock();
-            if(!retryCSRF(xhr, this))
-            {
-                if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    showAlertsFromArray(xhr.responseJSON.status_message);
+            }).fail(function (xhr) {
+                if (!retryCSRF(xhr, this)) {
+                    if (xhr.responseJSON && xhr.responseJSON.status_message) {
+                        showAlertsFromArray(xhr.responseJSON.status_message);
+                    } else {
+                        showAlertsFromArray([{ type: 'bad', text: _lang['RequestFailed'] }]);
+                    }
                 }
-            }
+            }).always(function () {
+                $saveBtn.prop('disabled', false);
+            });
         });
+
+        return $closeRiskModal;
     }
-    $('body').on('click', '.save-close-risk', function(e){
+
+    $('body').on('click', '.close-risk', function (e) {
         e.preventDefault();
-        closeRisk($(this));
-    })
-    
-    $('body').on('click', '.close-risk', function(e){
-        e.preventDefault();
-        var tabContainer = $(this).parents('.tab-data');
-        var risk_id = $('.risk-id', tabContainer).html();
-        $.ajax({
-            type: "GET",
-            url: BASE_URL + "/api/v2/management/risk/closerisk?id=" + risk_id,
-            success: function(data){
-                $('.content-container', tabContainer).html(data.data);
-            },
-            error: function(xhr,status,error){
-                if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    showAlertsFromArray(xhr.responseJSON.status_message);
+        var risk_id = $('.risk-id').first().html();
+        var $modal = buildCloseRiskModal();
+        $modal.data('riskId', risk_id);
+
+        var $reasonSelect = $modal.data('reasonSelect');
+        var $noteTextarea = $modal.data('noteTextarea');
+        $noteTextarea.val('');
+
+        if (!closeRiskOptionsLoaded) {
+            $.ajax({
+                type: 'GET',
+                url: BASE_URL + '/api/v2/management/risk/closerisk?id=' + risk_id,
+                success: function (data) {
+                    closeRiskOptionsLoaded = true;
+                    var $fetchedOptions = $('<div>').html(data.data).find('select[name="close_reason"] option');
+                    $reasonSelect.empty().append($fetchedOptions);
+                },
+                error: function (xhr) {
+                    if (xhr.responseJSON && xhr.responseJSON.status_message) {
+                        showAlertsFromArray(xhr.responseJSON.status_message);
+                    }
                 }
-            }
-        })
+            });
+        }
+
+        bootstrap.Modal.getOrCreateInstance($modal[0]).show();
     })
 
     /*************** end close risk ******************/
@@ -930,11 +1147,50 @@ $(document).ready(function(){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
         var risk_id = $('.risk-id', tabContainer).html();
+        var $field = $(this).closest('.sr-risk-record-status');
         $.ajax({
             type: "GET",
             url: BASE_URL + "/api/v2/management/risk/changestatus?id=" + risk_id,
             success: function(data){
-                $('.content-container', tabContainer).html(data.data);
+                // The fetched fragment (management/partials/changestatus.php)
+                // is a full bootstrap-grid form -- its own label, <select>,
+                // and "Update" submit button -- built for the legacy
+                // below-content panel this used to open into. Reusing it
+                // wholesale here would look nothing like Subject's compact
+                // inline row, so only two pieces of it carry real state and
+                // get kept: the populated <select> (options + the
+                // permission-filtered "Closed" entry, already resolved
+                // server-side) and the CSRF hidden input addCSRTToken()
+                // injected into the form (includes/api.php). Everything
+                // else -- the label, the grid divs, the old submit button --
+                // is discarded and rebuilt to match Subject's own shape.
+                // updateStatus() below still reads its FormData from
+                // `$this.parents('form')`, so as long as both kept pieces
+                // land inside a real <form>, submission behaves identically
+                // to the discarded original markup.
+                var $fetched = $('<div>').html(data.data);
+                var $select = $fetched.find('select[name="status"]');
+                var $csrfInput = $fetched.find('input[name="__csrf_magic"]');
+
+                // 'd-flex align-items-center' matches Subject's own edit-row
+                // wrapper (view_top_table(), includes/display.php) exactly,
+                // so the fetched <select> (Bootstrap's .form-select, full
+                // width by default) sizes against the icon buttons the same
+                // way Subject's <input> does rather than stretching under them.
+                var $form = $('<form>').addClass('d-flex align-items-center').append($select).append($csrfInput).append(
+                    $('<div>').addClass('sr-inline-edit-actions')
+                        .append(
+                            $('<button>', { type: 'button', 'class': 'sr-row-action cancel-edit-status', title: _lang['Cancel'], 'aria-label': _lang['Cancel'] })
+                                .append($('<i>', { 'class': 'fa fa-xmark', 'aria-hidden': 'true' }))
+                        )
+                        .append(
+                            $('<button>', { type: 'button', 'class': 'sr-row-action', name: 'update_status', title: _lang['Save'], 'aria-label': _lang['Save'] })
+                                .append($('<i>', { 'class': 'fa fa-check', 'aria-hidden': 'true' }))
+                        )
+                );
+
+                $('.edit-status', $field).empty().append($form).removeClass('d-none');
+                $('.static-status', $field).hide();
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
@@ -943,6 +1199,14 @@ $(document).ready(function(){
             }
         })
     })
+
+    $('body').on('click', '.cancel-edit-status', function (e) {
+        e.preventDefault();
+        var $field = $(this).closest('.sr-risk-record-status');
+        $('.edit-status', $field).addClass('d-none').empty();
+        $('.static-status', $field).show();
+    });
+
     function updateStatus($this){
         var tabContainer = $this.parents('.tab-data');
         var risk_id = $('.risk-id', tabContainer).html();
@@ -976,7 +1240,11 @@ $(document).ready(function(){
             }
         });
     }
-    $('body').on('click', 'input[name=update_status]', function(e){
+    // 'button[name=update_status]' is the new inline icon Save (.change-
+    // status' own handler above builds it); 'input[name=update_status]'
+    // stays for anything else still rendering changestatus.php's raw
+    // fragment as-is (its own unmodified "Update" submit input).
+    $('body').on('click', 'button[name=update_status], input[name=update_status]', function(e){
         e.preventDefault();
         updateStatus($(this))
 //        closeRisk($(this));
@@ -1029,92 +1297,6 @@ $(document).ready(function(){
             }
         })
     }
-    
-    $('body').on('click', '.score-action', function(e){
-        e.preventDefault();
-        var tabContainer = $(this).parents('.tab-data');
-        var scoring_method = $(this).data('method');
-        getScoreByAction(tabContainer, scoring_method);
-    })
-    
-    function updateScore($this){
-
-        // Prevent the form from being submitted multiple times
-        if (loading) {
-            return;
-        }
-
-        // Set loading to true to prevent multiple submissions
-        loading = true;
-
-        var tabContainer = $this.parents('.tab-data');
-        var risk_id = $('.risk-id', tabContainer).html();
-        var action = $this.attr('name');
-        
-        var getForm = $this.parents('form', tabContainer);
-        var form = new FormData($(getForm)[0]);
-        var visibleScoredetails = $('.hide-score', tabContainer).is(':visible');
-
-        $.ajax({
-            type: "POST",
-            url: BASE_URL + "/api/v2/management/risk/saveScore?id=" + risk_id + "&action=" + action,
-            data: form,
-            async: true,
-            cache: false,
-            contentType: false,
-            processData: false,
-            success: function(data){
-                $('.score-overview-container', tabContainer).html(data.data);
-//                $('.scoredetails', tabContainer).css('display', 'block');
-                if(visibleScoredetails){
-                    $('#score-container-accordion-body').addClass('show');
-                    $('.scoredetails', tabContainer).show();
-                    $('.show-score').hide();
-                    $('.hide-score').show();
-                }else{
-                    $('#score-container-accordion-body').removeClass('show');
-                    $('.scoredetails', tabContainer).hide();
-                    $('.show-score').show();
-                    $('.hide-score').hide();
-                }
-                
-                if(data.status_message){
-                    showAlertsFromArray(data.status_message);
-                }
-                
-                /* Update risk scoring method in details tab */
-                // If details tab is in Edit
-                if($('.cancel-edit-details', tabContainer).length){
-                    editDetailsRequest(risk_id, tabContainer);
-                }
-                // If details tab is in View
-                else{
-                    cancelEditDetailsRequest(risk_id, tabContainer);
-                }
-
-                // Reset loading to false after the request is complete
-                loading = false;
-
-            }
-        })
-        .fail(function(xhr, textStatus){
-            if(!retryCSRF(xhr, this))
-            {
-                if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    showAlertsFromArray(xhr.responseJSON.status_message);
-                }
-            }
-
-            // Reset loading to false if the request fails
-            loading = false;
-
-        });
-    }
-    $('body').on('click', '.updatescore button[type=submit]', function(e){
-        e.preventDefault();
-        updateScore($(this))
-//        closeRisk($(this));
-    })
     
     /**** End js for view html *******/
 
@@ -1194,14 +1376,14 @@ $(document).ready(function(){
     
     /**
     * When External Reference ID is changed, Control scoring.
-    * 
+    *
+    * Moved to js/simplerisk/cve_lookup.js -- that file (not this one) is
+    * loaded on BOTH the risk view page AND the standalone Submit Risk page
+    * (management/index.php), which never loads risk.js at all. Binding it
+    * here meant CVE lookup silently never fired on Submit Risk since that
+    * page was rebuilt around the Cards engine (05d51d9c50). See
+    * cve_lookup.js's own comment on this handler for the full story.
     */
-    
-    $('body').on('keyup', 'input[name=reference_id]', function(e){
-        e.preventDefault();
-        var formContainer = $(this).parents('form');
-        check_cve_id('reference_id', formContainer);
-    })
     /******** End External Referenced ID event ***************/
     
     /**
@@ -1577,20 +1759,36 @@ $(document).ready(function(){
     if (aiAccordionBody) {
         var aiRiskId = aiAccordionBody.getAttribute('data-risk-id');
 
+        // .sr-state-pill (design-system.md §7), not raw Bootstrap .badge.bg-*
+        // -- matches viewhtml.php's own server-rendered initial badge
+        // (same family mapping, same fa-spinner fa-spin affordance for the
+        // one actually-active state) so a poll-driven update doesn't revert
+        // the badge to the old, off-palette treatment.
         function setAIStatusBadge(status) {
             var badge = document.getElementById('ai-analysis-status-badge');
             if (!badge) return;
-            badge.classList.remove('d-none', 'bg-secondary', 'bg-info', 'bg-success', 'bg-danger', 'bg-warning');
+            badge.classList.remove('d-none', 'sr-state-neutral', 'sr-state-warning', 'sr-state-info', 'sr-state-success', 'sr-state-danger', 'sr-state-pill-spinning');
             var map = {
-                pending:     ['bg-secondary', 'Pending'],
-                processing:  ['bg-info',      'Processing'],
-                in_progress: ['bg-info',      'Processing'],
-                complete:    ['bg-success',   'Complete'],
-                failed:      ['bg-danger',    'Failed'],
+                pending:     ['sr-state-warning', 'Pending'],
+                processing:  ['sr-state-info',    'Processing'],
+                in_progress: ['sr-state-info',    'Processing'],
+                complete:    ['sr-state-success', 'Complete'],
+                failed:      ['sr-state-danger',  'Failed'],
             };
-            var entry = map[status] || ['bg-warning', status];
+            var entry = map[status] || ['sr-state-neutral', status];
             badge.classList.add(entry[0]);
-            badge.textContent = entry[1];
+            badge.textContent = '';
+            var isProcessing = (status === 'processing' || status === 'in_progress');
+            if (isProcessing) {
+                badge.classList.add('sr-state-pill-spinning');
+                var icon = document.createElement('i');
+                icon.className = 'fa fa-spinner fa-spin';
+                icon.setAttribute('aria-hidden', 'true');
+                badge.appendChild(icon);
+                badge.appendChild(document.createTextNode(entry[1]));
+            } else {
+                badge.textContent = entry[1];
+            }
             badge.classList.remove('d-none');
         }
 
