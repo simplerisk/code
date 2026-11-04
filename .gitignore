@@ -1,2 +1,6 @@
 
 *.swp
+
+# Local SimpleRisk configuration and secrets
+simplerisk/includes/config.php
+simplerisk/includes/google_oauth.local.php

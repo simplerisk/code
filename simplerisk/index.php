@@ -46,7 +46,7 @@ if (!isset($_SESSION)) {
         "domain" => "",
         "secure" => isset($_SERVER["HTTPS"]),
         "httponly" => true,
-        "samesite" => "Strict",
+        "samesite" => "Lax",
     ];
     session_set_cookie_params($parameters);
 
@@ -463,6 +463,8 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "mfa") {
 ?>
                         </div>
                     </form>
+                    <div class="sr-auth-divider">OR</div>
+                    <a class="sr-auth-sso" href="google_login.php">Continue with Google</a>
                 </div>
                 <p class="sr-auth-help"><?= $escaper->escapeHtml($lang['TroubleSigningIn']);?></p>
             </div>
