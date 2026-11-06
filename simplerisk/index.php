@@ -75,7 +75,7 @@ if (!isset($_SESSION['login_csrf_token'])) {
 $demo_login_prefill = demo_mode();
 
 // Include the language file
-require_once(language_file());
+load_language_file();
 
 // If the database has been installed but there are no users
 if ($count == 0) {

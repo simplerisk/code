@@ -67,6 +67,8 @@ $governance_review_due_entities = [
 
 return [
     'type' => 'governance_review_due',
+    // One task of this type at a time across all queue workers (periodic reminder sweep).
+    'concurrency' => 'serial',
 
     'task_check' => function (PDO $db) use ($governance_review_due_entities) {
         // Admin kill-switch, mirroring core_notifications_remote_feed's

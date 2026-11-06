@@ -14,20 +14,23 @@ require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/queues.php'));
 require_once(realpath(__DIR__ . '/../includes/promises.php'));
 require_once(realpath(__DIR__ . '/../includes/workers.php'));
+require_once(realpath(__DIR__ . '/../includes/queue_config.php'));
 
 // === CONFIGURATION ===
+// Tuning comes from config.php constants via queue_config() (built-in defaults
+// when absent; see includes/queue_config.php and config.sample.php).
 $workerName = 'cron_queue_loader';
-$stalePidThreshold = 24 * 3600; // 24 hours
-$maxRuntimeMinutes = 60;
-$maxIdleMinutes = 60;
-$memoryLimitBytes = 400 * 1024 * 1024;
+$stalePidThreshold = queue_config('WORKER_STALE_LOCK_SECONDS');
+$maxRuntimeMinutes = queue_config('QUEUE_WORKER_MAX_RUNTIME_MINUTES');
+$maxIdleMinutes = queue_config('QUEUE_WORKER_MAX_IDLE_MINUTES');
+$memoryLimitBytes = queue_config('QUEUE_WORKER_MEMORY_SOFT_LIMIT_MB') * 1024 * 1024;
 
 $startTime = time();
 
 // === SYSTEM SETTINGS ===
 ini_set('max_execution_time', 0);
 set_time_limit(0);
-ini_set('memory_limit', '512M');
+ini_set('memory_limit', queue_config('QUEUE_WORKER_PHP_MEMORY_LIMIT_MB') . 'M');
 ob_implicit_flush(true);
 
 write_debug_log("Queue loader started (PID " . getmypid() . ")", "info");
@@ -42,7 +45,10 @@ foreach ($zombies as $zombie) {
 }
 
 // === ACQUIRE WORKER LOCK ===
-if (!acquire_worker_lock($workerName, $stalePidThreshold)) {
+// Always exactly one loader: task_check deduplication is read-then-insert, so
+// two loaders could queue the same work twice. The slot call (count 1) still
+// gives the loader the atomic acquisition and the remote-host liveness rule.
+if (acquire_worker_slot($workerName, 1, $stalePidThreshold) === null) {
     write_debug_log("Queue loader lock exists and is active; exiting.", "info");
     exit(0);
 }
@@ -65,6 +71,24 @@ $db = db_open();
 if (!$db) {
     write_debug_log("Failed to open database connection, exiting.", "error");
     exit(1);
+}
+worker_prepare_connection($db);
+
+// One loader pass at a time across every host (queue_loader_lock_name()):
+// the worker lock above lets a new container take over a presumed-dead
+// loader's slot within minutes, and task_check deduplication is
+// read-then-insert, so this named lock is what keeps two passes from queueing
+// the same work. Released when this process ends.
+try {
+    $loaderLocked = queue_lock_try($db, queue_loader_lock_name($db));
+} catch (\Throwable $t) {
+    // Fail-safe: without the lock no pass runs. Logged, not left to cron output.
+    write_debug_log("The database refused the queue loader's named lock (GET_LOCK); no pass runs: " . $t->getMessage(), "error");
+    exit(0);
+}
+if (!$loaderLocked) {
+    write_debug_log("Another queue loader pass is running; exiting.", "info");
+    exit(0);
 }
 
 // === LOAD JOB DEFINITIONS ===
@@ -101,6 +125,14 @@ foreach ($jobs as $job) {
         break;
     }
 
+    // config.php changed mid-pass: stop queueing off the stale configuration.
+    // The next cron tick reruns the loader with the edited file (same
+    // fail-safe check as the workers — worker_config_changed_since()).
+    if (worker_config_file_changed_since($startTime, $now)) {
+        record_worker_restart($workerName, 'config_changed');
+        break;
+    }
+
     // === METRICS: memory usage ===
     worker_metric_set($workerName, 'memory_bytes', memory_get_usage(true));
     worker_metric_set($workerName, 'peak_memory_bytes', memory_get_peak_usage(true));
@@ -125,13 +157,10 @@ foreach ($jobs as $job) {
     try {
         $db->query("SELECT 1");
     } catch (\Throwable $t) {
-        write_debug_log("Reconnecting to DB after connection loss...", "warning");
-        db_close($db);
-        $db = db_open();
-        if (!$db) {
-            write_debug_log("Failed to reconnect to database, exiting.", "error");
-            break;
-        }
+        // The lost connection also lost the loader lock: stop this pass rather
+        // than run on unguarded; the next cron run starts a fresh one.
+        write_debug_log("Lost the database connection during the queue loader pass; stopping it.", "warning");
+        break;
     }
 
     $jobType = $job['type'] ?? '(unknown)';

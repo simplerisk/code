@@ -9,7 +9,7 @@ require_once(realpath( __DIR__ . '/../../../includes/reporting.php'));
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../../includes/extras.php'));
 
-require_once(language_file());
+load_language_file();
 
 /*****************************************
  * FUNCTION: API V2 REPORTS RISK AVERAGE *

@@ -51,14 +51,14 @@ const ASSETS_DISCOVERY_MAX_ACTIVE_PER_USER = 3;
 /** Largest range a run may cover (assets_parse_discovery_range()'s limit). */
 const ASSETS_DISCOVERY_MAX_HOSTS = 65536;
 /**
- * Queue priority for runs AND their continuation slices: 0, the default most
- * queue work uses (core_workflow_execute, core_workflow_action_execute, ...).
- * The worker picks `ORDER BY priority DESC, created_at ASC`, so at 0 discovery
- * slices take turns with other default-priority tasks by age -- including the
- * asset.created workflow events a scan itself fires. Anything higher would
- * starve that work until every discovery run finished.
+ * Queue priority for runs AND their continuation slices: 25, the background tier
+ * (like core_control_update). The worker picks `ORDER BY priority DESC,
+ * created_at ASC`, so a higher number runs sooner. Workflow executions and
+ * their actions queue at 50, so the asset.created events a scan itself fires
+ * are never starved behind the scan's own slices, while a run still starts
+ * ahead of default-priority (0) work.
  */
-const ASSETS_DISCOVERY_PRIORITY = 0;
+const ASSETS_DISCOVERY_PRIORITY = 25;
 /** Queued + running runs across the whole instance. */
 const ASSETS_DISCOVERY_MAX_ACTIVE_TOTAL = 10;
 /** A queued/running run with no live queue task this long after creation is healed to failed. */

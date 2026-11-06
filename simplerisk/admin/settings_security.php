@@ -199,6 +199,10 @@
             }
         }
 
+        // The SSL-verification and proxy settings decide whether the update feed is reachable, so a failure
+        // remembered under the old values must not suppress the next check
+        latest_versions_clear_failure();
+
         // If all setting values were saved successfully
         if (!$error) {
             // Display an alert

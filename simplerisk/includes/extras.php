@@ -10,7 +10,7 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 
 // Include the language file
-require_once(language_file());
+load_language_file();
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 /*********************************
@@ -57,29 +57,87 @@ function call_extra_function($extra_check_function, $extra_file, $function_name,
  * FUNCTION: AVAILABLE EXTRAS                      *
  * Returns an array of available SimpleRisk Extras *
  ***************************************************/
+/**
+ * The list of Extras. Everything that has to know "which Extras exist" derives from it,
+ * so adding an Extra means adding one entry here. Two plain-name copies remain and must be
+ * edited with it: $available_extras in includes/functions.php, and the alternate definition
+ * in extras/upgrade/backwards_compatibility.php (it serves Cores that predate this one).
+ *
+ *   short_name                directory under extras/, and the name used everywhere
+ *   long_name                 display name
+ *   api_prefix                the Extra's URL prefix in the API: the first path segment its
+ *                             routes live under. It is not the slug (short_name stays the
+ *                             slug: directory, gate, download name, license key) and often
+ *                             differs from it: incident_management is im, artificial_intelligence
+ *                             is ai, complianceforgescf is scf. Used to derive and check the
+ *                             Extra's /<api_prefix>/upgrade/db and /<api_prefix>/upgrade/app
+ *                             routes. The Upgrade Extra must NOT build its routes from the
+ *                             registry (it can run against an older Core whose registry lacks
+ *                             the field), so its routes stay explicit and are checked against
+ *                             this field by tests. The Upgrade Extra's own entry is `upgrade`
+ *                             (its app route is /upgrade/upgrade/app) although it has no
+ *                             database_upgrade_route. An Extra that joins the registry must
+ *                             declare one.
+ *   database_upgrade_route    POST route, relative to /api/v2, that migrates the Extra's
+ *                             database; null when the Extra has none (SR-2380). The prefix
+ *                             is not derivable from short_name (incident_management is
+ *                             /im/, artificial_intelligence is /ai/, SCF is /scf/upgrade).
+ *   database_upgrade_function the function that does the migration once the Extra's
+ *                             index.php is loaded, called with no arguments; null when
+ *                             there is none. Idempotent. For SCF it queues the content
+ *                             import instead (its schema migrates when the Extra is
+ *                             enabled), so SCF declares no version setting.
+ *   database_version_setting  the settings row where the Extra stamps how far its database
+ *                             has been migrated, so a caller can see what a run changed;
+ *                             null when there is none. Its name is irregular
+ *                             (assessment_extra_version, importexport_extra_version,
+ *                             extra_vulnmgmt_version), so it is declared, not guessed.
+ *
+ * ExtrasStatusTest fails if an entry's route is not registered as POST by its Extra, or
+ * its function or version setting is not one the Extra's own code defines or writes, so a
+ * typo or a rename cannot drift unnoticed. Consumers must tolerate an entry without the
+ * database_* keys: the alternate definition in extras/upgrade/backwards_compatibility.php,
+ * used on Cores that predate them, has only the names.
+ */
 // @phan-suppress-next-line PhanRedefineFunction -- alternate definition in extras/upgrade/backwards_compatibility.php is guarded by function_exists()
 function available_extras()
 {
     // The available SimpleRisk Extras
     $extras = array(
-        array("short_name" => "advanced_search", "long_name" => "Advanced Search Extra"),
-        array("short_name" => "api", "long_name" => "API Extra"),
-        array("short_name" => "artificial_intelligence", "long_name" => "Artificial Intelligence Extra"),
-        array("short_name" => "assessments", "long_name" => "Risk Assessment Extra"),
-        array("short_name" => "authentication", "long_name" => "Custom Authentication Extra"),
-        array("short_name" => "complianceforgescf", "long_name" => "Secure Controls Framework (SCF) Extra"),
-        array("short_name" => "customization", "long_name" => "Customization Extra"),
-        array("short_name" => "encryption", "long_name" => "Encrypted Database Extra"),
-        array("short_name" => "import-export", "long_name" => "Import-Export Extra"),
-        array("short_name" => "incident_management", "long_name" => "Incident Management Extra"),
-        array("short_name" => "jira", "long_name" => "Jira Integration Extra"),
-        array("short_name" => "notification", "long_name" => "Email Notification Extra"),
-        array("short_name" => "organizational_hierarchy", "long_name" => "Organizational Hierarchy Extra"),
-        array("short_name" => "separation", "long_name" => "Team-Based Separation Extra"),
-        array("short_name" => "ucf", "long_name" => "Unified Compliance Framework (UCF) Extra"),
-        array("short_name" => "upgrade", "long_name" => "Upgrade Extra"),
-	    array("short_name" => "vulnmgmt", "long_name" => "Vulnerability Management Extra"),
-        array("short_name" => "workflows", "long_name" => "Workflows Extra"),
+        array("short_name" => "advanced_search", "long_name" => "Advanced Search Extra", "api_prefix" => "advanced_search",
+              "database_upgrade_route" => "/advanced_search/upgrade/db", "database_upgrade_function" => "upgrade_advanced_search_extra_database", "database_version_setting" => "advanced_search_extra_version"),
+        array("short_name" => "api", "long_name" => "API Extra", "api_prefix" => "api",
+              "database_upgrade_route" => "/api/upgrade/db", "database_upgrade_function" => "upgrade_api_extra_database", "database_version_setting" => "api_extra_version"),
+        array("short_name" => "artificial_intelligence", "long_name" => "Artificial Intelligence Extra", "api_prefix" => "ai",
+              "database_upgrade_route" => "/ai/upgrade/db", "database_upgrade_function" => "upgrade_artificial_intelligence_extra_database", "database_version_setting" => "extra_artificial_intelligence_version"),
+        array("short_name" => "assessments", "long_name" => "Risk Assessment Extra", "api_prefix" => "assessments",
+              "database_upgrade_route" => "/assessments/upgrade/db", "database_upgrade_function" => "upgrade_assessment_extra_database", "database_version_setting" => "assessment_extra_version"),
+        array("short_name" => "authentication", "long_name" => "Custom Authentication Extra", "api_prefix" => "authentication",
+              "database_upgrade_route" => "/authentication/upgrade/db", "database_upgrade_function" => "upgrade_authentication_extra_database", "database_version_setting" => "authentication_extra_version"),
+        array("short_name" => "complianceforgescf", "long_name" => "Secure Controls Framework (SCF) Extra", "api_prefix" => "scf",
+              "database_upgrade_route" => "/scf/upgrade", "database_upgrade_function" => "scf_queue_upgrade_task", "database_version_setting" => null),
+        array("short_name" => "customization", "long_name" => "Customization Extra", "api_prefix" => "customization",
+              "database_upgrade_route" => "/customization/upgrade/db", "database_upgrade_function" => "upgrade_customization_extra_database", "database_version_setting" => "customization_extra_version"),
+        array("short_name" => "encryption", "long_name" => "Encrypted Database Extra", "api_prefix" => "encryption",
+              "database_upgrade_route" => "/encryption/upgrade/db", "database_upgrade_function" => "upgrade_encryption_extra_database", "database_version_setting" => "encryption_extra_version"),
+        array("short_name" => "import-export", "long_name" => "Import-Export Extra", "api_prefix" => "import-export",
+              "database_upgrade_route" => "/import-export/upgrade/db", "database_upgrade_function" => "upgrade_importexport_extra_database", "database_version_setting" => "importexport_extra_version"),
+        array("short_name" => "incident_management", "long_name" => "Incident Management Extra", "api_prefix" => "im",
+              "database_upgrade_route" => "/im/upgrade/db", "database_upgrade_function" => "upgrade_incident_management_extra_database", "database_version_setting" => "incident_management_extra_version"),
+        array("short_name" => "jira", "long_name" => "Jira Integration Extra", "api_prefix" => "jira",
+              "database_upgrade_route" => "/jira/upgrade/db", "database_upgrade_function" => "upgrade_jira_extra_database", "database_version_setting" => "jira_extra_version"),
+        array("short_name" => "notification", "long_name" => "Email Notification Extra", "api_prefix" => "notification",
+              "database_upgrade_route" => "/notification/upgrade/db", "database_upgrade_function" => "upgrade_notification_extra_database", "database_version_setting" => "notification_extra_version"),
+        array("short_name" => "organizational_hierarchy", "long_name" => "Organizational Hierarchy Extra", "api_prefix" => "organizational_hierarchy",
+              "database_upgrade_route" => "/organizational_hierarchy/upgrade/db", "database_upgrade_function" => "upgrade_organizational_hierarchy_extra_database", "database_version_setting" => "organizational_hierarchy_extra_version"),
+        array("short_name" => "separation", "long_name" => "Team-Based Separation Extra", "api_prefix" => "separation",
+              "database_upgrade_route" => "/separation/upgrade/db", "database_upgrade_function" => "upgrade_separation_extra_database", "database_version_setting" => "separation_extra_version"),
+        array("short_name" => "upgrade", "long_name" => "Upgrade Extra", "api_prefix" => "upgrade",
+              "database_upgrade_route" => null, "database_upgrade_function" => null, "database_version_setting" => null),
+        array("short_name" => "vulnmgmt", "long_name" => "Vulnerability Management Extra", "api_prefix" => "vulnmgmt",
+              "database_upgrade_route" => "/vulnmgmt/upgrade/db", "database_upgrade_function" => "upgrade_vulnmgmt_extra_database", "database_version_setting" => "extra_vulnmgmt_version"),
+        array("short_name" => "workflows", "long_name" => "Workflows Extra", "api_prefix" => "workflows",
+              "database_upgrade_route" => "/workflows/upgrade/db", "database_upgrade_function" => "upgrade_workflows_extra_database", "database_version_setting" => "extra_workflows_version"),
     );
 
     // Return the array of available Extras
@@ -109,7 +167,6 @@ function extra_description_keys(): array
         'notification'             => 'NotificationExtraDesc',
         'organizational_hierarchy' => 'OrganizationManagementDesc',
         'separation'               => 'SeparationExtraDesc',
-        'ucf'                      => 'UCFExtraDesc',
         'upgrade'                  => 'UpgradeExtraDesc',
         'vulnmgmt'                 => 'VulnerabilityManagementExtraDesc',
         'workflows'                => 'WorkflowsExtraDesc',
@@ -189,8 +246,6 @@ function core_extra_current_version($extra)
                     return ORGANIZATIONAL_HIERARCHY_EXTRA_VERSION;
                 case "separation":
                     return SEPARATION_EXTRA_VERSION;
-                case "ucf":
-                    return UCF_EXTRA_VERSION;
                 case "upgrade":
                     return UPGRADE_EXTRA_VERSION;
                 case "vulnmgmt":
@@ -241,8 +296,6 @@ function core_extra_activated($extra)
                 return organizational_hierarchy_extra();
             case "separation":
                 return team_separation_extra();
-            case "ucf":
-                return ucf_extra();
             case "upgrade":
                 return true;
             case "vulnmgmt":
@@ -293,8 +346,6 @@ function core_extra_activated_link($extra)
             return "<a class='text-info m-l-10' href='organizational_hierarchy.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
         case "separation":
             return "<a class='text-info m-l-10' href='separation.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
-        case "ucf":
-            return "<a class='text-info m-l-10' href='ucf.php'>" . $escaper->escapeHtml($lang['Configure']) . "</a>";
         case "upgrade":
                 return "";
 		case "vulnmgmt":
@@ -311,7 +362,7 @@ function core_extra_activated_link($extra)
  * Displays the list of available and installed extras *
  * on the Register & Upgrade page.                     *
  *******************************************************/
-function core_display_upgrade_extras()
+function core_display_upgrade_extras($show_heading = true)
 {
 	global $escaper;
 	global $lang;
@@ -326,9 +377,15 @@ function core_display_upgrade_extras()
 	// Get the list of available extras
 	$available_extras = available_extras();
 
+	// Display the heading, unless the caller's own card header already names
+	// the section (admin/register.php's Extras card does).
+	if ($show_heading) {
+		echo "
+        <p><h4>" . $escaper->escapeHtml($lang['SimpleRiskExtras']) . "</h4></p>";
+	}
+
 	// Display the table header
 	echo "
-        <p><h4>" . $escaper->escapeHtml($lang['SimpleRiskExtras']) . "</h4></p>
         <table class='table table-striped border header'>
             <thead>
                 <tr>
@@ -367,12 +424,11 @@ function core_display_upgrade_extras()
 		// If the extra is purchased and activated
 		$activated_link = ($purchased && $activated) ? core_extra_activated_link($short_name) : "";
 
-		// Get the version information. Prefer the current version the licensing
-		// service cached for this Extra (licensed/free entries carry it); fall
-		// back to the releases.xml fetch for Extras with no cache entry
-		// (e.g. unlicensed), which return null here.
+		// Get the version information: the newer of the licensing service's cached
+		// version for this Extra and the releases.xml version, since the license
+		// cache lags a Core upgrade by up to a day.
 		$version = core_extra_current_version($short_name);
-		$latest_version = get_current_version_for_extra($short_name) ?? latest_version($short_name);
+		$latest_version = get_latest_version_for_extra($short_name);
 
 		// Get the action button
 		$action_button = core_get_action_button($short_name, $purchased, $installed, $activated, $version, $latest_version);
@@ -626,10 +682,6 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
             $button_name = "get_jira_extra";
             $action_link = "jira.php";
             break;
-        case "ucf":
-            $button_name = "get_ucf_extra";
-            $action_link = "ucf.php";
-            break;
         case "organizational_hierarchy":
             $button_name = "get_organizational_hierarchy_extra";
             $action_link = "organizational_hierarchy.php";
@@ -701,9 +753,9 @@ function core_gather_extra_upgrades() {
 
     $upgradeable = [];
     foreach($available_extras as $extra) {
-        // Prefer the licensing service's cached current version; fall back to
-        // the releases.xml fetch for Extras with no cache entry.
-        $latest = get_current_version_for_extra($extra) ?? latest_version($extra);
+        // The newer of the licensing service's cached version and the feed's,
+        // because the license cache lags a Core upgrade by up to a day.
+        $latest = get_latest_version_for_extra($extra);
         if (core_is_purchased($extra) &&
             core_is_installed($extra) &&
             core_extra_current_version($extra) < $latest) {
@@ -720,15 +772,26 @@ function core_gather_extra_upgrades() {
  * Used by the one-click upgrade process to upgrade *
  * Extras to the latest version                     *
  ****************************************************/
-function core_upgrade_extras($extras_to_upgrade = false) {
+/**
+ * @param array|false $extras_to_upgrade Short names, or false for every Extra that is due.
+ * @param array|null  $not_upgraded      Set to the Extras left on their old release: on a
+ *                                       failure, the one that failed and every one after it,
+ *                                       which the abort never reached; otherwise empty.
+ *
+ * @return int 1 when every Extra was replaced, 0 after the first that could not be
+ */
+function core_upgrade_extras($extras_to_upgrade = false, &$not_upgraded = null) {
 
     global $lang;
 
     if ($extras_to_upgrade === false)
         $extras_to_upgrade = core_gather_extra_upgrades();
 
+    $extras_to_upgrade = array_values($extras_to_upgrade);
+    $not_upgraded = [];
+
     stream_write($lang['UpdateExtrasStarted']);
-    foreach($extras_to_upgrade as $extra) {
+    foreach($extras_to_upgrade as $position => $extra) {
         stream_write(_lang('UpdateExtrasExtraUpdateStarted', array('extra' => $extra)));
         // $skip_version_check = true. This function is Step 5 of the one-click
         // upgrade: the application files were replaced earlier in this same
@@ -748,11 +811,68 @@ function core_upgrade_extras($extras_to_upgrade = false) {
             }
             // stream_write_error() escapes once at output, so the reason is appended raw.
             stream_write_error(extra_download_failure_line(_lang_raw('UpdateExtrasUpdateExtraFailed', array('extra' => $extra)), $result));
+            $not_upgraded = array_slice($extras_to_upgrade, $position);
             return 0;
         }
     }
     stream_write($lang['UpdateExtrasSuccessful']);
     return 1;
+}
+
+/*******************************************
+ * FUNCTION: CORE UPGRADE EXTRA DATABASES  *
+ *******************************************/
+/**
+ * Step 6 of the Core-driven one-click upgrade (SR-2380): migrate the databases of the
+ * Extras whose files were just replaced, then ask the queue workers to restart so they
+ * load the replaced Extras' job code. Called from one_click_upgrade() only, with the
+ * stream_write()/stream_write_error() sinks defined there; both escape at output, so the
+ * lines here are rendered raw with _lang_raw().
+ *
+ * Each migration is a loopback request so the NEW Extra code runs it in a fresh process;
+ * this process loaded its Core and Extra code before the files were swapped.
+ *
+ * @param string[] $replaced Short names whose files were replaced in this run.
+ *
+ * @return int 1 when nothing failed (including "skipped"), 0 when an Extra's database was
+ *             not upgraded
+ */
+function core_upgrade_extra_databases(array $replaced)
+{
+    global $lang;
+
+    require_once(realpath(__DIR__ . '/extras_status.php'));
+    require_once(realpath(__DIR__ . '/workers.php'));
+
+    if ($replaced === []) {
+        return 1;
+    }
+
+    $render = function (string $key, array $params): string {
+        if (isset($params['reason_key'])) {
+            $params['reason'] = _lang_raw((string)$params['reason_key'], []);
+            unset($params['reason_key']);
+        }
+        return _lang_raw($key, $params);
+    };
+
+    stream_write($lang['UpgradeExtraDatabasesStarted']);
+
+    $outcome = extras_run_database_step(
+        array_values($replaced),
+        'call_simplerisk_loopback',
+        function (string $key, array $params) use ($render): void { stream_write($render($key, $params)); },
+        function (string $key, array $params) use ($render): void { stream_write_error($render($key, $params)); }
+    );
+
+    if ($outcome['status'] === 'failed') {
+        stream_write_error(_lang_raw('UpgradeExtraDatabasesFailed', ['extras' => implode(', ', $outcome['failed'])]));
+    }
+
+    request_worker_restart('extras_upgrade');
+    stream_write($lang['UpgradeWorkersRestarting']);
+
+    return $outcome['status'] === 'failed' ? 0 : 1;
 }
 
 /*******************************************
@@ -987,9 +1107,6 @@ function core_deactivate_extra($extra)
 					return true;
 				case "separation":
 					disable_team_separation_extra();
-					return true;
-				case "ucf":
-					disable_ucf_extra();
 					return true;
 				case "upgrade":
 					return false;

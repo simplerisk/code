@@ -42,7 +42,7 @@
             add_session_check($report_permissions);
 
             // Include the SimpleRisk language file
-            require_once(language_file());
+            load_language_file();
 
             $control_framework = isset($_POST['control_framework']) ? $_POST['control_framework'] : [];
             $control_family = isset($_POST['control_family']) ? $_POST['control_family'] : [];

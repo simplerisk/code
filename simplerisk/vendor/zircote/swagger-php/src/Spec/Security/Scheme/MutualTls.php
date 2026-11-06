@@ -11,6 +11,23 @@ use OpenApi\Spec as OA;
 /**
  * A Mutual TLS security scheme.
  *
+ * Allows to shorten this:
+ *
+ * ```php
+ * #[OA\Security\Scheme(
+ *     component: 'mtls',
+ *     type: 'mutualTLS',
+ * )]
+ * ```
+ *
+ * to this:
+ *
+ * ```php
+ * #[OA\Security\Scheme\MutualTls(
+ *     component: 'mtls',
+ * )]
+ * ```
+ *
  * @see [Security Scheme Object](https://spec.openapis.org/oas/v3.1.1.html#security-scheme-object)
  */
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
@@ -26,6 +43,7 @@ class MutualTls extends OA\Security\Scheme
         ?string $component = null,
         ?array $x = null,
         ?array $attachables = null,
+        ?OA\Fan $fan = null,
     ) {
         parent::__construct(
             securityScheme: $securityScheme,
@@ -34,6 +52,7 @@ class MutualTls extends OA\Security\Scheme
             component: $component,
             x: $x,
             attachables: $attachables,
+            fan: $fan,
         );
     }
 }

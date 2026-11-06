@@ -38,7 +38,7 @@
     }
 
     // Include the language file
-    require_once(language_file());
+    load_language_file();
 
     // Check if this is a page from reset password email
     $from_email_link = false;
@@ -110,10 +110,14 @@
                     wait(rand(1000, 3000));
                 } else {
 
-                    // Try to generate a password reset token
+                    // Try to generate a password reset token and send the email.
+                    // A send failure is logged at error level inside password_reset_by_userid().
+                    // It is deliberately NOT reflected here: this page is unauthenticated, and a
+                    // distinct failure message would only ever appear for real accounts, which
+                    // lets a visitor enumerate valid usernames while mail is broken.
                     password_reset_by_username($reset_email_username);
 
-                    // Display an alert
+                    // Always display the same generic alert
                     set_alert(true, "good", $lang['PassworResetEmailSent']);
 
                 }
@@ -123,7 +127,10 @@
 
             } else {
 
-                set_alert(true, "bad", $lang['PassworResetRequestFailed']);
+                // SERVER_NAME can be derived from the client's Host header, so strip control characters and cap the length before logging it
+                $logged_host = substr(preg_replace('/[^\x20-\x7E]/', '?', (string)($_SERVER['SERVER_NAME'] ?? '')), 0, 100);
+                write_debug_log("Password reset refused: request host '" . $logged_host . "' does not match the host of the configured Base URL. Check the Base URL setting.", "warning");
+                set_alert(true, "bad", $lang['PasswordResetBaseUrlMismatch']);
 
             }
         }

@@ -36,7 +36,7 @@ require_once(realpath(__DIR__ . '/upgrade/common.php'));
 require_once(realpath(__DIR__ . '/compliance_grid.php'));
 
 // Include the language file
-require_once(language_file());
+load_language_file();
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 global $releases;
@@ -147,6 +147,7 @@ $releases = [
     "20260917-001",
     "20261003-001",
     "20261020-001",
+    "20261105-001",
 ];
 
 /*************************
@@ -6875,8 +6876,11 @@ function upgrade_from_20221013001($db)
         $stmt->execute();
     }
 
-    // If the questionnaire_pending_risks table exists and risk assessment is not enabled
-    if (table_exists("questionnaire_pending_risks") && !assessments_extra())
+    // If the questionnaire_pending_risks table exists and risk assessment is not enabled.
+    // Deliberately the SETTING (extra_setting_enabled), not assessments_extra(): that gate is
+    // also false when the setting is on but the Extra's files are missing, and this DROP
+    // must never destroy the Extra's table merely because its files are absent.
+    if (table_exists("questionnaire_pending_risks") && !extra_setting_enabled('assessments'))
     {
         // Remove the table that is not being used by the SimpleRisk Core
         $stmt = $db->prepare("DROP TABLE IF EXISTS `questionnaire_pending_risks`;");
@@ -8945,42 +8949,13 @@ function upgrade_from_20251118001($db) {
         $stmt->execute();
     }
 
-    // If the uniq_risk_catalog_number_name index does not already exist
-    if (!index_exists_on_table('uniq_risk_catalog_number_name', 'risk_catalog'))
-    {
-        echo "Normalizing duplicate risks in risk_catalog table.<br />\n";
-
-        // Step 1: Update risk_catalog_mappings to point to the kept risk_catalog.id
-        $stmt = $db->prepare("
-            UPDATE risk_catalog_mappings rcm
-            INNER JOIN risk_catalog rc1 ON rcm.risk_catalog_id = rc1.id
-            INNER JOIN risk_catalog rc2
-                ON rc1.number = rc2.number
-                AND rc1.name = rc2.name
-                AND rc1.id > rc2.id
-            SET rcm.risk_catalog_id = rc2.id;
-        ");
-        $stmt->execute();
-
-        // Step 2: Delete duplicate risk_catalog rows (keep smallest id)
-        $stmt = $db->prepare("
-            DELETE rc1
-            FROM risk_catalog rc1
-            INNER JOIN risk_catalog rc2
-                ON rc1.number = rc2.number
-                AND rc1.name = rc2.name
-                AND rc1.id > rc2.id;
-        ");
-        $stmt->execute();
-
-        // Step 3: Add unique index on (number, name)
-        echo "Making (number, name) unique in risk_catalog.<br />\n";
-        $stmt = $db->prepare("
-            ALTER TABLE `risk_catalog`
-            ADD UNIQUE INDEX `uniq_risk_catalog_number_name` (`number`, `name`(191));
-        ");
-        $stmt->execute();
-    }
+    // Normalizes duplicate (number, name) rows in risk_catalog and adds the
+    // uniq_risk_catalog_number_name index. Extracted to
+    // upgrade_normalize_duplicate_risk_catalog_entries() (includes/upgrade/common.php)
+    // for SR-2414 so the collision-safe repoint fix is directly testable; the
+    // function's own index_exists_on_table() guard keeps this a no-op once
+    // the index is in place, so this call is unconditional.
+    upgrade_normalize_duplicate_risk_catalog_entries($db);
 
     // If the uniq_threat_grouping_name index does not already exist
     if (!index_exists_on_table('uniq_threat_grouping_name', 'threat_grouping'))
@@ -10174,7 +10149,7 @@ function upgrade_from_20260709001($db) {
     // receive it here (fresh activation is handled by enable_artificial_intelligence_extra();
     // disable retracts it). Guarding on the Extra keeps non-AI installs free of a
     // permission they can never use. Idempotent — add_new_permissions() INSERT IGNOREs.
-    if (function_exists('artificial_intelligence_extra') && artificial_intelligence_extra()) {
+    if (function_exists('extra_setting_enabled') && extra_setting_enabled('extra_artificial_intelligence')) {
         echo "Adding a new permission for AI Context Access (MCP server).<br />\n";
         $permission_groups_and_permissions = [
             'artificial_intelligence' => [
@@ -10380,12 +10355,12 @@ function upgrade_from_20260709001($db) {
     $ruby_tooling_dir  = realpath($ruby_tooling_path);
     $vendor_root       = realpath(__DIR__ . '/../vendor');
     if ($ruby_tooling_dir !== false && is_dir($ruby_tooling_dir)) {
-        // Confinement check before a recursive delete. delete_dir() ->
-        // linux_delete_dir() recurses with `is_dir("$dir/$file")`, which follows
-        // symlinks and carries NO is_link() guard, so it happily descends into a
-        // symlinked entry and unlinks the target's contents. Checking only the
-        // top-level vendor/ruby is not enough: a symlink nested ANYWHERE in the
-        // tree is followed just the same, and this tree spent 18 months holding
+        // Confinement check before a recursive delete. linux_delete_dir() now
+        // unlinks a symlinked entry instead of descending into it, but an upgrade
+        // can run against an older Core whose copy of it follows symlinks and
+        // unlinks the target's contents, so this check stays as defence in depth.
+        // Checking only the top-level vendor/ruby is not enough: a symlink nested
+        // ANYWHERE in the tree was followed just the same, and this tree spent 18 months holding
         // Bundler-installed gem content on customer installs. So refuse unless
         // (a) vendor/ruby is a real directory resolving inside simplerisk/vendor/,
         // and (b) no entry anywhere beneath it is a symlink.
@@ -10488,7 +10463,7 @@ function upgrade_from_20260709001($db) {
     //   3. it is empty -- an instance that once ran the Extra could still hold
     //      real questionnaire mappings, and no cleanup is worth destroying those.
     // Idempotent: a second run finds no table and does nothing.
-    if (table_exists('questionnaire_to_control_type') && !assessments_extra())
+    if (table_exists('questionnaire_to_control_type') && !extra_setting_enabled('assessments'))
     {
         $stmt = $db->prepare("SELECT COUNT(*) FROM `questionnaire_to_control_type`;");
         $stmt->execute();
@@ -11133,14 +11108,15 @@ function upgrade_from_20260828001($db) {
     // new/fresh installs, and this cleans up any workflow_definitions rows an
     // already-upgraded database still has from before that removal. Only the
     // Workflows Extra creates workflow_definitions rows going forward, so when
-    // that Extra is active the rows are its own (seeded on activation) and
+    // that Extra is active (judged by its SETTING via extra_setting_enabled(), not by
+    // workflows_extra(), which is also false when the files are merely missing) the rows are its own (seeded on activation) and
     // must stay: deleting them would strip a paying customer's defaults, and
     // nothing re-seeds them once the Extra's own one-time backfill has run --
     // exactly what happens when this in-development function is re-applied
     // (the CI upgrade pass, admin/upgrade.php's re-run) after the Extra was
     // activated. Idempotent: a second run finds no system_workflow=1 rows
     // left and deletes nothing.
-    if (table_exists('workflow_definitions') && !workflows_extra()) {
+    if (table_exists('workflow_definitions') && !extra_setting_enabled('extra_workflows')) {
         $removed_workflows = $db->exec("DELETE FROM `workflow_definitions` WHERE `system_workflow` = 1");
         if ($removed_workflows) {
             echo "Removed {$removed_workflows} previously-seeded default system workflow(s).<br />\n";
@@ -11416,6 +11392,67 @@ function upgrade_from_20261003001($db) {
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20261020-001 *
+ ***************************************/
+function upgrade_from_20261020001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20261020-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20261105-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Index the session table's `access` column so session garbage collection stops
+    // scanning (and locking) the whole table. Idempotent.
+    echo "Indexing the session table's access column.<br />\n";
+    upgrade_add_sessions_access_index($db);
+
+    // Update channel: seed the update_channel setting (production by default).
+    // Never overwrites an existing value. Idempotent.
+    echo "Adding the update_channel setting.<br />\n";
+    upgrade_add_update_channel_setting($db);
+
+    // Queue Monitor (SR-2408): index the queue_tasks status/updated_at filter.
+    // (promises.queue_task_id is already served by idx_promises_queue_task_type.)
+    // Guarded so a re-run is a no-op.
+    if (!index_exists_on_table('idx_queue_status_updated', 'queue_tasks')) {
+        $stmt = $db->prepare("CREATE INDEX `idx_queue_status_updated` ON `queue_tasks` (`status`, `updated_at`)");
+        $stmt->execute();
+        echo "Created index idx_queue_status_updated on queue_tasks.<br />\n";
+    }
+
+    // Which SimpleSAMLphp directory this instance advertises to its SAML IdP: 'public'
+    // (default) or 'www' for an IdP registered before the move. The ACS URL and the SP
+    // entityID are separate registrations at the IdP, so each has its own setting.
+    // Guarded so a re-run never overwrites a value an operator has set.
+    foreach (['SAML_LEGACY_ACS_PATH', 'SAML_LEGACY_ENTITY_ID_PATH'] as $saml_path_setting) {
+        if (!setting_exists($saml_path_setting, $db)) {
+            echo "Adding the " . $saml_path_setting . " setting.<br />\n";
+            add_setting($saml_path_setting, 'public', $db);
+        }
+    }
+
+    // The org_location country list is now static, so the core_countries_update
+    // refresh job is retired: drop its queued/failed tasks, its cache settings
+    // and its files. Idempotent.
+    upgrade_remove_countries_refresh($db);
+
+    // admin/complianceforge.php was deleted from the source but no upgrade ever unlinked
+    // it, so it still sits on installs that shipped it. Idempotent.
+    upgrade_remove_complianceforge_page();
+
+    // The Unified Compliance Framework (UCF) Extra is retired: drop its tables and
+    // settings and delete its files. Core records installed from UCF are kept. Idempotent.
+    echo "Removing the retired UCF Extra.<br />\n";
+    upgrade_remove_ucf_extra($db);
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /*******************************************************************************
  * FUNCTION: UPGRADE OUTPUT TO MESSAGES                                         *
  * SR-1651: turn a release upgrade function's echoed HTML progress (<br/>-      *
@@ -11514,9 +11551,27 @@ function run_database_upgrade_structured_locked($db, ?callable $transport = null
 
     $in_flight = false;
 
+    // Where this run started, for the post-upgrade notification below.
+    $started_at_version = current_version("db");
+
     while ($max_steps-- > 0) {
         $db_version  = current_version("db");
         $app_version = current_version("app");
+
+        // A db_version naming a removed release (a replaced release candidate)
+        // is moved back to the newest known release before it, exactly as
+        // upgrade_database_chain() does, so the two drivers agree. A no-op for
+        // every known release, so it fires at most once per run.
+        $rebased_to = rebase_removed_release_database_version($db, $db_version, $app_version, $GLOBALS['releases'] ?? []);
+        if ($rebased_to !== null) {
+            $releases[] = [
+                'from'     => $db_version,
+                'to'       => $rebased_to,
+                'success'  => true,
+                'messages' => ["The database version {$db_version} names a release that is no longer published. Restarting the upgrade from {$rebased_to}, the newest known release before it."],
+            ];
+            $db_version = current_version("db");
+        }
 
         // Dispatch through the same predicate the interactive driver uses,
         // rather than "stop once the versions match". That shortcut meant this
@@ -11656,6 +11711,9 @@ function run_database_upgrade_structured_locked($db, ?callable $transport = null
     // deferring them to the run that finally succeeds costs nothing.
     if ($applied && $overall) {
         finalize_database_upgrade();
+
+        // One in-app notification for the whole run, however many releases it crossed.
+        notify_upgrade_complete($started_at_version, current_version("db"));
     }
 
     // Standing integrity checks -- the structured driver's equivalent of the
@@ -11727,6 +11785,9 @@ function upgrade_database()
     // identical -- and includes/upgrade/page.php was reporting the refusal as a
     // completed upgrade because that is all it had to go on.
     $ran = with_upgrade_lock(function () {
+        // Where this run started, for the post-upgrade notification below.
+        $started_at_version = current_version("db");
+
         upgrade_database_chain();
 
         // The post-chain steps, HERE rather than inside the recursion.
@@ -11777,6 +11838,9 @@ function upgrade_database()
             db_close($db);
 
             finalize_database_upgrade();
+
+            // One in-app notification for the whole run, however many releases it crossed.
+            notify_upgrade_complete($started_at_version, $reached);
         }
 
         return true;
@@ -11808,6 +11872,17 @@ function upgrade_database_chain()
         // Get the current application and database versions
         $app_version = current_version("app");
         $db_version = current_version("db");
+
+        // A db_version naming a removed release (a replaced release candidate)
+        // is moved back to the newest known release before it, so the chain
+        // below can run from there. A no-op for every known release. See
+        // resolve_database_upgrade_start().
+        $rebased_to = rebase_removed_release_database_version($db, $db_version, $app_version, $releases ?? []);
+        if ($rebased_to !== null)
+        {
+            echo "The database version " . $escaper->escapeHtml($db_version) . " names a release that is no longer published. Restarting the upgrade from " . $escaper->escapeHtml($rebased_to) . ", the newest known release before it.<br />\n";
+            $db_version = current_version("db");
+        }
 
         // Resolve the upgrade function for whatever version the database is on.
         // Note this is looked up for BOTH the behind case and the versions-match
@@ -11942,7 +12017,8 @@ function upgrade_database_chain()
         // The database version names no release we have a function for. Left for
         // an operator rather than repaired: nothing about such a value tells us
         // which schema is actually behind it, so writing a guessed version would
-        // assert a state nobody has checked.
+        // assert a state nobody has checked. (A well-formed removed release that
+        // the code can carry forward never gets here: it was rebased above.)
         elseif ($action === 'no_upgrade_function')
         {
             echo "Unable to find an upgrade function for the current SimpleRisk database version.<br />\n";

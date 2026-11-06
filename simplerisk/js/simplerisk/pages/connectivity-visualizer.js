@@ -171,7 +171,7 @@
                             </div>
 
                             <div class="dropdown sr-connectivity-explorer__types-filter">
-                                <button type="button" class="sr-table-filter dropdown-toggle" id="sr-ce-types-toggle"
+                                <button type="button" class="sr-table-filter dropdown-toggle" id="sr-ce-types-toggle" disabled
                                         data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                     ${escapeHtml(L('ShowTypes', 'Show types'))}
                                     <span class="sr-table-fcount" data-role="type-fcount" hidden>0/0</span>
@@ -637,6 +637,7 @@
         if (crumbs) { crumbs.innerHTML = ''; }
         const chips = mount.querySelector('[data-role="type-chips"]');
         if (chips) { chips.innerHTML = ''; }
+        setTypesToggleEnabled(mount, false);
         updateTypesFilterCount(mount, new Set());
         const connections = mount.querySelector('[data-role="connections"]');
         if (connections) { connections.innerHTML = ''; }
@@ -973,7 +974,7 @@
         graph.addNode(focal.node_id, {
             label: focal.name,
             size: 16,
-            color: nodeColor(focal.type),
+            color: nodeColorFor(focal),
             x: 0, y: 0,
             srType: focal.type,
         });
@@ -985,7 +986,7 @@
                 graph.addNode(n.node_id, {
                     label: n.name,
                     size: 8,
-                    color: nodeColor(n.type),
+                    color: nodeColorFor(n),
                     // Seed positions on a ring; ForceAtlas2 relaxes them.
                     x: Math.cos((i / nodes.length) * 2 * Math.PI),
                     y: Math.sin((i / nodes.length) * 2 * Math.PI),
@@ -1104,6 +1105,40 @@
         return (state.palette && (state.palette[type] || state.palette.default)) || '#7f8c8d';
     }
 
+    /**
+     * The Pass/Fail outcome of a test_result node, or null. Two server paths build the name, in different
+     * shapes, and each is matched at its own anchor so neither can be mistaken for the other:
+     *   - from a test:  "<YYYY-MM-DD> [<result>]"   (get_results_connectivity_for_test()), starts with a date
+     *   - from a risk:  "<result> — <test name>"    (get_test_result_connectivity_for_risk()), starts with the result
+     * Anchoring the risk form at the start matters: its tail is a free-text test name, so a test called
+     * "Foo [Fail]" with a Pass result must not read as Fail.
+     */
+    function testResultOutcome(name) {
+        const text = String(name || '');
+        const fromTest = /^\d{4}-\d{2}-\d{2} \[(Pass|Fail)\]$/.exec(text);
+        if (fromTest) {
+            return fromTest[1];
+        }
+        const fromRisk = /^(Pass|Fail) \u2014 /.exec(text);
+        return fromRisk ? fromRisk[1] : null;
+    }
+
+    /**
+     * Colour for one concrete node. Every type uses its palette colour, except a test result, which is
+     * coloured by outcome so a failed test is not the same colour as a passed one (SD-917). Any other
+     * outcome, or a palette without the per-outcome entries (an older server), keeps the plain test_result colour.
+     */
+    function nodeColorFor(node) {
+        if (node && node.type === 'test_result') {
+            const outcome = testResultOutcome(node.name);
+            const outcomeKey = outcome ? 'test_result_' + outcome.toLowerCase() : null;
+            if (outcomeKey && state.palette && state.palette[outcomeKey]) {
+                return state.palette[outcomeKey];
+            }
+        }
+        return nodeColor(node && node.type);
+    }
+
     function loadPalette(mount) {
         try {
             state.palette = JSON.parse(mount.dataset.nodePalette || '{}');
@@ -1166,12 +1201,36 @@
         });
     }
 
+    /**
+     * The "Show types" button has nothing to show until a graph is loaded, so it is disabled until then
+     * instead of opening an empty popover.
+     */
+    function setTypesToggleEnabled(mount, enabled) {
+        const toggle = mount.querySelector('#sr-ce-types-toggle');
+        if (toggle) {
+            if (!enabled && window.bootstrap && window.bootstrap.Dropdown) {
+                // Disabling does not close an open dropdown, which would leave an empty menu showing
+                const dropdown = window.bootstrap.Dropdown.getInstance(toggle);
+                if (dropdown) {
+                    dropdown.hide();
+                }
+            }
+            toggle.disabled = !enabled;
+        }
+    }
+
     function renderTypeChips(mount) {
         const box = mount.querySelector('[data-role="type-chips"]');
         box.innerHTML = '';
         const present = new Set((state.bundle.nodes || []).map((n) => n.type));
         Object.keys((state.bundle.meta && state.bundle.meta.neighbor_summary) || {})
               .forEach((t) => present.add(t));
+        // The focal is returned separately from the neighbor nodes. Without its own type here, an entity
+        // with no connections left the "Show types" popover as a blank box (SD-832).
+        if (state.bundle.focal && state.bundle.focal.type) {
+            present.add(state.bundle.focal.type);
+        }
+        setTypesToggleEnabled(mount, present.size > 0);
 
         Array.from(present).sort().forEach(function (type) {
             const btn = document.createElement('button');

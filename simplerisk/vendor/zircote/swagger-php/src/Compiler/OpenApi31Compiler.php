@@ -23,6 +23,11 @@ class OpenApi31Compiler implements CompilerInterface
 {
     protected const VERSIONS = ['3.1.0', '3.1.1', '3.1.2'];
 
+    /**
+     * The methods a path item has an operation field for.
+     */
+    protected const OPERATION_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
+
     protected const OPERATION_REQUEST_BODY_METHODS = ['put', 'post', 'delete', 'patch'];
 
     /**
@@ -96,6 +101,8 @@ class OpenApi31Compiler implements CompilerInterface
 
         $this->validateResponses($specification);
 
+        $this->validateMediaTypes($specification);
+
         $this->validateNames($specification);
 
         $this->validateVersionedComponents($specification);
@@ -116,11 +123,11 @@ class OpenApi31Compiler implements CompilerInterface
             'info' => $specification->info instanceof OA\Info ? $this->compileInfo($specification->info) : null,
             'servers' => array_map($this->compileServer(...), $specification->servers),
             'paths' => $this->compilePaths($specification->operations, $specification->pathItems),
-            'webhooks' => $this->compileWebhooks($specification->operations),
-            'tags' => array_map($this->compileTag(...), $specification->tags),
-            'security' => $this->compileSecurity($specification->openapi->security ?? []),
-            'externalDocs' => $specification->externalDocs ? $this->compileExternalDocs($specification->externalDocs[0]) : null,
             'components' => $this->compileComponents($specification),
+            'security' => $this->compileSecurity($specification->openapi->security ?? []),
+            'tags' => array_map($this->compileTag(...), $specification->tags),
+            'externalDocs' => $specification->externalDocs ? $this->compileExternalDocs($specification->externalDocs[0]) : null,
+            'webhooks' => $this->compileWebhooks($specification->operations),
         ], $specification->openapi);
     }
 
@@ -238,7 +245,7 @@ class OpenApi31Compiler implements CompilerInterface
         $paths = [];
 
         foreach ($operations as $operation) {
-            if ($operation->path === null || $operation->method === null) {
+            if ($operation->path === null || !in_array($operation->method, static::OPERATION_METHODS, true)) {
                 continue;
             }
 
@@ -280,7 +287,7 @@ class OpenApi31Compiler implements CompilerInterface
         $webhooks = [];
 
         foreach ($operations as $operation) {
-            if ($operation->webhook === null || $operation->method === null) {
+            if ($operation->webhook === null || !in_array($operation->method, static::OPERATION_METHODS, true)) {
                 continue;
             }
 
@@ -362,7 +369,7 @@ class OpenApi31Compiler implements CompilerInterface
     protected function compileParameter(OA\Parameter $parameter): array
     {
         if ($parameter->ref !== null) {
-            return ['$ref' => $parameter->ref];
+            return $this->compileReference($parameter);
         }
 
         $result = $this->filter([
@@ -393,7 +400,7 @@ class OpenApi31Compiler implements CompilerInterface
         }
 
         if ($body->ref !== null) {
-            return ['$ref' => $body->ref];
+            return $this->compileReference($body);
         }
 
         $result = $this->filter([
@@ -420,7 +427,7 @@ class OpenApi31Compiler implements CompilerInterface
     protected function compileResponse(OA\Response $response): array
     {
         if ($response->ref !== null) {
-            return ['$ref' => $response->ref];
+            return $this->compileReference($response);
         }
 
         return $this->filter([
@@ -437,7 +444,7 @@ class OpenApi31Compiler implements CompilerInterface
     protected function compileHeader(OA\Header $header): array
     {
         if ($header->ref !== null) {
-            return ['$ref' => $header->ref];
+            return $this->compileReference($header);
         }
 
         $result = $this->filter([
@@ -460,7 +467,10 @@ class OpenApi31Compiler implements CompilerInterface
      */
     protected function compileMediaTypes(array $mediaTypes): array
     {
-        return $this->compileNamedMap($mediaTypes, fn (OA\MediaType $mediaType): string => $mediaType->mediaType ?? 'application/json', $this->compileMediaType(...));
+        // one without a type is left out, and reported by validateMediaTypes()
+        $typed = array_filter($mediaTypes, static fn (OA\MediaType $mediaType): bool => $mediaType->mediaType !== null);
+
+        return $this->compileNamedMap($typed, 'mediaType', $this->compileMediaType(...));
     }
 
     /**
@@ -497,7 +507,7 @@ class OpenApi31Compiler implements CompilerInterface
     protected function compileLink(OA\Link $link): array
     {
         if ($link->ref !== null) {
-            return ['$ref' => $link->ref];
+            return $this->compileReference($link);
         }
 
         $result = $this->filter([
@@ -509,6 +519,21 @@ class OpenApi31Compiler implements CompilerInterface
         ], $link);
 
         return $this->withDefined($result, ['requestBody' => $link->requestBody]);
+    }
+
+    /**
+     * A Reference Object: the `$ref`, with the `summary` and `description` declared beside it.
+     *
+     * @return array<string,mixed>
+     */
+    protected function compileReference(OA\Parameter|OA\RequestBody|OA\Response|OA\Header|OA\Link|OA\Example|OA\Security\Scheme $attribute): array
+    {
+        // no attribute, so no extensions: a Reference Object takes none
+        return $this->filter([
+            '$ref' => $attribute->ref,
+            'summary' => $attribute instanceof OA\Example ? $attribute->summary : null,
+            'description' => $attribute->description,
+        ]);
     }
 
     /**
@@ -616,6 +641,18 @@ class OpenApi31Compiler implements CompilerInterface
             'externalDocs' => $schema->externalDocs instanceof OA\ExternalDocumentation ? $this->compileExternalDocs($schema->externalDocs) : null,
             'xml' => $schema->xml instanceof OA\Xml ? $this->compileXml($schema->xml) : null,
         ], $schema);
+
+        // without a type to add `null` to, null gets a branch of its own where there is a choice
+        if ($schema->nullable === true && $type === null) {
+            foreach (['oneOf', 'anyOf'] as $keyword) {
+                if (isset($result[$keyword])) {
+                    if (!in_array(['type' => 'null'], $result[$keyword], true)) {
+                        $result[$keyword][] = ['type' => 'null'];
+                    }
+                    break;
+                }
+            }
+        }
 
         $result = $this->withDefined($result, [
             'default' => $schema->default,
@@ -746,7 +783,7 @@ class OpenApi31Compiler implements CompilerInterface
     }
 
     /**
-     * Passing raw arrays is deprecated; use OA\Security\Requirement instances instead.
+     * Raw arrays are deprecated since 7.0 and removed in 8.0; use OA\Security\Requirement instances instead.
      *
      * @param  list<OA\Security\Requirement|array<string,list<string>>> $security
      * @return list<array<string,mixed>>
@@ -767,6 +804,10 @@ class OpenApi31Compiler implements CompilerInterface
      */
     protected function compileSecurityScheme(OA\Security\Scheme $scheme): array
     {
+        if ($scheme->ref !== null) {
+            return $this->compileReference($scheme);
+        }
+
         return $this->filter([
             'type' => $scheme->type,
             'description' => $scheme->description,
@@ -815,7 +856,7 @@ class OpenApi31Compiler implements CompilerInterface
     protected function compileExample(OA\Example $example): array
     {
         if ($example->ref !== null) {
-            return ['$ref' => $example->ref];
+            return $this->compileReference($example);
         }
 
         $result = $this->filter([
@@ -959,6 +1000,20 @@ class OpenApi31Compiler implements CompilerInterface
     protected function validateOperations(Specification $specification): void
     {
         $specification->getWalker()->visit(OA\Operation::class, function (OA\Operation $operation): void {
+            if ($operation->method === null) {
+                if ($operation->path !== null || $operation->webhook !== null) {
+                    $this->logger->warning('Operation without a method will be omitted in ' . $operation->getSourceLocation());
+                }
+
+                return;
+            }
+
+            if (!in_array($operation->method, static::OPERATION_METHODS, true)) {
+                $this->logger->warning("Method {$operation->method} is not supported in OpenAPI " . substr($this->getVersion(), 0, 3) . ' and will be omitted in ' . $operation->getSourceLocation());
+
+                return;
+            }
+
             if ($operation->requestBody instanceof OA\RequestBody && !in_array($operation->method, static::OPERATION_REQUEST_BODY_METHODS)) {
                 $this->logger->warning("Request body not supported for method {$operation->method} in " . $operation->getSourceLocation());
             }
@@ -1012,6 +1067,42 @@ class OpenApi31Compiler implements CompilerInterface
                 }
             }
         });
+    }
+
+    /**
+     * A media type in a `content` list needs its type, which is its key in the document, and
+     * that key once per list: of two with one type, the later one is kept.
+     */
+    protected function validateMediaTypes(Specification $specification): void
+    {
+        $check = function (OA\Response|OA\RequestBody|OA\Parameter|OA\Header $holder): void {
+            $seen = [];
+            foreach ($holder->content ?? [] as $mediaType) {
+                if ($mediaType->mediaType === null) {
+                    $this->logger->warning(sprintf(
+                        '%s is missing key-field: "mediaType" in %s; left out',
+                        (new \ReflectionClass($mediaType))->getShortName(),
+                        $holder->getSourceLocation(),
+                    ));
+                    continue;
+                }
+
+                if (isset($seen[$mediaType->mediaType])) {
+                    $this->logger->warning(sprintf(
+                        'Media type "%s" is declared more than once in one content, the last one is kept, in %s',
+                        $mediaType->mediaType,
+                        $holder->getSourceLocation(),
+                    ));
+                }
+                $seen[$mediaType->mediaType] = true;
+            }
+        };
+
+        $walker = $specification->getWalker();
+        $walker->visit(OA\Response::class, $check);
+        $walker->visit(OA\RequestBody::class, $check);
+        $walker->visit(OA\Parameter::class, $check);
+        $walker->visit(OA\Header::class, $check);
     }
 
     /**
@@ -1098,6 +1189,19 @@ class OpenApi31Compiler implements CompilerInterface
         return $name !== null ? " \"$name\"" : '';
     }
 
+    /**
+     * The reference a `$ref` holds, whether it is the string or a `Schema\Ref` around it.
+     */
+    protected function refString(string|OA\Schema\Ref|null $ref): ?string
+    {
+        return $ref instanceof OA\Schema\Ref ? $this->refString($ref->ref) : $ref;
+    }
+
+    /**
+     * @param array<array-key, object> $items
+     *
+     * @return array<string, mixed>
+     */
     protected function compileNamedMap(array $items, string|\Closure $key, \Closure $compiler): array
     {
         $result = [];

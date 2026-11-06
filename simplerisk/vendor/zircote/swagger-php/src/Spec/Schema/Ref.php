@@ -15,9 +15,11 @@ use OpenApi\Spec as OA;
  * the referenced schema's metadata without duplicating the definition.
  *
  * Usage:
- *   #[OA\Property(schema: new OA\Schema\Ref(ref: Pet::class))]
- *   #[OA\Property(schema: new OA\Schema\Ref(ref: '#/components/schemas/Pet', title: 'The pet'))]
- *   #[OA\Property(schema: new OA\Schema\Ref(ref: Pet::class, description: 'Override desc'))]
+ * ```php
+ * #[OA\Property(schema: new OA\Schema\Ref(ref: Pet::class))]
+ * #[OA\Property(schema: new OA\Schema\Ref(ref: '#/components/schemas/Pet', title: 'The pet'))]
+ * #[OA\Property(schema: new OA\Schema\Ref(ref: Pet::class, description: 'Override desc'))]
+ * ```
  *
  * If used on a `$ref` directly, only the ref value is used.
  */
@@ -30,6 +32,7 @@ class Ref extends OA\Schema
         ?string $description = null,
         ?array $x = null,
         ?array $attachables = null,
+        ?OA\Fan $fan = null,
     ) {
         parent::__construct(
             title: $title,
@@ -37,6 +40,7 @@ class Ref extends OA\Schema
             ref: $ref,
             x: $x,
             attachables: $attachables,
+            fan: $fan,
         );
     }
 }

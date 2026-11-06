@@ -269,6 +269,7 @@ if (!function_exists('upgrade_job_step_labels')) {
             'files'    => $lang['UpgradeStepUpgradingFiles']   ?? 'Upgrading application files',
             'database' => $lang['UpgradeStepUpgradingDatabase'] ?? 'Upgrading the database',
             'extras'   => $lang['UpgradeStepUpgradingExtras']  ?? 'Upgrading installed extras',
+            'extra_databases' => $lang['UpgradeStepUpgradingExtraDatabases'] ?? 'Upgrading installed extras\' databases',
         );
     }
 }

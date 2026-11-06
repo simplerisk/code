@@ -367,6 +367,21 @@
     }
   }
 
+  // Rows open the record on click (delegated handler in manage-assets.js).
+  // The pointer is scoped here rather than set inline on the <tr>: cursor
+  // inherits, so an inline value would also make the inert score / band chips
+  // look like filters. Filter chips keep their own pointer; the select and
+  // actions cells don't open the row, so they stay default.
+  #manage-assets-table tbody tr[data-asset-id] {
+    cursor: pointer;
+
+    .sr-chip:not(.sr-assets-chip-filter),
+    td.sr-check-col,
+    td.sr-actions-col {
+      cursor: default;
+    }
+  }
+
   .sr-assets-loading {
     padding: 40px 16px;
     text-align: center;

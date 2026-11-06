@@ -22,7 +22,7 @@ require_once(realpath(__DIR__ . '/../../../includes/extras.php'));
 // Declared directly per CLAUDE.md's function-reachability rule.
 require_once(realpath(__DIR__ . '/../../../includes/entity_graph.php'));
 
-require_once(language_file());
+load_language_file();
 
 /***************************
  * FUNCTION: API V2 ASSETS *
@@ -372,6 +372,9 @@ function assets_bulk_API()
 
 // Gets the assets displayed in the Manage Assets datatables
 function assets_for_view_API() {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     
     // Check that this user has the ability to view assets
     api_v2_check_permission("asset");
@@ -403,7 +406,7 @@ function assets_for_view_API() {
             $post_columns = $_POST['columns'];
 
             // @phan-suppress-next-line PhanTypeMismatchDimFetch
-            $orderDir = strtoupper($post_order[0]['dir']) == "ASC" ? "ASC" : "DESC";
+            $orderDir = strtoupper((string)($post_order[0]['dir'] ?? '')) == "ASC" ? "ASC" : "DESC";
 
             // Get and validate the order column
             // @phan-suppress-next-line PhanTypeMismatchDimFetch

@@ -24,72 +24,109 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
-require_once(language_file());
+load_language_file();
 
-// If an id was provided
-if (isset($_GET['id']))
+/**
+ * Ends the request with a plain, translated message and an HTTP status, so a failed download shows
+ * the administrator what went wrong instead of a blank page.
+ */
+function download_backup_fail(int $status, string $message): void
 {
-	// Set the random id to the id that was sent
-	$random_id = $_GET['id'];
-
-	// Open the database connection
-	$db = db_open();
-
-	// Get the file with that id
-	$stmt = $db->prepare("SELECT * FROM `backups` WHERE random_id=:random_id;");
-	$stmt->bindParam(":random_id", $random_id, PDO::PARAM_STR, 50);
-	$stmt->execute();
-	$backups = $stmt->fetch(PDO::FETCH_ASSOC);
-
-	// Close the database connection
-	db_close($db);
-
-	// If a backup exists for the provided id
-	if (!empty($backups))
-	{
-		// Check if a file type was sent
-		switch($_GET['type'])
-		{
-			// If the file type is an application backup
-			case 'app':
-				$file = $backups['app_zip_file_name'];
-				$filename = "simplerisk-app-backup.zip";
-				break;
-			// If the file type is a database backup
-			case 'db':
-				$file = $backups['db_zip_file_name'];
-				$filename = "simplerisk-db-backup.zip";
-				break;
-			// If the file type is not app or db do nothing
-			default:
-				$file = false;
-				break;
-		}
-
-		// Check if the file exists at that location
-		if (file_exists($file))
-		{
-			header("Content-Description: File Transfer");
-			header("Content-Type: " . mime_content_type($file));
-			header("Cache-Control: no-cache, must-revalidate, post-check=0, pre-check=0");
-			header("Expires: 0");
-			header("Content-Disposition: inline; filename=" . basename($file));
-			header("Content-Transfer-Encoding: binary");
-			header("Content-Length: " . filesize($file));
-			header("Pragma: public");
-
-			// Clear system output buffer
-			ob_clean();
-			flush();
-
-			// Read the file
-			ob_end_flush();
-			readfile($file);
-
-			// Terminate from the script
-			exit();
-		}
-	}
+    http_response_code($status);
+    header("Content-Type: text/plain; charset=UTF-8");
+    echo $message;
+    exit();
 }
 
-?>
+// Array-valued parameters (?id[]=x) are treated as missing
+$type = is_string($_GET['type'] ?? null) ? $_GET['type'] : '';
+$random_id = is_string($_GET['id'] ?? null) ? $_GET['id'] : '';
+
+// Both an id and a known file type are required
+if ($random_id === '' || !in_array($type, ['app', 'db'], true))
+{
+    download_backup_fail(400, $lang['BackupDownloadInvalidRequest']);
+}
+
+// Open the database connection
+$db = db_open();
+
+// Get the file with that id
+$stmt = $db->prepare("SELECT * FROM `backups` WHERE random_id=:random_id;");
+$stmt->bindParam(":random_id", $random_id, PDO::PARAM_STR, 50);
+$stmt->execute();
+$backups = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Close the database connection
+db_close($db);
+
+// The file the record points at
+$file = empty($backups) ? false : ($type === 'app' ? $backups['app_zip_file_name'] : $backups['db_zip_file_name']);
+
+if (!$file || !is_file($file) || !is_readable($file))
+{
+    write_debug_log("Backup download failed: the file for backup '" . substr(preg_replace('/[^A-Za-z0-9_-]/', '', (string)$random_id), 0, 50) . "' ({$type}) is missing or unreadable.", 'warning');
+    download_backup_fail(404, $lang['BackupDownloadFileNotFound']);
+}
+
+$size = filesize($file);
+$range = backup_download_parse_range($_SERVER['HTTP_RANGE'] ?? null, $size);
+$start = $range['start'];
+$end = $range['end'];
+$status = $range['status'];
+
+if ($status === 416)
+{
+    header("Content-Range: bytes */{$size}");
+    download_backup_fail(416, $lang['BackupDownloadInvalidRequest']);
+}
+
+$length = $end - $start + 1;
+$download_name = preg_replace('/[^A-Za-z0-9._-]/', '_', basename($file));
+
+http_response_code($status);
+header("Content-Description: File Transfer");
+header("Content-Type: application/zip");
+header("Accept-Ranges: bytes");
+header("Cache-Control: no-cache, must-revalidate, post-check=0, pre-check=0");
+header("Expires: 0");
+header("Content-Disposition: attachment; filename=\"{$download_name}\"");
+header("Content-Transfer-Encoding: binary");
+header("Content-Length: {$length}");
+if ($status === 206)
+{
+    header("Content-Range: bytes {$start}-{$end}/{$size}");
+}
+header("Pragma: public");
+
+// A large backup takes longer than the default execution limit to stream
+set_time_limit(0);
+
+// Clear any output buffers so the file is streamed, not held in memory
+while (ob_get_level() > 0)
+{
+    ob_end_clean();
+}
+
+$handle = fopen($file, 'rb');
+if ($handle === false)
+{
+    exit();
+}
+fseek($handle, $start);
+$remaining = $length;
+while ($remaining > 0 && !feof($handle) && !connection_aborted())
+{
+    $chunk = fread($handle, min(1048576, $remaining));
+    if ($chunk === false || $chunk === '')
+    {
+        break;
+    }
+    echo $chunk;
+    $remaining -= strlen($chunk);
+    flush();
+}
+fclose($handle);
+
+// Terminate from the script
+exit();

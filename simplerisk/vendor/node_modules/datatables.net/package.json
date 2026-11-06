@@ -4,7 +4,7 @@
     "main": "./js/dataTables.js",
     "module": "./js/dataTables.mjs",
     "types": "./types/types.d.ts",
-    "version": "3.1.4",
+    "version": "3.1.5",
     "files": [
         "js",
         "types"

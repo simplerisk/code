@@ -92,7 +92,7 @@
 <script>
 $(function() {
     $('#frameworks_select').multiselect({
-        allSelectedText: '<?= js_string_escape($lang['AllFrameworks']); ?>',
+        allSelectedText: '<?= $escaper->escapeJs($lang['AllFrameworks']); ?>',
         buttonWidth: '100%',
         includeSelectAllOption: true,
         enableCaseInsensitiveFiltering: true,

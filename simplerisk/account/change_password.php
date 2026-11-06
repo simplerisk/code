@@ -23,7 +23,7 @@ add_session_check();
 include_csrf_magic();
 
 // Include the SimpleRisk language file
-require_once(language_file());
+load_language_file();
 
 // Check if a new password was submitted
 if (isset($_POST['change_password']))

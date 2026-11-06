@@ -42,7 +42,7 @@
     include_csrf_magic();
 
     // Include the language file
-    require_once(language_file());
+    load_language_file();
 
     csrf_init();
 

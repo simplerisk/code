@@ -25,6 +25,8 @@ require_once(realpath(__DIR__ . '/../assets_discovery.php'));
 
 return [
     'type' => 'core_asset_discovery',
+    // One task of this type at a time across all queue workers (a run continues itself slice by slice; scans must not overlap).
+    'concurrency' => 'serial',
 
     // Runs are enqueued by the API when a user starts one; never here.
     'task_check' => function (PDO $db) {

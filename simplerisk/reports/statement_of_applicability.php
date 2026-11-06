@@ -265,7 +265,7 @@
 
     include_csrf_magic();
 
-    require_once(language_file());
+    load_language_file();
 
     $current_app_version = current_version("app");
 
@@ -374,7 +374,7 @@
         // empty cell.
         'Overdue', 'SoaNoEvidenceLinked', 'SoaEvidenceNotExpected',
         // Appendix R's entries, for a control reading Partial or No.
-        'SoaRemediation', 'SoaRemediationUnplanned',
+        'SoaRemediation', 'SoaRemediationUnplanned', 'SoaRemediationNoMitigation',
         'Risk', 'MitigationPlanning', 'MitigationOwner', 'PercentComplete',
         // THE LEGEND -- its heading and the definition half of every entry in
         // SOA_LEGEND_GROUPS (includes/soa.php). Every TERM and every GROUP HEADING
@@ -388,7 +388,7 @@
         'SoaLegendYes', 'SoaLegendPartial', 'SoaLegendNo',
         'SoaLegendNoTestDefined', 'SoaLegendNeverRun', 'SoaLegendNotApplicable',
         'SoaLegendUnknown', 'SoaLegendOverdue', 'SoaLegendNoEvidence',
-        'SoaLegendEvidenceNotExpected', 'SoaLegendUnplanned',
+        'SoaLegendEvidenceNotExpected', 'SoaLegendUnplanned', 'SoaLegendNoMitigation',
         'SoaLegendEvidencePass', 'SoaLegendEvidenceFail', 'SoaLegendEvidenceInconclusive',
         'SoaLegendEvidenceDocument',
         'SoaMissingFieldsTitle', 'SoaMissingScopeStatement', 'SoaMissingInclusionJustification',

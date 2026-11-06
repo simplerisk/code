@@ -12,6 +12,18 @@ use OpenApi\Undefined;
 /**
  * Shorthand for an HTTP DELETE operation.
  *
+ * Allows to shorten this:
+ *
+ * ```php
+ * #[OA\Operation(method: 'delete', path: '/pets/{id}')]
+ * ```
+ *
+ * to this:
+ *
+ * ```php
+ * #[OA\Operation\Delete(path: '/pets/{id}')]
+ * ```
+ *
  * @see [Operation Object](https://spec.openapis.org/oas/v3.1.1.html#operation-object)
  */
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
@@ -44,6 +56,7 @@ class Delete extends OA\Operation
         ?OA\ExternalDocumentation $externalDocs = null,
         ?array $x = null,
         ?array $attachables = null,
+        ?OA\Fan $fan = null,
     ) {
         parent::__construct(
             path: $path,
@@ -63,6 +76,7 @@ class Delete extends OA\Operation
             externalDocs: $externalDocs,
             x: $x,
             attachables: $attachables,
+            fan: $fan,
         );
     }
 }

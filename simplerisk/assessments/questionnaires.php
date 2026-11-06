@@ -79,13 +79,16 @@
     <?php
         } elseif(isset($_GET['action']) && $_GET['action']=="add") {
 
-        display_questionnaire_add(); 
+        display_questionnaire_form_alerts();
+        display_questionnaire_add();
 
         } elseif(isset($_GET['action']) && $_GET['action']=="edit") {
 
+        display_questionnaire_form_alerts();
         display_questionnaire_edit();
 
         }
+
     ?>
     </div>
 </div>

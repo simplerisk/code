@@ -19,6 +19,7 @@ export default class ArcElement extends Element<ArcProps, ArcOptions> {
         borderWidth: number;
         offset: number;
         spacing: number;
+        spacingMode: string;
         angle: any;
         circular: boolean;
         selfJoin: boolean;
@@ -37,6 +38,7 @@ export default class ArcElement extends Element<ArcProps, ArcOptions> {
     outerRadius: number;
     pixelMargin: number;
     startAngle: number;
+    circular: boolean;
     constructor(cfg: any);
     inRange(chartX: number, chartY: number, useFinalPosition: boolean): boolean;
     getCenterPoint(useFinalPosition: boolean): {

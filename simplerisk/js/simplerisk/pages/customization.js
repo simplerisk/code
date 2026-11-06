@@ -574,7 +574,7 @@
                 : '<span class="sr-row-action sr-row-action-danger template-group-delete" data-id="' + esc(g.id) + '"><i class="fa fa-trash" aria-hidden="true"></i></span>';
             return '<tr data-group-id="' + esc(g.id) + '"' + (isActive ? ' class="sr-row-active" aria-current="true"' : '') + '>' +
                 '<td><a href="' + href + '">' + esc(g.name) + '</a></td>' +
-                '<td><select class="form-select" multiple="multiple">' + options + '</select></td>' +
+                (orgHierarchyActive() ? '<td><select class="form-select" multiple="multiple">' + options + '</select></td>' : '') +
                 '<td class="text-end">' + renameBtn + ' ' + cloneBtn + ' ' + deleteBtn + '</td></tr>';
         }).join('');
 
@@ -598,10 +598,21 @@
         });
     }
 
+    // Business-unit assignment belongs to the Organizational Hierarchy Extra. Without it (an instance that
+    // keeps the screen because it already had several groups) there is no assignments endpoint to call and
+    // no Business Units column to render, so that request is skipped (SR-2350).
+    function orgHierarchyActive() {
+        return String($('#template-groups-body').data('orgHierarchy')) === '1';
+    }
+
     function fetchAndRenderTemplateGroups(fgroup) {
+        var assignmentsRequest = orgHierarchyActive()
+            ? $.ajax({ url: BASE_URL + '/api/v2/organizational_hierarchy/templateAssignments', method: 'GET', data: { fgroup: fgroup } })
+            : $.Deferred().resolve([{ data: {} }]).promise();
+
         return $.when(
             $.ajax({ url: BASE_URL + '/api/v2/customization/templateGroups', method: 'GET', data: { fgroup: fgroup } }),
-            $.ajax({ url: BASE_URL + '/api/v2/organizational_hierarchy/templateAssignments', method: 'GET', data: { fgroup: fgroup } })
+            assignmentsRequest
         ).done(function (groupsResp, assignmentsResp) {
             // jQuery's $.when resolves each deferred's arguments as
             // [data, textStatus, jqXHR] -- [0][0] is the parsed JSON body.

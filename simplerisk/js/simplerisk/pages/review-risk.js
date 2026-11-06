@@ -3471,6 +3471,12 @@ function buildReviewRiskDataTable() {
         // every row on every ajax-backed (re)draw, not just the first.
         createdRow: function (row, data) {
             rowCache[data.id] = data;
+            // Whole-row click-through to the risk view (see the delegated
+            // 'click.reviewrisk-row' handler in init()); the URL is built the
+            // same way as the ID link and View action (display id = raw + 1000). The
+            // pointer cursor is scoped to these rows in _review-risk.scss, not set
+            // inline, so non-interactive chips inside don't inherit it.
+            row.setAttribute('data-view-url', BASE_URL + '/management/view.php?id=' + encodeURIComponent(data.id + 1000));
         },
         dom: 'rt<"sr-table-foot"<"sr-table-foot-left"i><"sr-table-foot-right"p>>',
     };
@@ -3737,6 +3743,23 @@ function init() {
         container: '#review_risk_table',
         scope: $('#review_risk_table'),
         namespace: 'reviewrisk',
+    });
+
+    // Row click opens the risk view (same new-tab convention as the ID link and
+    // View action). Clicks on anything interactive -- links, buttons, form
+    // controls, filter chips, need badges, the actions menu -- are left alone so
+    // chip filters, action buttons and bulk-select keep working, as does
+    // selecting text inside a row. Delegated off the <table> so it survives
+    // DataTables' tbody rebuilds.
+    $('#review_risk_table').on('click.reviewrisk-row', 'tbody tr[data-view-url]', function (e) {
+        if ($(e.target).closest('a, button, input, select, textarea, label, [role="button"], .sr-filter-chip, .sr-need-badge, .sr-row-actions-wrap, .sr-actions-col-sticky, td:has(.sr-row-check)').length) {
+            return;
+        }
+        var sel = window.getSelection ? window.getSelection() : null;
+        if (sel && sel.toString().length) {
+            return;
+        }
+        window.open(this.getAttribute('data-view-url'), '_blank', 'noopener,noreferrer');
     });
 
     // Bulk-select / bulk bar (Task 14). '.sr-row-check' is delegated off

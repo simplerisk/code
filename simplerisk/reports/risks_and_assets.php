@@ -55,7 +55,7 @@
         add_session_check($report_permissions);
 
         // Include the SimpleRisk language file
-        require_once(language_file());
+        load_language_file();
 
         if (import_export_extra()) {
             // Include the Import-Export Extra

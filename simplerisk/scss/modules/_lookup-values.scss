@@ -1,0 +1,289 @@
+// Add and remove values (admin/add_remove_values.php + js/simplerisk/pages/lookup-values.js,
+// SR-2475). The card, table, toolbar, row actions, empty state, footer and modal come from
+// the shared components (_tables.scss, _sr-modal.scss, _questionnaire.scss); this partial only
+// adds what the page has that nothing else does: the list rail, the inline rename, the dashed
+// add row. Every selector is scoped under .sr-lv so none of it leaks into another page.
+
+// The shell's `.content` wrapper paints a white panel and a margin around the page; the
+// cards define the structure here (same reasoning as .sr-qm in _queue-monitor.scss).
+.content:has(> .sr-lv) {
+    background-color: transparent !important;
+    margin: 0 !important;
+}
+
+.sr-lv {
+    .sr-lv-layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    // --- Left rail --------------------------------------------------------
+    .sr-lv-rail {
+        flex: 0 0 320px;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 14px;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 8px;
+        box-shadow: $shadow;
+    }
+
+    .sr-lv-search {
+        margin-bottom: 14px;
+
+        .form-control {
+            border-radius: 6px;
+        }
+    }
+
+    // The select that replaces the rail at narrow widths.
+    .sr-lv-select {
+        display: none;
+
+        .form-select {
+            border-radius: 6px;
+            min-height: 44px;
+        }
+    }
+
+    .sr-lv-group {
+        margin: 14px 4px 6px;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: $gray-600;
+
+        &:first-child {
+            margin-top: 4px;
+        }
+    }
+
+    .sr-lv-list {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+        padding: 9px 12px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: $sr-primary;
+        font-size: 14px;
+        text-align: left;
+        cursor: pointer;
+
+        &:hover {
+            background: $gray-100;
+        }
+
+        &.is-active {
+            background: $sr-row-selected;
+            font-weight: 800;
+        }
+    }
+
+    .sr-lv-list-label {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sr-lv-list-sub {
+        font-size: 11.5px;
+        font-weight: 400;
+        color: $gray-600;
+    }
+
+    .sr-lv-list-count {
+        flex: 0 0 auto;
+        min-width: 22px;
+        padding: 1px 7px;
+        border-radius: 10px;
+        background: $gray-100;
+        font-size: 11.5px;
+        font-weight: 700;
+        text-align: center;
+        color: $gray-600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sr-lv-list.is-active .sr-lv-list-count {
+        background: $sr-body;
+    }
+
+    .sr-lv-nomatch {
+        margin: 8px 4px 0;
+        font-size: 13px;
+        color: $gray-600;
+    }
+
+    // --- Right card -------------------------------------------------------
+    .sr-lv-card {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .sr-lv-heading {
+        flex: 1 1 220px;
+        min-width: 0;
+    }
+
+    .sr-lv-sub {
+        margin-top: 3px;
+        font-size: 12px;
+        color: $gray-600;
+    }
+
+    .sr-lv-filter {
+        flex: 0 1 220px;
+    }
+
+    .sr-lv-use-col {
+        width: 240px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sr-lv-use--none {
+        color: $gray-600;
+    }
+
+    .sr-lv-name {
+        font-weight: 600;
+    }
+
+    .sr-lv-protected {
+        display: block;
+        margin-top: 2px;
+        font-size: 12px;
+        color: $gray-600;
+    }
+
+    // Inline rename
+    tr.is-editing {
+        background: $sr-row-selected;
+
+        td {
+            vertical-align: top;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+    }
+
+    .sr-lv-rename-input {
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .sr-lv-hint {
+        margin-top: 3px;
+        font-size: 11.5px;
+        color: $gray-600;
+    }
+
+    .sr-lv-error {
+        margin-top: 4px;
+        font-size: 12px;
+        font-weight: 700;
+        color: $danger;
+    }
+
+    .sr-lv-edit-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+
+    // The dashed add row: the keyboard path for adding several values in a row.
+    .sr-lv-addrow {
+        padding: 14px 20px;
+    }
+
+    .sr-lv-addbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 12px;
+        border: 1px dashed $gray-400;
+        border-radius: 6px;
+        background: $gray-100;
+        color: $gray-600;
+
+        &:focus-within {
+            border-color: $sr-primary;
+            background: $sr-body;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            height: 30px;
+            border: 0;
+            background: transparent;
+            font-size: 14px;
+            color: $sr-primary;
+
+            &:focus {
+                outline: 0;
+            }
+        }
+    }
+
+    .sr-lv-counter,
+    .sr-lv-foot-note {
+        font-size: 11.5px;
+        color: $gray-600;
+        white-space: nowrap;
+    }
+}
+
+// --- Narrow widths: the rail becomes a dropdown, values become 44px touch rows ---
+@media (max-width: 991.98px) {
+    .sr-lv {
+        .sr-lv-layout {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .sr-lv-rail {
+            flex-basis: auto;
+            width: 100%;
+        }
+
+        .sr-lv-lists {
+            display: none;
+        }
+
+        .sr-lv-select {
+            display: block;
+        }
+
+        .sr-lv-card {
+            width: 100%;
+        }
+    }
+}
+
+@media (max-width: 767.98px), (hover: none) {
+    .sr-lv {
+        .sr-row-actions {
+            opacity: 1;
+        }
+
+        .sr-row-action {
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .sr-lv-use-col {
+            width: auto;
+        }
+
+        .sr-table td {
+            min-height: 44px;
+        }
+    }
+}

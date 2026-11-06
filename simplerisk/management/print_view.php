@@ -27,7 +27,7 @@
 	include_csrf_magic();
 
 	// Include the SimpleRisk language file
-	require_once(language_file());
+	load_language_file();
 
 	// Set a global variable for the current app version, so we don't have to call a function every time
 	$current_app_version = current_version("app");
@@ -149,7 +149,13 @@
 		<script src="../vendor/node_modules/datatables.net-bs5/js/dataTables.bootstrap5.min.js?<?= $current_app_version ?>" id="script_datatables" defer></script>
 		<script src="../js/simplerisk/dataTables.renderers.js?<?= $current_app_version ?>" id="script_datatables_renderers" defer></script>
 		<script>
-			$('#script_datatables').on('load', function () {
+			// SD-804: see header.php -- apply from an idempotent function, not only from a one-shot load event.
+			var srDataTablesDefaultsApplied = false;
+			function srApplyDataTablesDefaults() {
+				if (srDataTablesDefaultsApplied || !window.DataTable) {
+					return;
+				}
+				srDataTablesDefaultsApplied = true;
 				Object.assign(DataTable.defaults, {
 					lengthMenu: [[10, 25, 50, -1], [10, 25, 50, _lang['All']]],
 					lengthChange: true,
@@ -174,7 +180,9 @@
 						last: _lang['Last'],
 					}
 				});
-			});
+			}
+			$('#script_datatables').on('load', srApplyDataTablesDefaults);
+			$(srApplyDataTablesDefaults);
 		</script>
 
 		<!-- Read-only Cards engines (Details/Mitigation/Review), matching

@@ -6,7 +6,7 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
-require_once(language_file());
+load_language_file();
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 /*******************************************

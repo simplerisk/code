@@ -37,7 +37,7 @@ if (!isset($_SESSION))
 }
 
 // Include the language file
-require_once(language_file());
+load_language_file();
 
 global $escaper, $lang;
 

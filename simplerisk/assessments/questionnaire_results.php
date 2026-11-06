@@ -32,7 +32,7 @@
         add_session_check();
 
         // Include the SimpleRisk language file
-        require_once(language_file());
+        load_language_file();
 
         if (is_admin()) {
 
@@ -66,7 +66,7 @@
         add_session_check(["check_assessments" => true]);
 
         // Include the SimpleRisk language file
-        require_once(language_file());
+        load_language_file();
 
         if (!has_permission("assessment_view_results")) {
             set_alert(true, "bad", $lang['NoPermissionForAssessments']);

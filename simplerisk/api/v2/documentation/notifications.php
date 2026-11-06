@@ -1,4 +1,5 @@
 <?php
+// @phan-file-suppress PhanDeprecatedClass -- swagger-php 7 deprecates the OpenApi\Attributes classes (removed in 8.0); move these to OpenApi\Spec before upgrading to swagger-php 8
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,7 +19,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'title', type: 'string', example: 'Risk #123 needs quarterly review'),
         new OA\Property(property: 'body', type: 'string', example: '<p>Quarterly review past due...</p>'),
         new OA\Property(property: 'link', type: 'string', nullable: true),
-        new OA\Property(property: 'source', type: 'string', enum: ['workflow', 'remote_promo']),
+        new OA\Property(property: 'source', type: 'string', enum: ['workflow', 'remote_promo', 'license', 'data_integrity', 'upgrade']),
         new OA\Property(property: 'is_promo', type: 'boolean'),
         new OA\Property(property: 'read_at', type: 'string', nullable: true, format: 'date-time'),
         new OA\Property(property: 'deleted_at', type: 'string', nullable: true, format: 'date-time'),

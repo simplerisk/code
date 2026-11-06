@@ -1241,6 +1241,8 @@ a.open-in-new-tab {
 @import "modules/configure";
 @import "modules/tables";
 @import "modules/data-integrity";
+@import "modules/queue-monitor";
+@import "modules/lookup-values";
 // Imported after core/modals so the design-system shell wins the
 // specificity tie against that file's legacy dark header bar.
 @import "modules/sr-modal";

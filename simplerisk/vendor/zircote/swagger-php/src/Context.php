@@ -16,6 +16,8 @@ use Psr\Log\LoggerInterface;
  * Contexts are nested to reflect the code/parsing hierarchy. They include useful metadata
  * which the processors can use to augment the annotations.
  *
+ * @deprecated since 7.0, removed in 8.0
+ *
  * @property string|null                      $comment     The PHP DocComment
  * @property string|null                      $filename
  * @property int|null                         $line
@@ -62,7 +64,12 @@ class Context implements \Stringable
 
     public function __serialize(): array
     {
-        return array_filter(get_object_vars($this), static function ($value): bool {
+        $properties = get_object_vars($this);
+        // foreign attributes are for processors during analysis, and nothing reads them from a
+        // finished document; one holding a closure would make the whole document unserializable
+        unset($properties['other']);
+
+        return array_filter($properties, static function ($value): bool {
             $rc = is_object($value) ? new \ReflectionClass($value) : null;
 
             return (!$rc instanceof \ReflectionClass || !$rc->isAnonymous())

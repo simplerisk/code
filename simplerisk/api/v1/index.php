@@ -31,7 +31,7 @@
     }
 
     // Include the language file
-    require_once(language_file());
+    load_language_file();
 
     // Handle older Epiphany getRoute function calls
     function getRoute() { return app(); }
@@ -518,23 +518,6 @@
 
                 // Get the separation routes
                 get_separation_routes();
-            }
-        }
-
-        // If the UCF Extra is enabled
-        if (ucf_extra())
-        {
-            // Required file
-            $required_file = realpath(__DIR__ . '/../../extras/ucf/includes/api.php');
-
-            // If the file exists
-            if (file_exists($required_file))
-            {
-                // Include the required file
-                require_once($required_file);
-
-                // Get the ucf routes
-                get_ucf_routes();
             }
         }
 

@@ -229,6 +229,30 @@ function is_newest_known_release($version, array $releases)
     return $version === $releases[array_key_last($releases)];
 }
 
+/************************************************************
+ * FUNCTION: NAMED RELEASE HAS NOTHING TO APPLY             *
+ ************************************************************/
+/**
+ * Pure: is a caller-named release the newest one, with the database already on
+ * it?
+ *
+ * A release-cut branch has no upgrade_from_<newest>() -- the release process
+ * finalizes the previous function's placeholder target and does not open a new
+ * one -- so POST /admin/upgrade/db naming the newest release finds no function.
+ * With the database already at that release that is "already current", not a
+ * bad request, and the API documents 200 for it (its `version` example is the
+ * current release). A database BEHIND the named release is different: nothing
+ * can advance it, so that stays an error.
+ *
+ * @param mixed $version    The release the caller named.
+ * @param mixed $db_version The database's current version.
+ * @param array $releases   The ordered release list.
+ */
+function named_release_has_nothing_to_apply($version, $db_version, array $releases)
+{
+    return is_newest_known_release($version, $releases) && $version === $db_version;
+}
+
 /********************************************
  * FUNCTION: DECIDE DATABASE UPGRADE ACTION *
  ********************************************/
@@ -289,7 +313,11 @@ function is_newest_known_release($version, array $releases)
  *                        bug this change fixes. Deliberately NOT repaired here:
  *                        we cannot tell which schema is actually behind such a
  *                        value, and writing a guessed version would assert a
- *                        state nobody has checked.
+ *                        state nobody has checked. The one narrow exception, a
+ *                        well-formed ID of a REMOVED release, is handled before
+ *                        this is consulted (rebase_removed_release_database_version()),
+ *                        so this function only ever sees the known release it
+ *                        was moved to.
  *
  * @param mixed $app_version
  * @param mixed $db_version
@@ -320,6 +348,157 @@ function decide_database_upgrade_action($app_version, $db_version, $upgrade_func
     }
 
     return $upgrade_function_exists ? 'run_in_flight' : 'up_to_date';
+}
+
+/********************************************
+ * FUNCTION: RESOLVE DATABASE UPGRADE START *
+ ********************************************/
+/**
+ * The release the upgrade chain should start from for a given db_version. Pure.
+ *
+ * A known release (one in $releases) is returned unchanged. That is every
+ * instance whose version came from a release that shipped, so the chain behaves
+ * exactly as it did before this function existed.
+ *
+ * The one case it changes is a REMOVED release. A release candidate is published
+ * on updates-test only, and an RC with a bug is removed and replaced by a later
+ * one. An instance on the Release Candidate channel can therefore have a
+ * db_version that names a release no feed lists and whose upgrade_from_<id> no
+ * bundle carries. The chain cannot start from that value, so before this the
+ * instance had no upgrade path at all.
+ *
+ * For that case it returns the newest known release strictly earlier than
+ * db_version. The RC was cut on top of that release, so its schema is the one
+ * this database is guaranteed to contain. Every migration after it is
+ * idempotent by project rule (writing-db-migrations), so replaying the ones the
+ * RC already applied is safe.
+ *
+ * Returns null, meaning "do not move it", for:
+ *   - a db_version that is not a well-formed release ID: the '2026XXXX-001'
+ *     placeholder, an empty or missing row, anything hand-edited. Nothing about
+ *     such a value says which schema is behind it;
+ *   - an application version that is not a well-formed release ID;
+ *   - a db_version that is not strictly earlier than the application version.
+ *     A database later than the code is a downgrade. One equal to it is an
+ *     instance sitting on its own release, which is not behind anything;
+ *   - a db_version with no known release earlier than it;
+ *   - a db_version with no known release later than it. Rebasing would then
+ *     lower the recorded version with nothing to carry it back up.
+ *
+ * Release IDs are fixed-width and date-numbered, so they order as strings.
+ *
+ * @param mixed $db_version
+ * @param mixed $app_version
+ * @param array $releases
+ * @return string|null
+ */
+function resolve_database_upgrade_start($db_version, $app_version, array $releases)
+{
+    if (!is_release_version_string($db_version))
+    {
+        return null;
+    }
+
+    if (in_array($db_version, $releases, true))
+    {
+        return $db_version;
+    }
+
+    if (!is_release_version_string($app_version) || strcmp($db_version, $app_version) >= 0)
+    {
+        return null;
+    }
+
+    $earlier = null;
+    $has_later = false;
+
+    foreach ($releases as $release)
+    {
+        if (!is_release_version_string($release))
+        {
+            continue;
+        }
+
+        if (strcmp($release, $db_version) < 0)
+        {
+            if ($earlier === null || strcmp($release, $earlier) > 0)
+            {
+                $earlier = $release;
+            }
+        }
+        elseif (strcmp($release, $db_version) > 0)
+        {
+            $has_later = true;
+        }
+    }
+
+    return $has_later ? $earlier : null;
+}
+
+/*****************************************************
+ * FUNCTION: REBASE REMOVED RELEASE DATABASE VERSION *
+ *****************************************************/
+/**
+ * Moves a db_version that names a removed release back to the release the chain
+ * should start from (see resolve_database_upgrade_start()), so the drivers can
+ * then walk the chain as usual.
+ *
+ * This has to be a WRITE, not only a choice of starting function. Each
+ * upgrade_from_*() advances the row through update_database_version(), whose
+ * UPDATE matches only when the row holds that function's own starting version.
+ * Run upgrade_from_<earlier> against a row that still names the removed release
+ * and the migrations run but the version never moves, so the driver stops on
+ * "did not advance".
+ *
+ * The write goes through update_database_version(): it refuses anything that
+ * is not a real release, and it is conditional on the row still holding the
+ * removed release, so a concurrent change is never overwritten. If the chain
+ * then fails, the row names a known release, so the next attempt runs the
+ * ordinary chain from there.
+ *
+ * Writes nothing, and returns null, when there is nothing to rebase or when no
+ * upgrade function exists for the starting release. The write's own echoed
+ * line is swallowed: the structured driver's callers expect JSON, and each
+ * driver reports the rebase in its own way.
+ *
+ * @param PDO|object    $db
+ * @param mixed         $db_version
+ * @param mixed         $app_version
+ * @param array         $releases
+ * @param callable|null $log fn(string $message, string $level). Defaults to
+ *                           write_debug_log; a parameter so tests stay pure.
+ * @return string|null The release the row was moved to, or null when nothing was written.
+ */
+function rebase_removed_release_database_version($db, $db_version, $app_version, array $releases, ?callable $log = null)
+{
+    $log = $log ?? 'write_debug_log';
+
+    $start = resolve_database_upgrade_start($db_version, $app_version, $releases);
+    if ($start === null || $start === $db_version)
+    {
+        return null;
+    }
+
+    $function_name = 'upgrade_from_' . str_replace('-', '', $start);
+    if (!function_exists($function_name))
+    {
+        $log("The database version '{$db_version}' names no known release, and the release before it ('{$start}') has no upgrade function. The database version was left unchanged.", 'warning');
+        return null;
+    }
+
+    $log("The database version '{$db_version}' names no known release (a release that was removed, such as a replaced release candidate). Restarting the upgrade from '{$start}', the newest known release before it. Migrations are idempotent, so those the removed release already applied are re-run safely.", 'notice');
+
+    ob_start();
+    try
+    {
+        update_database_version($db, $db_version, $start);
+    }
+    finally
+    {
+        ob_end_clean();
+    }
+
+    return $start;
 }
 
 /**********************************************************
@@ -1093,7 +1272,8 @@ function migrate_document_team_mappings_schema($db) {
  * (review_frequency <= 0) record approved under the old code was stamped
  * with next_review_date == approval_date — the treegrids classify that as
  * permanently overdue. The current code no longer produces this stamp (a
- * no-cadence approval now writes '0000-00-00'), but records approved BEFORE
+ * no-cadence approval now keeps the record's existing date, or writes
+ * '0000-00-00' when it has none), but records approved BEFORE
  * this release keep their stale date until someone re-approves them.
  * next_review_date = approval_date is the old bug's exact signature, so this
  * only touches records that match it. Idempotent: once corrected to
@@ -1265,6 +1445,58 @@ function migrate_sessions_user_id_schema($db) {
         echo "Adding the `sessions_user_id_idx` index on `sessions`.`user_id`.<br />\n";
         $stmt = $db->prepare("ALTER TABLE `sessions` ADD INDEX `sessions_user_id_idx` (`user_id`)");
         $stmt->execute();
+    }
+}
+
+/**********************************************************
+ * FUNCTION: UPGRADE ADD SESSIONS ACCESS INDEX            *
+ **********************************************************
+ * Index `sessions`.`access` so session garbage collection is an index range
+ * delete instead of a table scan.
+ *
+ * sess_gc() runs `DELETE FROM sessions WHERE access < :old ORDER BY access
+ * ASC LIMIT 500`, and index.php calls it on every login-page request. With no
+ * index on `access`, InnoDB scans the whole table and locks every row it
+ * visits, so a concurrent session write (REPLACE INTO sessions in sess_write())
+ * waits behind it and, under load, times out with SQLSTATE HY000 / 1205
+ * ("Lock wait timeout exceeded"). Bots that hit the login page create a
+ * session each, so the table (and the scan) grows with scanner traffic.
+ *
+ * `sessions` is the hottest table in the application and the session handler
+ * holds a SELECT ... FOR UPDATE transaction for the whole request, so a plain
+ * ALTER could queue behind those transactions for its metadata lock -- and every
+ * session read/write arriving after it would queue behind the ALTER. The index
+ * is therefore added online (ALGORITHM=INPLACE, LOCK=NONE, which makes MySQL
+ * refuse rather than silently fall back to a table copy) under a short
+ * lock_wait_timeout that is restored afterwards. If it cannot be taken in that
+ * window the failure is logged and the upgrade carries on: the instance simply
+ * keeps today's behaviour, and the statement is safe to re-run in a quieter
+ * window. Idempotent: a no-op once the index exists.
+ **********************************************************/
+function upgrade_add_sessions_access_index($db) {
+
+    if (index_exists_on_table('sessions_access_idx', 'sessions')) {
+        return;
+    }
+
+    echo "Adding the `sessions_access_idx` index on `sessions`.`access`.<br />\n";
+
+    $previous_timeout = null;
+    try {
+        $previous_timeout = (int)$db->query("SELECT @@SESSION.lock_wait_timeout")->fetchColumn();
+        $db->exec("SET SESSION lock_wait_timeout = 10");
+        $db->exec("ALTER TABLE `sessions` ADD INDEX `sessions_access_idx` (`access`), ALGORITHM=INPLACE, LOCK=NONE");
+    } catch (\Throwable $e) {
+        write_debug_log("upgrade_add_sessions_access_index: could not add sessions_access_idx (" . $e->getMessage() . "); continuing without it -- re-run `ALTER TABLE sessions ADD INDEX sessions_access_idx (access)` during a quiet period", 'warning');
+        echo "Could not add the `sessions_access_idx` index right now (the sessions table is busy); the upgrade will continue without it.<br />\n";
+    } finally {
+        if ($previous_timeout !== null && $previous_timeout > 0) {
+            try {
+                $db->exec("SET SESSION lock_wait_timeout = " . $previous_timeout);
+            } catch (\Throwable $e) {
+                write_debug_log("upgrade_add_sessions_access_index: could not restore lock_wait_timeout: " . $e->getMessage(), 'warning');
+            }
+        }
     }
 }
 
@@ -1681,6 +1913,68 @@ function backfill_document_audit_log_ids($db)
     }
 }
 
+/*******************************************************************************
+ * FUNCTION: UPGRADE NOTIFICATION WANTED                                        *
+ *******************************************************************************
+ * Whether finishing an upgrade should tell users. True only when the database
+ * version actually moved: a no-op visit to the upgrade page, and the in-flight
+ * function that deliberately leaves the version alone, must stay silent.
+ * Pure (no I/O).
+ ******************************************************************************/
+function upgrade_notification_wanted(string $from_version, string $to_version): bool
+{
+    return $to_version !== '' && $from_version !== $to_version;
+}
+
+/*******************************************************************************
+ * FUNCTION: NOTIFY UPGRADE COMPLETE                                            *
+ *******************************************************************************
+ * Tells every user, in-app, that SimpleRisk was upgraded and links the release
+ * notes. Called by each upgrade driver once the chain has arrived, with the
+ * database version from BEFORE the run -- so one notification covers however
+ * many releases the run crossed.
+ *
+ * Idempotent: external_guid is per target version, so a retry or a second driver
+ * reaching the same version inserts nothing. Title and body are stored as
+ * language keys (see resolve_notification_text()) so each user reads them in
+ * their own language. Must not throw: a failed notification must never fail an
+ * upgrade. A no-op when the notifications tables do not exist.
+ ******************************************************************************/
+function notify_upgrade_complete(string $from_version, string $to_version): void
+{
+    if (!upgrade_notification_wanted($from_version, $to_version)) {
+        return;
+    }
+
+    try {
+        require_once(realpath(__DIR__ . '/../notifications.php'));
+
+        if (!table_exists('notifications') || !table_exists('notification_recipients')) {
+            return;
+        }
+
+        $result = create_notification(
+            source:        'upgrade',
+            title:         notification_lang_ref('UpgradeNotificationTitle'),
+            body:          notification_lang_ref('UpgradeNotificationBody', $to_version),
+            link:          NOTIFICATION_RELEASE_NOTES_URL,
+            audience_type: 'all_user',
+            audience_id:   null,
+            created_by:    null,
+            expires_at:    null,
+            external_guid: 'upgrade-' . $to_version
+        );
+
+        // 'duplicate' is the expected answer for a second driver or a retry; a
+        // rejection means the source or link validator changed under us.
+        if (!in_array($result['status'], ['inserted', 'duplicate'], true)) {
+            write_debug_log('notify_upgrade_complete() was rejected: ' . $result['status'], 'warning');
+        }
+    } catch (\Throwable $e) {
+        write_debug_log('notify_upgrade_complete() failed: ' . $e->getMessage(), 'warning');
+    }
+}
+
 /**********************************************************
  * FUNCTION: RUN UPGRADE INTEGRITY CHECKS                 *
  **********************************************************
@@ -1757,6 +2051,82 @@ function run_upgrade_integrity_checks($db, ?callable $transport = null, ?callabl
             'error'
         );
     }
+
+    // The latest-version cache is only refreshed daily, so it names the previous
+    // release as "latest" right after an upgrade. Discard it if it is behind.
+    try {
+        refresh_stale_latest_version_cache($db);
+    } catch (\Throwable $e) {
+        write_debug_log(
+            'run_upgrade_integrity_checks: refresh_stale_latest_version_cache() failed: '
+            . $e->getMessage(),
+            'error'
+        );
+    }
+}
+
+/*******************************************************************************
+ * FUNCTION: LATEST VERSION CACHE IS STALE                                      *
+ *******************************************************************************
+ * Pure decision: is the cached "latest" release older than the one installed?
+ *
+ * settings.latest_version_data is refreshed by the core_version_check job at
+ * most once every 24 hours, so an instance upgraded after the cache was written
+ * still holds the previous release as "latest" -- which the registration page
+ * rendered as an available update. Only STRICTLY behind counts: a dev or RC
+ * build is ahead of the feed and a cache that agrees with it is fine.
+ * Identifiers are fixed-width YYYYMMDD-NNN, so strcmp() is chronological.
+ *
+ * @param string $cached_app The 'app' value from the cached feed entry ('' if none).
+ * @param string $installed  The release now installed.
+ **********************************************************/
+function latest_version_cache_is_stale(string $cached_app, string $installed): bool
+{
+    if ($cached_app === '' || $installed === '') {
+        return false;
+    }
+    return strcmp($cached_app, $installed) < 0;
+}
+
+/*******************************************************************************
+ * FUNCTION: REFRESH STALE LATEST VERSION CACHE                                 *
+ *******************************************************************************
+ * After an upgrade, drop a latest-version cache that is behind the installed
+ * release and reset the version-check gate, so the core_version_check job
+ * refetches the real feed entry on its next tick.
+ *
+ * Deliberately a discard, not a write of the installed version: the cache
+ * mirrors a releases.xml entry (md5, release date, notes, schema URLs) and
+ * stamping only the version into it would leave the rest describing the old
+ * release. Until the job runs the cache is empty, which readers treat as
+ * "unknown" -- no badge -- rather than showing a wrong one.
+ *
+ * Cheap and idempotent: a current, absent or unparseable cache is left alone.
+ *
+ * @param PDO         $db        Open connection from the calling driver.
+ * @param string|null $installed Test seam; defaults to APP_VERSION.
+ * @return bool True when the cache was discarded.
+ **********************************************************/
+function refresh_stale_latest_version_cache($db, ?string $installed = null): bool
+{
+    $installed ??= defined('APP_VERSION') ? (string)APP_VERSION : '';
+
+    $cached = json_decode((string)get_setting('latest_version_data', false, false, db: $db), true);
+    $cached_app = (is_array($cached) && isset($cached['app']) && is_string($cached['app'])) ? $cached['app'] : '';
+
+    if (!latest_version_cache_is_stale($cached_app, $installed)) {
+        return false;
+    }
+
+    delete_setting('latest_version_data', $db);
+    delete_setting('queue_timestamp_last_version_check', $db);
+    unset($GLOBALS['latest_versions_cached']);
+
+    write_debug_log(
+        "Upgrade: discarded stale latest-version cache ({$cached_app}, installed {$installed}); the version check will refetch it.",
+        'info'
+    );
+    return true;
 }
 
 /*******************************************************************************
@@ -2341,4 +2711,270 @@ function upgrade_reword_comment_risk_management_description($db)
     $stmt->bindParam(':description', $description, PDO::PARAM_STR);
     $stmt->bindParam(':description2', $description, PDO::PARAM_STR);
     $stmt->execute();
+}
+
+/**
+ * Update channel: seed the update_channel setting ('production' or 'rc').
+ * Idempotent: the row is added only when absent, so a second run adds no
+ * duplicate and an existing 'rc' (or any other) value is never overwritten.
+ * The resolver in includes/update_channel.php treats an absent row as
+ * production, so this is belt-and-suspenders for a visible default.
+ *
+ * Upgrade-only: called from the current unreleased upgrade_from_*().
+ */
+function upgrade_add_update_channel_setting($db)
+{
+    if (!setting_exists('update_channel', $db)) {
+        add_setting('update_channel', 'production', $db);
+    }
+}
+
+/**********************************************************
+ * FUNCTION: UPGRADE REMOVE COUNTRIES REFRESH
+ *
+ * The org_location country list is now static (includes/countries.php); the
+ * restcountries.com API it was refreshed from is deprecated and not licensed
+ * for commercial use. Removes what the retired refresh left behind:
+ *
+ *  - every `core_countries_update` queue task. The job definition is gone, so
+ *    a task left in the queue (pending, or already failed) would never run and
+ *    the worker would keep failing it with "No job definition found",
+ *    re-raising the "could not be completed after repeated attempts"
+ *    notification.
+ *  - the `countries_cache` and `countries_cache_last_failed_at` settings.
+ *  - the job file and the old includes/countries_fallback.php (renamed to
+ *    countries.php). An upgrade overlays new code but never deletes removed
+ *    files, and a stale jobs/ file would otherwise sit in load_all_jobs()'s
+ *    directory.
+ *
+ * Idempotent: every statement is a no-op once its target is gone.
+ *
+ * @param PDO         $db           Open database connection.
+ * @param string|null $includes_dir Directory holding includes/ (test seam only;
+ *                                  production callers pass nothing).
+ *
+ * Upgrade-only: called from the current unreleased upgrade_from_*().
+ **********************************************************/
+function upgrade_remove_countries_refresh($db, ?string $includes_dir = null)
+{
+    $includes_dir ??= dirname(__DIR__);
+
+    $stmt = $db->prepare("DELETE FROM `queue_tasks` WHERE `task_type` = :task_type");
+    $stmt->execute([':task_type' => 'core_countries_update']);
+    if ($stmt->rowCount() > 0) {
+        echo "Removed " . (int)$stmt->rowCount() . " retired core_countries_update queue task(s).<br />\n";
+    }
+
+    foreach (['countries_cache', 'countries_cache_last_failed_at'] as $setting_name) {
+        if (setting_exists($setting_name, $db)) {
+            echo "Removing the retired " . $setting_name . " setting.<br />\n";
+            delete_setting($setting_name, $db);
+        }
+    }
+
+    foreach (['jobs/core_countries_update.php', 'countries_fallback.php'] as $retired_file) {
+        $path = $includes_dir . '/' . $retired_file;
+        if (file_exists($path)) {
+            echo "Deleting the retired includes/" . $retired_file . " file.<br />\n";
+            if (!unlink($path)) {
+                write_debug_log("upgrade_remove_countries_refresh: could not delete " . $path, 'warning');
+            }
+        }
+    }
+}
+
+/**
+ * Normalizes duplicate (number, name) rows in `risk_catalog`, repointing
+ * `risk_catalog_mappings` off the duplicate before adding a unique index on
+ * (number, name). Extracted out of the already-shipped
+ * upgrade_from_20251118001() for SR-2414 so the fix below is directly
+ * testable without needing a database already sitting at that exact
+ * pre-upgrade version.
+ *
+ * SR-2414: the historical seed-on-upgrade behavior (stopped for NEW
+ * duplication by SR-2084, but not retroactively) left some instances with
+ * duplicate risk_catalog rows where a risk is ALREADY mapped to both the
+ * duplicate row and the one being kept. Step 2's repoint would then try to
+ * create a (risk_id, risk_catalog_id) pair that risk_catalog_mappings'
+ * composite PRIMARY KEY already holds, aborting the whole upgrade chain with
+ * a duplicate-key PDOException. Step 1 removes exactly those
+ * already-redundant mapping rows first, so Step 2 never collides.
+ *
+ * Idempotent: the index_exists_on_table() guard makes every step a no-op
+ * once the unique index is in place.
+ */
+function upgrade_normalize_duplicate_risk_catalog_entries($db)
+{
+    if (index_exists_on_table('uniq_risk_catalog_number_name', 'risk_catalog')) {
+        return;
+    }
+
+    echo "Normalizing duplicate risks in risk_catalog table.<br />\n";
+
+    // Step 1: Remove risk_catalog_mappings rows that would collide with the
+    // Step 2 repoint -- a risk already mapped to BOTH the duplicate and the
+    // kept risk_catalog row already holds the (risk_id, risk_catalog_id)
+    // pair the repoint would otherwise try to create.
+    $stmt = $db->prepare("
+        DELETE rcm1
+        FROM risk_catalog_mappings rcm1
+        INNER JOIN risk_catalog rc1 ON rcm1.risk_catalog_id = rc1.id
+        INNER JOIN risk_catalog rc2
+            ON rc1.number = rc2.number
+            AND rc1.name = rc2.name
+            AND rc1.id > rc2.id
+        INNER JOIN risk_catalog_mappings rcm2
+            ON rcm2.risk_id = rcm1.risk_id
+            AND rcm2.risk_catalog_id = rc2.id;
+    ");
+    $stmt->execute();
+
+    // Step 2: Update risk_catalog_mappings to point to the kept risk_catalog.id
+    $stmt = $db->prepare("
+        UPDATE risk_catalog_mappings rcm
+        INNER JOIN risk_catalog rc1 ON rcm.risk_catalog_id = rc1.id
+        INNER JOIN risk_catalog rc2
+            ON rc1.number = rc2.number
+            AND rc1.name = rc2.name
+            AND rc1.id > rc2.id
+        SET rcm.risk_catalog_id = rc2.id;
+    ");
+    $stmt->execute();
+
+    // Step 3: Delete duplicate risk_catalog rows (keep smallest id)
+    $stmt = $db->prepare("
+        DELETE rc1
+        FROM risk_catalog rc1
+        INNER JOIN risk_catalog rc2
+            ON rc1.number = rc2.number
+            AND rc1.name = rc2.name
+            AND rc1.id > rc2.id;
+    ");
+    $stmt->execute();
+
+    // Step 4: Add unique index on (number, name)
+    echo "Making (number, name) unique in risk_catalog.<br />\n";
+    $stmt = $db->prepare("
+        ALTER TABLE `risk_catalog`
+        ADD UNIQUE INDEX `uniq_risk_catalog_number_name` (`number`, `name`(191));
+    ");
+    $stmt->execute();
+}
+
+/**********************************************************
+ * FUNCTION: UPGRADE REMOVE COMPLIANCEFORGE PAGE          *
+ * admin/complianceforge.php was a shell page for the     *
+ * never-built ComplianceForge Extra, deleted from the    *
+ * source in 5da881b531. An upgrade overlays new code but *
+ * never deletes removed files, and no upgrade function   *
+ * unlinked this one, so it still sits on every install   *
+ * that ever shipped it. Its address now redirects to     *
+ * admin/securecontrolsframework.php (admin/.htaccess),   *
+ * but a server that ignores .htaccess would keep serving *
+ * the stale page, and a POST to it calls                 *
+ * enable_complianceforge_extra(), which no longer exists.*
+ *                                                        *
+ * Idempotent: a no-op once the file is gone.             *
+ *                                                        *
+ * @param string|null $admin_dir Directory holding the    *
+ *                               admin pages (test seam    *
+ *                               only; production callers  *
+ *                               pass nothing).            *
+ *                                                        *
+ * Upgrade-only: called from the current unreleased       *
+ * upgrade_from_*().                                      *
+ **********************************************************/
+function upgrade_remove_complianceforge_page(?string $admin_dir = null)
+{
+    $admin_dir ??= dirname(__DIR__, 2) . '/admin';
+    $path = $admin_dir . '/complianceforge.php';
+
+    if (file_exists($path)) {
+        echo "Deleting the retired admin/complianceforge.php page.<br />\n";
+        if (!unlink($path)) {
+            write_debug_log("upgrade_remove_complianceforge_page: could not delete " . $path, 'warning');
+        }
+    }
+}
+
+/**********************************************************
+ * FUNCTION: UPGRADE REMOVE UCF EXTRA                     *
+ * The Unified Compliance Framework (UCF) Extra is        *
+ * retired. Removes everything it left on an instance:    *
+ *                                                        *
+ *  - its four tables (ucf_ad_lists,                      *
+ *    ucf_authority_documents,                            *
+ *    ucf_authority_document_controls, ucf_audit_items).  *
+ *    Only these UCF mapping tables go: frameworks,       *
+ *    controls and tests that were installed from UCF     *
+ *    are ordinary Core records and are kept.             *
+ *  - its settings: the `ucf` activation flag, the        *
+ *    `ucf_extra_version` migration counter and the four  *
+ *    connection/scheduling settings (UCFAPIKey,          *
+ *    UCFDefaultTester, UCFTestFrequency,                 *
+ *    UCFApproximateTime).                                *
+ *  - the extras/ucf/ directory and admin/ucf.php. An     *
+ *    upgrade overlays new code but never deletes removed *
+ *    files, so both would otherwise stay on disk.        *
+ *                                                        *
+ * Idempotent: every step is a no-op once its target is   *
+ * gone.                                                  *
+ *                                                        *
+ * @param PDO         $db            Open database          *
+ *                                   connection.            *
+ * @param string|null $simplerisk_dir The simplerisk/ root  *
+ *                                   (test seam only;       *
+ *                                   production callers     *
+ *                                   pass nothing).         *
+ *                                                        *
+ * Upgrade-only: called from the current unreleased       *
+ * upgrade_from_*().                                      *
+ **********************************************************/
+function upgrade_remove_ucf_extra($db, ?string $simplerisk_dir = null)
+{
+    $simplerisk_dir ??= dirname(__DIR__, 2);
+
+    // These are the Extra's own tables, hardcoded and never built from input.
+    foreach (['ucf_ad_lists', 'ucf_authority_documents', 'ucf_authority_document_controls', 'ucf_audit_items'] as $table) {
+        $stmt = $db->prepare("SHOW TABLES LIKE :table");
+        $stmt->execute([':table' => $table]);
+        if ($stmt->fetchColumn() !== false) {
+            echo "Dropping the retired " . $table . " table.<br />\n";
+            $db->exec("DROP TABLE IF EXISTS `" . $table . "`");
+        }
+    }
+
+    foreach (['ucf', 'ucf_extra_version', 'UCFAPIKey', 'UCFDefaultTester', 'UCFTestFrequency', 'UCFApproximateTime'] as $setting_name) {
+        if (setting_exists($setting_name, $db)) {
+            echo "Removing the retired " . $setting_name . " setting.<br />\n";
+            delete_setting($setting_name, $db);
+        }
+    }
+
+    $retired_page = $simplerisk_dir . '/admin/ucf.php';
+    if (file_exists($retired_page)) {
+        echo "Deleting the retired admin/ucf.php page.<br />\n";
+        if (!unlink($retired_page)) {
+            write_debug_log("upgrade_remove_ucf_extra: could not delete " . $retired_page, 'warning');
+        }
+    }
+
+    $retired_extra = $simplerisk_dir . '/extras/ucf';
+    if (is_dir($retired_extra)) {
+        echo "Deleting the retired extras/ucf directory.<br />\n";
+        $entries = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($retired_extra, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($entries as $entry) {
+            // A symlink is unlinked, never followed into.
+            $ok = ($entry->isDir() && !$entry->isLink()) ? rmdir($entry->getPathname()) : unlink($entry->getPathname());
+            if (!$ok) {
+                write_debug_log("upgrade_remove_ucf_extra: could not delete " . $entry->getPathname(), 'warning');
+            }
+        }
+        if (!rmdir($retired_extra)) {
+            write_debug_log("upgrade_remove_ucf_extra: could not delete " . $retired_extra, 'warning');
+        }
+    }
 }

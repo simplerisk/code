@@ -13,6 +13,8 @@ require_once(realpath(__DIR__ . '/../promises.php'));
 
 return [
     'type' => 'core_promises_purge',
+    // One task of this type at a time across all queue workers (periodic table maintenance).
+    'concurrency' => 'serial',
 
     'task_check' => function(PDO $db) {
         $last = get_setting('queue_timestamp_last_promises_purge', false, false, db: $db);

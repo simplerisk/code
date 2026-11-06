@@ -24,7 +24,7 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
-require_once(language_file());
+load_language_file();
 
     // Check if a file id was sent
     if (isset($_GET['id']) || isset($_POST['id']))

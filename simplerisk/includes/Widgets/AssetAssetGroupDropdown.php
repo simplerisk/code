@@ -256,7 +256,7 @@ class AssetAssetGroupDropdown {
                                 url: BASE_URL + '/api/v2/asset-group/options',
                                 type: 'GET',
                                 dataType: 'json',
-                                " . ($this->itemId && $this->itemType ? "data: {id: '{$this->itemId}', type: '{$this->itemType}'},": '') . "
+                                " . ($this->itemId && $this->itemType ? "data: {id: '" . (int)$this->itemId . "', type: '{$escaper->escapeJs($this->itemType)}'},": '') . "
                                 error: function() {
                                     callback();
                                 },

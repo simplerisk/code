@@ -139,6 +139,91 @@ function connectivity_retry_delay_seconds(int $failed_attempt, int $base_delay =
 }
 
 /**
+ * Whether a failed curl transfer is worth trying again within the same request.
+ *
+ * A curl error that says the host cannot be reached from here at all (the proxy or the host name does not
+ * resolve, or nothing accepts the connection) will not clear up a moment later, so retrying only adds
+ * delay. On an air-gapped or egress-filtered instance, three attempts with a pause each cost about three
+ * seconds on every page that reached for the network (SD-829). Timeouts, resets and TLS handshake errors
+ * can clear up, so they stay retryable.
+ *
+ * @param int $curl_errno The value of curl_errno() for the failed attempt
+ */
+function connectivity_curl_error_is_retryable(int $curl_errno): bool
+{
+    // 5 CURLE_COULDNT_RESOLVE_PROXY, 6 CURLE_COULDNT_RESOLVE_HOST, 7 CURLE_COULDNT_CONNECT
+    return !in_array($curl_errno, [5, 6, 7], true);
+}
+
+/**
+ * Whether a failed stream (file_get_contents) transfer is worth trying again within the same request.
+ * The stream twin of connectivity_curl_error_is_retryable(): the stream wrapper has no error number, only
+ * the warning text, so the same "cannot resolve / cannot connect" class is recognised from the message.
+ * An unknown or empty message stays retryable, which is the old behaviour.
+ *
+ * @param string|null $message The message of the warning the failed attempt raised (error_get_last()['message'])
+ */
+function connectivity_stream_error_is_retryable(?string $message): bool
+{
+    if ($message === null || $message === '') {
+        return true;
+    }
+
+    // php_network_getaddresses / getaddrinfo: name resolution failed. "Connection refused" / "Network is
+    // unreachable" / "No route to host": nothing accepts the connection.
+    return preg_match('/getaddrinfo|php_network_getaddresses|Name or service not known|Connection refused|Network is unreachable|No route to host/i', $message) !== 1;
+}
+
+/**
+ * The attempt cap for one fetch: the caller's `max_retries` http option when set (never below one attempt),
+ * otherwise the transport default. Shared by both transports so they honour the option identically.
+ *
+ * @param array<string, mixed> $http_options
+ */
+function connectivity_resolve_max_retries(array $http_options, int $default = 3): int
+{
+    if (isset($http_options['max_retries'])) {
+        return max(1, (int)$http_options['max_retries']);
+    }
+
+    return max(1, $default);
+}
+
+/**
+ * The stream transport's retry loop, with the network read and the pause injectable so it is testable.
+ * Applies the same policy as the curl loop: at most $max_retries attempts, a pause with exponential backoff
+ * between them (none after the last), and no further attempt once the failure says the host cannot be
+ * reached.
+ *
+ * @param callable $fetch    Returns the response body, or false on failure
+ * @param callable $last_err Returns the failed attempt's warning message (string) or null
+ * @param callable $sleeper  Called with the pause in seconds
+ *
+ * @return array{0: mixed, 1: int} The response (false when every attempt failed) and the attempts made
+ */
+function connectivity_stream_retry_loop(callable $fetch, callable $last_err, int $max_retries, callable $sleeper): array
+{
+    $response = false;
+    $attempt = 0;
+
+    while ($attempt < $max_retries && $response === false) {
+        $response = $fetch();
+        if ($response === false) {
+            $attempt++;
+            // The host cannot be reached from here: another attempt cannot succeed, so do not wait for one
+            if (!connectivity_stream_error_is_retryable($last_err())) {
+                break;
+            }
+            if ($attempt < $max_retries) {
+                $sleeper(connectivity_retry_delay_seconds($attempt));
+            }
+        }
+    }
+
+    return [$response, $attempt];
+}
+
+/**
  * Fold one raw response-header line into an accumulating name => value map.
  * Pure — no curl handle, no I/O — so the parsing is unit-testable while the
  * CURLOPT_HEADERFUNCTION closure that feeds it stays trivial.
@@ -183,6 +268,8 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
     $request_method = $http_options['method'] ?? 'GET';
     $header = $http_options['header'] ?? [];
     $timeout = $http_options['timeout'] ?? 600;
+    // A caller that retries at its own level can cap the attempts made here
+    $max_retries = connectivity_resolve_max_retries($http_options, (int)$max_retries);
 
     $response = false;
     $attempt = 0;
@@ -276,9 +363,16 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
         $return_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         if (curl_errno($ch)) {
+            $curl_errno = curl_errno($ch);
             write_debug_log("CONNECTIVITY: Attempt " . ($attempt+1) . " failed for URL: $url. Curl Error: " . curl_error($ch), "warning");
             $response = false;
             $attempt++;
+
+            // The host cannot be reached from here: another attempt cannot succeed, so do not wait for one
+            if (!connectivity_curl_error_is_retryable($curl_errno)) {
+                break;
+            }
+
             if ($attempt < $max_retries) {
                 sleep(connectivity_retry_delay_seconds($attempt));
             }
@@ -289,7 +383,7 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
 
     // If response is still false, return empty array to avoid breaking foreach
     if ($response === false) {
-        write_debug_log("CONNECTIVITY: Failed to fetch URL after $max_retries attempts: $url", "error");
+        write_debug_log("CONNECTIVITY: Failed to fetch URL after $attempt attempt(s): $url", "error");
         $response = [];
     }
 
@@ -310,6 +404,9 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
 
 function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $parameters, $max_retries = 3)
 {
+    // A caller that retries at its own level can cap the attempts made here
+    $max_retries = connectivity_resolve_max_retries($http_options, (int)$max_retries);
+
     $opts = [];
 
     // HTTP options
@@ -367,21 +464,25 @@ function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $param
 
     $context = stream_context_create($opts);
 
-    $response = false;
-    $attempt = 0;
     $return_code = false;
 
-    // Retry loop
-    while ($attempt < $max_retries && $response === false) {
-        $response = @file_get_contents($url, false, $context);
-        if ($response === false) {
-            $attempt++;
-            write_debug_log("CONNECTIVITY: Attempt {$attempt} failed for URL: $url", "warning");
-            if ($attempt < $max_retries) {
-                sleep(connectivity_retry_delay_seconds($attempt));
+    // Retry loop: same policy as the curl transport (max_retries option, no retry of an unreachable host)
+    [$response, $attempt] = connectivity_stream_retry_loop(
+        function () use ($url, $context) {
+            error_clear_last();
+            $body = @file_get_contents($url, false, $context);
+            if ($body === false) {
+                write_debug_log("CONNECTIVITY: Stream attempt failed for URL: $url", "warning");
             }
-        }
-    }
+            return $body;
+        },
+        function () {
+            $error = error_get_last();
+            return $error['message'] ?? null;
+        },
+        $max_retries,
+        'sleep'
+    );
 
     // Determine HTTP response code if available. PHP 8.5 deprecated the
     // predefined $http_response_header magic variable in favor of
@@ -403,7 +504,7 @@ function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $param
 
     // Ensure we always return an array for downstream foreach()
     if ($response === false) {
-        write_debug_log("CONNECTIVITY: Failed to fetch URL: $url", "error");
+        write_debug_log("CONNECTIVITY: Failed to fetch URL after $attempt attempt(s): $url", "error");
         $response = [];
     }
 

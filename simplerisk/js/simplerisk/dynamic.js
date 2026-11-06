@@ -73,6 +73,38 @@ function makeFilterNonDropdownHTML(index, columnName, fieldType)
     return HTML;
 }
 
+/**
+ * Builds the Dynamic Risk Report's Column Selections "Apply" reload URL,
+ * preserving the current Status/Group By/Sort By selections and any other
+ * pre-existing query-string state -- those filters are only ever submitted
+ * via the get_risks_by form's POST, never reflected in the URL, so a bare
+ * reload would otherwise reset them to their defaults (Open Risks / None /
+ * Inherent Risk). Kept pure/DOM-free so its contract can be exercised directly
+ * (see the Dynamic Risk Report e2e spec).
+ *
+ * `selection` (a loaded saved selection) is deliberately dropped: when it is
+ * present, dynamic_risk_report.php takes the columns from the saved selection
+ * instead of the session that set_custom_display just updated, and overrides
+ * Status/Group By/Sort By with the saved values, so keeping it would make
+ * Apply look like it did nothing.
+ *
+ * @param currentSearch window.location.search at the time of the reload
+ * @param baseUrl the BASE_URL global
+ * @param status current #status value
+ * @param group current #group value
+ * @param sort current #sort value
+ * @returns the full reload URL
+ */
+function buildColumnSelectionsReloadUrl(currentSearch, baseUrl, status, group, sort)
+{
+    let reloadParams = new URLSearchParams(currentSearch);
+    reloadParams.delete('selection');
+    reloadParams.set('status', status);
+    reloadParams.set('group', group);
+    reloadParams.set('sort', sort);
+    return baseUrl + '/reports/dynamic_risk_report.php?' + reloadParams.toString();
+}
+
 // Define global variable to store datatable objects for each risk table on the page
 // it can be used to save order direction and order column when saving dynamic reports.
 var riskDataTables = [];
@@ -685,18 +717,21 @@ $(document).ready(function(){
                     
                     // Apply visibility changes to datatables
                     for (let key in riskDataTables) {
-                        // First hide all columns
+                        // First hide all columns. visible()'s second argument (redrawCalc) is
+                        // false throughout this loop: recalculating the layout on every call
+                        // made Apply freeze the page for tens of seconds on grouped reports,
+                        // so the layout is recalculated once per table below instead.
                         riskDataTables[key].columns().every(function() {
                             let colName = $(this.header()).data('name');
                             if (colName) {
-                                this.visible(false);
+                                this.visible(false, false);
                             }
                         });
-                        
+
                         // Then show only the selected columns
                         orderedColumns.forEach(function(colName) {
                             let column = riskDataTables[key].column("th[data-name='" + colName + "']");
-                            column.visible(true);
+                            column.visible(true, false);
                             
                             // The TH element to show filter html
                             let targetTH = $("tr.filter th[data-name='" + colName + "']", riskDataTables[key].table().header());
@@ -708,6 +743,8 @@ $(document).ready(function(){
                                 $(".hidden-container", column.header()).remove();
                             }
                         });
+
+                        riskDataTables[key].columns.adjust();
                     }
                     
                     // Save the column order to session
@@ -719,9 +756,15 @@ $(document).ready(function(){
                         },
                         success: function(data) {
                             $("#selections").unblock();
-                            
-                            // Reload the page to reflect the new column order
-                            location.href = BASE_URL + '/reports/dynamic_risk_report.php';
+
+                            // Reload the page to reflect the new column order, preserving the
+                            // current Status/Group By/Sort By selections and any other
+                            // pre-existing query-string state (see buildColumnSelectionsReloadUrl's
+                            // docblock above for why a bare reload can't just happen here).
+                            location.href = buildColumnSelectionsReloadUrl(
+                                window.location.search, BASE_URL,
+                                $("#status").val(), $("#group").val(), $("#sort").val()
+                            );
                         },
                         error: function(xhr, status, error) {
                             $("#selections").unblock();
@@ -773,5 +816,5 @@ $(document).ready(function(){
         });
 
     }
-    
+
 })

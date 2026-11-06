@@ -18,7 +18,9 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
 require_once(realpath(__DIR__ . '/includes/reporting.php'));
 require_once(realpath(__DIR__ . '/includes/self_assessments.php'));
 require_once(realpath(__DIR__ . '/includes/data_integrity.php'));
+require_once(realpath(__DIR__ . '/includes/queue_monitor.php'));
 require_once(realpath(__DIR__ . '/includes/profile.php'));
+require_once(realpath(__DIR__ . '/includes/lookup_values.php'));
 require_once(realpath(__DIR__ . '/../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../../includes/governance.php'));
@@ -34,12 +36,24 @@ require_once(realpath(__DIR__ . '/../../includes/Components/SimpleriskApiExcepti
 add_security_headers(true, true, true, true, false);
 
 // Include the language file
-require_once(language_file());
+load_language_file();
 
 // If access is authenticated via session or API key
 if (api_v2_is_authenticated())
 {
     write_debug_log("[APIv2] Using session-based or API key-based authentication.", "debug");
+
+    // POST /admin/extras/upgrade-databases migrates the Extras' databases itself, and loading an
+    // Extra is what migrates it, so it has to answer before any Extra below is loaded. It checks
+    // for an administrator itself. It has no app()->post() line for the same reason: the routes
+    // are only dispatched after every enabled Extra has been included.
+    require_once(realpath(__DIR__ . '/../../includes/extras_status.php'));
+
+    if (extras_database_upgrade_requested($_SERVER['REQUEST_METHOD'] ?? '', $_SERVER['REQUEST_URI'] ?? ''))
+    {
+        api_v2_admin_extras_upgrade_databases();
+        exit;
+    }
 
     // SimpleRisk Admin Routes
     app()->get('/admin/version', 'api_v2_admin_version');
@@ -50,9 +64,23 @@ if (api_v2_is_authenticated())
     app()->post('/admin/reset_registration', 'api_v2_admin_reset_registration');
     app()->delete('/admin/tag', 'api_v2_admin_tag_delete');
     app()->delete('/admin/tag/all', 'api_v2_admin_tag_delete_all');
+    app()->get('/admin/lookup-values/lists', 'api_v2_lookup_values_lists');
+    app()->get('/admin/lookup-values/lists/{list}/values', 'api_v2_lookup_values_list_values');
+    app()->post('/admin/lookup-values/lists/{list}/values', 'api_v2_lookup_values_add');
+    app()->patch('/admin/lookup-values/lists/{list}/values/{id}', 'api_v2_lookup_values_rename');
+    app()->delete('/admin/lookup-values/lists/{list}/values/{id}', 'api_v2_lookup_values_delete');
     app()->post('/admin/governance/documents/maptocontrols', 'api_v2_update_all_document_control_mappings');
     app()->get('/admin/queue', 'api_v2_admin_queue');
     app()->get('/admin/queue/promises', 'api_v2_admin_queue_promises');
+    app()->get('/admin/queue/summary', 'api_v2_admin_queue_summary');
+    app()->get('/admin/queue/steps', 'api_v2_admin_queue_steps');
+    app()->get('/admin/queue/payload', 'api_v2_admin_queue_payload');
+    app()->post('/admin/queue/cancel', 'api_v2_admin_queue_cancel');
+    app()->post('/admin/queue/restart', 'api_v2_admin_queue_restart');
+    app()->post('/admin/queue/run-now', 'api_v2_admin_queue_run_now');
+    app()->post('/admin/queue/delete', 'api_v2_admin_queue_delete');
+    app()->get('/admin/queue/settings', 'api_v2_admin_queue_settings_get');
+    app()->post('/admin/queue/settings', 'api_v2_admin_queue_settings_save');
 
     // Data Integrity Framework
     app()->get('/admin/data-integrity/issues', 'api_v2_data_integrity_issues_list');
@@ -323,7 +351,10 @@ if (api_v2_is_authenticated())
     app()->get('/reports/catalog', 'api_v2_reports_catalog');
     app()->get('/admin/settings/catalog', 'api_v2_admin_settings_catalog');
     app()->get('/admin/settings/extras/licenses', 'api_v2_admin_settings_extras_licenses');
+    app()->get('/admin/extras/status',            'api_v2_admin_extras_status');
     app()->post('/admin/license/refresh',          'api_v2_admin_license_refresh');
+    app()->get('/admin/update-channel',            'api_v2_admin_update_channel_get');
+    app()->put('/admin/update-channel',            'api_v2_admin_update_channel_put');
     app()->get('/admin/licenses',                  'api_v2_admin_licenses');
     app()->post('/admin/extras/install',           'api_v2_admin_extras_install');
     app()->post('/admin/settings/favorites',          'api_v2_admin_settings_favorite_add');
@@ -985,23 +1016,6 @@ if (api_v2_is_authenticated())
 
             // Get the separation routes
             get_separation_routes();
-        }
-    }
-
-    // If the UCF Extra is enabled
-    if (ucf_extra())
-    {
-        // Required file
-        $required_file = realpath(__DIR__ . '/../../extras/ucf/includes/api.php');
-
-        // If the file exists
-        if (file_exists($required_file))
-        {
-            // Include the required file
-            require_once($required_file);
-
-            // Get the ucf routes
-            get_ucf_routes();
         }
     }
 

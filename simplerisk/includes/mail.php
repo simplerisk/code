@@ -14,7 +14,7 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 // Include the language file
-require_once(language_file());
+load_language_file();
 
 /*******************************
  * FUNCTION: GET MAIL SETTINGS *
@@ -336,7 +336,15 @@ function send_email(PDO $db, $name, $email, $subject, $body, ?int $sender_uid = 
         $queue_task_payload['sender_uid'] = $sender_uid;
     }
 
-    $queued = queue_task($db, 'core_email_send', $queue_task_payload, 100, 5, 3600);
+    // Retry back-off: a 300 s base delay, stored on the task by queue_task().
+    // The 3600 is the built-in cap, so queue_task() stores nothing for it: the
+    // cap follows QUEUE_RETRY_MAX_DELAY_SECONDS and the number of retries
+    // QUEUE_RETRY_MAX_ATTEMPTS. At the defaults (an hour, five retries) the
+    // waits are 5, 10, 20, 40 and 60 minutes, so a mail outage of about two and
+    // a quarter hours is ridden out before the send fails and the sender is
+    // notified. With the global 5 s base the retries would all be spent within
+    // about two and a half minutes.
+    $queued = queue_task($db, 'core_email_send', $queue_task_payload, 100, 300, 3600);
 
     if (!$queued) {
         write_debug_log("Failed to queue email to {$email}", 'error');
@@ -825,7 +833,7 @@ function process_email_task($db, $task) {
     $payload = json_decode($task['payload'] ?? '', true);
     if (!is_array($payload) || !isset($payload['recipient_email'], $payload['recipient_name'])) {
         write_debug_log("Invalid email task payload: " . json_encode($task), 'error');
-        $db->prepare("UPDATE queue_tasks SET status='failed', attempts=attempts+1, updated_at=NOW() WHERE id=?")
+        $db->prepare("UPDATE queue_tasks SET status='failed', attempts=attempts+1, updated_at=NOW() WHERE id=? AND status <> 'canceled'")
             ->execute([$task['id']]);
         return;
     }
@@ -839,7 +847,7 @@ function process_email_task($db, $task) {
             $payload['body']
         );
 
-        $db->prepare("UPDATE queue_tasks SET status='completed', updated_at=NOW() WHERE id=?")
+        $db->prepare("UPDATE queue_tasks SET status='completed', updated_at=NOW() WHERE id=? AND status <> 'canceled'")
             ->execute([$task['id']]);
 
     } catch (Exception $e) {

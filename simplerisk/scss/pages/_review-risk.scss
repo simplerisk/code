@@ -55,6 +55,19 @@
   }
 }
 
+// Rows open the risk view on click (delegated handler in review-risk.js).
+// Scoped here rather than set inline on the <tr>: cursor inherits, so an inline
+// value would make inert chips and pills inside look clickable.
+#review_risk_table tbody tr[data-view-url] {
+  cursor: pointer;
+
+  .sr-need-badge:not(.sr-need-badge--clickable),
+  .sr-score-pill,
+  .sr-actions-col-sticky {
+    cursor: default;
+  }
+}
+
 // Final whole-branch review, Finding 6: renamed from the bare .score --
 // unscoped in the global compiled bundle, it collided with 4 unrelated
 // .score priority tiles in the Incident Management Extra

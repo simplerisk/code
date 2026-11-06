@@ -9,6 +9,7 @@ require_once(realpath(__DIR__ . '/alerts.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
 require_once(realpath(__DIR__ . '/connectivity.php'));
+require_once(realpath(__DIR__ . '/opcache.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 /*******************************************
@@ -479,6 +480,10 @@ function download_extra($name, $streamed_response = false, $skip_version_check =
             return ['error' => 'install_failed', 'extra_name' => $name, 'reason' => _lang_raw('ExtraInstallExtractFailed', array()), 'retry_after_seconds' => null, 'http_status' => $code];
         }
 
+        // The web server may still hold the replaced files' old compilation in
+        // opcache; drop it so the next request runs the Extra just installed.
+        invalidate_opcache_for_directory($extras_dir . '/' . $name);
+
         // Success: return the bytes per the existing "string == installed" contract.
         return $body;
     }
@@ -805,6 +810,60 @@ function call_extra_api_functionality($extra, $functionality, $target) {
         return [0, null];
     }
     return [$result['return_code'], json_decode($result['response'], true)];
+}
+
+/******************************************
+ * FUNCTION: CALL SIMPLERISK LOOPBACK     *
+ ******************************************/
+/**
+ * One request to this instance's own /api/v2, authenticated as the administrator running
+ * the current request (SR-2380). Reached from the Core-driven upgrade, where Core's files
+ * were replaced earlier in the same request: a loopback is what lets the NEW code answer.
+ *
+ * Auth is the forwarded session cookie. A non-GET carries a session-derived CSRF token
+ * (csrf_get_tokens() is stateless, derived from the session id); with no token function
+ * the empty token fails closed (403) rather than downgrading to GET.
+ *
+ * @param string $method GET or POST
+ * @param string $path   Route relative to /api/v2, e.g. "/admin/extras/status"
+ *
+ * @return array{code: int, body: array<mixed>|null}
+ */
+function call_simplerisk_loopback(string $method, string $path): array
+{
+    $headers = [
+        "Cookie: " . session_name() . "=" . session_id(),
+        "Content-Type: application/json",
+        "Accept: application/json",
+    ];
+
+    if ($method !== 'GET') {
+        // The token must be signed with the instance's own secret. csrf-magic is not always
+        // initialised in the process that sends this (the polled upgrade handlers validate their
+        // own nonce), and an unconfigured one signs with a throwaway secret that the receiving
+        // request refuses with a 403. csrf_init() is deliberately not called: it would validate
+        // THIS request's token.
+        if (function_exists('csrf_conf') && function_exists('csrf_resolve_and_persist_secret')) {
+            csrf_conf('secret', csrf_resolve_and_persist_secret());
+        }
+
+        $headers[] = "CSRF-TOKEN: " . (function_exists('csrf_get_tokens') ? csrf_get_tokens() : '');
+    }
+
+    $result = fetch_url_content("stream", [
+        'method'        => $method,
+        'header'        => $headers,
+        'ignore_errors' => true,
+        'timeout'       => 600,
+    ], get_setting('ssl_certificate_check_simplerisk') == 1, build_url("/api/v2" . $path));
+
+    if (!is_array($result)) {
+        return ['code' => 0, 'body' => null];
+    }
+
+    $body = json_decode((string)($result['response'] ?? ''), true);
+
+    return ['code' => (int)($result['return_code'] ?? 0), 'body' => is_array($body) ? $body : null];
 }
 
 /******************************************

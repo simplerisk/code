@@ -6,7 +6,8 @@
 // Render the header and sidebar
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 require_once(realpath(__DIR__ . '/../includes/licensing.php'));
-render_header_and_sidebar([], ['check_admin' => true]);
+require_once(realpath(__DIR__ . '/../includes/update_channel.php'));
+render_header_and_sidebar(['CUSTOM:pages/admin-register-channel.js'], ['check_admin' => true]);
 
 // If the user wants to disable the registration notice
 if (isset($_POST['disable_registration_notice']))
@@ -180,7 +181,6 @@ else
 		'get_customization_extra'              => 'customization',
 		'get_advanced_search_extra'            => 'advanced_search',
 		'get_jira_extra'                       => 'jira',
-		'get_ucf_extra'                        => 'ucf',
 		'get_organizational_hierarchy_extra'   => 'organizational_hierarchy',
 		'get_incident_management_extra'        => 'incident_management',
 		'get_vulnmgmt_extra'                   => 'vulnmgmt',
@@ -213,24 +213,51 @@ else
 		}
 	}
 }
+
+// Server-rendered starting state for the update channel selector. The page's
+// script (js/simplerisk/pages/admin-register-channel.js) re-reads it from
+// GET /api/v2/admin/update-channel and owns every change after that; this only
+// keeps the control from flashing the wrong value before that request lands.
+$sr_channel_state = update_channel_current();
+$sr_channel_labels = [
+	'production' => $lang['Production'],
+	'rc'         => $lang['ReleaseCandidate'],
+];
+$sr_channel_value = $sr_channel_state['custom'] ? 'custom' : $sr_channel_state['channel'];
+$sr_channel_label = $sr_channel_labels[$sr_channel_state['channel']] ?? $lang['Production'];
+
+// Toast copy for the selector, escaped ONCE here: toastr renders a message as
+// HTML and decodes these entities exactly once (CLAUDE.md, toastr rule). The
+// JSON flags hex-encode <, >, &, ' and " so the block cannot break out of its
+// <script> element; JSON.parse() undoes only that transport encoding.
+$sr_channel_toasts = [
+	'switched' => [
+		'production' => $escaper->escapeHtml(_lang_raw('UpdateChannelSwitchedTo', ['channel' => $lang['Production']])),
+		'rc'         => $escaper->escapeHtml(_lang_raw('UpdateChannelSwitchedTo', ['channel' => $lang['ReleaseCandidate']])),
+	],
+	'locked'      => $escaper->escapeHtml($lang['UpdateChannelLocked']),
+	'invalid'     => $escaper->escapeHtml($lang['UpdateChannelInvalid']),
+	'writeFailed' => $escaper->escapeHtml($lang['UpdateChannelWriteFailed']),
+	'failed'      => $escaper->escapeHtml($lang['RequestFailed']),
+];
 ?>
 <div class="row bg-white">
 	<div class="col-12">
-		<div class="card-body my-2 border">
-			<h4><?php echo $escaper->escapeHtml($lang['RegisterSimpleRisk']); ?></h4>
-			<p><?php echo $escaper->escapeHtml($lang['RegistrationText']); ?></p>
-<?php if ($registration_notice === true) { ?>
-			<form name="no_message" method="post" action="">
-				<input type="submit" name="disable_registration_notice" value="<?= $escaper->escapeHtml($lang['DisableRegistrationNotice']); ?>" class="btn btn-submit"/>
-			</form>
+		<div class="sr-qform sr-register<?= $registered ? '' : ' sr-register--unregistered'; ?>">
+
+			<?php // ===== Updates: versions, update channel, upgrade action ===== ?>
+			<section class="sr-qcard" id="updates-card" aria-labelledby="updates-card-title">
+				<div class="sr-qcard-head">
+					<span class="sr-qcard-ico"><i class="fa fa-rotate" aria-hidden="true"></i></span>
+					<span class="sr-qcard-htext">
+						<h2 id="updates-card-title"><?= $escaper->escapeHtml($lang['Updates']); ?></h2>
+<?php if ((string)get_setting("instance_id") !== '') { ?>
+						<span class="sr-qcard-hsub"><?= $escaper->escapeHtml($lang['InstanceID']); ?>: <span id="instance-id" class="sr-register-instance-id"><?= $escaper->escapeHtml(get_setting("instance_id")); ?></span></span>
 <?php } ?>
-		</div>
-		<div class="card-body my-2 border">
-			<?php // Two-column grid: the label column auto-sizes to the widest label
-			      // (max-content), so values align with no per-row guesswork; column-gap
-			      // gives an even label/value gap on every row. ?>
-			<div class="sr-info-grid" style="display: grid; grid-template-columns: max-content 1fr; column-gap: 1.5rem; row-gap: 0.4rem; align-items: baseline;">
-				<label class="mb-0"><?= $escaper->escapeHtml($lang['InstanceID']); ?>:</label><span><?= $escaper->escapeHtml(get_setting("instance_id")); ?></span>
+					</span>
+				</div>
+				<div class="sr-qcard-body">
+					<div class="sr-register-facts">
 <?php
 			// Read the latest-version cache directly (settings.latest_version_data,
 			// written by the core_version_check job) so this page NEVER makes a
@@ -240,23 +267,113 @@ else
 			$sr_latest = json_decode((string)get_setting('latest_version_data', false, false), true);
 			$sr_latest = is_array($sr_latest) ? $sr_latest : [];
 			$sr_version_rows = [
-				['label' => $lang['ApplicationVersion'], 'current' => (string)current_version('app'), 'latest' => (string)($sr_latest['app'] ?? '')],
-				['label' => $lang['DatabaseVersion'],    'current' => (string)current_version('db'),  'latest' => (string)($sr_latest['db'] ?? '')],
+				['key' => 'app', 'label' => $lang['ApplicationVersion'], 'current' => (string)current_version('app'), 'latest' => (string)($sr_latest['app'] ?? '')],
+				['key' => 'db',  'label' => $lang['DatabaseVersion'],    'current' => (string)current_version('db'),  'latest' => (string)($sr_latest['db'] ?? '')],
 			];
+			// Where the application stands against the active channel: 'ahead'
+			// (a release the channel has not published) is stated in the slot
+			// below the rows; 'unknown' (cold cache) states nothing. Neither
+			// ever shows "Up to date" or "Update available".
+			$sr_app_status = 'unknown';
 			foreach ($sr_version_rows as $sr_row) {
 				$sr_status = version_update_status($sr_row['current'], $sr_row['latest']);
+				if ($sr_row['key'] === 'app') {
+					$sr_app_status = $sr_status;
+				}
 ?>
-				<label class="mb-0"><?= $escaper->escapeHtml($sr_row['label']); ?>:</label><span><?= $escaper->escapeHtml($sr_row['current']); ?><?php if ($sr_status !== 'unknown') { ?><span class="text-muted mx-2">(<?= _lang('LatestIsVersion', ['version' => $sr_row['latest']]); ?>)</span><?php if ($sr_status === 'up_to_date') { ?><span class="badge bg-success"><?= $escaper->escapeHtml($lang['UpToDate']); ?></span><?php } else { ?><span class="badge bg-warning text-dark"><?= $escaper->escapeHtml($lang['UpdateAvailable']); ?></span><?php } ?><?php } ?></span>
+						<div class="sr-register-fact" data-version-row="<?= $escaper->escapeHtmlAttr($sr_row['key']); ?>">
+							<span class="sr-register-fact-label"><?= $escaper->escapeHtml($sr_row['label']); ?></span>
+							<span class="sr-register-fact-value">
+								<span class="sr-register-version"><?= $escaper->escapeHtml($sr_row['current']); ?></span>
+<?php if ($sr_status !== 'unknown' && $sr_status !== 'ahead') { ?>
+								<span class="sr-register-latest">(<?= _lang('LatestIsVersion', ['version' => $sr_row['latest']]); ?>)</span>
+<?php if ($sr_status === 'up_to_date') { ?>
+								<span class="sr-state-pill sr-state-success sr-register-version-state"><?= $escaper->escapeHtml($lang['UpToDate']); ?></span>
+<?php } else { ?>
+								<span class="sr-state-pill sr-state-warning sr-register-version-state"><?= $escaper->escapeHtml($lang['UpdateAvailable']); ?></span>
 <?php } ?>
-			</div>
-		</div>
-		
-		<div class="row my-2">
-			<div class="col-6">
-				<div class="card-body border" id="register-panel">
-					<div class="hero-unit">
-						<h4><?= $escaper->escapeHtml($lang['RegistrationInformation']); ?></h4>
-						<form name="register" method="post" action="">
+<?php } ?>
+							</span>
+						</div>
+<?php } ?>
+						<?php // The "ahead of this channel" state; a cold latest-version cache
+						      // ('unknown') says nothing. _lang() escapes its params; echoed once.
+						      $sr_position_key = version_position_message_key($sr_app_status); ?>
+						<div class="sr-register-channel-position sr-register-muted py-2" id="update-channel-position" role="status"<?= $sr_position_key === null ? ' hidden' : ''; ?>><?php
+							if ($sr_position_key !== null) {
+								echo _lang($sr_position_key, ['version' => (string)current_version('app')]);
+							}
+						?></div>
+
+						<div class="sr-register-fact sr-register-fact--channel">
+							<label class="sr-register-fact-label" for="update-channel-select"><?= $escaper->escapeHtml($lang['UpdateChannel']); ?></label>
+							<span class="sr-register-fact-value">
+								<select id="update-channel-select" class="form-select sr-register-channel-select" aria-describedby="update-channel-hint" disabled>
+									<option value="production"<?= $sr_channel_value === 'production' ? ' selected' : ''; ?>><?= $escaper->escapeHtml($lang['Production']); ?></option>
+									<option value="rc"<?= $sr_channel_value === 'rc' ? ' selected' : ''; ?>><?= $escaper->escapeHtml($lang['ReleaseCandidate']); ?></option>
+									<option value="custom"<?= $sr_channel_value === 'custom' ? ' selected' : ' hidden disabled'; ?>><?= $escaper->escapeHtml($lang['UpdateChannelCustom']); ?></option>
+								</select>
+							</span>
+						</div>
+					</div>
+					<p class="sr-qhint sr-register-hint" id="update-channel-hint"><?= $escaper->escapeHtml($lang['UpdateChannelHint']); ?></p>
+
+					<div class="sr-qnote" id="update-channel-locked" role="note"<?= $sr_channel_state['locked'] ? '' : ' hidden'; ?>>
+						<i class="fa fa-triangle-exclamation sr-qnote-ico" aria-hidden="true"></i>
+						<div>
+							<span id="update-channel-locked-text"><?= $sr_channel_state['custom'] ? $escaper->escapeHtml($lang['UpdateChannelCustomInConfig']) : _lang('UpdateChannelPinnedInConfig', ['channel' => $sr_channel_label]); ?></span>
+							<ul class="sr-register-urls" id="update-channel-urls"<?= $sr_channel_state['custom'] ? '' : ' hidden'; ?>>
+<?php if ($sr_channel_state['custom']) { foreach ($sr_channel_state['urls'] as $sr_url) { ?>
+								<li><code><?= $escaper->escapeHtml(update_channel_redact_url($sr_url)); ?></code></li>
+<?php } } ?>
+							</ul>
+						</div>
+					</div>
+					<p class="sr-register-load-error text-danger" id="update-channel-load-error" role="alert" hidden><?= $escaper->escapeHtml($lang['UpdateChannelCouldNotBeLoaded']); ?></p>
+
+					<div class="sr-register-upgrade" id="upgrade-panel">
+<?php
+					// If the instance is not registered
+					if (!$registered)
+					{
+?>
+						<p class="sr-register-muted mb-0"><?= $escaper->escapeHtml($lang['RegisterToUseEasyUpgrade']); ?></p>
+<?php
+					}
+					// The instance is registered
+					else
+					{
+						// The Upgrade Extra renders the backup/upgrade buttons and the
+						// (hidden) #upgrade-progress card the script below drives.
+						display_upgrade();
+					}
+?>
+					</div>
+				</div>
+			</section>
+
+			<!-- Where the upgrade progress card is moved when an upgrade starts. It is
+			     emitted by the Upgrade Extra inside the Updates card, which is the
+			     right place for the button; the step list reads better as its own
+			     card on the gray ground directly below. -->
+			<div class="row" id="upgrade-progress-host"></div>
+
+			<?php // ===== Registration ===== ?>
+			<section class="sr-qcard" id="register-panel" aria-labelledby="register-card-title">
+				<div class="sr-qcard-head">
+					<span class="sr-qcard-ico"><i class="fa fa-id-card" aria-hidden="true"></i></span>
+					<span class="sr-qcard-htext">
+						<h2 id="register-card-title"><?= $escaper->escapeHtml($lang['RegistrationInformation']); ?></h2>
+					</span>
+				</div>
+				<div class="sr-qcard-body">
+					<p class="sr-register-muted"><?= $escaper->escapeHtml($lang['RegistrationText']); ?></p>
+<?php if ($registration_notice === true) { ?>
+					<form name="no_message" method="post" action="" class="sr-register-notice-form">
+						<input type="submit" name="disable_registration_notice" value="<?= $escaper->escapeHtml($lang['DisableRegistrationNotice']); ?>" class="btn btn-submit"/>
+					</form>
+<?php } ?>
+					<form name="register" method="post" action="">
 				<?php
 					// If the instance is not registered
 					if (!$registered)
@@ -280,55 +397,82 @@ else
 						}
 					}
 				?>
-						</form>	
-					</div>
+					</form>
 				</div>
-			</div>
-			<div class="col-6 d-flex flex-column">
-				<div class="card-body border flex-grow-1" id="upgrade-panel">
-					<div class="hero-unit">
-						<h4><?php echo $escaper->escapeHtml($lang['UpgradeSimpleRisk']); ?></h4>
-						<?php
-							// If the instance is not registered
-							if (!$registered)
-							{
-								echo "Please register in order to be able to use the easy upgrade feature.";
-							}
-							// The instance is registered
-							else
-							{
-								display_upgrade();
-							}
-						?>
-					</div>
+			</section>
+
+			<?php // ===== Extras ===== ?>
+			<section class="sr-qcard" id="extras-card" aria-labelledby="extras-card-title">
+				<div class="sr-qcard-head">
+					<span class="sr-qcard-ico"><i class="fa fa-puzzle-piece" aria-hidden="true"></i></span>
+					<span class="sr-qcard-htext">
+						<h2 id="extras-card-title"><?= $escaper->escapeHtml($lang['SimpleRiskExtras']); ?></h2>
+					</span>
 				</div>
-			</div>
-		</div>
-		<!-- Where the upgrade progress card is moved when an upgrade starts. It is
-		     emitted by the Upgrade Extra inside the half-width upgrade panel,
-		     which is the right place for the button but far too narrow for a
-		     step list -- and that panel's height is pinned to the registration
-		     panel beside it, so a taller card overflowed it and spilled over the
-		     section below. -->
-		<div class="row" id="upgrade-progress-host"></div>
-		<div class="card-body my-2 border">
-			<div class="hero-unit">
+				<div class="sr-qcard-body">
 		<?php
 			// If the instance is not registered
 			if (!$registered)
 			{
-				echo "Please register in order to be able to use the easy upgrade feature.";
+		?>
+					<p class="sr-register-muted mb-0"><?= $escaper->escapeHtml($lang['RegisterToUseEasyUpgrade']); ?></p>
+		<?php
 			}
 			// The instance is registered
 			else
 			{
-				core_display_upgrade_extras();
+		?>
+					<div class="sr-register-table-scroll">
+		<?php
+				// The card head already names the section, so no inner heading.
+				core_display_upgrade_extras(false);
+		?>
+					</div>
+		<?php
 			}
 		?>
+				</div>
+			</section>
+		</div>
+	</div>
+</div>
+
+<?php // ===== Update channel confirmation (design-system §8: sr-modal shell) ===== ?>
+<div class="modal fade sr-modal" id="update-channel-modal" tabindex="-1" aria-hidden="true" aria-labelledby="update-channel-modal-title">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<span class="sr-modal-icon"><i class="fa fa-code-branch" aria-hidden="true"></i></span>
+				<h4 class="modal-title" id="update-channel-modal-title">
+					<span data-channel-variant="rc"><?= _lang('SwitchUpdateChannelTo', ['channel' => $lang['ReleaseCandidate']]); ?></span>
+					<span data-channel-variant="production" hidden><?= _lang('SwitchUpdateChannelTo', ['channel' => $lang['Production']]); ?></span>
+				</h4>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= $escaper->escapeHtmlAttr($lang['Cancel']); ?>"></button>
+			</div>
+			<div class="modal-body">
+				<section class="sr-qcard">
+					<div class="sr-qcard-head">
+						<span class="sr-qcard-icon"><i class="fa fa-rotate" aria-hidden="true"></i></span>
+						<h3><?= $escaper->escapeHtml($lang['UpdateChannel']); ?></h3>
+					</div>
+					<div class="sr-qcard-body">
+						<p class="mb-0" data-channel-variant="rc"><?= $escaper->escapeHtml($lang['SwitchUpdateChannelToRcBody']); ?></p>
+						<p class="mb-0" data-channel-variant="production" hidden><?= $escaper->escapeHtml($lang['SwitchUpdateChannelToProductionBody']); ?></p>
+						<div class="sr-qnote" data-channel-variant="production" id="update-channel-no-downgrade" hidden>
+							<i class="fa fa-triangle-exclamation sr-qnote-ico" aria-hidden="true"></i>
+							<span><?= $escaper->escapeHtml($lang['UpdateChannelNoDowngrade']); ?></span>
+						</div>
+					</div>
+				</section>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-dark" data-bs-dismiss="modal" id="update-channel-cancel"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+				<button type="button" class="btn btn-submit" id="update-channel-confirm"><?= $escaper->escapeHtml($lang['SwitchChannel']); ?></button>
 			</div>
 		</div>
 	</div>
 </div>
+<script type="application/json" id="update-channel-config"><?= json_encode(['toasts' => $sr_channel_toasts], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?></script>
 <script type='text/javascript'>
 	var upgrade_card = $('#upgrade-progress');
 

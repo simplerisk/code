@@ -48,7 +48,7 @@ add_security_headers(true, true, true, false, false);
 // Include the language file. By this point includes/api.php has already
 // force-loaded $lang via language_file(true) regardless of session state,
 // so $lang['...'] lookups below are safe even for an unauthenticated caller.
-require_once(language_file());
+load_language_file();
 
 // -----------------------------------------------------------------------
 // Authenticate: API key only, via the API Extra's authenticate_key().

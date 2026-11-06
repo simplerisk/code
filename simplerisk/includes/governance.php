@@ -36,7 +36,7 @@ require_once(realpath(__DIR__ . '/settings_catalog.php'));
 require_once(realpath(__DIR__ . '/applicability.php'));
 
 // Include the language file
-require_once(language_file());
+load_language_file();
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 use SimpleRisk\DocumentHandlers\DocumentTextExtractor;
@@ -1697,8 +1697,8 @@ function add_framework_control($control){
     // Standalone (control_type 1) is the default type for a control that arrives
     // without one, and the default is LOAD-BEARING -- do not "align" it with
     // update_framework_control()'s empty default. The bulk creators
-    // (extras/complianceforgescf, extras/ucf, extras/import-export) never set
-    // control_type, so this is the only thing that gives an SCF/UCF/imported
+    // (extras/complianceforgescf, extras/import-export) never set
+    // control_type, so this is the only thing that gives an SCF/imported
     // control a type at all, and it matches both the upgrade that backfilled
     // every pre-existing control with type 1 (includes/upgrade.php) and the Add
     // Control modal's pre-selected value (display_control_type_edit()). Making
@@ -1725,7 +1725,7 @@ function add_framework_control($control){
     // includes/upgrade.php and get_plan_custom_field_name_by_row_id()'s
     // switch statement in extras/customization/index.php, both of which map
     // case "control" to this fgroup's real tables. Every non-interactive
-    // caller (ComplianceForge SCF, UCF, import-export) never sets this key
+    // caller (ComplianceForge SCF, import-export) never sets this key
     // and correctly falls through to the real Default group below, rather
     // than a hardcoded 1 -- which is only ever Risk's seeded Default row.
     $template_group_id = isset($control['template_group_id']) ? (int)$control['template_group_id'] : null;
@@ -2137,8 +2137,10 @@ function delete_framework_controls_batch(array $control_ids)
             // Step 3: cancel promises in bulk
             $db->exec("UPDATE promises SET status='canceled' WHERE queue_task_id IN ($in_tasks) AND status IN ('in_progress','pending')");
 
-            // Step 4: cancel the queue_tasks themselves
-            $db->exec("UPDATE queue_tasks SET status='canceled' WHERE id IN ($in_tasks)");
+            // Step 4: cancel the queue_tasks themselves — only those still
+            // live, re-checked here: a task that finished since the SELECT
+            // above keeps its completed/failed status.
+            $db->exec("UPDATE queue_tasks SET status='canceled' WHERE id IN ($in_tasks) AND status IN ('pending','in_progress')");
         }
 
         // Step 5: delete tmp_files for all control IDs using prepared placeholders
@@ -3518,7 +3520,7 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
             'document_id'   => (int)$document_id,
             'refresh'       => true,
         ];
-        queue_task($db, 'core_document_update', $queue_task_payload, 100, 5, 3600);
+        queue_task($db, 'core_document_update', $queue_task_payload, CORE_DOCUMENT_UPDATE_PRIORITY, 5, 3600);
 
         // Send the notification (no-op if notification extra is disabled)
         call_extra_function(
@@ -3694,7 +3696,7 @@ function update_document($document_id, $updated_by, $document_type, $document_na
         'document_id'   => (int)$document_id,
         'refresh'       => true,
     ];
-    queue_task($db, 'core_document_update', $queue_task_payload, 100, 5, 3600);
+    queue_task($db, 'core_document_update', $queue_task_payload, CORE_DOCUMENT_UPDATE_PRIORITY, 5, 3600);
 
     // Close the database connection
     db_close($db);
@@ -4093,7 +4095,8 @@ function stream_documents_zip($document_ids) {
 /**
  * Approves a document: moves document_status to Approved (3), records the
  * approver and today's date, and computes next_review_date from
- * review_frequency. Mirrors approve_exception() exactly.
+ * review_frequency. Mirrors approve_exception(): with no review_frequency,
+ * both keep the next_review_date the record already has (SR-2488).
  */
 function approve_document($id) {
 
@@ -4135,8 +4138,13 @@ function approve_document($id) {
     // today, which the treegrid classifies as `due_soon` today and `overdue`
     // every day after: a red chip that can never be cleared, on exactly the
     // records governance_review_due.php's `review_frequency > 0` scan guard
-    // already decided not to email anyone about. Store the '0000-00-00'
-    // no-date sentinel instead -- the column is DATE NOT NULL (so NULL isn't
+    // already decided not to email anyone about.
+    //
+    // With no cadence there is no new date to compute, so approval keeps the
+    // next_review_date the document already has (SR-2488): the add/edit form
+    // lets the user enter one regardless of review_frequency, and overwriting
+    // it here lost that date. A document without a date keeps the '0000-00-00'
+    // no-date sentinel -- the column is DATE NOT NULL (so NULL isn't
     // available) and both get_documents_as_treegrid() and
     // get_exceptions_as_treegrid() already skip that value when classifying,
     // as does the review-due job's own scan.
@@ -4144,10 +4152,10 @@ function approve_document($id) {
     if ($review_frequency > 0) {
         $next_review_date = date("Y-m-d", strtotime("+{$review_frequency} day", time()));
     } else {
-        $next_review_date = '0000-00-00';
+        $next_review_date = !empty($approved_document['next_review_date']) ? $approved_document['next_review_date'] : '0000-00-00';
     }
 
-    $stmt = $db->prepare("UPDATE `documents` SET `document_status`=3, `approval_date`=CURDATE(), `approver`=:approver, `next_review_date`=:next_review_date WHERE `id`=:id;");
+    $stmt = $db->prepare("UPDATE `documents` SET `document_status`=3, `approval_date`=CURDATE(), `last_review_date`=CURDATE(), `approver`=:approver, `next_review_date`=:next_review_date WHERE `id`=:id;");
     $stmt->bindParam(":approver", $approver, PDO::PARAM_INT);
     $stmt->bindParam(":next_review_date", $next_review_date, PDO::PARAM_STR);
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
@@ -5752,14 +5760,18 @@ function approve_exception($id) {
     $approver = (int)$_SESSION['uid'];
 
     // Calculate next review date: today's date + review_frequency.
-    // review_frequency <= 0 means "no periodic review scheduled" and gets the
-    // '0000-00-00' no-date sentinel rather than a permanently-overdue today --
-    // see approve_document() for the full reasoning.
+    // review_frequency <= 0 means "no periodic review scheduled": approval has
+    // no cadence to compute a date from, so it keeps the date the exception
+    // already has (SR-2488). Create and edit set one -- the date the user
+    // entered, or today when none was entered -- and overwriting it
+    // here lost that date. An exception without a date keeps the '0000-00-00'
+    // no-date sentinel rather than getting a permanently-overdue today -- see
+    // approve_document(), which follows the same rule, for that reasoning.
     $review_frequency = (int)$approved_exception['review_frequency'];
     if ($review_frequency > 0) {
         $next_review_date = date("Y-m-d", strtotime("+{$review_frequency} day", time()));
     } else {
-        $next_review_date = '0000-00-00';
+        $next_review_date = !empty($approved_exception['next_review_date']) ? $approved_exception['next_review_date'] : '0000-00-00';
     }
 
     // approve the exception
@@ -6536,7 +6548,7 @@ function save_control_to_framework_by_ids($control_id, $framework_ids, $referenc
  * semantics below. Every caller is framework-application machinery, not a
  * human editing one row: the SCF Extra's install/upgrade job and its
  * "apply this authoritative source" action, the SCF upgrade migrations, and
- * the UCF Extra's import. They run over an entire catalogue -- thousands of
+ * the import-export Extra. They run over an entire catalogue -- thousands of
  * mappings per framework -- and they run AGAIN every time a customer
  * re-applies or upgrades a framework.
  *
@@ -6546,7 +6558,7 @@ function save_control_to_framework_by_ids($control_id, $framework_ids, $referenc
  * used to be "", which PDO binds as a value, so the unconditional
  * `reference_text = VALUES(reference_text)` blanked the column on every
  * control already mapped to the framework -- and NONE of the callers pass a
- * text, so re-applying any SCF or UCF framework erased the lot. It also
+ * text, so re-applying any SCF framework erased the lot. It also
  * silently undid the COALESCE guard in the AI control-reference enhancement
  * job (extras/artificial_intelligence/jobs/ai_control_reference_enhance.php),
  * because extras/complianceforgescf/index.php calls this function and then
@@ -9744,8 +9756,8 @@ function get_text_from_document_content($content)
         file_put_contents($temp_file, $content);
 
         // Get the mime type of the file
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mime_type = finfo_file($finfo, $temp_file);
+        // (null when the fileinfo extension is missing; the file is then tried as a Word/PDF document)
+        $mime_type = detect_file_mime_type($temp_file) ?? '';
 
         // If this is a text file
         if (strpos($mime_type, 'text') !== false)

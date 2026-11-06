@@ -9,8 +9,32 @@
 // reachable, not only transitively via the worker (CLAUDE.md).
 require_once(realpath(__DIR__ . '/../promises.php'));
 
+// Controls the sweep queues: no keywords yet, not flagged as failed
+// (keyword_processing_error, set by on_failure below) and no pending or
+// in-progress task already covering them. A closure (not a named function)
+// because load_all_jobs() include()s this file more than once per process.
+$control_update_sweep_control_ids = function(PDO $db): array {
+    $stmt = $db->prepare("
+        SELECT DISTINCT fc.id
+        FROM framework_controls fc
+        LEFT JOIN queue_tasks qt
+            ON qt.task_type = 'core_control_update'
+            AND qt.status IN ('pending','in_progress')
+            AND CAST(JSON_EXTRACT(qt.payload, '$.control_id') AS UNSIGNED) = fc.id
+        WHERE 
+          fc.keywords IS NULL
+          AND fc.keyword_count = 0
+          AND fc.keyword_processing_error = 0
+          AND qt.id IS NULL
+    ");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_COLUMN);
+};
+
 return [
     'type' => 'core_control_update',
+    // Tasks of this type may run on several queue workers at once (per control; the handler only builds that control's step chain).
+    'concurrency' => 'parallel',
 
     'on_failure' => function(PDO $db, array $promise, string $error_message, int $attempts) {
         if (($promise['status'] ?? null) === 'canceled') {
@@ -20,6 +44,18 @@ return [
         $payload = json_decode($promise['payload'], true) ?? [];
         $control_id = $payload['control_id'] ?? null;
         if (!$control_id) return;
+
+        // Flag the control so task_check's sweep (keyword_processing_error = 0)
+        // stops re-queueing it: without this a control whose keywords can never
+        // be calculated was picked up again on every loader tick. Only while it
+        // still has no keywords — a control that has them is not swept anyway.
+        // Mirrors core_document_update's on_failure for compliance_files.
+        try {
+            $stmt = $db->prepare("UPDATE framework_controls SET keyword_processing_error = 1 WHERE id = :id AND keywords IS NULL");
+            $stmt->execute([':id' => (int)$control_id]);
+        } catch (Exception $e) {
+            write_debug_log("Control Update: Could not flag control {$control_id} as failed: " . $e->getMessage(), "error");
+        }
 
         write_debug_log(
             "Control Update: Marked control {$control_id} as failed after {$attempts} attempts: {$error_message}",
@@ -36,22 +72,12 @@ return [
         if ($control_id) write_debug_log("Control Update: Successfully processed control #{$control_id}", "info");
     },
 
-    'task_check' => function(PDO $db) {
-        $stmt = $db->prepare("
-            SELECT DISTINCT fc.id
-            FROM framework_controls fc
-            LEFT JOIN queue_tasks qt
-                ON qt.task_type = 'core_control_update'
-                AND qt.status IN ('pending','in_progress')
-                AND CAST(JSON_EXTRACT(qt.payload, '$.control_id') AS UNSIGNED) = fc.id
-            WHERE 
-              fc.keywords IS NULL
-              AND fc.keyword_count = 0
-              AND fc.keyword_processing_error = 0
-              AND qt.id IS NULL
-        ");
-        $stmt->execute();
-        $control_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    // Not a framework hook — exposed so tests run the real sweep query
+    // without queueing anything (as core_document_update does).
+    'sweep_control_ids' => $control_update_sweep_control_ids,
+
+    'task_check' => function(PDO $db) use ($control_update_sweep_control_ids) {
+        $control_ids = $control_update_sweep_control_ids($db);
 
         foreach ($control_ids as $control_id) {
             $queue_task_payload = [
@@ -77,7 +103,8 @@ return [
         // promise_chain_exists() in promises.php.
         if (promise_chain_exists($db, (int)$task['id'], 'core_control_update')) {
             write_debug_log("Control Update: Live promise chain already exists for task #{$task['id']}; skipping duplicate creation.", "info");
-            return false;
+            // true: the chain is running, so this attempt succeeded (audit F10).
+            return true;
         }
 
         $stages = [
@@ -107,6 +134,14 @@ return [
                 $task['id'],
                 $db
             );
+            // A failed create (0) would give the next step no predecessor, so
+            // it would run at once, out of order. Cancel what was created and
+            // return false: the retry builds a complete chain.
+            if (!$prev_promise_id) {
+                write_debug_log("QUEUE_CHECK core_control_update: failed to create the '{$stage_name}' step for task #{$task['id']}; canceling the partial chain.", "error");
+                cancel_partial_stage_chain($db, (int)$task['id']);
+                return false;
+            }
         }
 
         queue_update_status($task['id'], 'in_progress', $db);
@@ -182,7 +217,10 @@ return [
                 write_debug_log("[calculate_keywords] Keyword count for Control ID {$control_id}: {$keyword_count}", "debug");
 
                 // Update the control with the keywords and keyword count
-                $stmt = $db->prepare("UPDATE framework_controls SET keywords = :keywords, keyword_count = :keyword_count WHERE id = :control_id");
+                // Clears an earlier failure flag (on_failure): a control whose
+                // keywords now calculate is an ordinary control again, so a later
+                // refresh that empties its keywords is swept as usual.
+                $stmt = $db->prepare("UPDATE framework_controls SET keywords = :keywords, keyword_count = :keyword_count, keyword_processing_error = 0 WHERE id = :control_id");
                 $stmt->bindParam(":keywords", $keywords_json, PDO::PARAM_STR);
                 $stmt->bindParam(":keyword_count", $keyword_count, PDO::PARAM_INT);
                 $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);

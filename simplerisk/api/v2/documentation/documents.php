@@ -1,4 +1,5 @@
 <?php
+// @phan-file-suppress PhanDeprecatedClass -- swagger-php 7 deprecates the OpenApi\Attributes classes (removed in 8.0); move these to OpenApi\Spec before upgrading to swagger-php 8
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +20,7 @@ use OpenApi\Attributes as OA;
                 mediaType: 'multipart/form-data',
                 schema: new OA\Schema(
                     type: 'object',
-                    required: ['document_type', 'document_name'],
+                    required: ['document_type', 'document_name', 'status', 'creation_date', 'last_review_date', 'review_frequency', 'next_review_date', 'approval_date', 'document_owner', 'approver'],
                     properties: [
                         new OA\Property(
                             property: 'document_type',
@@ -132,7 +133,7 @@ class OpenApiCreateDocument {}
                 mediaType: 'multipart/form-data',
                 schema: new OA\Schema(
                     type: 'object',
-                    required: ['document_id'],
+                    required: ['document_id', 'status', 'creation_date', 'last_review_date', 'review_frequency', 'next_review_date', 'approval_date', 'document_owner', 'approver'],
                     properties: [
                         new OA\Property(
                             property: 'document_id',

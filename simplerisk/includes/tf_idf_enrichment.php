@@ -246,7 +246,7 @@ function compute_document_control_scores($documentIds = [], $controlIds = []) {
     );
 
     // 1. Compute global document frequency (IDF)
-    $allDocuments = $db->query("SELECT `keywords` FROM `compliance_files`")->fetchAll();
+    $allDocuments = $db->query("SELECT `keywords` FROM `compliance_files` WHERE `ref_type` = 'documents'")->fetchAll();
     $numDocuments = count($allDocuments);
     write_debug_log("Loaded $numDocuments documents for IDF calculation.", "debug");
 
@@ -261,10 +261,12 @@ function compute_document_control_scores($documentIds = [], $controlIds = []) {
     write_debug_log("Computed document frequency for " . count($documentFrequency) . " terms.", "debug");
 
     // 2. Load documents
-    $documentQuery = "SELECT `ref_id` AS `id`, `keywords` FROM `compliance_files`";
+    // Only files of real documents: exception and test-audit files share the table
+    // and their ref_id lives in a different id space.
+    $documentQuery = "SELECT `ref_id` AS `id`, `keywords` FROM `compliance_files` WHERE `ref_type` = 'documents'";
     if (!empty($documentIds)) {
         $placeholders = implode(',', array_fill(0, count($documentIds), '?'));
-        $documentQuery .= " WHERE ref_id IN ($placeholders)";
+        $documentQuery .= " AND ref_id IN ($placeholders)";
     }
     $stmt = $db->prepare($documentQuery);
     $stmt->execute($documentIds);

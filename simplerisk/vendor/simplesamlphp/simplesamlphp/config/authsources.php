@@ -150,8 +150,10 @@ $config = [
         // Force authentication with each SAML authentication request
         'ForceAuthn' => $ForceAuthn,
 
-        // The entity ID of this SP — uniquely identifies us to the IdP
-        'entityID' => $simplerisk_base_url . 'vendor/simplesamlphp/simplesamlphp/public/module.php/saml/sp/metadata.php/' . $saml_sp_name,
+        // The entity ID of this SP — uniquely identifies us to the IdP. It is a separate registration
+        // at the IdP from the ACS URL, so it has its own setting (default public/, as shipped since
+        // 2026-04); see saml_ssp_web_dir().
+        'entityID' => $simplerisk_base_url . 'vendor/simplesamlphp/simplesamlphp/' . saml_ssp_web_dir(null, get_setting('SAML_LEGACY_ENTITY_ID_PATH')) . 'module.php/saml/sp/metadata.php/' . $saml_sp_name,
 
         // Where SimpleSAMLphp returns the user after authentication
         'RelayState' => $simplerisk_base_url . 'extras/authentication/login.php',

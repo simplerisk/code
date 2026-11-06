@@ -24,9 +24,17 @@
  * itself all load it for the decisions above -- so which HTTP status a particular
  * endpoint returns lives with that endpoint, not here.
  *
- * Define LICENSING_URL / UPDATES_URL in config.php to point at non-production
- * services (test deploys do this via scripts/bundles-test-installation.sh).
+ * Which hosts those URLs point at is decided by the update channel resolver
+ * (includes/update_channel.php): Core and the installer route through it
+ * (licensing_url(), updates_url(), or update_channel_service_url() directly in
+ * the installer). The Extras under extras/ resolve the channel through their own
+ * guarded copy (extras/upgrade/includes/update_channel_fallback.php) or a guarded
+ * call to update_channel_service_url(), so an Extra running against an older Core
+ * that lacks the resolver still works. Define LICENSING_URL / UPDATES_URL /
+ * BUNDLES_URL (or SIMPLERISK_UPDATE_CHANNEL) in config.php to override.
  */
+
+require_once(realpath(__DIR__ . '/update_channel.php'));
 
 /**
  * Resolve the licensing-service base URL plus an optional path suffix.
@@ -36,8 +44,7 @@
  */
 function licensing_url(string $path = ''): string
 {
-    $base = defined('LICENSING_URL') ? LICENSING_URL : 'https://licensing.simplerisk.com';
-    return $base . $path;
+    return update_channel_service_url('licensing', $path);
 }
 
 /**
@@ -251,6 +258,41 @@ function get_current_version_for_extra(string $extra_name): ?string
         }
     }
     return null;
+}
+
+/**
+ * The newer of two Extra versions, ignoring an absent or empty one. Pure.
+ *
+ * Identifiers are fixed-width YYYYMMDD-NNN, so strcmp() is chronological.
+ */
+function newest_extra_version(?string $a, ?string $b): ?string
+{
+    $a = ($a === '') ? null : $a;
+    $b = ($b === '') ? null : $b;
+    if ($a === null || $b === null) {
+        return $a ?? $b;
+    }
+    return strcmp($a, $b) >= 0 ? $a : $b;
+}
+
+/**
+ * The newest published version of an Extra, for "does this one need
+ * upgrading?" decisions.
+ *
+ * The license cache (get_current_version_for_extra()) is only refreshed about
+ * daily, so right after a Core upgrade it still names the PREVIOUS release's
+ * build of every Extra. Used alone it made core_gather_extra_upgrades() see
+ * "installed >= latest" and skip an Extra that was in fact behind. The version
+ * feed names the newest build for the current release, so take whichever is
+ * newer. The feed is read from its cache (latest_version(..., false)), not
+ * fetched live per Extra -- this runs once per Extra on a page render.
+ */
+function get_latest_version_for_extra(string $extra_name): ?string
+{
+    return newest_extra_version(
+        get_current_version_for_extra($extra_name),
+        (string)latest_version($extra_name, false)
+    );
 }
 
 /**
@@ -1007,32 +1049,26 @@ function extra_install_blocked_by_core_version(
 }
 
 /**
- * Resolve a URL on the updates service, mirroring licensing_url().
+ * Resolve a URL on the updates service, via the update channel resolver
+ * (update_channel_service_url('updates')).
  *
- * UPDATES_URL is an OVERRIDE, defined only by scripts/bundles-test-installation.sh
- * so a test deploy can point at updates-test. A production instance never has it,
- * which makes the default the LIVE path — and that default must be the service we
- * operate. It was raw.githubusercontent.com, a host we do not control and which
- * rate-limits (429/503), for every feed on every production instance, including
- * the releases.xml that authorises a release bundle.
+ * The default is the updates service we operate (updates.simplerisk.com, or
+ * updates-test on the RC channel), never raw.githubusercontent.com, a host we do
+ * not control and which rate-limits. UPDATES_URL still overrides the host.
  *
- * NOT usable at five of the eight feed-reading sites, and the reason matters:
+ * Core and the installer (includes/install.php, which calls
+ * update_channel_service_url() directly because functions.php is not loaded
+ * pre-install) use the resolver. The Extras (extras/upgrade, extras/management)
+ * do not call this: the Upgrade Extra is downloaded first and runs against a
+ * Core OLDER than itself, so it resolves the channel through its own guarded
+ * copy (extras/upgrade/includes/update_channel_fallback.php) and must not call
+ * a Core helper that release may not define.
  *
- *  - simplerisk/extras/upgrade/index.php (x2) and extras/management/index.php
- *    are Extras. The Upgrade Extra is downloaded FIRST and runs against a Core
- *    OLDER than itself, so a bare call to a Core helper that release does not
- *    define is a fatal mid-upgrade, for the population least able to recover
- *    from one. They keep their own literals on purpose.
- *  - simplerisk/includes/install.php (x2) is the pre-install bootstrap, which
- *    runs before functions.php can be loaded at all (the same constraint behind
- *    its installer_log() carve-out).
- *
- * So do not "fix the inconsistency" by routing those five through here.
+ * Keeps the historical shape: base without trailing slash, one '/', then path.
  */
 function updates_url(string $path = ''): string
 {
-    $base = defined('UPDATES_URL') ? UPDATES_URL : 'https://updates.simplerisk.com';
-    return rtrim($base, '/') . '/' . ltrim($path, '/');
+    return rtrim(update_channel_service_url('updates'), '/') . '/' . ltrim($path, '/');
 }
 
 /**
@@ -1238,13 +1274,31 @@ function extra_versions_for_app(array $compat, string $extra, string $app_versio
  * Production callers pass null for $transport and the helper falls back to
  * fetch_url_content() against licensing_url('/register').
  *
+ * A transport failure (return_code 0: no HTTP response at all, e.g. a DNS or connection error)
+ * is retried too, after a short pause, because fetch_url_content() no longer retries a
+ * name-resolution or refused-connection failure itself. Any other non-200/409 code stops and
+ * surfaces. Transport retries share the $max_retries cap with 409 retries.
+ *
+ * Worst-case blocking time with the default transport: each call makes one transfer attempt (the
+ * http option max_retries is 1, honoured identically by the curl and the stream transport in
+ * connectivity.php) bounded by the 5 second timeout, and there are at most
+ * $max_retries - 1 pauses of $transport_retry_delay seconds between attempts, so
+ * 3 x 5 s + 2 x 2 s = 19 s on either transport. (An unreachable host - unresolvable or refused - is
+ * not retried inside a call on either transport, so it is usually far shorter.)
+ *
  * @param int $max_retries Cap on attempts (default 3).
+ * @param int $transport_retry_delay Seconds to pause before retrying a transport failure
+ *                                    (default 2; tests pass 0).
+ * @param callable|null $sleeper Called with the pause in seconds; defaults to sleep() (tests inject a recorder).
  */
 function licensing_register_with_retry(
     array $registrant_fields,
     ?callable $transport = null,
-    int $max_retries = 3
+    int $max_retries = 3,
+    int $transport_retry_delay = 2,
+    ?callable $sleeper = null
 ): array {
+    $sleeper ??= 'sleep';
     if ($transport === null) {
         $transport = function (array $payload): array {
             $validate_ssl = (!function_exists('ssl_external_verify_enabled') || ssl_external_verify_enabled());
@@ -1255,6 +1309,9 @@ function licensing_register_with_retry(
                 // than letting json_encode() return false and send an empty body.
                 'content' => json_encode($payload, JSON_INVALID_UTF8_SUBSTITUTE),
                 'timeout' => 5,
+                // Single attempt per call: the retry loop below owns the retrying, so the
+                // two layers do not multiply.
+                'max_retries' => 1,
             ], $validate_ssl, licensing_url('/register'), null);
             return is_array($r) ? $r : ['return_code' => 0, 'response' => ''];
         };
@@ -1280,6 +1337,15 @@ function licensing_register_with_retry(
         if ($code === 409) {
             $last_error = 'instance_id_in_use';
             continue; // regenerate id, retry
+        }
+        if ($code === 0) {
+            // No response at all. Retry (with a fresh id, as for a 409, in case the request did land),
+            // pausing first unless this was the last attempt.
+            $last_error = 'transport';
+            if ($i < $max_retries - 1 && $transport_retry_delay > 0) {
+                $sleeper($transport_retry_delay);
+            }
+            continue;
         }
         // Any other code: stop and surface
         $decoded = json_decode($body, true);
@@ -1409,4 +1475,106 @@ function licensing_instance_update(array $payload, ?callable $transport = null):
 function licensing_clear_test_cache(): void
 {
     unset($GLOBALS['__licensing_test_cache']);
+}
+
+/**
+ * Switch the update channel (Production <-> RC) and drop everything cached
+ * from the previous channel's hosts.
+ *
+ * Check order: forbidden (not admin), invalid (not production|rc), locked (a
+ * config.php constant decides the channel). On success the setting is written
+ * (update_setting() audit-logs the change like every other admin setting), the
+ * cached latest-version data and license check response are cleared, and the
+ * Extra compatibility cache is force-refreshed. A cache-clear failure is logged
+ * at 'warning' and never fails the switch: the setting is already saved and the
+ * caches repopulate from the new channel on their next scheduled run.
+ *
+ * @param string        $channel        'production' or 'rc'.
+ * @param callable|null $is_admin       Admin gate; defaults to is_admin().
+ * @param callable|null $refresh_compat Test seam for the compatibility refresh;
+ *                                      defaults to extra_compatibility_versions(true).
+ * @param callable|null $resolver       Test seam for the resolved state (so a test
+ *                                      can simulate a locked install without
+ *                                      defining a constant); defaults to
+ *                                      update_channel_current().
+ * @param callable|null $writer         Test seam for the setting write (receives the
+ *                                      channel); defaults to update_setting().
+ * @return array{ok:bool,error:string} error is ''|'forbidden'|'invalid'|'locked'|'write_failed'.
+ */
+function update_channel_switch(string $channel, ?callable $is_admin = null, ?callable $refresh_compat = null, ?callable $resolver = null, ?callable $writer = null): array
+{
+    $is_admin = $is_admin ?? 'is_admin';
+    if (!$is_admin()) {
+        return ['ok' => false, 'error' => 'forbidden'];
+    }
+
+    if ($channel !== 'production' && $channel !== 'rc') {
+        return ['ok' => false, 'error' => 'invalid'];
+    }
+
+    $resolver = $resolver ?? 'update_channel_current';
+    $state = $resolver();
+    if (!empty($state['locked'])) {
+        return ['ok' => false, 'error' => 'locked'];
+    }
+
+    // Already on the requested channel: nothing to write and, above all,
+    // nothing to clear (the caches are still correct for this channel).
+    if (($state['channel'] ?? null) === $channel) {
+        return ['ok' => true, 'error' => ''];
+    }
+
+    // update_setting() compares against the row, writes it (inserting when
+    // absent), refreshes this process's setting cache and writes the audit log.
+    if ($writer !== null) {
+        $writer($channel);
+    } else {
+        update_setting('update_channel', $channel);
+    }
+
+    // update_setting() swallows DB errors and also returns false for an
+    // unchanged value, so verify against the row itself before clearing caches.
+    if (get_setting('update_channel', false, false) !== $channel) {
+        write_debug_log("Update channel switch to '{$channel}' was not saved; leaving caches untouched.", 'error');
+        return ['ok' => false, 'error' => 'write_failed'];
+    }
+    $GLOBALS['setting_update_channel'] = $channel;
+
+    // Everything below is a cache of the previous channel's answers. Failures
+    // must not undo the switch.
+    try {
+        delete_setting('latest_version_data');
+        delete_setting('license_check_response');
+        delete_setting('extra_compatibility_data');
+        // Reset the 24-hour gates of the jobs that refill those caches so the
+        // next cron tick refetches from the new channel instead of leaving the
+        // caches empty (no purchased Extras, no Extra upgrades) for up to a day.
+        // The legacy license-check name is still read as a fallback by the job.
+        delete_setting('queue_timestamp_last_license_check');
+        delete_setting('queue_timestamp_last_ping');
+        delete_setting('queue_timestamp_last_version_check');
+        // A failure recorded against the previous channel's feed must not suppress fetching the new one (SD-829)
+        delete_setting('latest_version_fetch_failed_at');
+        unset(
+            $GLOBALS['latest_versions_cached'],
+            $GLOBALS['setting_latest_version_data'],
+            $GLOBALS['setting_license_check_response'],
+            $GLOBALS['setting_extra_compatibility_data'],
+            $GLOBALS['extra_compatibility_cached']
+        );
+    } catch (\Throwable $e) {
+        write_debug_log("Update channel switched to '{$channel}' but clearing cached version/license data failed: " . $e->getMessage(), 'warning');
+    }
+
+    try {
+        if ($refresh_compat !== null) {
+            $refresh_compat();
+        } else {
+            extra_compatibility_versions(true);
+        }
+    } catch (\Throwable $e) {
+        write_debug_log("Update channel switched to '{$channel}' but refreshing Extra compatibility data failed: " . $e->getMessage(), 'warning');
+    }
+
+    return ['ok' => true, 'error' => ''];
 }

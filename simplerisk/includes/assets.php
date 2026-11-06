@@ -7,7 +7,7 @@
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
-require_once(language_file());
+load_language_file();
 require_once(realpath(__DIR__ . '/displayassets.php'));
 require_once(realpath(__DIR__ . '/permissions.php'));
 require_once(realpath(__DIR__ . '/assets_write_rules.php'));

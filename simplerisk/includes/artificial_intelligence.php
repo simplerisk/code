@@ -12,7 +12,7 @@ require_once(realpath(__DIR__ . '/queues.php'));
 // format_setting_timestamp() — pure settings-value coercion (CLAUDE.md: every
 // direct consumer declares the defining file itself).
 require_once(realpath(__DIR__ . '/setting_values.php'));
-require_once(language_file());
+load_language_file();
 
 /*****************************
  * AI PROVIDER DEFINITIONS   *
@@ -687,6 +687,82 @@ function ai_control_reference_authored_fields(?string $offered_text, ?string $of
     return $authored;
 }
 
+/**
+ * Time limits for AI provider calls (seconds). INTERNAL constants, not supported
+ * config.php settings: a define() elsewhere is read through
+ * ai_http_connect_timeout_seconds() / ai_http_timeout_seconds(), which ignore a
+ * value that is not a whole number and clamp the rest (connect 1-60, overall
+ * 1-600).
+ *
+ * The overall limit is a budget for the WHOLE call — every attempt, and every
+ * wait between attempts after a 429/529/503 (a provider's Retry-After is capped
+ * at 60 s) — not per attempt. It stays below the queue's stuck-task window at
+ * its 15-minute floor (worker_session_wait_timeout(): at least 900 s): a
+ * background step makes no database statement while it waits for the
+ * provider, and a worker connection idle for longer than that window is closed
+ * by the database, which would drop the step's claim and let it run again.
+ * (That holds when the step also does its own database work promptly; the
+ * call itself can no longer exceed 600 s.)
+ */
+if (!defined('AI_HTTP_CONNECT_TIMEOUT_SECONDS')) {
+    define('AI_HTTP_CONNECT_TIMEOUT_SECONDS', 30);
+}
+if (!defined('AI_HTTP_TIMEOUT_SECONDS')) {
+    define('AI_HTTP_TIMEOUT_SECONDS', 600);
+}
+/** Longest wait honoured from a provider's Retry-After header (seconds). */
+if (!defined('AI_HTTP_MAX_RETRY_AFTER_SECONDS')) {
+    define('AI_HTTP_MAX_RETRY_AFTER_SECONDS', 60);
+}
+
+/** $value as an int in [$min, $max], or $default when it is not a whole number. Pure. */
+function ai_http_limit(mixed $value, int $default, int $min, int $max): int
+{
+    if (is_int($value) || (is_string($value) && preg_match('/^\s*\d{1,9}\s*$/', $value))) {
+        return max($min, min($max, (int)$value));
+    }
+    return $default;
+}
+
+/** The connect limit for an AI call: AI_HTTP_CONNECT_TIMEOUT_SECONDS, clamped 1-60. */
+function ai_http_connect_timeout_seconds(): int
+{
+    return ai_http_limit(AI_HTTP_CONNECT_TIMEOUT_SECONDS, 30, 1, 60);
+}
+
+/** The total time budget for an AI call: AI_HTTP_TIMEOUT_SECONDS, clamped 1-600. */
+function ai_http_timeout_seconds(): int
+{
+    return ai_http_limit(AI_HTTP_TIMEOUT_SECONDS, 600, 1, 600);
+}
+
+/**
+ * Apply the AI HTTP time limits to curl handle $ch: the connect limit, and an
+ * overall limit of $remaining_seconds (what is left of the call's budget;
+ * null = the full budget).
+ */
+function ai_curl_apply_timeouts($ch, ?int $remaining_seconds = null): void
+{
+    $overall = max(1, $remaining_seconds ?? ai_http_timeout_seconds());
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, min(ai_http_connect_timeout_seconds(), $overall));
+    curl_setopt($ch, CURLOPT_TIMEOUT, $overall);
+}
+
+/**
+ * The exception for a failed AI HTTP call. A timeout (curl error 28) is logged
+ * at 'error' and is retryable like any other transient failure (a plain
+ * Exception, never NonRetryableException), so the step's normal retry and
+ * back-off apply.
+ */
+function ai_curl_error_exception(int $errno, string $error, string $provider): \Exception
+{
+    if ($errno === 28) {
+        write_debug_log("{$provider} request timed out (connect limit " . ai_http_connect_timeout_seconds() . " s, overall budget " . ai_http_timeout_seconds() . " s): {$error}", "error");
+        return new \Exception("{$provider} request timed out: {$error}");
+    }
+    return new \Exception('Curl error: ' . $error);
+}
+
 class AIClient {
     private string $provider;
     private string $api_url;
@@ -694,6 +770,35 @@ class AIClient {
     private string $model;
     /** Human-readable reason the last test()/call() failed (for surfacing to the UI). */
     private ?string $last_error = null;
+    /** Time budget (seconds) for the next call(); null = ai_http_timeout_seconds(). */
+    private ?int $budget_seconds = null;
+    /** microtime() by which the call in progress must end. */
+    private float $deadline = 0.0;
+
+    /**
+     * Seconds left of the current call's budget, or a retryable timeout
+     * exception when it is spent (logged at 'error').
+     */
+    private function remainingSeconds(string $provider): int
+    {
+        $left = (int)floor($this->deadline - microtime(true));
+        if ($left < 1) {
+            write_debug_log("{$provider} call ran out of its " . ($this->budget_seconds ?? ai_http_timeout_seconds()) . " s time budget.", "error");
+            throw new \Exception("{$provider} request timed out: the call's time budget was used up.");
+        }
+        return $left;
+    }
+
+    /** Wait $delay seconds before a retry, within the budget (Retry-After capped). */
+    private function waitForRetry(int $delay, string $provider): void
+    {
+        $delay = max(0, min($delay, AI_HTTP_MAX_RETRY_AFTER_SECONDS));
+        if (microtime(true) + $delay >= $this->deadline) {
+            write_debug_log("{$provider}: waiting {$delay}s before the next retry would pass the call's time budget; giving up.", "error");
+            throw new \Exception("{$provider} request timed out: no time left in the call's budget to retry.");
+        }
+        sleep($delay);
+    }
 
 
     /**
@@ -772,6 +877,9 @@ class AIClient {
             write_debug_log("Requested max_tokens ({$max_tokens}) exceeds model limit ({$model_limit}) for '{$this->model}'. Capping.", 'warning');
             $max_tokens = $model_limit;
         }
+
+        // One time budget for the whole call: every attempt and every wait.
+        $this->deadline = microtime(true) + ($this->budget_seconds ?? ai_http_timeout_seconds());
 
         if ($this->provider === 'anthropic') {
             return $this->callAnthropicNative($messages, $max_tokens, $system, $tools, $temperature);
@@ -898,6 +1006,7 @@ class AIClient {
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
+            ai_curl_apply_timeouts($ch, $this->remainingSeconds('Anthropic API'));
             curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'Content-Type: application/json',
@@ -920,7 +1029,7 @@ class AIClient {
             // are CurlHandle objects that free themselves when they go out of scope).
 
             if ($curl_error) {
-                throw new Exception('Curl error: ' . $curl_error);
+                throw ai_curl_error_exception($curl_errno, $curl_error, 'Anthropic API');
             }
 
             if ($http_status === 200) {
@@ -954,8 +1063,8 @@ class AIClient {
                 // Exponential backoff: 2**0=1, 2**1=2, 2**2=4, ... — first retry uses $baseDelay unchanged
                 // @phan-suppress-next-line PhanPowerOfZero
                 $delay       = $retry_after ?? ($baseDelay * (2 ** $retries));
-                write_debug_log("Anthropic API {$http_status}: waiting {$delay}s before retry " . ($retries + 1) . "/{$maxRetries}.", 'warning');
-                sleep($delay);
+                write_debug_log("Anthropic API {$http_status}: waiting " . min($delay, AI_HTTP_MAX_RETRY_AFTER_SECONDS) . "s before retry " . ($retries + 1) . "/{$maxRetries}.", 'warning');
+                $this->waitForRetry((int)$delay, 'Anthropic API');
                 $retries++;
                 continue;
             }
@@ -1259,6 +1368,7 @@ class AIClient {
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
+            ai_curl_apply_timeouts($ch, $this->remainingSeconds('OpenAI-compatible API'));
             curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'Content-Type: application/json',
@@ -1280,7 +1390,7 @@ class AIClient {
             // are CurlHandle objects that free themselves when they go out of scope).
 
             if ($curl_error) {
-                throw new \Exception('Curl error: ' . $curl_error);
+                throw ai_curl_error_exception($curl_errno, $curl_error, 'OpenAI-compatible API');
             }
 
             if ($http_status === 200) {
@@ -1296,8 +1406,8 @@ class AIClient {
                 // Exponential backoff: 2**0=1, 2**1=2, 2**2=4, ... — first retry uses $baseDelay unchanged
                 // @phan-suppress-next-line PhanPowerOfZero
                 $delay       = $retry_after ?? ($baseDelay * (2 ** $retries));
-                write_debug_log("OpenAI-compatible API {$http_status}: waiting {$delay}s before retry " . ($retries + 1) . "/{$maxRetries}.", 'warning');
-                sleep($delay);
+                write_debug_log("OpenAI-compatible API {$http_status}: waiting " . min($delay, AI_HTTP_MAX_RETRY_AFTER_SECONDS) . "s before retry " . ($retries + 1) . "/{$maxRetries}.", 'warning');
+                $this->waitForRetry((int)$delay, 'OpenAI-compatible API');
                 $retries++;
                 continue;
             }
@@ -1315,7 +1425,14 @@ class AIClient {
     {
         try {
             $messages = [['role' => 'user', 'content' => 'Hello']];
-            $result   = $this->call($messages);
+            // Test Connection runs in a web request: a short budget, so a dead
+            // or hung provider answers the admin in seconds, not minutes.
+            $this->budget_seconds = 30;
+            try {
+                $result = $this->call($messages);
+            } finally {
+                $this->budget_seconds = null;
+            }
             $ok = isset($result['content'][0]['text']);
             $this->last_error = $ok ? null : ($this->last_error ?? 'The provider returned an unexpected response shape.');
             return $ok;
@@ -2119,8 +2236,8 @@ function display_artificial_intelligence_add_context($parameter_array = [])
                                 <div class='sr-qfield sr-col-2'>
                                     <label class='sr-qlabel' for='org_location'>" . $escaper->escapeHtml($lang['AICtxOrgLocation']) . "</label>";
 
-    // Get an updated list of countries
-    $countries = fetchCountries();
+    // Get the list of countries
+    $countries = get_countries();
 
     // Display a multi-select of the countries
     $selected_array = (isset($parameter_array['org_location']['value']) ? $parameter_array['org_location']['value'] : []);
@@ -3621,6 +3738,46 @@ function display_artificial_intelligence_icon($type, $id)
     }
 }
 
+/**************************************************************************
+ * FUNCTION: AI CONTEXT UPDATE RETRY BACKOFF                              *
+ * Seconds core_ai_context_update waits after an attempt that did not    *
+ * produce recommendations before it tries again: one hour after the     *
+ * first consecutive failure, doubling with each further one, never more *
+ * than a day. Pure.                                                     *
+ **************************************************************************/
+function ai_context_update_retry_backoff(int $consecutive_failures): int
+{
+    $delay = 3600;
+    for ($i = 1; $i < max(1, $consecutive_failures) && $delay < 86400; $i++) {
+        $delay *= 2;
+    }
+    return min(86400, $delay);
+}
+
+/**************************************************************************
+ * FUNCTION: AI CONTEXT UPDATE DUE                                        *
+ * core_ai_context_update's task_check gate. Pure.                       *
+ *                                                                        *
+ * Not due when the recommendations were generated after the last save   *
+ * ($last_updated, stamped only on success). Otherwise due when there was *
+ * never an attempt ($last_attempt, stamped when a task is queued), or    *
+ * the context was saved again since the last attempt; and, when the last *
+ * attempt simply failed (an invalid key, an exhausted quota), only once *
+ * ai_context_update_retry_backoff() has passed. Without that back-off a  *
+ * permanently failing provider was asked again every few minutes,       *
+ * forever, with up to five paid calls each time.                         *
+ **************************************************************************/
+function ai_context_update_due(int $now, int $last_saved, int $last_updated, int $last_attempt, int $consecutive_failures): bool
+{
+    if ($last_updated && $last_updated >= $last_saved) {
+        return false;
+    }
+    if ($last_attempt <= 0 || $last_saved > $last_attempt) {
+        return true;
+    }
+    return ($now - $last_attempt) >= ai_context_update_retry_backoff($consecutive_failures);
+}
+
 /**********************************************************
  * FUNCTION: CHECK ARTIFICIAL INTELLIGENCE CONTEXT UPDATE *
  **********************************************************/
@@ -3698,7 +3855,7 @@ function process_artificial_intelligence_document_to_control_matching_task($db, 
     $payload = json_decode($task['payload'] ?? '', true);
     if (!is_array($payload) || !isset($payload['document_id'])) {
         write_debug_log("Invalid AI task payload: " . json_encode($task), 'error');
-        $db->prepare("UPDATE queue_tasks SET status='failed', attempts=attempts+1, updated_at=NOW() WHERE id=?")
+        $db->prepare("UPDATE queue_tasks SET status='failed', attempts=attempts+1, updated_at=NOW() WHERE id=? AND status <> 'canceled'")
             ->execute([$task['id']]);
         return;
     }
@@ -3715,7 +3872,7 @@ function process_artificial_intelligence_document_to_control_matching_task($db, 
         if ($result['status_code'] == 200) {
             // @phan-suppress-next-line PhanUndeclaredFunction -- update_promise_status() not yet implemented
             update_promise_status($promise_id, 'completed', $result);
-            $db->prepare("UPDATE queue_tasks SET status='completed', updated_at=NOW() WHERE id=?")
+            $db->prepare("UPDATE queue_tasks SET status='completed', updated_at=NOW() WHERE id=? AND status <> 'canceled'")
                 ->execute([$task['id']]);
             write_debug_log("Document ID {$document_id} enhanced successfully.", "info");
         } else {

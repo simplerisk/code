@@ -3109,9 +3109,11 @@ function display_save_dynamic_risk_selections() {
 
                     var columnFilters = [];
                     $('.risk-datatable:first .dynamic-column-filter').each(function(i){
-                        if($(this).val().length > 0){
+                        // .val() is null for an empty multi-select, which made .length throw (SD-896)
+                        var filter_value = $(this).val() || [];
+                        if(filter_value.length > 0){
                             var data_name = $(this).attr('data-name');
-                            columnFilters.push([data_name,$(this).val()]);
+                            columnFilters.push([data_name,filter_value]);
                         }
                     });
                     var selectFilters = {status:0,group:0,sort:0};
@@ -3479,11 +3481,7 @@ function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_
                     case 'unassigned': $category_label = $escaper->escapeHtml($lang['Unassigned']); break;
                     case 'risk_mapping': $category_label = $escaper->escapeHtml($lang['RiskMapping']); break;
                 }
-                // Hoisted so the suppression below sits directly above the
-                // flagged escape — `@phan-suppress-next-line` only covers the
-                // immediately following line and can't reach into a multi-line
-                // echo string.
-                // @phan-suppress-next-line SecurityCheck-DoubleEscaped -- $col_info['name'] is mixed-source: $custom_field['name'] (raw, needs escape) or get_label_by_risk_field_name() (which pre-escapes via js_string_escape). Defensive escape here is safe for the raw branch; cosmetic over-escape on the legacy js_string_escape branch.
+                // Both sources are raw text, $custom_field['name'] and get_label_by_risk_field_name(), so this is the only escape
                 $escaped_col_name = $escaper->escapeHtml($col_info['name']);
                 echo "
                                 <li data-column='{$escaper->escapeHtml($column_key)}' data-category='{$escaper->escapeHtml($col_info['category'])}'>
@@ -7046,7 +7044,8 @@ function get_label_by_risk_field_name($field){
     global $lang, $escaper;
 
     // The label map only depends on the active language, so build it once per language instead
-    // of once per call (it holds ~100 escaped labels and this is called per column per page).
+    // of once per call (it holds ~100 RAW, unescaped labels and this is called per column per
+    // page — every caller must escape the returned label for its own output context).
     // The fingerprint reads a few strings that differ between languages, so a change of
     // $lang (a different user's locale, or a test swapping it) rebuilds the map.
     static $cached_map = null;
@@ -7070,7 +7069,7 @@ function get_label_by_risk_field_name($field){
         {
             if ("Contributing_Impact_" . $contributing_risk['id'] === $field)
             {
-                return js_string_escape($lang['ContributingRisk'].": ".$lang['Impact']." - ".$contributing_risk['subject']);
+                return $lang['ContributingRisk'].": ".$lang['Impact']." - ".$contributing_risk['subject'];
             }
         }
     }
@@ -7079,119 +7078,121 @@ function get_label_by_risk_field_name($field){
 }
 
 /*************************************************
- * FUNCTION: GET RISK FIELD LABEL MAP            *
- * Escaped label for every static risk column.   *
+ * FUNCTION: GET RISK FIELD LABEL MAP             *
+ * Returns RAW, unescaped label for every static  *
+ * risk column. Callers must escape for their own *
+ * output context (HTML, JS string, etc.).        *
  *************************************************/
 function get_risk_field_label_map(){
     global $lang;
 	// Names list of Risk columns
 	$columns = array(
-		'id' => js_string_escape($lang['ID']),
-		'risk_status' => js_string_escape($lang['Status']),
-		'closure_date' => js_string_escape($lang['DateClosed']),
-        'subject' => js_string_escape($lang['Subject']),
-        'risk_mapping' => js_string_escape($lang['RiskMapping']),
-        'threat_mapping' => js_string_escape($lang['ThreatMapping']),
-		'reference_id' => js_string_escape($lang['ExternalReferenceId']),
-		'regulation' => js_string_escape($lang['ControlRegulation']),
-		'control_number' => js_string_escape($lang['ControlNumber']),
-		'location' => js_string_escape($lang['SiteLocation']),
-		'source' => js_string_escape($lang['RiskSource']),
-		'category' => js_string_escape($lang['Category']),
-		'team' => js_string_escape($lang['Team']),
-		'additional_stakeholders' => js_string_escape($lang['AdditionalStakeholders']),
-		'technology' => js_string_escape($lang['Technology']),
-		'owner' => js_string_escape($lang['Owner']),
-		'manager' => js_string_escape($lang['OwnersManager']),
-		'submitted_by' => js_string_escape($lang['SubmittedBy']),
-		'risk_tags' => js_string_escape($lang['Tags']),
-		'submission_date' => js_string_escape($lang['SubmissionDate']),
-        'project' => js_string_escape($lang['Project']),
-        'project_status' => js_string_escape($lang['ProjectStatus']),
-		'days_open' => js_string_escape($lang['DaysOpen']),
-		'affected_assets' => js_string_escape($lang['AffectedAssets']),
-		'risk_assessment' => js_string_escape($lang['RiskAssessment']),
-        'additional_notes' => js_string_escape($lang['AdditionalNotes']),
-        'closed_by' => js_string_escape($lang['ClosedBy']),
-        'close_reason' => js_string_escape($lang['CloseReason']),
-        'close_out' => js_string_escape($lang['CloseOutInformation']),
+		'id' => $lang['ID'],
+		'risk_status' => $lang['Status'],
+		'closure_date' => $lang['DateClosed'],
+        'subject' => $lang['Subject'],
+        'risk_mapping' => $lang['RiskMapping'],
+        'threat_mapping' => $lang['ThreatMapping'],
+		'reference_id' => $lang['ExternalReferenceId'],
+		'regulation' => $lang['ControlRegulation'],
+		'control_number' => $lang['ControlNumber'],
+		'location' => $lang['SiteLocation'],
+		'source' => $lang['RiskSource'],
+		'category' => $lang['Category'],
+		'team' => $lang['Team'],
+		'additional_stakeholders' => $lang['AdditionalStakeholders'],
+		'technology' => $lang['Technology'],
+		'owner' => $lang['Owner'],
+		'manager' => $lang['OwnersManager'],
+		'submitted_by' => $lang['SubmittedBy'],
+		'risk_tags' => $lang['Tags'],
+		'submission_date' => $lang['SubmissionDate'],
+        'project' => $lang['Project'],
+        'project_status' => $lang['ProjectStatus'],
+		'days_open' => $lang['DaysOpen'],
+		'affected_assets' => $lang['AffectedAssets'],
+		'risk_assessment' => $lang['RiskAssessment'],
+        'additional_notes' => $lang['AdditionalNotes'],
+        'closed_by' => $lang['ClosedBy'],
+        'close_reason' => $lang['CloseReason'],
+        'close_out' => $lang['CloseOutInformation'],
 
-		'mitigation_planned' => js_string_escape($lang['MitigationPlanned']),
-		'planning_strategy' => js_string_escape($lang['PlanningStrategy']),
-		'planning_date' => js_string_escape($lang['MitigationPlanning']),
-		'mitigation_effort' => js_string_escape($lang['MitigationEffort']),
-		'mitigation_cost' => js_string_escape($lang['MitigationCost']),
-		'mitigation_owner' => js_string_escape($lang['MitigationOwner']),
-		'mitigation_team' => js_string_escape($lang['MitigationTeam']),
-		'mitigation_accepted' => js_string_escape($lang['MitigationAccepted']),
-		'mitigation_date' => js_string_escape($lang['MitigationDate']),
-        'mitigation_controls' => js_string_escape($lang['MitigationControls']),
-        'mitigation_percent' => js_string_escape($lang['MitigationPercent']),
-		'current_solution' => js_string_escape($lang['CurrentSolution']),
-		'security_recommendations' => js_string_escape($lang['SecurityRecommendations']),
-		'security_requirements' => js_string_escape($lang['SecurityRequirements']),
+		'mitigation_planned' => $lang['MitigationPlanned'],
+		'planning_strategy' => $lang['PlanningStrategy'],
+		'planning_date' => $lang['MitigationPlanning'],
+		'mitigation_effort' => $lang['MitigationEffort'],
+		'mitigation_cost' => $lang['MitigationCost'],
+		'mitigation_owner' => $lang['MitigationOwner'],
+		'mitigation_team' => $lang['MitigationTeam'],
+		'mitigation_accepted' => $lang['MitigationAccepted'],
+		'mitigation_date' => $lang['MitigationDate'],
+        'mitigation_controls' => $lang['MitigationControls'],
+        'mitigation_percent' => $lang['MitigationPercent'],
+		'current_solution' => $lang['CurrentSolution'],
+		'security_recommendations' => $lang['SecurityRecommendations'],
+		'security_requirements' => $lang['SecurityRequirements'],
 
-		'management_review' => js_string_escape($lang['ManagementReview']),
-        'review' => js_string_escape($lang['Review']),
-        'review_date' => js_string_escape($lang['ReviewDate']),
-        'reviewer' => js_string_escape($lang['ReviewedBy']),
-		'next_review_date' => js_string_escape($lang['NextReviewDate']),
-		'next_step' => js_string_escape($lang['NextStep']),
-		'comments' => js_string_escape($lang['Comments']),
+		'management_review' => $lang['ManagementReview'],
+        'review' => $lang['Review'],
+        'review_date' => $lang['ReviewDate'],
+        'reviewer' => $lang['ReviewedBy'],
+		'next_review_date' => $lang['NextReviewDate'],
+		'next_step' => $lang['NextStep'],
+		'comments' => $lang['Comments'],
 
-        'scoring_method' => js_string_escape($lang['RiskScoringMethod']),
-        'calculated_risk' => js_string_escape($lang['InherentRiskCurrent']),
-        'residual_risk' => js_string_escape($lang['ResidualRiskCurrent']),
-        'calculated_risk_30' => js_string_escape(_lang('InherentRiskDays', ['days' => 30])),
-        'residual_risk_30' => js_string_escape(_lang('ResidualRiskDays', ['days' => 30])),
-        'calculated_risk_60' => js_string_escape(_lang('InherentRiskDays', ['days' => 60])),
-        'residual_risk_60' => js_string_escape(_lang('ResidualRiskDays', ['days' => 60])),
-        'calculated_risk_90' => js_string_escape(_lang('InherentRiskDays', ['days' => 90])),
-        'residual_risk_90' => js_string_escape(_lang('ResidualRiskDays', ['days' => 90])),
+        'scoring_method' => $lang['RiskScoringMethod'],
+        'calculated_risk' => $lang['InherentRiskCurrent'],
+        'residual_risk' => $lang['ResidualRiskCurrent'],
+        'calculated_risk_30' => _lang_raw('InherentRiskDays', ['days' => 30]),
+        'residual_risk_30' => _lang_raw('ResidualRiskDays', ['days' => 30]),
+        'calculated_risk_60' => _lang_raw('InherentRiskDays', ['days' => 60]),
+        'residual_risk_60' => _lang_raw('ResidualRiskDays', ['days' => 60]),
+        'calculated_risk_90' => _lang_raw('InherentRiskDays', ['days' => 90]),
+        'residual_risk_90' => _lang_raw('ResidualRiskDays', ['days' => 90]),
 
-        'CLASSIC_likelihood' => js_string_escape($lang['Classic'].": ".$lang['Likelihood']),
-        'CLASSIC_impact' => js_string_escape($lang['Classic'].": ".$lang['Impact']),
-        'CVSS_AccessVector' => js_string_escape("CVSS: ".$lang['AccessVector']),
-        'CVSS_AccessComplexity' => js_string_escape("CVSS: ".$lang['AccessComplexity']),
-        'CVSS_Authentication' => js_string_escape("CVSS: ".$lang['Authentication']),
-        'CVSS_ConfImpact' => js_string_escape("CVSS: ".$lang['ConfidentialityImpact']),
-        'CVSS_IntegImpact' => js_string_escape("CVSS: ".$lang['IntegrityImpact']),
-        'CVSS_AvailImpact' => js_string_escape("CVSS: ".$lang['AvailabilityImpact']),
-        'CVSS_Exploitability' => js_string_escape("CVSS: ".$lang['Exploitability']),
-        'CVSS_RemediationLevel' => js_string_escape("CVSS: ".$lang['RemediationLevel']),
-        'CVSS_ReportConfidence' => js_string_escape("CVSS: ".$lang['ReportConfidence']),
-        'CVSS_CollateralDamagePotential' => js_string_escape("CVSS: ".$lang['CollateralDamagePotential']),
-        'CVSS_TargetDistribution' => js_string_escape("CVSS: ".$lang['TargetDistribution']),
-        'CVSS_ConfidentialityRequirement' => js_string_escape("CVSS: ".$lang['ConfidentialityRequirement']),
-        'CVSS_IntegrityRequirement' => js_string_escape("CVSS: ".$lang['IntegrityRequirement']),
-        'CVSS_AvailabilityRequirement' => js_string_escape("CVSS: ".$lang['AvailabilityRequirement']),
-        'DREAD_DamagePotential' => js_string_escape("DREAD: ".$lang['DamagePotential']),
-        'DREAD_Reproducibility' => js_string_escape("DREAD: ".$lang['Reproducibility']),
-        'DREAD_Exploitability' => js_string_escape("DREAD: ".$lang['Exploitability']),
-        'DREAD_AffectedUsers' => js_string_escape("DREAD: ".$lang['AffectedUsers']),
-        'DREAD_Discoverability' => js_string_escape("DREAD: ".$lang['Discoverability']),
-        'OWASP_SkillLevel' => js_string_escape("OWASP: ".$lang['SkillLevel']),
-        'OWASP_Motive' => js_string_escape("OWASP: ".$lang['Motive']),
-        'OWASP_Opportunity' => js_string_escape("OWASP: ".$lang['Opportunity']),
-        'OWASP_Size' => js_string_escape("OWASP: ".$lang['Size']),
-        'OWASP_EaseOfDiscovery' => js_string_escape("OWASP: ".$lang['EaseOfDiscovery']),
-        'OWASP_EaseOfExploit' => js_string_escape("OWASP: ".$lang['EaseOfExploit']),
-        'OWASP_Awareness' => js_string_escape("OWASP: ".$lang['Awareness']),
-        'OWASP_IntrusionDetection' => js_string_escape("OWASP: ".$lang['IntrusionDetection']),
-        'OWASP_LossOfConfidentiality' => js_string_escape("OWASP: ".$lang['LossOfConfidentiality']),
-        'OWASP_LossOfIntegrity' => js_string_escape("OWASP: ".$lang['LossOfIntegrity']),
-        'OWASP_LossOfAvailability' => js_string_escape("OWASP: ".$lang['LossOfAvailability']),
-        'OWASP_LossOfAccountability' => js_string_escape("OWASP: ".$lang['LossOfAccountability']),
-        'OWASP_FinancialDamage' => js_string_escape("OWASP: ".$lang['FinancialDamage']),
-        'OWASP_ReputationDamage' => js_string_escape("OWASP: ".$lang['ReputationDamage']),
-        'OWASP_NonCompliance' => js_string_escape("OWASP: ".$lang['NonCompliance']),
-        'OWASP_PrivacyViolation' => js_string_escape("OWASP: ".$lang['PrivacyViolation']),
-        'Contributing_Likelihood' => js_string_escape($lang['ContributingRisk'].": ".$lang['Likelihood']),
+        'CLASSIC_likelihood' => $lang['Classic'].": ".$lang['Likelihood'],
+        'CLASSIC_impact' => $lang['Classic'].": ".$lang['Impact'],
+        'CVSS_AccessVector' => "CVSS: ".$lang['AccessVector'],
+        'CVSS_AccessComplexity' => "CVSS: ".$lang['AccessComplexity'],
+        'CVSS_Authentication' => "CVSS: ".$lang['Authentication'],
+        'CVSS_ConfImpact' => "CVSS: ".$lang['ConfidentialityImpact'],
+        'CVSS_IntegImpact' => "CVSS: ".$lang['IntegrityImpact'],
+        'CVSS_AvailImpact' => "CVSS: ".$lang['AvailabilityImpact'],
+        'CVSS_Exploitability' => "CVSS: ".$lang['Exploitability'],
+        'CVSS_RemediationLevel' => "CVSS: ".$lang['RemediationLevel'],
+        'CVSS_ReportConfidence' => "CVSS: ".$lang['ReportConfidence'],
+        'CVSS_CollateralDamagePotential' => "CVSS: ".$lang['CollateralDamagePotential'],
+        'CVSS_TargetDistribution' => "CVSS: ".$lang['TargetDistribution'],
+        'CVSS_ConfidentialityRequirement' => "CVSS: ".$lang['ConfidentialityRequirement'],
+        'CVSS_IntegrityRequirement' => "CVSS: ".$lang['IntegrityRequirement'],
+        'CVSS_AvailabilityRequirement' => "CVSS: ".$lang['AvailabilityRequirement'],
+        'DREAD_DamagePotential' => "DREAD: ".$lang['DamagePotential'],
+        'DREAD_Reproducibility' => "DREAD: ".$lang['Reproducibility'],
+        'DREAD_Exploitability' => "DREAD: ".$lang['Exploitability'],
+        'DREAD_AffectedUsers' => "DREAD: ".$lang['AffectedUsers'],
+        'DREAD_Discoverability' => "DREAD: ".$lang['Discoverability'],
+        'OWASP_SkillLevel' => "OWASP: ".$lang['SkillLevel'],
+        'OWASP_Motive' => "OWASP: ".$lang['Motive'],
+        'OWASP_Opportunity' => "OWASP: ".$lang['Opportunity'],
+        'OWASP_Size' => "OWASP: ".$lang['Size'],
+        'OWASP_EaseOfDiscovery' => "OWASP: ".$lang['EaseOfDiscovery'],
+        'OWASP_EaseOfExploit' => "OWASP: ".$lang['EaseOfExploit'],
+        'OWASP_Awareness' => "OWASP: ".$lang['Awareness'],
+        'OWASP_IntrusionDetection' => "OWASP: ".$lang['IntrusionDetection'],
+        'OWASP_LossOfConfidentiality' => "OWASP: ".$lang['LossOfConfidentiality'],
+        'OWASP_LossOfIntegrity' => "OWASP: ".$lang['LossOfIntegrity'],
+        'OWASP_LossOfAvailability' => "OWASP: ".$lang['LossOfAvailability'],
+        'OWASP_LossOfAccountability' => "OWASP: ".$lang['LossOfAccountability'],
+        'OWASP_FinancialDamage' => "OWASP: ".$lang['FinancialDamage'],
+        'OWASP_ReputationDamage' => "OWASP: ".$lang['ReputationDamage'],
+        'OWASP_NonCompliance' => "OWASP: ".$lang['NonCompliance'],
+        'OWASP_PrivacyViolation' => "OWASP: ".$lang['PrivacyViolation'],
+        'Contributing_Likelihood' => $lang['ContributingRisk'].": ".$lang['Likelihood'],
 
-        'risk_mapping_risk_grouping' => js_string_escape($lang['RiskGrouping']),
-        'risk_mapping_risk' => js_string_escape($lang['Risk']),
-        'risk_mapping_description' => js_string_escape($lang['Description']),
-        'risk_mapping_function' => js_string_escape($lang['Function']),
+        'risk_mapping_risk_grouping' => $lang['RiskGrouping'],
+        'risk_mapping_risk' => $lang['Risk'],
+        'risk_mapping_description' => $lang['Description'],
+        'risk_mapping_function' => $lang['Function'],
 	);
 	return $columns;
 }
@@ -9205,7 +9206,7 @@ function render_create_modal($view) {
  *
  * @param string $view
  *
- * @phan-suppress PhanTypeArraySuspiciousNullable
+ * @phan-suppress PhanTypeArraySuspiciousNullable, PhanTypeArraySuspiciousNull, PhanTypeMismatchForeach
  */
 function render_view_table($view) {
     global $lang, $escaper, $field_settings, $field_settings_views;
@@ -9882,7 +9883,7 @@ function display_document_to_controls()
                 $index++;
             }
         } else {
-            $label = get_label_by_document_field_name($column);
+            $label = $escaper->escapeHtml(get_label_by_document_field_name($column));
             $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
             $index++;
         }
@@ -10348,277 +10349,24 @@ function get_label_by_document_field_name($field){
     global $lang, $escaper;
     // List of document to control mapping columns
     $columns = [
-        'document_id' => js_string_escape($lang['DocumentID']),
-        'document' => js_string_escape($lang['Document']),
-        'control_id' => js_string_escape($lang['ControlID']),
-        'control_number' => js_string_escape($lang['ControlNumber']),
-        'control_short_name' => js_string_escape($lang['ControlShortName']),
-        'selected' => js_string_escape($lang['Selected']),
-        'score' => js_string_escape($lang['Score']),
-        'tfidf_similarity' => js_string_escape($lang['TFIDFSimilarity']),
-        'keyword_match' => js_string_escape($lang['MatchingKeywords']),
-        'tfidf_match' => js_string_escape($lang['TFIDFMatch']),
-        'ai_match' => js_string_escape($lang['AIMatch']),
-        'ai_confidence' => js_string_escape($lang['AIConfidence']),
-        'ai_reasoning' => js_string_escape($lang['AIReasoning']),
-        'matching' => js_string_escape($lang['Matching']),
-        'recommendation' => js_string_escape($lang['Recommendation']),
+        'document_id' => $lang['DocumentID'],
+        'document' => $lang['Document'],
+        'control_id' => $lang['ControlID'],
+        'control_number' => $lang['ControlNumber'],
+        'control_short_name' => $lang['ControlShortName'],
+        'selected' => $lang['Selected'],
+        'score' => $lang['Score'],
+        'tfidf_similarity' => $lang['TFIDFSimilarity'],
+        'keyword_match' => $lang['MatchingKeywords'],
+        'tfidf_match' => $lang['TFIDFMatch'],
+        'ai_match' => $lang['AIMatch'],
+        'ai_confidence' => $lang['AIConfidence'],
+        'ai_reasoning' => $lang['AIReasoning'],
+        'matching' => $lang['Matching'],
+        'recommendation' => $lang['Recommendation'],
     ];
 
     return $columns[$field];
-}
-
-/*****************************************
- * FUNCTION: DISPLAY QUEUE MONITOR TABLE *
- *****************************************/
-function display_queue_monitor_table()
-{
-    global $escaper, $lang;
-
-    $columns = ["id", "task_type", "status", "created_at", "updated_at", "attempts", "priority", "payload"];
-    $tableID = "queue-table";
-
-    echo "
-    <table id='{$tableID}' width='100%' class='table table-bordered table-striped table-condensed'>
-        <thead>
-            <tr>";
-    foreach ($columns as $column) {
-        $label = ucwords(str_replace('_', ' ', $column));
-        echo "<th data-name='{$column}'>{$label}</th>";
-    }
-    // Add new 'Promise' column
-    echo "<th>Promise</th>";
-    echo "</tr>
-        <tr>";
-    foreach ($columns as $column) {
-        if ($column === 'status') {
-            echo "<th>
-                <select class='form-control' id='filter_status' multiple='multiple'>
-                    <option value='pending' selected>" . $escaper->escapeHtml($lang['Pending']) . "</option>
-                    <option value='in_progress' selected>" . $escaper->escapeHtml($lang['InProgress']) . "</option>
-                    <option value='completed' selected>" . $escaper->escapeHtml($lang['Completed']) . "</option>
-                    <option value='failed' selected>" . $escaper->escapeHtml($lang['Failed']) . "</option>
-                    <option value='canceled' selected>" . $escaper->escapeHtml($lang['Canceled']) . "</option>
-                </select>
-            </th>";
-        } elseif ($column === 'task_type') {
-            echo "<th><input type='text' class='form-control' id='filter_task_type' placeholder='" . $escaper->escapeHtml($lang['Search']) . "'></th>";
-        } else {
-            echo "<th></th>";
-        }
-    }
-    // Empty header for Promise column filter (optional)
-    echo "<th></th>";
-    echo "</tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-
-<!-- Modal HTML -->
-<div class='modal fade' id='promiseModal' tabindex='-1' aria-hidden='true'>
-  <div class='modal-dialog modal-xl modal-dialog-centered'>
-    <div class='modal-content'>
-      <div class='modal-header'>
-        <h5 class='modal-title'>Promises for Queue Task</h5>
-        <button type='button' class='btn-close' data-bs-dismiss='modal'></button>
-      </div>
-      <div class='modal-body p-0'>
-        <div class='table-responsive' style='max-height:70vh; overflow-y:auto;'>
-          <table id='promise-table' class='table table-striped table-bordered table-condensed mb-0' style='width:100%'>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Promise Type</th>
-                <th>Reference ID</th>
-                <th>Current Stage</th>
-                <th>Status</th>
-                <th>State</th>
-                <th>Depends On</th>
-                <th>Payload</th>
-                <th>Description</th>
-                <th>Created At</th>
-                <th>Updated At</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-      <div class='modal-footer'>
-        <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<style>
-#{$tableID} pre {
-    white-space: pre;
-    overflow-x: auto;
-    max-width: 400px;
-    padding: 5px;
-    background-color: #f8f9fa;
-    border-radius: 4px;
-}
-</style>
-
-<script>
-$(function(){
-    // Initialize the status filter as a multiselect
-    function initStatusFilter() {
-        if ($('#filter_status').data('multiselect-initialized')) return;
-
-        $('#filter_status').multiselect({
-            includeSelectAllOption: true,
-            enableFiltering: true,
-            buttonClass: 'form-select',
-            nonSelectedText: 'Select status',
-            allSelectedText: 'All selected',
-            buttonWidth: 'auto',
-            dropdownAlign: 'auto',
-            maxHeight: 200
-        });
-
-        $('#filter_status').data('multiselect-initialized', true);
-        $('#filter_status').multiselect('selectAll', false);
-        $('#filter_status').multiselect('updateButtonText');
-    }
-
-    initStatusFilter();
-
-    var datatableInstance = $('#queue-table').DataTable({
-        serverSide: true,
-        processing: true,
-        scrollX: true,
-        orderCellsTop: true,
-        order: [[3, 'desc']],
-        ajax: {
-            url: BASE_URL + '/api/v2/admin/queue',
-            type: 'GET',
-            data: function(d) {
-                d.task_type = $('#filter_task_type').val();
-                var selectedStatuses = $('#filter_status').val();
-                d.status = selectedStatuses && selectedStatuses.length ? selectedStatuses.join(',') : 'all';
-            },
-            dataSrc: function(json) {
-                json.recordsTotal = json.data.recordsTotal || 0;
-                json.recordsFiltered = json.data.recordsFiltered || 0;
-                return json.data.data || [];
-            }
-        },
-        columns: [
-            { data: 'id' },
-            { data: 'task_type' },
-            { data: 'status' },
-            { data: 'created_at' },
-            { data: 'updated_at' },
-            { data: 'attempts' },
-            { data: 'priority' },
-            { 
-                data: 'payload',
-                render: function (data) {
-                    function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-                    try { var obj = JSON.parse(data); return '<pre>' + escapeHtml(JSON.stringify(obj, null, 2)) + '</pre>'; }
-                    catch (e) { return '<pre>' + escapeHtml(data) + '</pre>'; }
-                }
-            },
-            // New 'Promise' column
-            {
-                data: 'id',
-                orderable: false,
-                searchable: false,
-                render: function(data, type, row) {
-                    return '<button class=\"btn btn-sm btn-outline-primary view-promises\" data-queue-id=\"' + data + '\">' +
-                           '<i class=\"fas fa-search\"></i>' +
-                           '</button>';
-                }
-            }
-        ]
-    });
-
-    $('#filter_task_type, #filter_status').on('change keyup', function() {
-        datatableInstance.ajax.reload();
-    });
-
-    // Click handler for Promise buttons
-    $('#queue-table tbody').on('click', '.view-promises', function() {
-        var queueId = $(this).data('queue-id');
-        $('#promiseModal').modal('show');
-
-        if ($.fn.DataTable.isDataTable('#promise-table')) {
-            $('#promise-table').DataTable().destroy();
-            $('#promise-table tbody').empty();
-        }
-
-        $('#promise-table tbody').html(
-            '<tr class=\"modal-loading-row\"><td colspan=\"11\" class=\"text-center py-5\">' +
-            '<div class=\"spinner-border text-primary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div>' +
-            '</td></tr>'
-        );
-        $('.modal-loading-row').hide().fadeIn(200);
-
-        $('#promise-table').DataTable({
-            ajax: {
-                url: BASE_URL + '/api/v2/admin/queue/promises',
-                type: 'GET',
-                data: { queue_task_id: queueId },
-                dataSrc: function(json) {
-                    $('.modal-loading-row').fadeOut(200, function() { $(this).remove(); });
-
-                    if (json.status === 404 || !json.data || json.data.length === 0) {
-                        $('#promise-table tbody').html(
-                            '<tr class=\"modal-no-data-row\"><td colspan=\"11\" class=\"text-center py-3\">No promises found for this queue task</td></tr>'
-                        );
-                        $('.modal-no-data-row').hide().fadeIn(200);
-                        return [];
-                    }
-
-                    setTimeout(function() { $('#promise-table tbody tr').hide().fadeIn(200); }, 50);
-
-                    var modalBody = $('#promiseModal .modal-body .table-responsive');
-                    modalBody.css('max-height', Math.min($(window).height() * 0.7, json.data.length * 50 + 60) + 'px');
-
-                    return json.data;
-                }
-            },
-            columns: [
-                { data: 'id' },
-                { data: 'promise_type' },
-                { data: 'reference_id' },
-                { data: 'current_stage' },
-                { data: 'status' },
-                { data: 'state' },
-                { data: 'depends_on' },
-                { 
-                    data: 'payload',
-                    render: function(data) {
-                        function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-                        try { return '<pre>' + escapeHtml(JSON.stringify(JSON.parse(data), null, 2)) + '</pre>'; }
-                        catch(e) { return '<pre>' + escapeHtml(data) + '</pre>'; }
-                    }
-                },
-                { data: 'description' },
-                { data: 'created_at' },
-                { data: 'updated_at' }
-            ],
-            searching: false,
-            paging: false,
-            info: false,
-            responsive: true
-        });
-    });
-});
-</script>
-    ";
-}
-
-/**************************************************************
- * FUNCTION: DISPLAY CUSTOM QUEUE MONITOR COLUMNS (MODAL)     *
- **************************************************************/
-function display_custom_queue_monitor_columns($custom_setting_field = "custom_queue_display_settings")
-{
-    // For now, we can return an empty container or allow future custom columns
-    echo "<p>Currently no custom columns available.</p>";
 }
 
 /******************************************************

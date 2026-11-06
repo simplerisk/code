@@ -1,0 +1,224 @@
+// ============================================================================
+// Register & Upgrade (admin/register.php)
+//
+// Layout "A" from the update-channel design: one Updates card (instance ID,
+// version rows, the update channel selector, the upgrade action), then the
+// Registration and Extras cards, all on the gray ground. The cards, card heads,
+// state pills, caution note and modal are the shipped components
+// (.sr-qform/.sr-qcard, .sr-state-pill, .sr-qnote, .sr-modal); this file only
+// adds what is particular to this page: the label/value fact rows, the
+// selector's width, and the button hierarchy for markup the page does not own
+// (the Upgrade Extra's backup/upgrade buttons, the registration helpers and the
+// Extras table all emit .btn-submit, which is a red fill).
+// ============================================================================
+
+.sr-register {
+    // .sr-qform reserves room for a sticky action bar; this page has none.
+    padding-bottom: 8px;
+
+    .btn {
+        border-radius: 6px;
+    }
+
+    .sr-register-muted {
+        font-size: 13px;
+        color: $gray-600;
+    }
+
+    // The instance ID is one 50-character token; let it wrap on a phone
+    // instead of running out of the card head.
+    .sr-register-instance-id {
+        overflow-wrap: anywhere;
+    }
+
+    // ---- Updates card: label/value fact rows -------------------------------
+    .sr-register-facts {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sr-register-fact {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px 16px;
+        padding: 9px 0;
+        border-top: 1px solid $gray-300;
+
+        &:first-child {
+            border-top: 0;
+            padding-top: 0;
+        }
+    }
+
+    .sr-register-fact-label {
+        margin: 0;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: $sr-primary;
+    }
+
+    .sr-register-fact-value {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px 10px;
+        min-width: 0;
+        font-size: 14px;
+    }
+
+    .sr-register-version {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+    }
+
+    .sr-register-latest {
+        font-size: 12.5px;
+        color: $gray-600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sr-register-channel-select {
+        width: auto;
+        min-width: 220px;
+        max-width: 100%;
+    }
+
+    .sr-register-hint {
+        display: block;
+        margin: 6px 0 0;
+        font-size: 12px;
+        color: $gray-600;
+    }
+
+    .sr-register-urls {
+        margin: 4px 0 0;
+        padding-left: 18px;
+
+        code {
+            color: $sr-primary;
+            word-break: break-all;
+        }
+    }
+
+    .sr-register-load-error {
+        margin: 8px 0 0;
+        font-size: 12.5px;
+    }
+
+    // The upgrade action, set off from the facts above it.
+    .sr-register-upgrade {
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid $gray-300;
+
+        > p {
+            font-size: 13px;
+            color: $gray-600;
+        }
+
+        form[name="upgrade_simplerisk"] {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+    }
+
+    // ---- Button hierarchy (design-system §4: one red, spent once) ---------
+    // Every .btn-submit on the page drops to the outline weight ...
+    .btn-submit {
+        background: $sr-body;
+        color: $sr-primary;
+        border: 1px solid $gray-300;
+
+        &:hover,
+        &:focus-visible {
+            background: $sr-body;
+            color: $sr-important;
+            border-color: $sr-important;
+        }
+    }
+
+    // ... except the page's one primary action: Upgrade SimpleRisk once the
+    // instance is registered, Register while it is not.
+    #app_upgrade,
+    &.sr-register--unregistered button[name="register"] {
+        background: $sr-important;
+        color: $white;
+        border-color: $sr-important;
+
+        &:hover,
+        &:focus-visible {
+            background: darken($sr-important, 8%);
+            color: $white;
+            border-color: darken($sr-important, 8%);
+        }
+    }
+
+    // ---- Registration card ------------------------------------------------
+    .sr-register-notice-form {
+        margin-bottom: 14px;
+    }
+
+    // The registration helpers stack label-above-input form groups; pair them
+    // two-up on wide screens (design-system §4) and keep the button on its own
+    // row.
+    .registration-table,
+    .registration-table-edit {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px 16px;
+
+        // custom.scss lays these groups out label-left (a fixed 150px label
+        // beside the input); this page puts labels above (design-system §4).
+        .form-group {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        label {
+            display: block;
+            width: auto;
+            min-width: 0;
+            margin-bottom: 4px;
+            font-size: 12.5px;
+        }
+
+        > .btn {
+            grid-column: 1 / -1;
+            justify-self: start;
+        }
+    }
+
+    // ---- Extras card ------------------------------------------------------
+    // Seven columns do not fit a phone; the table scrolls inside its own
+    // wrapper rather than pushing the page sideways. The card itself keeps no
+    // overflow rule (design-system §4.6).
+    .sr-register-table-scroll {
+        overflow-x: auto;
+
+        .table {
+            margin-bottom: 0;
+        }
+    }
+}
+
+@media (max-width: 575.98px) {
+    .sr-register {
+        .registration-table,
+        .registration-table-edit {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .sr-register-fact-value {
+            justify-content: flex-start;
+        }
+
+        .sr-register-fact--channel .sr-register-fact-value,
+        .sr-register-channel-select {
+            width: 100%;
+        }
+    }
+}

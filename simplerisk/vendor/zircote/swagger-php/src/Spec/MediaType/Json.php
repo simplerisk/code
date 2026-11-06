@@ -23,13 +23,17 @@ use OpenApi\Undefined;
  *
  * Allows to shorten this:
  *
- *   #[OA\Response(response: 200, content: [
- *       new OA\MediaType(mediaType: 'application/json', schema: new OA\Schema(type: 'array', items: new OA\Schema(ref: Pet::class))),
- *   ])]
+ * ```php
+ * #[OA\Response(response: 200, content: [
+ *     new OA\MediaType(mediaType: 'application/json', schema: new OA\Schema(type: 'array', items: new OA\Schema(ref: Pet::class))),
+ * ])]
+ * ```
  *
  * to this:
  *
- *   #[OA\Response(response: 200, content: [new OA\MediaType\Json(type: 'array', items: new OA\Schema(ref: Pet::class))])]
+ * ```php
+ * #[OA\Response(response: 200, content: [new OA\MediaType\Json(type: 'array', items: new OA\Schema(ref: Pet::class))])]
+ * ```
  *
  * The `Shortcuts` augmenter expands the schema properties into a nested `OA\Schema` automatically.
  *
@@ -62,6 +66,7 @@ class Json extends OA\MediaType
      * @param string|null                                      $component   The key this is filed under in `components`, which makes it a reusable component
      * @param array<string,mixed>|null                         $x           Vendor extensions (x-* properties)
      * @param list<OA\Attachable>|null                         $attachables Reusable custom attachable attributes
+     * @param OA\Fan|null                                      $fan         Where this attribute goes when more than one attribute could hold it
      */
     public function __construct(
         // schema shortcuts
@@ -78,6 +83,7 @@ class Json extends OA\MediaType
         ?string $component = null,
         ?array $x = null,
         ?array $attachables = null,
+        ?OA\Fan $fan = null,
     ) {
         parent::__construct(
             mediaType: 'application/json',
@@ -87,7 +93,8 @@ class Json extends OA\MediaType
             encoding: $encoding,
             component: $component,
             x: $x,
-            attachables: $attachables
+            attachables: $attachables,
+            fan: $fan,
         );
         $this->type = self::typeValue($type);
         $this->properties = self::propertyList($properties);

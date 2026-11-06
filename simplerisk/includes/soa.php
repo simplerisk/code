@@ -441,6 +441,7 @@ const SOA_LEGEND_GROUPS = [
         'heading' => 'SoaAppendixRemediation',
         'entries' => [
             ['term' => 'SoaRemediationUnplanned', 'definition' => 'SoaLegendUnplanned', 'family' => 'danger'],
+            ['term' => 'SoaRemediationNoMitigation', 'definition' => 'SoaLegendNoMitigation', 'family' => 'danger'],
         ],
     ],
 ];

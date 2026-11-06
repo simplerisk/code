@@ -7,6 +7,7 @@
 namespace OpenApi\Builder;
 
 use OpenApi\Annotations\OpenApi;
+use OpenApi\Builder;
 use OpenApi\OpenApiException;
 use OpenApi\Specification;
 use Symfony\Component\Yaml\Yaml;
@@ -61,6 +62,9 @@ class Result
         return $this->files;
     }
 
+    /**
+     * @deprecated since 7.0, removed in 8.0 - use {@see Result::specification()} instead
+     */
     public function openApi(): ?OpenApi
     {
         return $this->openApi;
@@ -81,11 +85,13 @@ class Result
     {
         $generated = $this->openApi instanceof OpenApi || $this->specOutput !== null;
 
-        return $generated && $this->errors() === [];
+        return $generated && !in_array('error', array_column($this->log, 'level'), true);
     }
 
     /**
      * @return list<array{level: string, message: string}>
+     *
+     * @deprecated since 6.16, removed in 8.0 - attach a logger via {@see Builder::setLogger()}; it already receives these
      */
     public function log(): array
     {
@@ -94,6 +100,8 @@ class Result
 
     /**
      * @return list<string>
+     *
+     * @deprecated since 6.16, removed in 8.0 - attach a logger via {@see Builder::setLogger()}; it already receives these
      */
     public function warnings(): array
     {
@@ -105,6 +113,8 @@ class Result
 
     /**
      * @return list<string>
+     *
+     * @deprecated since 6.16, removed in 8.0 - attach a logger via {@see Builder::setLogger()}; it already receives these
      */
     public function errors(): array
     {
