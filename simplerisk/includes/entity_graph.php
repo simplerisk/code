@@ -36,6 +36,11 @@ function graph_node_palette(): array
         'control'                => '#154360',
         'test'                   => '#2e86c1',
         'test_result'            => '#7fb3d5',
+        // Per-outcome colours for test_result nodes (the Explorer picks one from the node's
+        // "<date> [Pass|Fail]" name). Any other outcome keeps the 'test_result' colour above.
+        // 'Pass' matches the self-assessment pass green used elsewhere in this file.
+        'test_result_pass'       => '#10793f',
+        'test_result_fail'       => '#cb4335',
         'document'               => '#a2d9ce',
         'exception'              => '#d35400',
         'assessment'             => '#8e44ad',

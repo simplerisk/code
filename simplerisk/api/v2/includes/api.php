@@ -4255,6 +4255,100 @@ function api_v2_admin_settings_extras_licenses()
 }
 
 /****************************************************************
+ * FUNCTION: API V2 ADMIN EXTRAS STATUS                         *
+ ****************************************************************/
+// SR-2380: which Extras are installed and enabled, their installed version, and
+// the POST route that migrates each one's database. The Upgrade Extra reads it
+// after the Extras' files are replaced to decide which databases to migrate
+// (and, from the route, how), so it needs no copy of the route table that would
+// go stale on the Cores it runs against. Reads only: it never includes an
+// Extra's index.php, which would run that Extra's lazy migration.
+function api_v2_admin_extras_status()
+{
+    if (!is_admin()) {
+        api_v2_json_result(403, 'FORBIDDEN: admin permission required.', null);
+        return;
+    }
+
+    require_once(realpath(__DIR__ . '/../../../includes/extras_status.php'));
+
+    api_v2_json_result(200, 'OK', ['extras' => extras_status_collect()]);
+}
+
+/****************************************************************
+ * FUNCTION: API V2 ADMIN EXTRAS UPGRADE DATABASES              *
+ ****************************************************************/
+// Migrate the database of every installed, enabled Extra, in this request, and report what
+// each one did. This is for the deployments that replace the code without the Upgrade
+// Extra's one-click flow (container image swaps; the hosted tiers): after the core database
+// upgrade they call this once, and the Extras no longer migrate on first use.
+//
+// The router answers this BEFORE it loads any Extra (api/v2/index.php), because loading an
+// Extra's index.php is what migrates it. That is what lets this handler take the version
+// stamps first, hold the upgrade lock around the loads, and say what changed. Reached any
+// other way the Extras would already be migrated and every one would read "current".
+function api_v2_admin_extras_upgrade_databases()
+{
+    api_v2_check_admin();
+
+    require_once(realpath(__DIR__ . '/../../../includes/extras_status.php'));
+    require_once(realpath(__DIR__ . '/../../../includes/upgrade/common.php'));
+    require_once(realpath(__DIR__ . '/../../../includes/workers.php'));
+
+    // A migration cut off half way (the caller hung up, or the request ran long) is worse
+    // than one that finishes
+    ignore_user_abort(true);
+    @set_time_limit(0);
+
+    $outcome = with_upgrade_lock(function () {
+        $outcome = extras_upgrade_databases(
+            extras_status_collect(),
+            extra_database_registry(),
+            function (string $setting) {
+                // Uncached: get_setting() remembers its first answer for the request, which
+                // would make "before" and "after" the same value
+                $value = get_setting($setting, false, false);
+                return $value === false ? null : (string)$value;
+            },
+            function (string $name, string $function): bool {
+                try {
+                    // Loading an enabled Extra migrates it; calling its migration as well is
+                    // idempotent and makes the step explicit
+                    require_once(realpath(__DIR__ . '/../../../extras/' . $name . '/index.php'));
+
+                    if (!function_exists($function)) {
+                        write_debug_log("Extra database upgrade: {$name} does not define {$function}().", 'error');
+                        return false;
+                    }
+
+                    if ($function() === false) {
+                        write_debug_log("Extra database upgrade: {$name}: {$function}() reported failure.", 'error');
+                        return false;
+                    }
+
+                    return true;
+                } catch (Throwable $e) {
+                    // The message can carry SQL and file paths: it goes to the log, not the caller
+                    write_debug_log("Extra database upgrade: {$name} failed: " . $e->getMessage(), 'error');
+                    throw $e;
+                }
+            }
+        );
+
+        // Workers that were running before the Extras changed may hold their old job code
+        if (extras_upgrade_databases_response($outcome)['workers_restart_requested']) {
+            request_worker_restart('extras_upgrade');
+        }
+
+        return $outcome;
+    }, 0, null);
+
+    $response = extras_upgrade_databases_response($outcome);
+
+    api_v2_json_result($response['code'], $response['message'], $response['data']);
+}
+
+/****************************************************************
  * FUNCTION: API V2 COLLECT LICENSED EXTRAS                     *
  ****************************************************************/
 // Build the licensed-Extra slug list from the local license cache
@@ -4380,6 +4474,65 @@ function api_v2_admin_license_refresh()
     $payload = api_v2_build_license_overview_payload();
     $payload['licensed'] = api_v2_collect_licensed_extras();
     api_v2_json_result(200, 'OK', $payload);
+}
+
+/****************************************************************
+ * FUNCTION: API V2 ADMIN UPDATE CHANNEL GET                    *
+ ****************************************************************/
+function api_v2_admin_update_channel_get()
+{
+    if (!is_admin()) {
+        api_v2_json_result(403, 'FORBIDDEN: admin permission required.', null);
+        return;
+    }
+
+    require_once(realpath(__DIR__ . '/../../../includes/licensing.php'));
+    require_once(realpath(__DIR__ . '/../../../includes/update_channel.php'));
+
+    // Override URLs may carry user:pass@ userinfo; never return it.
+    api_v2_json_result(200, 'OK', update_channel_redact_state(update_channel_current()));
+}
+
+/****************************************************************
+ * FUNCTION: API V2 ADMIN UPDATE CHANNEL PUT                    *
+ ****************************************************************/
+function api_v2_admin_update_channel_put()
+{
+    global $lang;
+
+    if (!is_admin()) {
+        api_v2_json_result(403, 'FORBIDDEN: admin permission required.', null);
+        return;
+    }
+
+    require_once(realpath(__DIR__ . '/../../../includes/licensing.php'));
+    require_once(realpath(__DIR__ . '/../../../includes/update_channel.php'));
+
+    $body = json_decode(file_get_contents('php://input'), true);
+    $channel = is_array($body) ? ($body['channel'] ?? null) : null;
+
+    // A missing or non-string value is an invalid value, not a malformed request.
+    $result = update_channel_switch(is_string($channel) ? $channel : '');
+
+    if (!$result['ok']) {
+        switch ($result['error']) {
+            case 'locked':
+                api_v2_json_result(409, $lang['UpdateChannelLocked'], null);
+                return;
+            case 'invalid':
+                api_v2_json_result(422, $lang['UpdateChannelInvalid'], null);
+                return;
+            case 'write_failed':
+                api_v2_json_result(500, $lang['UpdateChannelWriteFailed'], null);
+                return;
+            default:
+                api_v2_json_result(403, 'FORBIDDEN: admin permission required.', null);
+                return;
+        }
+    }
+
+    write_debug_log("Update channel switched to '" . $channel . "'.", 'info');
+    api_v2_json_result(200, 'OK', update_channel_redact_state(update_channel_current()));
 }
 
 /****************************************************************

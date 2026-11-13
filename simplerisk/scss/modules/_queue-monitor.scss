@@ -1,0 +1,591 @@
+// Queue Monitor (admin/queue_monitor.php + js/simplerisk/pages/queue-monitor.js,
+// SR-2408). The card, table, pills, pager, empty state and modal all come from
+// the shared components (_tables.scss, _sr-modal.scss); this partial only adds
+// what the page has that nothing else does. Every selector is scoped under
+// .sr-qm so none of it leaks into another page through the global bundle.
+
+// Pale tier tint for the priority chips (the asset-scoring level-chip recipe).
+@mixin sr-qm-prio-tint($color) {
+    background: mix($white, $color, 86%);
+    border-color: mix($white, $color, 40%);
+}
+
+// The shell's `.content` wrapper paints a solid white panel and a 10px margin
+// around the page. _tables.scss neutralizes both for a card that is a DIRECT
+// child of .content (`.content:has(> .sr-table-card)`), but this page nests the
+// card one level down inside .sr-qm, so that rule never matched and the card
+// sat inset on a second white panel instead of lining up with the page title
+// and breadcrumb. Same two declarations, same reasoning (including keeping
+// .content's 10px padding, which is what aligns the card with the TITLE), for
+// the nested shape.
+.content:has(> .sr-qm > .sr-table-card) {
+    background-color: transparent !important;
+    margin: 0 !important;
+}
+
+.sr-qm {
+    // The step table inside a row's expander (design-system §6 .sr-subtable).
+    @include sr-subtable-drawer;
+
+    // --- Live indicator ("Live · updated 3s ago") -------------------------
+    .sr-qm-live {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: darken($success, 15%);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+
+        .sr-qm-live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: $success;
+            box-shadow: 0 0 0 3px rgba($success, .2);
+            animation: sr-qm-pulse 2s ease-in-out infinite;
+        }
+
+        &.is-error {
+            color: darken($danger, 15%);
+
+            .sr-qm-live-dot {
+                background: $danger;
+                box-shadow: 0 0 0 3px rgba($danger, .2);
+                animation: none;
+            }
+        }
+    }
+
+    // --- Worker health strip --------------------------------------------
+    .sr-qm-health {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 16px;
+        padding: 6px 16px 10px;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    .sr-qm-worker {
+        white-space: normal;
+        line-height: 1.3;
+    }
+
+    .sr-qm-worker-name {
+        font-weight: 800;
+    }
+
+    .sr-qm-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        color: $gray-600;
+    }
+
+    // --- Filter row -----------------------------------------------------
+    // Its own row rather than the shared .sr-table-quickfilters, which hides
+    // behind a Filters toggle below 1100px: here the filters are few and the
+    // status pills are the page's main navigation, so they always show.
+    .sr-qm-filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-bottom: 1px solid $gray-300;
+    }
+
+    .sr-qm-filter-selects {
+        min-width: 0;
+        max-width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+
+        .form-select,
+        .form-control {
+            width: auto;
+            min-width: 140px;
+            max-width: 100%;
+            font-size: 13px;
+            border-color: $gray-400;
+            border-radius: 6px;
+        }
+    }
+
+    .sr-qm-status-filter {
+        flex-wrap: wrap;
+        border-radius: 16px;
+    }
+
+    .sr-qm-search {
+        flex: 1 1 240px;
+        max-width: 360px;
+
+        input {
+            width: 100%;
+        }
+    }
+
+    .sr-table-status-filter .sr-status-chip {
+        border: 0;
+        background: transparent;
+
+        .n {
+            margin-left: 3px;
+            font-variant-numeric: tabular-nums;
+            opacity: .75;
+        }
+
+        &.active .n {
+            opacity: 1;
+        }
+    }
+
+    .sr-qm-date-label {
+        margin: 0;
+        font-size: 12.5px;
+        color: $gray-600;
+    }
+
+    // --- Rows -----------------------------------------------------------
+    // A real <button> caret (keyboard + aria-expanded), so the UA chrome is
+    // reset here; the shared .sr-group-caret rotation keys on group rows only.
+    .sr-qm-caret {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        border: 0;
+        border-radius: 6px;
+        background: none;
+        color: $gray-500;
+        font-size: 11px;
+        cursor: pointer;
+        transition: transform $transitions, color $transitions;
+
+        &:hover {
+            color: $sr-primary;
+            background: $gray-200;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $sr-primary;
+            outline-offset: 1px;
+        }
+
+        &[aria-expanded="true"] {
+            transform: rotate(90deg);
+            color: $sr-primary;
+        }
+    }
+
+    // The task ID stays at every width (it is what search and the failure
+    // notification point at), so this page does not use the shared
+    // .sr-id-col / .sr-id-cell, which fold away below 1500px.
+    .sr-qm-id-col {
+        width: 72px;
+        white-space: nowrap;
+    }
+
+    .sr-qm-id-cell {
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+        color: $gray-600;
+        white-space: nowrap;
+    }
+
+    tr.sr-qm-row.is-expanded > td {
+        background: $gray-100;
+    }
+
+    .sr-qm-task {
+        min-width: 160px;
+        font-weight: 700;
+        overflow-wrap: break-word;
+    }
+
+    .sr-qm-time,
+    .sr-qm-progress {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sr-qm-progress {
+        color: $gray-600;
+    }
+
+    // --- Priority chips: one pale tint per tier, the word always shown -----
+    // A fixed product scale, so a tinted .sr-chip (as the asset-scoring level
+    // chips do), never the solid severity pill reserved for risk levels.
+    .sr-qm-prio {
+        justify-content: center;
+        min-width: 78px;
+        padding: 2px 10px;
+        color: $sr-primary;
+    }
+
+    .sr-qm-prio--immediate {
+        @include sr-qm-prio-tint($danger);
+    }
+
+    .sr-qm-prio--high {
+        @include sr-qm-prio-tint($orange);
+    }
+
+    .sr-qm-prio--medium {
+        @include sr-qm-prio-tint($warning);
+    }
+
+    .sr-qm-prio--low {
+        @include sr-qm-prio-tint($info);
+    }
+
+    .sr-qm-prio--lowest {
+        background: $gray-100;
+        border-color: $gray-300;
+        color: $gray-700;
+    }
+
+    // --- Expander -------------------------------------------------------
+    .sr-qm-panel {
+        padding-left: 76px; // under the ID column, past the checkbox + caret
+    }
+
+    .sr-qm-banner {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding: 10px 12px;
+        border: 1px solid rgba($danger, .35);
+        border-radius: 6px;
+        background: rgba($danger, .08);
+        color: darken($danger, 22%);
+        font-size: 13px;
+        line-height: 1.45;
+
+        > .fa {
+            margin-top: 3px;
+            color: $danger;
+        }
+    }
+
+    .sr-qm-banner-text {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+    }
+
+    .sr-qm-banner-meta {
+        color: $gray-600;
+    }
+
+    .sr-qm-steps {
+        tr.is-failing td {
+            background: rgba($danger, .06);
+        }
+
+        tr.is-failing .sr-qm-step-note {
+            color: darken($danger, 18%);
+        }
+
+        .sr-qm-step-note {
+            min-width: 200px;
+            max-width: 560px;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+    }
+
+    .sr-qm-purged {
+        margin: 0;
+        font-size: 12.5px;
+        color: $gray-600;
+    }
+
+    .sr-qm-payload-link {
+        padding: 0;
+        border: 0;
+        background: none;
+        color: $sr-primary;
+        font-size: 12.5px;
+        font-weight: 700;
+        text-decoration: underline;
+        cursor: pointer;
+
+        &:hover {
+            color: $sr-important;
+        }
+    }
+
+    // --- Payload modal --------------------------------------------------
+    .sr-qm-payload-hint {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .sr-qm-payload {
+        max-height: 60vh;
+        margin: 0;
+        padding: 12px;
+        overflow: auto;
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+        background: $gray-100;
+        color: $sr-primary;
+        font-family: $font-family-monospace;
+        font-size: 12px;
+        white-space: pre;
+    }
+
+    // --- Toolbar: retention settings button -----------------------------
+    .sr-qm-retention-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    // --- Selection ------------------------------------------------------
+    // A ticked row carries the bulk bar's tint, so the count is visibly tied
+    // to the rows it acts on. Outranks the table's own hover tint.
+    .sr-table-card table.sr-table tbody tr.sr-qm-row.is-selected,
+    .sr-table-card table.sr-table tbody tr.sr-qm-row.is-selected:hover {
+        background: $sr-row-selected;
+    }
+
+    // Why the bulk bar offers no action (no status filter, over the cap).
+    .sr-qm-bulk-note {
+        font-size: 12.5px;
+        color: $gray-600;
+    }
+
+    // Bulk delete is neutral until hover (design-system §6: never a standing
+    // red button); the red commit lives in the confirm dialog.
+    #qm-bulk-delete:hover:not(:disabled),
+    #qm-bulk-delete:focus-visible {
+        color: $sr-important;
+        border-color: $sr-important;
+    }
+
+    // --- Row actions ----------------------------------------------------
+    .sr-actions-col {
+        width: 1%;
+        white-space: nowrap;
+        text-align: right;
+    }
+
+    // --- Confirm dialog -------------------------------------------------
+    .sr-qm-confirm {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .sr-qnote {
+            margin-top: 0;
+        }
+    }
+
+    .sr-qm-confirm-body {
+        margin: 0;
+        font-size: 13.5px;
+        line-height: 1.5;
+        color: $sr-primary;
+    }
+
+    // --- Retention modal ------------------------------------------------
+    .sr-qm-retention-hint {
+        display: block;
+        margin: 0 0 12px;
+    }
+
+    .sr-qm-retention-zero {
+        display: block;
+        margin: 10px 0 0;
+    }
+
+    .sr-qm-retention-error {
+        margin-top: 12px;
+    }
+
+    // "Restarted as task #Y" under the status pill of a restarted task.
+    .sr-qm-restarted {
+        display: block;
+        margin-top: 3px;
+        font-size: 11.5px;
+        color: $gray-600;
+        white-space: nowrap;
+    }
+}
+
+// ===== Narrow widths (design-system.md 6b) ===========================
+// The shell's fixed sidebar takes ~290px whatever the viewport, so the card is
+// ~290px narrower than the viewport, and the eleven columns want ~1050px: measured
+// on the dev instance, a 1000px viewport (710px card) still scrolled 340px
+// sideways. The block therefore starts at 1340px, not at the 900px the card-only
+// arithmetic would suggest. The row becomes a stacked
+// block: what is it (task), how is it going (status + priority), then the
+// quiet rest. The checkbox, caret, overflow menu and expander are the same
+// elements, so selecting, expanding and bulk-acting keep working. The column
+// headers are gone, so the quiet cells name themselves through data-label.
+@mixin sr-qm-queue-tier {
+    #qm-table thead {
+        display: none;
+    }
+
+    #qm-table,
+    #qm-table tbody,
+    #qm-table tr {
+        display: block;
+        width: auto;
+    }
+
+    #qm-tbody tr.sr-qm-row {
+        display: grid;
+        grid-template-columns: 30px 22px minmax(0, 1fr) minmax(0, 1fr) 38px;
+        align-items: center;
+        gap: 5px 8px;
+        padding: 10px 12px;
+
+        > td {
+            display: block;
+            min-width: 0;
+            padding: 0;
+            border: 0;
+            text-align: left;
+        }
+
+        .sr-check-col { grid-area: 1 / 1; }
+        .sr-caret-col { grid-area: 1 / 2; }
+        .sr-qm-task { grid-area: 1 / 3 / 2 / 5; min-width: 0; }
+        .sr-actions-col { grid-area: 1 / 5; width: auto; justify-self: end; }
+        .sr-qm-status-cell { grid-area: 2 / 3; }
+        .sr-qm-prio-cell { grid-area: 2 / 4; justify-self: start; }
+        .sr-qm-id-cell { grid-area: 3 / 3; }
+        .sr-qm-attempts-cell { grid-area: 3 / 4; }
+        .sr-qm-progress { grid-area: 4 / 3; }
+        .sr-qm-duration-cell { grid-area: 4 / 4; }
+        .sr-qm-time { grid-area: 5 / 3 / 6 / 5; }
+
+        .sr-qm-id-cell,
+        .sr-qm-duration-cell,
+        .sr-qm-progress,
+        .sr-qm-attempts-cell,
+        .sr-qm-time {
+            font-size: 12px;
+            color: $gray-600;
+            white-space: nowrap;
+
+            &[data-label]::before {
+                content: attr(data-label) ": ";
+                font-weight: 700;
+            }
+        }
+    }
+
+    // The expander spans the block; its steps table scrolls inside the panel
+    // rather than widening the card.
+    #qm-tbody tr.sr-qm-expand-row > td {
+        display: block;
+        padding: 0 12px 12px;
+    }
+
+    .sr-qm-panel {
+        padding-left: 0;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 1340px) {
+    .sr-qm .sr-table-card {
+        @include sr-qm-queue-tier;
+    }
+
+    // Toolbar: the title and tools wrap instead of pushing the card wide.
+    .sr-qm .sr-table-toolbar {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .sr-qm .sr-table-tools {
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 700px) {
+    // The card is ~290px here, ~74px per content column: two chips side by side
+    // overlap. Status and priority each take a full line; the quiet pairs
+    // (two short labelled values) keep their two-up lines below.
+    .sr-qm .sr-table-card #qm-tbody tr.sr-qm-row {
+        .sr-qm-status-cell { grid-area: 2 / 3 / 3 / 6; }
+        .sr-qm-prio-cell { grid-area: 3 / 3 / 4 / 6; }
+        .sr-qm-id-cell { grid-area: 4 / 3; }
+        .sr-qm-attempts-cell { grid-area: 4 / 4 / 5 / 6; }
+        .sr-qm-progress { grid-area: 5 / 3; }
+        .sr-qm-duration-cell { grid-area: 5 / 4 / 6 / 6; }
+        .sr-qm-time { grid-area: 6 / 3 / 7 / 6; }
+    }
+
+    // Search takes its own full line, the status pills wrap beneath it, and the
+    // selects/dates stack one per line -- a filter being read is not scanned.
+    .sr-qm .sr-qm-filters {
+        gap: 8px;
+        padding: 10px 12px;
+    }
+
+    .sr-qm .sr-qm-search {
+        flex: 1 1 100%;
+        max-width: none;
+    }
+
+    .sr-qm .sr-qm-filter-selects {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        width: 100%;
+        gap: 8px;
+
+        .form-select {
+            grid-column: 1 / -1;
+        }
+
+        .form-select,
+        .form-control {
+            width: 100%;
+            min-width: 0;
+        }
+    }
+
+    .sr-qm .sr-qm-health {
+        padding-inline: 12px;
+    }
+}
+
+@keyframes sr-qm-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 3px rgba($success, .2);
+    }
+
+    50% {
+        box-shadow: 0 0 0 5px rgba($success, .05);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sr-qm .sr-qm-live .sr-qm-live-dot,
+    .sr-qm .sr-qm-caret {
+        animation: none;
+        transition: none;
+    }
+}

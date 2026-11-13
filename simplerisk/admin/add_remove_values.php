@@ -3,451 +3,140 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+global $lang, $escaper;
+
 // Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-render_header_and_sidebar(['CUSTOM:common.js'], permissions: ['check_admin' => true]);
 
-$customDeleteFunction_technology = function($value) {
-    $delete_result = delete_value("technology", $value);
-    cleanup_after_delete("technology");
-    return $delete_result;
-};
-
-$customDeleteFunction_location = function($value) {
-    $delete_result = delete_value("location", $value);
-    cleanup_after_delete("location");
-    return $delete_result;
-};
-
-$customDeleteFunction_test_status = function($id) {
-
-    $closed_audit_status = get_setting("closed_audit_status");
-    // If Closed status
-    if($id == $closed_audit_status) {
-        global $lang;
-        // Display an alert
-        set_alert(true, "bad", $lang['TheClosedStatusCantBeDeleted']);
-        return false;
-    }
-    // If status is not Closed
-    else {
-        return delete_value("test_status", $id);
-    }
-};
-
-$customDeleteFunction_risk_grouping = function($value) {
-
-    $db = db_open();
-
-    // Get value of the default risk group
-    $stmt = $db->prepare("SELECT `value` FROM `risk_grouping` WHERE `default` = 1");
-    $stmt->execute();
-
-    $default_risk_group_value = (int)$stmt->fetchColumn();
-
-    db_close($db);
-
-    if ($value === $default_risk_group_value) {
-        global $lang;
-        // Display an alert
-        set_alert(true, "bad", $lang['CantDeleteTheDefaultRiskGrouping']);
-        return false;
-    }
-
-    $delete_result = delete_value("risk_grouping", $value);
-    cleanup_after_delete("risk_grouping");
-    reassign_groupless_risk_catalogs($default_risk_group_value);
-
-    return $delete_result;
-};
-
-
-$customAddFunction_threat_grouping = function($name) {
-    $db = db_open();
-
-    // Get the order for the last place...
-    $stmt = $db->prepare("SELECT MAX(`order`) FROM `threat_grouping`");
-    $stmt->execute();
-    $max_order = $stmt->fetchColumn();
-    $new_order = intval($max_order) + 1;
-
-    // ...and add it there.
-    $stmt = $db->prepare("INSERT INTO `threat_grouping` (`name`, `order`) VALUES (:name, :order)");
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
-    $stmt->bindParam(":order", $new_order, PDO::PARAM_INT);
-    $stmt->execute();
-    $threat_grouping_id = $db->lastInsertId();
-
-    db_close($db);
-
-    return $threat_grouping_id;
-};
-
-$customDeleteFunction_threat_grouping = function($value) {
-    $db = db_open();
-
-    // Get value of the default threat group
-    $stmt = $db->prepare("SELECT `value` FROM `threat_grouping` WHERE `default` = 1");
-    $stmt->execute();
-
-    $default_threat_group_value = (int)$stmt->fetchColumn();
-
-    db_close($db);
-
-    if ($value === $default_threat_group_value) {
-        global $lang;
-        // Display an alert
-        set_alert(true, "bad", $lang['CantDeleteTheDefaultThreatGrouping']);
-        return false;
-    }
-
-    $delete_result = delete_value("threat_grouping", $value);
-    cleanup_after_delete("threat_grouping");
-    reassign_groupless_threat_catalogs($default_threat_group_value);
-
-    return $delete_result;
-};
-
-// The configuration the page rendering is based on
-// for custom functions you can either use anonymous functions(see examples defined above)
-// or existing functions(the name should be passed as a string).
-$tableConfig = array(
-    'review' => array(
-        'headerKey' => 'Review',
-        'lengthLimit' => 50,
-    ),
-    'next_step' => array(
-        'headerKey' => 'NextStep',
-        'lengthLimit' => 50,
-    ),
-    'category' => array(
-        'headerKey' => 'Category',
-        'lengthLimit' => 50,
-    ),
-    'technology' => array(
-        'headerKey' => 'Technology',
-        'lengthLimit' => 50,
-        'customDeleteFunction' => $customDeleteFunction_technology,
-    ),
-    'location' => array(
-        'headerKey' => 'SiteLocation',
-        'lengthLimit' => 100,
-        'customDeleteFunction' => $customDeleteFunction_location,
-    ),
-    'planning_strategy' => array(
-        'headerKey' => 'RiskPlanningStrategy',
-        'lengthLimit' => 20,
-    ),
-    'close_reason' => array(
-        'headerKey' => 'CloseReason',
-        'lengthLimit' => 50,
-    ),
-    'status' => array(
-        'headerKey' => 'Status',
-        'lengthLimit' => 50,
-    ),
-    'source' => array(
-        'headerKey' => 'RiskSource',
-        'lengthLimit' => 50,
-    ),
-    'control_class' => array(
-        'headerKey' => 'ControlClass',
-        'lengthLimit' => 200, //can be more
-    ),
-    'control_phase' => array(
-        'headerKey' => 'ControlPhase',
-        'lengthLimit' => 200, //can be more
-    ),
-    'control_priority' => array(
-        'headerKey' => 'ControlPriority',
-        'lengthLimit' => 20, //can be more
-    ),
-    'family' => array(
-        'headerKey' => 'ControlFamily',
-        'lengthLimit' => 100,
-        'customAddFunction' => 'add_family',
-        'customUpdateFunction' => 'update_family',
-        'customDeleteFunction' => 'delete_family',
-    ),
-    'test_status' => array(
-        'headerKey' => 'AuditStatus',
-        'lengthLimit' => 100,
-        'customDeleteFunction' => $customDeleteFunction_test_status,
-    ),
-    'risk_grouping' => array(
-        'headerKey' => 'RiskGroupings',
-        'lengthLimit' => 50,
-        'customAddFunction' => 'add_risk_grouping',
-        'customDeleteFunction' => $customDeleteFunction_risk_grouping,
-    ),
-    'risk_function' => array(
-        'headerKey' => 'RiskFunctions',
-        'lengthLimit' => 50,
-    ),
-    'threat_grouping' => array(
-            'headerKey' => 'ThreatGroupings',
-            'lengthLimit' => 50,
-            'customAddFunction' => $customAddFunction_threat_grouping,
-            'customDeleteFunction' => $customDeleteFunction_threat_grouping,
-    ),
-    'document_status' => array(
-        'headerKey' => 'DocumentStatus',
-        'lengthLimit' => 100,
-    ),
-    'document_exceptions_status' => array(
-        'headerKey' => 'ExceptionStatus',
-        'lengthLimit' => 100,
-    ),
-);
-
-if (isset($_POST['add_remove_values_input']) && ($_POST['add_remove_values_input'] == "add_remove_values")) {
-
-    if (in_array($_POST['action'], array('add', 'update', 'delete'))
-    && array_key_exists($_POST['table_name'], $tableConfig)) {
-        $tableName = $_POST['table_name'];
-
-        if (in_array($_POST['action'], array('add', 'update'))) {
-            if (!isset($_POST['name']) || !trim($_POST['name'])) {
-                set_alert(true, "bad", $lang['YouNeedToSpecifyANameParameter']);
-            } else {
-                $name = trim($_POST['name']);
-
-                $lengthLimit = $tableConfig[$tableName]['lengthLimit'];
-                // Size check
-                if (strlen($name) > $lengthLimit) {
-                    // As we render the UI controls with the same limits we shouldn't see this message
-                    set_alert(true, "bad", _lang('TheEnteredValueIsTooLong', ['limit' => $lengthLimit]));
-                }
-            }
-        }
-
-        if (in_array($_POST['action'], array('update', 'delete'))) {
-            if (!isset($_POST['id']) || !preg_match('/^\d+$/', trim($_POST['id']))) {
-                set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
-            } else {
-                $id = (int)trim($_POST['id']);
-            }
-        }
-
-        switch ($_POST['action']) {
-            case "add":
-                // If the custom add function is set
-                if (array_key_exists('customAddFunction', $tableConfig[$tableName])) {
-                    // Call it with the required parameters
-                    $result = $tableConfig[$tableName]['customAddFunction']($name);
-                } else {
-                    // Insert a new item
-                    $result = add_name($tableName, $name);
-                }
-
-                // Display an alert
-                if ($result)
-                    set_alert(true, "good", $lang['ANewItemWasAddedSuccessfully']);
-                else
-                    set_alert(true, "bad", $lang['FailedToAddNewItem']);
-
-                break;
-
-            case "update":
-                // If the custom update function is set
-                if (array_key_exists('customUpdateFunction', $tableConfig[$tableName])) {
-                    // Call it with the required parameters
-                    $result = $tableConfig[$tableName]['customUpdateFunction']($id, $name);
-                } else {
-                    $result = update_table($tableName, $name, $id);
-                }
-
-                // Display an alert
-                if ($result)
-                    set_alert(true, "good", $lang['AnItemWasUpdatedSuccessfully']);
-                else
-                    set_alert(true, "bad", $lang['FailedToUpdateItem']);
-
-                break;
-
-            case "delete":
-                // If the custom delete function is set
-                if (array_key_exists('customDeleteFunction', $tableConfig[$tableName])) {
-                    // Call it with the required parameters
-                    $result = $tableConfig[$tableName]['customDeleteFunction']($id);
-                } else {
-                    $result = delete_value($tableName, $id);
-                }
-
-                // Display an alert
-                if ($result)
-                    set_alert(true, "good", $lang['AnItemWasDeletedSuccessfully']);
-                else
-                    set_alert(true, "bad", $lang['FailedToDeleteItem']);
-
-                break;
-        }
-    } else {
-        // Didn't want to put anything informative here as this message will only be
-        // seen if someone is calling this with forged data
-        set_alert(true, "bad", $lang['MissingConfiguration']);
-    }
-}
-
+// Add and remove values (SR-2475). A static shell: lookup-values.js fills it from the
+// v2 API (GET /admin/lookup-values/lists and .../lists/{list}/values; POST, PATCH and
+// DELETE on .../values for add, rename and delete). The page's own admin gate below is
+// not the control -- every endpoint checks for an administrator itself.
+render_header_and_sidebar(['CUSTOM:pages/lookup-values.js'], ['check_admin' => true]);
 ?>
-<div class="row bg-white">
-    <div class="col-12">
-        <div class="card-body my-2 border">
-            <form action="" name="add_remove_values" method="post">
-                <input type="hidden" value="add_remove_values" name="add_remove_values_input"/>
-                <input type="hidden" value="" name="table_name"/>
-                <input type="hidden" value="" name="action"/>
-                <input type="hidden" value="" name="id"/>
-                <input type="hidden" value="" name="name"/>
-                <div class="row" >
-                    <div class="col-md-3 form-group pb-4">
-                        <select id="table-sections" class="form-select" name="table-sections">
-    <?php
-        foreach($tableConfig as $table => $config){
-            echo "
-                            <option value='" . $table . "'" . ((isset($_POST['table-sections']) && $_POST['table-sections'] == $table) ? " selected" : "") . ">" . $escaper->escapeHtml($lang[$config['headerKey']]) . "</option>
-            ";
-        }
-    ?>
-                        </select>
+<div class="sr-lv" id="lookup-values" data-initial-list="<?= $escaper->escapeHtmlAttr(isset($_GET['list']) && is_string($_GET['list']) ? $_GET['list'] : '') ?>">
+    <div class="sr-lv-layout">
+
+        <!-- Left: the lists, grouped, with one live search over list names and the values in them -->
+        <aside class="sr-lv-rail" aria-label="<?= $escaper->escapeHtmlAttr($lang['LookupLists']) ?>">
+            <div class="sr-lv-search">
+                <label class="sr-qlabel" for="lv-search"><?= $escaper->escapeHtml($lang['LookupFindAListOrValue']) ?></label>
+                <input type="search" class="form-control" id="lv-search" maxlength="100" autocomplete="off">
+            </div>
+
+            <!-- Narrow widths: the rail collapses to this select -->
+            <div class="sr-lv-select">
+                <label class="sr-qlabel" for="lv-list-select"><?= $escaper->escapeHtml($lang['List']) ?></label>
+                <select class="form-select" id="lv-list-select"></select>
+            </div>
+
+            <nav class="sr-lv-lists" id="lv-lists" aria-label="<?= $escaper->escapeHtmlAttr($lang['LookupLists']) ?>"></nav>
+            <p class="sr-lv-nomatch d-none" id="lv-rail-empty"><?= $escaper->escapeHtml($lang['LookupNoListsMatch']) ?></p>
+        </aside>
+
+        <!-- Right: the selected list as a table card -->
+        <section class="sr-table-card sr-lv-card" id="lv-card" aria-labelledby="lv-title">
+            <div class="sr-table-toolbar">
+                <div class="sr-lv-heading">
+                    <div class="sr-table-title">
+                        <span id="lv-title"></span>
+                        <span class="sr-table-count" id="lv-count"></span>
+                    </div>
+                    <div class="sr-lv-sub" id="lv-subtitle"></div>
+                </div>
+                <div class="sr-table-tools">
+                    <div class="dt-search sr-lv-filter">
+                        <input type="search" id="lv-filter" maxlength="100" autocomplete="off"
+                               placeholder="<?= $escaper->escapeHtmlAttr($lang['LookupFilterValues']) ?>"
+                               aria-label="<?= $escaper->escapeHtmlAttr($lang['LookupFilterValues']) ?>">
+                    </div>
+                    <div class="sr-table-toolbar-actions">
+                        <button type="button" class="btn btn-danger" id="lv-add-button">
+                            <i class="fa fa-plus" aria-hidden="true"></i> <?= $escaper->escapeHtml($lang['LookupAddValue']) ?>
+                        </button>
                     </div>
                 </div>
-                <div class="row">
-                    <div id="crud-wrapper" class="col-md-12">
-    <?php
+            </div>
 
-        $text_change = $escaper->escapeHtml($lang['Change']);
-        $text_to = $escaper->escapeHtml($lang['to']);
-        $text_update = $escaper->escapeHtml($lang['Update']);
-        $text_add = $escaper->escapeHtml($lang['Add']);
-        $text_delete = $escaper->escapeHtml($lang['Delete']);
-        $text_deleteItem = $escaper->escapeHtml($lang['DeleteItemNamed']);
-        $text_addItem = $escaper->escapeHtml($lang['AddNewItemNamed']);
+            <div class="visually-hidden" id="lv-announcer" aria-live="polite" aria-atomic="true"></div>
 
-        foreach ($tableConfig as $table => $config) {
-            if (isset($_POST['table-sections'])) {
-                if ($_POST['table-sections'] == $table) {
-                    $display = "display: block;";
-                } else {
-                    $display = "display: none;";
-                }
-            } else {
-                if($table == "review") {
-                    $display = "display: block;";
-                } else {
-                    $display = "display: none;";
-                }
-            }
-            echo '
-                        <div class="row">
-                            <div class="hero-unit" data-table_name="' . $table . '" style="' . $display . '">
-                                <h4>' . $escaper->escapeHtml($lang[$config['headerKey']]) . '</h4>
-                                <div class="row" style="align-items:flex-end">
-                                    <div class="col-md-6 form-group">
-                                        <label>' . $text_addItem . ':</label>
-                                        <input id="' . $table . '_new" type="text" maxlength="' . $config['lengthLimit'] .'" size="20" class="form-control"/>
-                                    </div>
-                                    <div class="col-md-1 form-group">
-                                        <input type="submit" value="' .  $text_add . ' " data-action="add" class="btn btn-submit form-control"/>
-                                    </div>
-                                </div>
-                                <div class="row" style="align-items:flex-end">
-                                    <div class="col-md-3 form-group">
-                                        <label>' . $text_change . ':</label>
-            ';
-                                        create_dropdown($table, NULL, $table . "_update_from");
-            echo'
-                                    </div>
-                                    <div class="col-md-3 form-group">
-                                        <label>' . $text_to . ':</label>
-                                        <input id="' . $table . '_update_to" type="text" maxlength="' . $config['lengthLimit'] . '" size="20"  class="form-control"/>
-                                    </div>
-                                    <div class="col-md-1 form-group">
-                                        <input type="submit" value="' . $text_update . '" data-action="update"  class="btn btn-submit form-control"/>
-                                    </div>
-                                </div>
-                                <div class="row" style="align-items:flex-end">
-                                    <div class="col-md-6">
-                                        <label>' . $text_deleteItem . ':</label>
-            ';
-                                        create_dropdown($table, NULL, $table . "_delete");
-            echo '
-                                    </div>
-                                    <div class="col-md-1">
-                                        <input type="submit" value="' . $text_delete . '" data-action="delete" class="btn btn-primary form-control"/>
-                                    </div>
-                                </div>
+            <div class="sr-table-scroll">
+                <table class="sr-table" id="lv-table">
+                    <thead>
+                        <tr>
+                            <th scope="col"><?= $escaper->escapeHtml($lang['Name']) ?></th>
+                            <th scope="col" class="sr-lv-use-col"><?= $escaper->escapeHtml($lang['LookupInUse']) ?></th>
+                            <th scope="col" class="sr-actions-col"><span class="visually-hidden"><?= $escaper->escapeHtml($lang['Actions']) ?></span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="lv-tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="sr-table-empty d-none" id="lv-empty">
+                <div class="sr-table-empty-icon"><i class="fa fa-list" id="lv-empty-icon" aria-hidden="true"></i></div>
+                <div class="sr-table-empty-title" id="lv-empty-title"></div>
+                <div class="sr-table-empty-body" id="lv-empty-body"></div>
+                <div class="sr-table-empty-action d-none" id="lv-empty-action-wrap">
+                    <button type="button" class="btn btn-outline-secondary" id="lv-empty-action"></button>
+                </div>
+            </div>
+
+            <!-- The dashed row: the keyboard path for adding several values in a row -->
+            <div class="sr-lv-addrow">
+                <div class="sr-lv-addbox">
+                    <i class="fa fa-plus" aria-hidden="true"></i>
+                    <label class="visually-hidden" for="lv-new"><?= $escaper->escapeHtml($lang['LookupNewValue']) ?></label>
+                    <input type="text" id="lv-new" autocomplete="off" placeholder="<?= $escaper->escapeHtmlAttr($lang['LookupAddAValueAndPressEnter']) ?>">
+                    <span class="sr-lv-counter" id="lv-new-counter"></span>
+                </div>
+                <div class="sr-lv-error d-none" id="lv-new-error" role="alert"></div>
+            </div>
+
+            <div class="sr-table-foot">
+                <div class="sr-table-foot-left"><span class="dt-info" id="lv-foot-count"></span></div>
+                <div class="sr-table-foot-right"><span class="sr-lv-foot-note"><?= $escaper->escapeHtml($lang['LookupChangesSaveAsYouGo']) ?></span></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- One destructive-confirm for every delete (design-system §8): a plain confirm for a
+         value nothing uses, with the usage warning and the optional "move the records" select
+         for one in use. lookup-values.js sets the text. -->
+    <div class="modal fade sr-modal" id="lv-delete-modal" tabindex="-1" aria-labelledby="lv-delete-title" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="sr-modal-icon sr-modal-icon--danger"><i class="fa fa-trash" aria-hidden="true"></i></span>
+                    <h4 class="modal-title" id="lv-delete-title"></h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= $escaper->escapeHtmlAttr($lang['Close']) ?>"></button>
+                </div>
+                <div class="modal-body sr-qform">
+                    <section class="sr-qcard">
+                        <div class="sr-qcard-body">
+                            <p class="mb-0" id="lv-delete-plain"></p>
+                            <div class="sr-qnote d-none" id="lv-delete-note">
+                                <i class="fa fa-triangle-exclamation sr-qnote-ico" aria-hidden="true"></i>
+                                <span id="lv-delete-note-text"></span>
                             </div>
+                            <div class="sr-qfield d-none" id="lv-delete-move">
+                                <label class="sr-qlabel" for="lv-delete-target" id="lv-delete-target-label"></label>
+                                <select class="form-select" id="lv-delete-target"></select>
+                                <span class="sr-qhint" id="lv-delete-target-hint"></span>
+                            </div>
+                            <div class="alert alert-danger d-none mb-0" id="lv-delete-error" role="alert"></div>
                         </div>
-            ';
-        }
-    ?>
-                    </div>
+                    </section>
                 </div>
-            </form>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal" id="lv-delete-cancel"><?= $escaper->escapeHtml($lang['Cancel']) ?></button>
+                    <button type="button" class="btn btn-danger" id="lv-delete-commit"><?= $escaper->escapeHtml($lang['LookupDeleteValue']) ?></button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-<script>
-    function refreshDropdown(dropdown, data) {
-        dropdown.empty();
-        dropdown.append($('<option>', {
-            value: 0,
-            text : '--'
-        }));
-        $.each(data, function (i, item) {
-            dropdown.append($('<option>', {
-                value: item.value,
-                text : item.name
-            }));
-        });
-    }
-
-    function crudAction() {
-        event.preventDefault();
-        var div = $(this).closest('.hero-unit');
-        if (div) {
-            let tableName = div.data('table_name');
-            let action = $(this).data('action');
-            $('[name="table_name"]').val(tableName);
-            $('[name="action"]').val(action);
-
-            switch(action) {
-                case 'add':
-                    $('[name="name"]').val(div.find('#' + tableName + '_new').val());
-                    break;
-                case 'update':
-                    $('[name="id"]').val(div.find('#' + tableName + '_update_from').val());
-                    $('[name="name"]').val(div.find('#' + tableName + '_update_to').val());
-                    break;
-                case 'delete':
-                    $('[name="id"]').val(div.find('#' + tableName + '_delete').val());
-                    break;
-            }
-            if (tableName && action) {
-                // When deleting, show a confirmation dialog before submitting the form
-                if (action == "delete") {
-                    // Display a confirmation dialog
-                    confirm("<?= $escaper->escapeJs($lang['AreYouSureYouWantToDeleteSelction']); ?>", () => {
-                        $('[name="add_remove_values"]').submit();
-                    });
-                // For add and update actions, submit the form directly without confirmation
-                } else {
-                    $('[name="add_remove_values"]').submit();
-                }
-            }
-        }
-    }
-
-    $(document).ready(function() {
-        $('#crud-wrapper input[type="submit"]').click(crudAction);
-        
-        $('#table-sections').change(function(){
-            $('#crud-wrapper .hero-unit').fadeOut(100);
-            $('#crud-wrapper [data-table_name="'+$(this).val()+'"]').fadeIn(1000);
-        })
-    });
-</script>
 <?php
     // Render the footer of the page. Please don't put code after this part.
     render_footer();

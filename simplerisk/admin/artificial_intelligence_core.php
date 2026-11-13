@@ -15,7 +15,7 @@ render_header_and_sidebar(
 );
 
 // Include the language file
-require_once(language_file());
+load_language_file();
 
 ?>
 <div class="row">

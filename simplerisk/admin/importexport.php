@@ -259,9 +259,18 @@
 			
 		});
 		$("#import").submit(function(event) {
-			if ($("#import input[type='file']").length && <?= $escaper->escapeHtml(max_upload_size_effective()) ?><= $("#import input[type='file']")[0].files[0].size) {
-				showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
-				event.preventDefault();
+			var $fileInput = $("#import input[type='file']");
+			if ($fileInput.length) {
+				var file = $fileInput[0].files[0];
+				// No file chosen: say so. Without this the submit either did nothing visible or this guard threw on
+				// `files[0].size` (SD-870).
+				if (!file) {
+					showAlertFromMessage("<?= $escaper->escapeHtml($lang['SelectAFileToImport']) ?>");
+					event.preventDefault();
+				} else if (<?= $escaper->escapeHtml(max_upload_size_effective()) ?><= file.size) {
+					showAlertFromMessage("<?= $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
+					event.preventDefault();
+				}
 			}
 		});
 		$("form[name='scf_mappings_install']").submit(function(evt) {

@@ -12,6 +12,8 @@ require_once(realpath(__DIR__ . '/../setting_values.php'));
 
 return [
     'type' => 'core_license_check',
+    // One task of this type at a time across all queue workers (periodic: rewrites the shared license cache).
+    'concurrency' => 'serial',
 
     /************************************************************
      * FUNCTION: task_check

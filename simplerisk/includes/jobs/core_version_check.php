@@ -16,6 +16,8 @@ require_once(realpath(__DIR__ . '/../functions.php'));
 
 return [
     'type' => 'core_version_check',
+    // One task of this type at a time across all queue workers (periodic: rewrites shared version settings).
+    'concurrency' => 'serial',
 
     /************************************************************
      * FUNCTION: task_check

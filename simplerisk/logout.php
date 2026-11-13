@@ -36,7 +36,7 @@
     }
 
     // Include the language file
-    require_once(language_file());
+    load_language_file();
 
     // Log the user out
     logout();

@@ -6,6 +6,8 @@
 
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 require_once(realpath(__DIR__ . '/escaper.php'));
+// Dependency-free channel resolver: safe pre-install (no functions.php/config.php).
+require_once(realpath(__DIR__ . '/update_channel.php'));
 
 // Include Escaper for HTML Output Encoding
 $escaper = new simpleriskEscaper();
@@ -895,7 +897,7 @@ function step_6_simplerisk_installation()
     $mailing_list = isset($_POST['mailing_list']) ? 'true' : 'false';
 
     // Generate password for SimpleRisk user
-    $sr_pass = installer_generate_token(20);
+    $sr_pass = installer_generate_db_password(20);
 
     // Connect to MySQL
     $db = installer_db_open($db_host, $db_port, $db_user, $db_pass, 'mysql');
@@ -924,12 +926,41 @@ function step_6_simplerisk_installation()
     if (!validate_mysql_identifier($sr_user)) throw new Exception("Invalid database username.");
     $sr_user_safe = str_replace("'", '', $sr_user);
 
-    foreach ($sr_host_array as $host) {
-        if (is_valid_sr_host($host)) {
-            $sr_pass_quoted = $db->quote($sr_pass);
-            $db->exec("CREATE USER '{$sr_user_safe}'@'{$host}' IDENTIFIED BY {$sr_pass_quoted}");
-            $db->exec("GRANT SELECT,INSERT,UPDATE,ALTER,DELETE,CREATE,DROP,INDEX,REFERENCES,LOCK TABLES ON {$sr_db_q}.* TO '{$sr_user_safe}'@'{$host}'");
+    $created_hosts = [];
+    try {
+        foreach ($sr_host_array as $host) {
+            if (is_valid_sr_host($host)) {
+                $sr_pass_quoted = $db->quote($sr_pass);
+                $db->exec("CREATE USER '{$sr_user_safe}'@'{$host}' IDENTIFIED BY {$sr_pass_quoted}");
+                $created_hosts[] = $host;
+                $db->exec("GRANT SELECT,INSERT,UPDATE,ALTER,DELETE,CREATE,DROP,INDEX,REFERENCES,LOCK TABLES ON {$sr_db_q}.* TO '{$sr_user_safe}'@'{$host}'");
+            }
         }
+    } catch (PDOException $e) {
+        // Don't leave the half-created install behind: the database was created above, and a retry
+        // would otherwise fail on "database exists" and orphan it.
+        installer_log("Could not create the SimpleRisk database user: " . $e->getMessage(), 'error');
+
+        // Users created for earlier hosts of a multi-host install would make a retry fail with
+        // "user already exists", so remove them too. Only hosts this run created are touched.
+        foreach ($created_hosts as $created_host) {
+            try {
+                $db->exec("DROP USER IF EXISTS '{$sr_user_safe}'@'{$created_host}'");
+            } catch (PDOException $drop_error) {
+                installer_log("Could not remove the database user for host '{$created_host}': " . $drop_error->getMessage(), 'error');
+            }
+        }
+
+        try {
+            $db->exec("DROP DATABASE {$sr_db_q}");
+        } catch (PDOException $drop_error) {
+            installer_log("Could not remove the database '{$sr_db}' after the failure: " . $drop_error->getMessage(), 'error');
+        }
+        installer_db_close($db);
+
+        global $escaper;
+        echo "<div class=\"alert alert-danger\"><b>The SimpleRisk database user could not be created: " . $escaper->escapeHtml($e->getMessage()) . "</b><br>The database that was created for this install has been removed. Please correct the problem and try again.</div>\n";
+        return;
     }
 
     $db->exec("FLUSH PRIVILEGES");
@@ -1538,9 +1569,8 @@ function installer_instance_registration($db, $instance_id, $full_name, $email, 
     // licensing.php cannot be required here because its include chain pulls
     // in extras.php, which requires functions.php, which requires config.php
     // — and config.php does not yet exist during installation.
-    // Mirror the licensing_url() logic inline instead.
-    $base_url = defined('LICENSING_URL') ? LICENSING_URL : 'https://licensing.simplerisk.com';
-    $url = rtrim($base_url, '/') . '/register';
+    // update_channel.php is dependency-free, so use the resolver directly.
+    $url = update_channel_service_url('licensing', '/register');
 
     // Split full name into fname/lname like the runtime register flow.
     // Conservative split: the last whitespace-separated token is the
@@ -1623,11 +1653,7 @@ function installer_get_current_version()
 function installer_get_latest_version()
 {
     // Url for SimpleRisk current versions
-    if (defined('UPDATES_URL'))
-    {
-        $url = UPDATES_URL . '/releases.xml';
-    }
-    else $url = 'https://updates.simplerisk.com/releases.xml';
+    $url = update_channel_service_url('updates', '/releases.xml');
 
     // Set the default socket timeout to 5 seconds
     ini_set('default_socket_timeout', 5);
@@ -1638,17 +1664,14 @@ function installer_get_latest_version()
     // If we were unable to connect to the URL
     if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
     {
-        installer_log("Unable to connect to {$url}", 'warning');
+        // The updates URL may be a config.php override carrying credentials
+        installer_log("Unable to connect to " . update_channel_redact_url($url), 'warning');
     }
     // We were able to connect to the URL
     else
     {
         // Load the versions file
-        if (defined('UPDATES_URL'))
-        {
-            $version_page = file_get_contents(UPDATES_URL . '/releases.xml');
-        }
-        else $version_page = file_get_contents('https://updates.simplerisk.com/releases.xml');
+        $version_page = file_get_contents($url);
 
         // Convert it to be an array
         $releases_array = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
@@ -1686,7 +1709,7 @@ function installer_check_app_version($current_app_version, $latest_app_version)
 function installer_check_web_connectivity()
 {
     // URLs to check
-    $urls = array("https://licensing.simplerisk.com/healthz", "https://services.nvd.nist.gov", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
+    $urls = array(update_channel_service_url('licensing', '/healthz'), "https://services.nvd.nist.gov", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
 
     // Create an empty array
     $array = array();
@@ -1694,17 +1717,20 @@ function installer_check_web_connectivity()
     // Check the URLs
     foreach ($urls as $url)
     {
+        // The licensing URL may be a config.php override carrying credentials
+        $shown = update_channel_redact_url($url);
+
         // Get the headers for the URL
         $file_headers = @get_headers($url, 1);
 
         if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
         {
-            installer_log("Unable to connect to {$url}", 'warning');
-            $array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to " . $url . ".");
+            installer_log("Unable to connect to {$shown}", 'warning');
+            $array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to " . $shown . ".");
         }
         else
         {
-            $array[] = array("result" => 1, "text" => "SimpleRisk connected to " . $url . ".");
+            $array[] = array("result" => 1, "text" => "SimpleRisk connected to " . $shown . ".");
         }
     }
 
@@ -1846,7 +1872,8 @@ function installer_check_php_max_input_vars()
 function installer_check_php_extensions()
 {
     // List of extensions to check for
-    $extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom", "curl", "posix", "zip", "gd");
+    // fileinfo is not a PHP default on every build. Without it uploads cannot be type-checked and are refused.
+    $extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom", "curl", "posix", "zip", "gd", "fileinfo");
 
     // Create an empty array
     $array = array();
@@ -1903,6 +1930,45 @@ function installer_check_simplerisk_directory_permissions()
     }
 
     return $array;
+}
+
+/*****************************************************
+ * FUNCTION: INSTALLER GENERATE DB PASSWORD          *
+ *****************************************************/
+/**
+ * Generates the random password for the SimpleRisk database user.
+ *
+ * Guarantees at least one lowercase letter, uppercase letter, digit and special character so the
+ * password satisfies MySQL's validate_password at MEDIUM or higher (error 1819 otherwise). The
+ * special characters are limited to ones that need no escaping in a single-quoted PHP string, an
+ * SQL string or a shell word: no quotes, backslash, dollar sign, backtick or whitespace.
+ */
+function installer_generate_db_password($size = 20)
+{
+    $size = max(8, (int)$size);
+    $sets = [
+        'abcdefghijklmnopqrstuvwxyz',
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        '0123456789',
+        '!#%^*-_=+',
+    ];
+    $all = implode('', $sets);
+
+    $chars = [];
+    foreach ($sets as $set) {
+        $chars[] = $set[random_int(0, strlen($set) - 1)];
+    }
+    while (count($chars) < $size) {
+        $chars[] = $all[random_int(0, strlen($all) - 1)];
+    }
+
+    // Fisher-Yates shuffle with a CSPRNG so the guaranteed characters are not always first
+    for ($i = count($chars) - 1; $i > 0; $i--) {
+        $j = random_int(0, $i);
+        [$chars[$i], $chars[$j]] = [$chars[$j], $chars[$i]];
+    }
+
+    return implode('', $chars);
 }
 
 /**************************************

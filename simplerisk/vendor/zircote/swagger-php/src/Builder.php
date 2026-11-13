@@ -22,9 +22,9 @@ use Psr\Log\NullLogger;
  * Unified entry point for generating OpenAPI documents.
  *
  * Mode:
- *   setMode(Builder\Mode::CLASSIC) — annotation/attribute pipeline via Generator (default)
+ *   setMode(Builder\Mode::CLASSIC) — annotation/attribute pipeline via Generator
  *   setMode(Builder\Mode::SPEC)    — spec attribute pipeline via Assembler + Compiler
- *   setMode(Builder\Mode::HYBRID)  — reduced classic pipeline → HybridBridge → spec Compiler
+ *   setMode(Builder\Mode::HYBRID)  — reduced classic pipeline → HybridBridge → spec Compiler (default)
  *
  * Set/add sources to process:
  *   addSource() > can be file based (string, \SplFileInfo) or reflection (\ReflectionClass)
@@ -44,7 +44,7 @@ class Builder
      */
     protected array $sources = [];
 
-    protected Mode $mode = Mode::CLASSIC;
+    protected Mode $mode = Mode::HYBRID;
 
     protected ?string $version = null;
 
@@ -94,6 +94,9 @@ class Builder
         return $this;
     }
 
+    /**
+     * @deprecated since 7.0, removed in 8.0
+     */
     public function setMode(string|Mode $mode): static
     {
         $this->mode = $mode instanceof Mode ? $mode : Mode::from($mode);
@@ -254,6 +257,8 @@ class Builder
      *
      * Runs during the build, once the Generator exists. A second call replaces the first.
      *
+     * @deprecated since 7.0, removed in 8.0
+     *
      * @param callable(Generator): (Generator|void) $hook
      */
     public function withGenerator(callable $hook): static
@@ -263,6 +268,12 @@ class Builder
         return $this;
     }
 
+    /**
+     * Build the document.
+     *
+     * A `Builder` builds one document. To build another, configure a new `Builder`: a second
+     * call is not prevented, but what it reuses from the first is not part of the contract.
+     */
     public function build(): Result
     {
         return match ($this->mode) {
@@ -330,6 +341,16 @@ class Builder
         foreach ($sourceScanner->getReflectors() as $reflector) {
             if ($reflector instanceof \ReflectionClass) {
                 $this->collectSafely($assembler, $reflector);
+            } else {
+                $this->getLogger()->warning(sprintf(
+                    'Skipping %s source %s: only ReflectionClass sources are read',
+                    $reflector::class,
+                    match (true) {
+                        $reflector instanceof \ReflectionMethod, $reflector instanceof \ReflectionProperty => $reflector->class . '::' . $reflector->getName(),
+                        method_exists($reflector, 'getName') => $reflector->getName(),
+                        default => '',
+                    },
+                ));
             }
         }
 
@@ -387,8 +408,7 @@ class Builder
 
     protected function doHybridAssemble(Specification $specification): void
     {
-        $collectingLogger = new CollectingLogger($this->getLogger());
-        $generator = new Generator($collectingLogger);
+        $generator = new Generator($this->getLogger());
 
         if ($this->version !== null) {
             $generator->setVersion($this->version);
@@ -402,9 +422,25 @@ class Builder
 
         $analysis = new Analysis([], new Context([
             'version' => $generator->getVersion(),
-            'logger' => $collectingLogger,
+            'logger' => $this->getLogger(),
         ]));
         $generator->generate($this->sources, $analysis, validate: false);
+
+        // the generator scans files only, so a class passed as a reflector is analysed on its own
+        $analyser = $generator->getAnalyser();
+        $sourceScanner = new SourceScanner(new NullLogger());
+        $sourceScanner->scan($this->sources);
+        foreach ($sourceScanner->getReflectors() as $reflector) {
+            if (!$reflector instanceof \ReflectionClass) {
+                continue;
+            }
+
+            if ($analyser instanceof Analysers\ReflectionAnalyser) {
+                $analyser->fromFqdn($reflector->getName(), $analysis);
+            } else {
+                $this->getLogger()->warning(sprintf('Skipping %s for classic attributes: %s reads files only', $reflector->getName(), $analyser::class));
+            }
+        }
 
         $bridge = new HybridBridge();
         $bridge->fromAnalysis($analysis, $specification);
@@ -439,12 +475,16 @@ class Builder
         return [
             new Augmenter\TypeAliases(),
             new Augmenter\Inheritance(),
+            new Augmenter\OperationTags(),
+            new Augmenter\ImpliedSchemas(),
             new Augmenter\Names(),
             new Augmenter\Enums(),
             new Augmenter\Shortcuts(),
+            new Augmenter\DefaultMediaType(),
             new Augmenter\SecurityRequirements(),
             new Augmenter\PathItems(),
             new Augmenter\Types(),
+            new Augmenter\Properties(),
             new Augmenter\Refs(),
             new Augmenter\Parameters(),
             new Augmenter\Merge($mergers),
@@ -452,6 +492,7 @@ class Builder
             new Augmenter\Cleanup(),
             new Augmenter\MediaTypes(),
             new Augmenter\Docblocks(),
+            new Augmenter\OperationIdTemplates(),
             new Augmenter\OperationIds(),
             new Augmenter\Tags(),
             new Augmenter\EnumDescriptions(),
@@ -467,6 +508,7 @@ class Builder
     protected function getDefaultMergers(): array
     {
         return [
+            new Merge\Tags(),
             new Merge\LastWins(),
         ];
     }

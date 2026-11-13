@@ -1,4 +1,5 @@
 <?php
+// @phan-file-suppress PhanDeprecatedClass -- swagger-php 7 deprecates the OpenApi\Attributes classes (removed in 8.0); move these to OpenApi\Spec before upgrading to swagger-php 8
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -78,7 +79,7 @@ class OpenApiAdminVersionDB {}
                             property: 'version',
                             type: 'string',
                             description: "Optional. When given, applies exactly that one release's migration -- a single hop, for targeting one migration during development. When OMITTED, the full chain runs from wherever the database actually is, finishing with the migration for the release currently in development if there is one; that is the mode to use for testing a release that has no version number yet.",
-                            example: '20261020-001',
+                            example: '20261105-001',
                             pattern: '^\\\\d{8}-\\\\d{3}$',
                         ),
                     ],
@@ -89,7 +90,7 @@ class OpenApiAdminVersionDB {}
     responses: [
         new OA\Response(
             response: 200,
-            description: 'Upgrade successful. Also returned when the requested release is the newest one this code knows about and its migration deliberately does not advance the database version, because that release has not been cut yet; the status message says so.',
+            description: 'Upgrade successful. Also returned when the requested release is the newest one this code knows about and either its migration deliberately does not advance the database version, because that release has not been cut yet, or it has no migration at all and the database is already on it; the status message says so.',
         ),
         new OA\Response(
             response: 400,
@@ -193,77 +194,78 @@ class OpenApiAdminMapDocumentsToControls {}
 
 #[OA\Get(
     path: '/admin/queue',
-    summary: 'List queued tasks with optional filters for task type and status',
+    summary: 'Search, filter and page the queue',
+    description: 'Server-side paged queue listing for the Queue Monitor. Each row carries the display status, priority tier, step progress, the most useful error text and whether the job type may be restarted or canceled. The raw payload is never listed (use /admin/queue/payload). Error and task_type strings are returned raw, not HTML-escaped.',
     operationId: 'listQueueTasks',
     tags: ['Administrator Operations'],
     security: [['ApiKeyAuth' => []]],
     parameters: [
-        new OA\Parameter(
-            name: 'task_type',
-            in: 'query',
-            description: "Filter results by the task type (e.g., 'ai_document_to_control_chunker', 'send_email', etc.)",
-            required: false,
-            schema: new OA\Schema(type: 'string', example: ''),
-        ),
+        new OA\Parameter(name: 'q', in: 'query', description: 'Free-text search (task type, id, error text). Truncated to 200 characters.', required: false, schema: new OA\Schema(type: 'string')),
         new OA\Parameter(
             name: 'status',
             in: 'query',
-            description: "Filter results by task status. Use 'all' (default) to return all statuses. For multiple statuses, provide a comma-separated list (e.g., 'pending,in_progress').",
+            description: "Comma-separated display statuses to include: pending, running, retrying, completed, failed, canceled. Unknown values and 'all' are ignored (no status filter).",
             required: false,
-            schema: new OA\Schema(type: 'string', example: 'all'),
+            schema: new OA\Schema(type: 'string', example: 'pending,failed'),
         ),
+        new OA\Parameter(name: 'task_type', in: 'query', description: 'Exact task type.', required: false, schema: new OA\Schema(type: 'string')),
+        new OA\Parameter(name: 'date_from', in: 'query', description: 'Created on or after this date (YYYY-MM-DD).', required: false, schema: new OA\Schema(type: 'string', format: 'date')),
+        new OA\Parameter(name: 'date_to', in: 'query', description: 'Created on or before this date (YYYY-MM-DD).', required: false, schema: new OA\Schema(type: 'string', format: 'date')),
+        new OA\Parameter(name: 'start', in: 'query', description: 'Row offset (default 0).', required: false, schema: new OA\Schema(type: 'integer', minimum: 0, default: 0)),
+        new OA\Parameter(name: 'length', in: 'query', description: 'Page size, 1 to 500 (default 25).', required: false, schema: new OA\Schema(type: 'integer', minimum: 1, maximum: 500, default: 25)),
+        new OA\Parameter(name: 'order_col', in: 'query', description: 'Sort column: id, task_type, status, priority, attempts, created_at or updated_at. Anything else sorts by id.', required: false, schema: new OA\Schema(type: 'string', default: 'id')),
+        new OA\Parameter(name: 'order_dir', in: 'query', description: 'asc or desc (default desc).', required: false, schema: new OA\Schema(type: 'string', default: 'desc')),
     ],
     responses: [
         new OA\Response(
             response: 200,
-            description: 'List of queue tasks (optionally filtered)',
+            description: 'A page of queue tasks.',
             content: new OA\JsonContent(
                 type: 'object',
                 properties: [
-                    new OA\Property(property: 'status_code', type: 'integer', example: 200),
+                    new OA\Property(property: 'status', type: 'integer', example: 200),
                     new OA\Property(property: 'status_message', type: 'string', example: 'SUCCESS'),
                     new OA\Property(
                         property: 'data',
                         type: 'object',
                         properties: [
-                            new OA\Property(property: 'count', type: 'integer', example: 5),
+                            new OA\Property(property: 'total', type: 'integer', description: 'All tasks in the queue.'),
+                            new OA\Property(property: 'filtered', type: 'integer', description: 'Tasks matching the filters.'),
+                            new OA\Property(property: 'max_id', type: 'integer', description: 'Highest task id in the queue at query time. Send it back as filter.max_id on an all_filtered action so tasks queued later are not touched.'),
+                            new OA\Property(property: 'actionable_total', type: 'integer', nullable: true, description: 'Only when the status filter is failed and/or canceled: the matching tasks not yet restarted, i.e. what an all_filtered restart would target. Null otherwise.'),
+                            new OA\Property(property: 'deletable_total', type: 'integer', nullable: true, description: 'Only when every status in the filter is completed, failed or canceled: the matching tasks whose type may be deleted, i.e. what an all_filtered delete would target. Null otherwise.'),
                             new OA\Property(
-                                property: 'filters',
+                                property: 'status_counts',
                                 type: 'object',
-                                properties: [
-                                    new OA\Property(
-                                        property: 'task_type',
-                                        type: 'string',
-                                        example: 'ai_document_to_control_chunker',
-                                    ),
-                                    new OA\Property(property: 'status', type: 'string', example: 'pending,in_progress'),
-                                ],
+                                description: 'Counts per display status within every filter except status, plus an all total.',
+                                example: ['pending' => 3, 'running' => 1, 'retrying' => 0, 'completed' => 40, 'failed' => 2, 'canceled' => 0, 'all' => 46],
                             ),
                             new OA\Property(
-                                property: 'items',
+                                property: 'rows',
                                 type: 'array',
                                 items: new OA\Items(
                                     type: 'object',
                                     properties: [
-                                        new OA\Property(property: 'id', type: 'integer', example: 42),
+                                        new OA\Property(property: 'id', type: 'integer'),
+                                        new OA\Property(property: 'task_type', type: 'string'),
+                                        new OA\Property(property: 'status', type: 'string', description: 'Stored task status.'),
+                                        new OA\Property(property: 'priority', type: 'integer'),
+                                        new OA\Property(property: 'attempts', type: 'integer'),
+                                        new OA\Property(property: 'created_at', type: 'string'),
+                                        new OA\Property(property: 'updated_at', type: 'string'),
                                         new OA\Property(
-                                            property: 'task_type',
-                                            type: 'string',
-                                            example: 'ai_document_to_control_chunker',
+                                            property: 'display',
+                                            type: 'object',
+                                            description: 'Derived display status: key (pending, running, retrying, stopping, completed, failed, canceled), retry_attempt and retry_in (seconds) when retrying.',
+                                            example: ['key' => 'retrying', 'retry_attempt' => 2, 'retry_in' => 45],
                                         ),
-                                        new OA\Property(property: 'status', type: 'string', example: 'pending'),
-                                        new OA\Property(
-                                            property: 'created_at',
-                                            type: 'string',
-                                            format: 'date-time',
-                                            example: '2025-11-06T15:32:00Z',
-                                        ),
-                                        new OA\Property(
-                                            property: 'updated_at',
-                                            type: 'string',
-                                            format: 'date-time',
-                                            example: '2025-11-06T16:05:00Z',
-                                        ),
+                                        new OA\Property(property: 'priority_tier', type: 'string', description: 'immediate, high, medium, low or lowest.'),
+                                        new OA\Property(property: 'progress', type: 'object', example: ['done' => 1, 'total' => 3]),
+                                        new OA\Property(property: 'error', type: 'string', nullable: true, description: 'Failed-step error, else the task last_error.'),
+                                        new OA\Property(property: 'restartable', type: 'boolean', description: 'Whether the job type may be restarted (job type only; combine with status and restarted_as).'),
+                                        new OA\Property(property: 'cancelable', type: 'boolean', description: 'Whether the job type may be canceled or run early (job type only; combine with status).'),
+                                        new OA\Property(property: 'deletable', type: 'boolean', description: 'Whether finished tasks of this job type may be deleted (job type only; only completed, failed and canceled tasks can be deleted).'),
+                                        new OA\Property(property: 'restarted_as', type: 'integer', nullable: true, description: 'Id of the task this one was restarted as, or null when it has not been restarted. A restarted task cannot be restarted again.'),
                                     ],
                                 ),
                             ),
@@ -273,6 +275,7 @@ class OpenApiAdminMapDocumentsToControls {}
             ),
         ),
         new OA\Response(response: 403, description: 'FORBIDDEN: The user does not have admin privileges.'),
+        new OA\Response(response: 500, description: 'ERROR: The request could not be completed (the cause is logged, not returned).'),
     ],
 )]
 class OpenApiAdminQueue {}
@@ -312,6 +315,7 @@ class OpenApiAdminQueue {}
                         new OA\Property(
                             property: 'payload',
                             type: 'object',
+                            description: 'The stored payload. Values under secret-looking keys (password, token, api_key and the like) are replaced with "[redacted]".',
                             example: ['document_id' => 174, 'triggered_at' => 1762621556],
                         ),
                         new OA\Property(
@@ -1730,6 +1734,110 @@ class OpenApiRoleResponsibilitiesGet {}
 class OpenApiAdminSettingsCatalog {}
 
 #[OA\Get(
+    path: '/admin/extras/status',
+    summary: 'List every Extra with its installed, enabled and version state',
+    description: "Administrators only. For each available Extra reports whether it is installed (its files are on disk), whether it is enabled (installed and switched on; the Upgrade Extra, which has no switch, is enabled when installed), the version declared by the installed files, and the POST route, relative to /api/v2, that migrates its database (null when it has none). The Upgrade Extra reads this after it replaces the Extras' files to decide which databases to migrate. Reading it never runs an Extra's own migration.",
+    operationId: 'adminExtrasStatus',
+    tags: ['Administrator Operations'],
+    security: [['ApiKeyAuth' => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Extras status',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'status', type: 'integer', example: 200),
+                    new OA\Property(property: 'status_message', type: 'string', example: 'OK'),
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(
+                                property: 'extras',
+                                type: 'array',
+                                items: new OA\Items(
+                                    type: 'object',
+                                    properties: [
+                                        new OA\Property(property: 'name', type: 'string', description: 'Extra short name', example: 'assessments'),
+                                        new OA\Property(property: 'installed', type: 'boolean', example: true),
+                                        new OA\Property(property: 'enabled', type: 'boolean', example: true),
+                                        new OA\Property(property: 'version', type: 'string', nullable: true, description: 'Version declared by the installed files, or null when not installed', example: '20261003-001'),
+                                        new OA\Property(property: 'database_upgrade_route', type: 'string', nullable: true, description: 'POST route, relative to /api/v2, that migrates the Extra database', example: '/assessments/upgrade/db'),
+                                    ],
+                                ),
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ),
+        new OA\Response(response: 403, description: 'FORBIDDEN: admin permission required.'),
+    ],
+)]
+class OpenApiAdminExtrasStatus {}
+
+#[OA\Post(
+    path: '/admin/extras/upgrade-databases',
+    summary: 'Upgrade the database of every installed, enabled Extra',
+    description: "Administrators only. Migrates the database of each Extra that is installed and enabled, in this request, and reports what each one did. For deployments that replace the code without the Upgrade Extra's one-click flow (container image swaps, the hosted tiers): call it once after the core database upgrade (`POST /admin/upgrade/db`), so the Extras do not migrate on first use instead. Safe to repeat: an Extra that is already current is reported as `current`. Takes the same lock as the core upgrade, and answers 409 without doing anything while another upgrade holds it. One Extra failing does not stop the others; the response is 500 and lists each Extra's result. Per Extra, `result` is `upgraded` (its database version moved), `current`, `queued` (the Secure Controls Framework queues its content import and has no version to compare), `not_installed`, `not_enabled`, `no_database` (the Upgrade Extra), or `failed` (`error` holds a stable code; the detail is in the debug log). When anything was upgraded or queued the queue workers are asked to restart so they load the new Extra job code.",
+    operationId: 'adminExtrasUpgradeDatabases',
+    tags: ['Administrator Operations'],
+    security: [['ApiKeyAuth' => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Every installed, enabled Extra is up to date',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'status', type: 'integer', example: 200),
+                    new OA\Property(property: 'status_message', type: 'string', example: 'Extra databases are up to date.'),
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(
+                                property: 'extras',
+                                type: 'array',
+                                items: new OA\Items(
+                                    type: 'object',
+                                    properties: [
+                                        new OA\Property(property: 'name', type: 'string', description: 'Extra short name', example: 'assessments'),
+                                        new OA\Property(property: 'installed', type: 'boolean', example: true),
+                                        new OA\Property(property: 'enabled', type: 'boolean', example: true),
+                                        new OA\Property(property: 'version', type: 'string', nullable: true, description: 'Version declared by the installed files', example: '20261003-001'),
+                                        new OA\Property(property: 'result', type: 'string', enum: ['upgraded', 'current', 'queued', 'not_installed', 'not_enabled', 'no_database', 'failed'], example: 'upgraded'),
+                                        new OA\Property(property: 'database_version_before', type: 'string', nullable: true, description: 'The Extra database version before the run; null when the Extra keeps none', example: '41'),
+                                        new OA\Property(property: 'database_version_after', type: 'string', nullable: true, description: 'The Extra database version after the run', example: '43'),
+                                        new OA\Property(property: 'error', type: 'string', nullable: true, description: 'Stable error code when result is failed', example: null),
+                                    ],
+                                ),
+                            ),
+                            new OA\Property(
+                                property: 'summary',
+                                type: 'object',
+                                description: 'Extra short names grouped by outcome',
+                                properties: [
+                                    new OA\Property(property: 'upgraded', type: 'array', items: new OA\Items(type: 'string')),
+                                    new OA\Property(property: 'current', type: 'array', items: new OA\Items(type: 'string')),
+                                    new OA\Property(property: 'queued', type: 'array', items: new OA\Items(type: 'string')),
+                                    new OA\Property(property: 'skipped', type: 'array', items: new OA\Items(type: 'string')),
+                                    new OA\Property(property: 'failed', type: 'array', items: new OA\Items(type: 'string')),
+                                ],
+                            ),
+                            new OA\Property(property: 'workers_restart_requested', type: 'boolean', description: 'True when the queue workers were asked to restart'),
+                        ],
+                    ),
+                ],
+            ),
+        ),
+        new OA\Response(response: 403, description: 'FORBIDDEN: The user does not have admin privileges.'),
+        new OA\Response(response: 409, description: 'An upgrade is already running on this instance. Nothing was changed.'),
+        new OA\Response(response: 500, description: 'One or more Extra databases could not be upgraded. The body has the same shape as a 200, with the failing Extras marked.'),
+    ],
+)]
+class OpenApiAdminExtrasUpgradeDatabases {}
+
+#[OA\Get(
     path: '/admin/settings/extras/licenses',
     summary: 'List Extras the customer is licensed for',
     description: "Returns the Extra slugs the current customer has purchased. Used by the Settings Hub to upgrade uninstalled tiles from 'Checking…' to 'Ready to Download' or 'Purchase'.",
@@ -1810,6 +1918,104 @@ class OpenApiAdminSettingsExtrasLicenses {}
     ],
 )]
 class OpenApiAdminLicenseRefresh {}
+
+#[OA\Get(
+    path: '/admin/update-channel',
+    summary: 'Get the update channel state',
+    description: 'Returns the resolved update channel (production or rc), whether it is locked by a config.php constant, where the value came from, whether any service URL is overridden, and the resolved updates / licensing / bundles base URLs. Requires admin.',
+    operationId: 'adminUpdateChannelGet',
+    tags: ['Administrator Operations'],
+    security: [['ApiKeyAuth' => []]],
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Current update channel state',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'status', type: 'integer', example: 200),
+                    new OA\Property(property: 'status_message', type: 'string', example: 'OK'),
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(property: 'channel', type: 'string', enum: ['production', 'rc'], example: 'production'),
+                            new OA\Property(property: 'locked', type: 'boolean', description: 'True when config.php decides the channel; PUT then returns 409.', example: false),
+                            new OA\Property(property: 'source', type: 'string', enum: ['default', 'setting', 'channel_constant', 'url_constant'], example: 'setting'),
+                            new OA\Property(property: 'custom', type: 'boolean', description: 'True when any UPDATES_URL / LICENSING_URL / BUNDLES_URL constant overrides a host.', example: false),
+                            new OA\Property(
+                                property: 'urls',
+                                type: 'object',
+                                properties: [
+                                    new OA\Property(property: 'updates', type: 'string', example: 'https://updates.simplerisk.com'),
+                                    new OA\Property(property: 'licensing', type: 'string', example: 'https://licensing.simplerisk.com'),
+                                    new OA\Property(property: 'bundles', type: 'string', example: 'https://simplerisk-downloads.s3.amazonaws.com/public/bundles'),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ),
+        new OA\Response(response: 401, description: 'Not authenticated'),
+        new OA\Response(response: 403, description: 'FORBIDDEN: The user does not have admin privileges.'),
+    ],
+)]
+class OpenApiAdminUpdateChannelGet {}
+
+#[OA\Put(
+    path: '/admin/update-channel',
+    summary: 'Switch the update channel',
+    description: 'Switches this instance between the Production and Release Candidate (rc) update channels. On success the cached latest-version data and license check response are cleared and the Extra compatibility data is refreshed from the new channel. Returns the resolved state after the change. Requires admin.',
+    operationId: 'adminUpdateChannelPut',
+    tags: ['Administrator Operations'],
+    security: [['ApiKeyAuth' => []]],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['channel'],
+            properties: [
+                new OA\Property(property: 'channel', type: 'string', enum: ['production', 'rc'], example: 'rc'),
+            ],
+        ),
+    ),
+    responses: [
+        new OA\Response(
+            response: 200,
+            description: 'Channel switched; body is the resolved state after the change',
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'status', type: 'integer', example: 200),
+                    new OA\Property(property: 'status_message', type: 'string', example: 'OK'),
+                    new OA\Property(
+                        property: 'data',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(property: 'channel', type: 'string', enum: ['production', 'rc'], example: 'production'),
+                            new OA\Property(property: 'locked', type: 'boolean', description: 'True when config.php decides the channel; PUT then returns 409.', example: false),
+                            new OA\Property(property: 'source', type: 'string', enum: ['default', 'setting', 'channel_constant', 'url_constant'], example: 'setting'),
+                            new OA\Property(property: 'custom', type: 'boolean', description: 'True when any UPDATES_URL / LICENSING_URL / BUNDLES_URL constant overrides a host.', example: false),
+                            new OA\Property(
+                                property: 'urls',
+                                type: 'object',
+                                properties: [
+                                    new OA\Property(property: 'updates', type: 'string', example: 'https://updates.simplerisk.com'),
+                                    new OA\Property(property: 'licensing', type: 'string', example: 'https://licensing.simplerisk.com'),
+                                    new OA\Property(property: 'bundles', type: 'string', example: 'https://simplerisk-downloads.s3.amazonaws.com/public/bundles'),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ),
+        new OA\Response(response: 401, description: 'Not authenticated'),
+        new OA\Response(response: 403, description: 'FORBIDDEN: The user does not have admin privileges.'),
+        new OA\Response(response: 409, description: 'The channel is locked by a constant in config.php and cannot be changed through the API.'),
+        new OA\Response(response: 422, description: 'channel is missing or is not one of production, rc.'),
+        new OA\Response(response: 500, description: 'The setting could not be saved; nothing was changed.'),
+    ],
+)]
+class OpenApiAdminUpdateChannelPut {}
 
 #[OA\Get(
     path: '/admin/licenses',
@@ -2085,5 +2291,123 @@ class OpenApiProfilePatch {}
     responses: [new OA\Response(response: 200, description: 'Display settings reset.')],
 )]
 class OpenApiProfileResetDisplaySettings {}
+
+#[OA\Get(
+    path: '/admin/lookup-values/lists',
+    summary: 'List the lookup value lists',
+    description: 'Admin only. The lists managed from Admin > Add and Remove Values, grouped, with the number of values in each and the kinds of records that use them.',
+    operationId: 'listLookupValueLists',
+    tags: ['Administrator Operations'],
+    security: [['ApiKeyAuth' => []]],
+    parameters: [
+        new OA\Parameter(name: 'include_values', in: 'query', required: false, description: 'Set to 1 to also return the id and name of every value of each list.', schema: new OA\Schema(type: 'integer', enum: [0, 1])),
+    ],
+    responses: [
+        new OA\Response(response: 200, description: 'The groups and the lists.'),
+        new OA\Response(response: 403, description: 'FORBIDDEN: The user does not have admin privileges.'),
+    ],
+)]
+class OpenApiLookupValueLists {}
+
+#[OA\Get(
+    path: '/admin/lookup-values/lists/{list}/values',
+    summary: 'List the values of a lookup list with their usage',
+    description: 'Admin only. Every value of the list with the number of records that use it and whether it is protected from rename or delete.',
+    operationId: 'listLookupValues',
+    tags: ['Administrator Operations'],
+    security: [['ApiKeyAuth' => []]],
+    parameters: [
+        new OA\Parameter(name: 'list', in: 'path', required: true, description: 'The list key, for example category or risk_grouping.', schema: new OA\Schema(type: 'string')),
+    ],
+    responses: [
+        new OA\Response(response: 200, description: 'The values of the list.'),
+        new OA\Response(response: 403, description: 'FORBIDDEN: The user does not have admin privileges.'),
+        new OA\Response(response: 404, description: 'The list is not one of the managed lists.'),
+    ],
+)]
+class OpenApiLookupValuesList {}
+
+#[OA\Post(
+    path: '/admin/lookup-values/lists/{list}/values',
+    summary: 'Add a value to a lookup list',
+    description: 'Admin only. Adds a value; the name is validated against the list length limit.',
+    operationId: 'addLookupValue',
+    tags: ['Administrator Operations'],
+    security: [['ApiKeyAuth' => []]],
+    parameters: [
+        new OA\Parameter(name: 'list', in: 'path', required: true, description: 'The list key.', schema: new OA\Schema(type: 'string')),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['name'],
+            properties: [new OA\Property(property: 'name', type: 'string', description: 'The name of the new value.')],
+        ),
+    ),
+    responses: [
+        new OA\Response(response: 201, description: 'The value was added. Returns its id and name.'),
+        new OA\Response(response: 400, description: 'The name is missing, empty or longer than the list allows.'),
+        new OA\Response(response: 403, description: 'FORBIDDEN: The user does not have admin privileges.'),
+        new OA\Response(response: 404, description: 'The list is not one of the managed lists.'),
+        new OA\Response(response: 409, description: 'The list already has a value with that name.'),
+    ],
+)]
+class OpenApiLookupValueAdd {}
+
+#[OA\Patch(
+    path: '/admin/lookup-values/lists/{list}/values/{id}',
+    summary: 'Rename a value of a lookup list',
+    description: 'Admin only. Renaming a risk status also rewrites the status of the risks that use it. The built-in risk statuses cannot be renamed.',
+    operationId: 'renameLookupValue',
+    tags: ['Administrator Operations'],
+    security: [['ApiKeyAuth' => []]],
+    parameters: [
+        new OA\Parameter(name: 'list', in: 'path', required: true, description: 'The list key.', schema: new OA\Schema(type: 'string')),
+        new OA\Parameter(name: 'id', in: 'path', required: true, description: 'The id of the value.', schema: new OA\Schema(type: 'integer')),
+    ],
+    requestBody: new OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['name'],
+            properties: [new OA\Property(property: 'name', type: 'string', description: 'The new name.')],
+        ),
+    ),
+    responses: [
+        new OA\Response(response: 200, description: 'The value was renamed.'),
+        new OA\Response(response: 400, description: 'The id or the name is invalid.'),
+        new OA\Response(response: 403, description: 'FORBIDDEN: The user does not have admin privileges.'),
+        new OA\Response(response: 404, description: 'The list or the value does not exist.'),
+        new OA\Response(response: 409, description: 'The value is protected, or the list already has a value with that name.'),
+    ],
+)]
+class OpenApiLookupValueRename {}
+
+#[OA\Delete(
+    path: '/admin/lookup-values/lists/{list}/values/{id}',
+    summary: 'Delete a value of a lookup list',
+    description: 'Admin only. Optionally moves the records that use the value to another value of the same list first. Without reassign_to the records keep an id that no longer exists and show an empty selection. The closing audit status, the default risk and threat groupings and the built-in risk statuses cannot be deleted. The records are moved before the value is deleted, so if the delete then fails (500) the records stay on the target value and the request can be retried.',
+    operationId: 'deleteLookupValue',
+    tags: ['Administrator Operations'],
+    security: [['ApiKeyAuth' => []]],
+    parameters: [
+        new OA\Parameter(name: 'list', in: 'path', required: true, description: 'The list key.', schema: new OA\Schema(type: 'string')),
+        new OA\Parameter(name: 'id', in: 'path', required: true, description: 'The id of the value.', schema: new OA\Schema(type: 'integer')),
+    ],
+    requestBody: new OA\RequestBody(
+        required: false,
+        content: new OA\JsonContent(
+            properties: [new OA\Property(property: 'reassign_to', type: 'integer', description: 'The id of another value of the same list that takes over the records.')],
+        ),
+    ),
+    responses: [
+        new OA\Response(response: 200, description: 'The value was deleted. Returns how many records were reassigned.'),
+        new OA\Response(response: 400, description: 'The id or the reassign target is invalid.'),
+        new OA\Response(response: 403, description: 'FORBIDDEN: The user does not have admin privileges.'),
+        new OA\Response(response: 404, description: 'The list or the value does not exist.'),
+        new OA\Response(response: 409, description: 'The value is protected.'),
+    ],
+)]
+class OpenApiLookupValueDelete {}
+
 
 ?>

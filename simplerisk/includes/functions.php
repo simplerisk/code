@@ -17,6 +17,12 @@
 require_once(realpath(__DIR__ . '/escaper.php'));
 $escaper = new simpleriskEscaper();
 
+// db_open() uses these connection helpers, and the require chain below can reach
+// db_open() while this file is still loading (services.php -> alerts.php ->
+// load_language_file() -> get_setting()), so they must be defined first. The
+// file has no dependencies.
+require_once(realpath(__DIR__ . '/db_connection.php'));
+
 // Include required configuration files
 require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/config_check.php'));
@@ -30,16 +36,18 @@ require_once(realpath(__DIR__ . '/mfa.php'));
 require_once(realpath(__DIR__ . '/Widgets/AssetAssetGroupDropdown.php'));
 require_once(realpath(__DIR__ . '/renderutils.php'));
 require_once(realpath(__DIR__ . '/data_integrity.php'));
-require_once(realpath(__DIR__ . '/countries_fallback.php'));
-// queue_countries_refresh_if_not_already_queued() below calls get_queue_items()
-// and queue_task(), both defined in queues.php. queues.php itself require_once's
-// functions.php, but PHP's require_once dedupes on realpath before executing a
-// file's body, so this circular require is safe -- it just skips the redundant
-// second load.
+require_once(realpath(__DIR__ . '/countries.php'));
+// queues.php is loaded here on purpose even though functions.php itself no
+// longer calls queue_task()/get_queue_items(): several callers (e.g.
+// jobs/core_ai_context_update.php, jobs/core_control_update.php) use them
+// without their own require_once and rely on this load. queues.php itself
+// require_once's functions.php, but PHP's require_once dedupes on realpath
+// before executing a file's body, so this circular require is safe -- it just
+// skips the redundant second load.
 require_once(realpath(__DIR__ . '/queues.php'));
 
-// Include the language file
-require_once(language_file());
+// Include the language file (English strings underneath, active locale on top)
+load_language_file();
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 // Add Monolog logger
@@ -84,7 +92,6 @@ $available_extras = array(
     'notification',
     'organizational_hierarchy',
     'separation',
-    'ucf',
     'upgrade',
     'vulnmgmt',
     'workflows',
@@ -665,6 +672,21 @@ $field_settings = [
             // this value needs to change to `a`.`id` for that consumer, or
             // the two uses need to diverge.
             'select_parts' => ["`b`.`id`"],
+        ],
+        // Same single-consumer caveat and `b`-alias coupling as 'id' above --
+        // get_custom_value_join_parts('risk', ...) reads this directly to scope
+        // a dropdown/multidropdown/user_multidropdown custom_risk_data read to
+        // the risk's current review (SD-918). A dedicated entry here, rather
+        // than deriving `mgmt_review` from 'id' via string manipulation, keeps
+        // the two catalog values independently correct if 'id' ever changes
+        // shape for its own consumer.
+        'mgmt_review' => [
+            'customization_field_name' => '',
+            'localization_key' => '',
+            'technical_field' => true,
+            'searchable' => false,
+            'orderable' => false,
+            'select_parts' => ["`b`.`mgmt_review`"],
         ],
         'risk_status' => [
             'customization_field_name' => 'Status',
@@ -4197,7 +4219,7 @@ $ui_layout_widget_config = [
         '' => '',
     ],
     'open_risk_level' => [
-        'localization_key' => 'ReviewedVsUnreviewed',
+        'localization_key' => 'RiskLevel',
         'type' => 'chart',
         'required_permission' =>'',
         'defaults' => [
@@ -4209,7 +4231,7 @@ $ui_layout_widget_config = [
         '' => '',
     ],
     'open_status' => [
-        'localization_key' => 'ReviewedVsUnreviewed',
+        'localization_key' => 'Status',
         'type' => 'chart',
         'required_permission' =>'',
         'defaults' => [
@@ -4221,7 +4243,7 @@ $ui_layout_widget_config = [
         '' => '',
     ],
     'open_site_location' => [
-        'localization_key' => 'ReviewedVsUnreviewed',
+        'localization_key' => 'SiteLocation',
         'type' => 'chart',
         'required_permission' =>'',
         'defaults' => [
@@ -4233,7 +4255,7 @@ $ui_layout_widget_config = [
         '' => '',
     ],
     'open_risk_source' => [
-        'localization_key' => 'ReviewedVsUnreviewed',
+        'localization_key' => 'RiskSource',
         'type' => 'chart',
         'required_permission' =>'',
         'defaults' => [
@@ -4245,7 +4267,7 @@ $ui_layout_widget_config = [
         '' => '',
     ],
     'open_category' => [
-        'localization_key' => 'ReviewedVsUnreviewed',
+        'localization_key' => 'Category',
         'type' => 'chart',
         'required_permission' =>'',
         'defaults' => [
@@ -4257,7 +4279,7 @@ $ui_layout_widget_config = [
         '' => '',
     ],
     'open_team' => [
-        'localization_key' => 'ReviewedVsUnreviewed',
+        'localization_key' => 'Team',
         'type' => 'chart',
         'required_permission' =>'',
         'defaults' => [
@@ -4269,7 +4291,7 @@ $ui_layout_widget_config = [
         '' => '',
     ],
     'open_technology' => [
-        'localization_key' => 'ReviewedVsUnreviewed',
+        'localization_key' => 'Technology',
         'type' => 'chart',
         'required_permission' =>'',
         'defaults' => [
@@ -4281,7 +4303,7 @@ $ui_layout_widget_config = [
         '' => '',
     ],
     'open_owner' => [
-        'localization_key' => 'ReviewedVsUnreviewed',
+        'localization_key' => 'Owner',
         'type' => 'chart',
         'required_permission' =>'',
         'defaults' => [
@@ -4293,7 +4315,7 @@ $ui_layout_widget_config = [
         '' => '',
     ],
     'open_owners_manager' => [
-        'localization_key' => 'ReviewedVsUnreviewed',
+        'localization_key' => 'OwnersManager',
         'type' => 'chart',
         'required_permission' =>'',
         'defaults' => [
@@ -4305,7 +4327,7 @@ $ui_layout_widget_config = [
         '' => '',
     ],
     'open_risk_scoring_method' => [
-        'localization_key' => 'ReviewedVsUnreviewed',
+        'localization_key' => 'RiskScoringMethod',
         'type' => 'chart',
         'required_permission' =>'',
         'defaults' => [
@@ -4317,7 +4339,7 @@ $ui_layout_widget_config = [
         '' => '',
     ],
     'close_reason' => [
-        'localization_key' => 'ReviewedVsUnreviewed',
+        'localization_key' => 'Reason',
         'type' => 'chart',
         'required_permission' =>'',
         'defaults' => [
@@ -5620,8 +5642,59 @@ function db_open() {
             $options[$pdo_mysql_ssl_ca] = DB_SSL_CERTIFICATE_PATH;
         }
 
-        // Create the PDO object
-        $GLOBALS['db_global'] = new PDO("mysql:charset=UTF8;dbname=" . DB_DATABASE . ";host=" . DB_HOSTNAME . ";port=" . DB_PORT, DB_USERNAME, DB_PASSWORD, $options);
+        // Optional cap on concurrent web connections from this host
+        // (DB_MAX_CONCURRENT_CONNECTIONS, 0 = unlimited). The queue and cron
+        // workers run from the CLI and are not counted against it. The slot is
+        // held in a global so it lives exactly as long as the request's
+        // connection and is released when the request ends.
+        $max_slots = PHP_SAPI === 'cli' ? 0 : db_connection_setting('DB_MAX_CONCURRENT_CONNECTIONS', 0);
+
+        // A slot this request already holds is reused, never taken twice
+        if ($max_slots > 0 && empty($GLOBALS['db_connection_slot'])) {
+            $wait_seconds = db_connection_setting('DB_CONNECTION_WAIT_SECONDS', 3);
+            $slot = db_acquire_connection_slot(
+                $max_slots,
+                sys_get_temp_dir(),
+                sha1(__DIR__ . '|' . DB_HOSTNAME . '|' . DB_PORT . '|' . DB_DATABASE),
+                $wait_seconds * 1000
+            );
+
+            // error_log() rather than write_debug_log() on this path for the
+            // reason given in the catch block below: no database yet
+            if ($slot['status'] === 'timeout') {
+                error_log("[SimpleRisk] All {$max_slots} database connection slots on this host stayed busy for {$wait_seconds}s (DB_MAX_CONCURRENT_CONNECTIONS); asking the client to retry.");
+                db_send_busy_headers();
+                require_once(realpath(__DIR__ . '/healthcheck.php'));
+                // Ends the request with exit(); the return is only reached
+                // through that page's re-entrancy guard
+                unable_to_communicate_with_database();
+                return null;
+            }
+
+            if ($slot['status'] === 'unavailable') {
+                // Fail open rather than refuse every request, but say so: the
+                // operator set a cap and is relying on it
+                error_log("[SimpleRisk] DB_MAX_CONCURRENT_CONNECTIONS is set but the lock files in " . sys_get_temp_dir() . " cannot be opened; the cap is not being enforced.");
+            } else {
+                $GLOBALS['db_connection_slot'] = $slot['handle'];
+            }
+        }
+
+        // Create the PDO object. MySQL refuses the connection with error 1040
+        // when it is at max_connections; that is usually a burst that clears
+        // in moments, so retry a few times with a short jittered backoff
+        // (DB_CONNECT_RETRY_ATTEMPTS / DB_CONNECT_RETRY_BASE_DELAY_MS) before
+        // giving up. Any other failure is raised immediately.
+        $max_retries = db_connection_setting('DB_CONNECT_RETRY_ATTEMPTS', 3);
+        $retry_base_ms = db_connection_setting('DB_CONNECT_RETRY_BASE_DELAY_MS', 250);
+
+        $GLOBALS['db_global'] = db_connect_with_retry(
+            function () use ($options) {
+                return new PDO("mysql:charset=UTF8;dbname=" . DB_DATABASE . ";host=" . DB_HOSTNAME . ";port=" . DB_PORT, DB_USERNAME, DB_PASSWORD, $options);
+            },
+            $max_retries,
+            $retry_base_ms
+        );
 
         // Get the value set for the timezone in the database
         $stmt = $GLOBALS['db_global']->prepare("
@@ -5700,6 +5773,21 @@ function db_open() {
         // calls get_setting() to read the log-level configuration, which
         // requires the database connection we just failed to open.
         error_log("[SimpleRisk] Database connection failed: " . $e->getMessage());
+
+        // No connection was made, so give the slot back rather than hold it
+        // until the request ends (the outage page below normally exits, but
+        // its re-entrancy guard can return). If the connection did open and a
+        // later query threw, it is still live and keeps the slot.
+        if (!empty($GLOBALS['db_connection_slot']) && empty($GLOBALS['db_global'])) {
+            fclose($GLOBALS['db_connection_slot']);
+            unset($GLOBALS['db_connection_slot']);
+        }
+
+        // At max_connections even after the retries: tell the client (and any
+        // load balancer) it is temporary rather than serving the page as a 200
+        if (db_is_too_many_connections($e)) {
+            db_send_busy_headers();
+        }
 
         // We were unable to connect to the SimpleRisk database
         require_once(realpath(__DIR__ . '/healthcheck.php'));
@@ -11543,7 +11631,20 @@ function mitigation_controls_selection_changed($mitigation_id, $submitted_contro
 /*******************************
  * FUNCTION: SUBMIT MITIGATION *
  *******************************/
-function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
+/**
+ * @param bool $is_api   true for the v2 API callers (saveMitigation(),
+ *                       saveMitigationOwnerBatch()). Their bodies never carry a
+ *                       unique_names list -- the Cards Mitigation form manages
+ *                       Mitigation Supporting Documentation through its own
+ *                       endpoint, which commits each upload immediately, even
+ *                       before the mitigation exists -- so for them an absent
+ *                       list means "not named", not "the user removed them all",
+ *                       and the files are kept. Same gate as update_mitigation().
+ * @param ?callable $notifier Called with the raw risk id in place of the
+ *                       Notification Extra's notify_new_mitigation(). Tests pass one to
+ *                       observe the notification; production callers omit it.
+ */
+function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false, $is_api = false, ?callable $notifier = null)
 {
     global $escaper;
     if($submitted_by_id === false){
@@ -11670,14 +11771,6 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
 
     $stmt->execute();
 
-    // Send the notification (no-op if notification extra is disabled)
-    call_extra_function(
-        'notification_extra',
-        __DIR__ . '/../extras/notification/index.php',
-        'notify_new_mitigation',
-        [$id]
-    );
-
     // Audit log
     $insert_data = [];
     foreach ($insert_fields as $key => $value) {
@@ -11731,8 +11824,13 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
             delete_db_file($file);
         }
     }
-    $unique_names = empty($post['unique_names']) ? "" : $post['unique_names'];
-    refresh_files_for_risk($unique_names, $id, 2);
+    // Only prune against unique_names when the caller can send one (see
+    // $is_api above): an API save would otherwise delete every Mitigation
+    // Supporting Documentation file uploaded before the mitigation existed.
+    if (!$is_api || array_key_exists('unique_names', $post)) {
+        $unique_names = empty($post['unique_names']) ? "" : $post['unique_names'];
+        refresh_files_for_risk($unique_names, $id, 2);
+    }
 
     $error = 1;
     // If a file was submitted
@@ -11764,6 +11862,20 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     // Otherwise, success
     else $error = 1;
     /****** end uploading files *******/
+
+    // Send the notification (no-op if notification extra is disabled). After
+    // the file changes above, so the email's Mitigation: Supporting
+    // Documentation lists the files this save left, not the ones it replaced.
+    if ($notifier !== null) {
+        $notifier($id);
+    } else {
+        call_extra_function(
+            'notification_extra',
+            __DIR__ . '/../extras/notification/index.php',
+            'notify_new_mitigation',
+            [$id]
+        );
+    }
 
     // Add residual risk score
     $residual_risk = get_residual_risk((int)$id + 1000);
@@ -13033,6 +13145,35 @@ function get_risks_by_project_id($project_id)
     return $array;
 }
 
+/********************************************
+ * FUNCTION: GET RISKS TEAM SEPARATION SQL  *
+ * Returns the SQL fragments get_risks()    *
+ * adds when the Team Separation Extra is   *
+ * enabled, as [team join, stakeholder      *
+ * join, filter], or three empty strings    *
+ * when it is not.                          *
+ * $join_alias is the risks table alias the *
+ * joins attach to; $filter_alias and       *
+ * $where are passed to                     *
+ * get_user_teams_query() (filter starts    *
+ * with WHERE when $where is true, AND      *
+ * otherwise).                              *
+ ********************************************/
+function get_risks_team_separation_sql(string $join_alias, string|false $filter_alias, bool $where = false): array
+{
+    if (!team_separation_extra()) {
+        return ['', '', ''];
+    }
+
+    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+    return [
+        "LEFT JOIN risk_to_team rtt ON {$join_alias}.id = rtt.risk_id",
+        "LEFT JOIN risk_to_additional_stakeholder rtas ON {$join_alias}.id = rtas.risk_id",
+        get_user_teams_query($filter_alias, $where, !$where),
+    ];
+}
+
 /***********************
  * FUNCTION: GET RISKS *
  ***********************/
@@ -13156,8 +13297,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
             break;
             // Review Risk grid only (get_risks(22, ...)) -- risk_catalog_names/
             // threat_catalog_names are GROUP_CONCAT'd display-name aliases that
-            // exist only in the sort_order==22 SELECT list (functions.php,
-            // ~line 14721-14724 and its team-separation twin); safe as ORDER BY
+            // exist only in the sort_order==22 SELECT list; safe as ORDER BY
             // targets there since MySQL allows ORDER BY to reference a SELECT-
             // list alias. Distinct from the pre-existing risk_catalog_mapping/
             // threat_catalog_mapping cases (handled by $static_allowed_fields
@@ -13241,66 +13381,34 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
         if(empty($sort_query)){
             $sort_query = " ORDER BY a.calculated_risk DESC ";
         }
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk, b.*, c.next_review
-                    , ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.status != \"Closed\"
-                GROUP BY b.id
-                {$sort_query}
-            ");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.status != \"Closed\"  " . $separation_query . "
-                GROUP BY b.id
-                {$sort_query}
-            ");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+            SELECT
+                a.calculated_risk, b.*, c.next_review
+                , ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+            FROM
+                risk_scoring a
+                LEFT JOIN risks b ON a.id = b.id
+                {$rtt_join}
+                {$rtas_join}
+                LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
+                LEFT JOIN mitigations mg ON b.id = mg.risk_id
+                LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+            WHERE
+                b.status != \"Closed\" {$separation_query}
+            GROUP BY b.id
+            {$sort_query}
+        ");
 
         $stmt->execute();
 
@@ -13316,303 +13424,152 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
             $sort_query = " ORDER BY a.calculated_risk DESC ";
         }
         
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT location.name SEPARATOR ',')
-                        FROM
-                            location, risk_to_location rtl
-                        WHERE
-                            rtl.risk_id=b.id AND rtl.location_id=location.value
-                    ) AS location,
-                    v.name AS source, 
-                    d.name AS category,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ',')
-                        FROM
-                            team, risk_to_team rtt
-                        WHERE
-                            rtt.risk_id=b.id AND rtt.team_id=team.value
-                    ) AS team,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ',')
-                        FROM
-                            user u, risk_to_additional_stakeholder rtas
-                        WHERE
-                            rtas.risk_id=b.id AND rtas.user_id=u.value
-                    ) AS additional_stakeholders,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ',')
-                        FROM
-                            technology tech, risk_to_technology rttg
-                        WHERE
-                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
-                    ) AS technology,
-                    g.name AS owner,
-                    h.name AS manager,
-                    a.scoring_method,
-                    k.name AS project, 
-                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
-                    i.name AS submitted_by,
-                    (
-                        SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR ',')
-                        FROM
-                            tags t, tags_taggees tt 
-                        WHERE
-                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
-                    ) AS risk_tags,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ')
-                        FROM
-                            risks_to_assets rta
-                            INNER JOIN assets a ON a.id = rta.asset_id
-                        WHERE
-                            rta.risk_id=b.id
-                    ) AS affected_assets,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
-                        FROM
-                            risks_to_asset_groups rtag
-                            INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
-                        WHERE
-                            rtag.risk_id=b.id
-                    ) AS affected_asset_groups,
-                    q.name AS planning_strategy,
-                    p.planning_date,
-                    r.name AS mitigation_effort,
-                    s.min_value AS mitigation_min_cost,
-                    s.max_value AS mitigation_max_cost,
-                    t.name AS mitigation_owner,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ',')
-                        FROM
-                            team, mitigation_to_team mtt 
-                        WHERE
-                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
-                    ) AS mitigation_team,
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [, , $separation_query] = get_risks_team_separation_sql('b', 'b');
+
+        // Query the database
+        $stmt = $db->prepare("
+            SELECT
+                a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT location.name SEPARATOR ',')
+                    FROM
+                        location, risk_to_location rtl
+                    WHERE
+                        rtl.risk_id=b.id AND rtl.location_id=location.value
+                ) AS location,
+                v.name AS source, 
+                d.name AS category,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT team.name  SEPARATOR ',')
+                    FROM
+                        team, risk_to_team rtt
+                    WHERE
+                        rtt.risk_id=b.id AND rtt.team_id=team.value
+                ) AS team,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT u.name SEPARATOR ',')
+                    FROM
+                        user u, risk_to_additional_stakeholder rtas
+                    WHERE
+                        rtas.risk_id=b.id AND rtas.user_id=u.value
+                ) AS additional_stakeholders,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT tech.name SEPARATOR ',')
+                    FROM
+                        technology tech, risk_to_technology rttg
+                    WHERE
+                        rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                ) AS technology,
+                g.name AS owner,
+                h.name AS manager,
+                a.scoring_method,
+                k.name AS project, 
+                DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                i.name AS submitted_by,
+                (
+                    SELECT
+                        GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR ',')
+                    FROM
+                        tags t, tags_taggees tt 
+                    WHERE
+                        tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                ) AS risk_tags,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ')
+                    FROM
+                        risks_to_assets rta
+                        INNER JOIN assets a ON a.id = rta.asset_id
+                    WHERE
+                        rta.risk_id=b.id
+                ) AS affected_assets,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
+                    FROM
+                        risks_to_asset_groups rtag
+                        INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
+                    WHERE
+                        rtag.risk_id=b.id
+                ) AS affected_asset_groups,
+                q.name AS planning_strategy,
+                p.planning_date,
+                r.name AS mitigation_effort,
+                s.min_value AS mitigation_min_cost,
+                s.max_value AS mitigation_max_cost,
+                t.name AS mitigation_owner,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT team.name SEPARATOR ',')
+                    FROM
+                        team, mitigation_to_team mtt 
+                    WHERE
+                        mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                ) AS mitigation_team,
 
 
-                    NOT(ISNULL(mau.id)) mitigation_accepted, 
-                    p.submission_date AS mitigation_date,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ',')
-                        FROM
-                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                        WHERE
-                            mtc.mitigation_id=p.id 
-                    ) AS mitigation_controls,
-                    p.current_solution,
-                    p.security_recommendations,
-                    p.security_requirements,
-                    p.mitigation_percent,
-                    m.name AS next_step,
-                    rw.name AS review,
-                    l.comments,
-                    n.name AS reviewer,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations p ON b.id = p.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN closures o ON b.close_id = o.id
-                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
-                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
-                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
-                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
-                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
-                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
-                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
-                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
-                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
-                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
-                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
-                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
-                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
-                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
-                    LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
-                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.mitigation_id = 0 and b.status != \"Closed\"
-                GROUP BY b.id
-                {$sort_query}
-                ;
-            ");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT location.name SEPARATOR ',')
-                        FROM
-                            location, risk_to_location rtl
-                        WHERE
-                            rtl.risk_id=b.id AND rtl.location_id=location.value
-                    ) AS location,
-                    v.name AS source, 
-                    d.name AS category,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ',')
-                        FROM
-                            team, risk_to_team rtt
-                        WHERE
-                            rtt.risk_id=b.id AND rtt.team_id=team.value
-                    ) AS team,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ',')
-                        FROM
-                            user u, risk_to_additional_stakeholder rtas
-                        WHERE
-                            rtas.risk_id=b.id AND rtas.user_id=u.value
-                    ) AS additional_stakeholders,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ',')
-                        FROM
-                            technology tech, risk_to_technology rttg
-                        WHERE
-                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
-                    ) AS technology,
-                    g.name AS owner,
-                    h.name AS manager,
-                    a.scoring_method,
-                    k.name AS project, 
-                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
-                    i.name AS submitted_by,
-                    (
-                        SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR ',')
-                        FROM
-                            tags t, tags_taggees tt 
-                        WHERE
-                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
-                    ) AS risk_tags,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ')
-                        FROM
-                            risks_to_assets rta
-                            INNER JOIN assets a ON a.id = rta.asset_id
-                        WHERE
-                            rta.risk_id=b.id
-                    ) AS affected_assets,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
-                        FROM
-                            risks_to_asset_groups rtag
-                            INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
-                        WHERE
-                            rtag.risk_id=b.id
-                    ) AS affected_asset_groups,
-                    q.name AS planning_strategy,
-                    p.planning_date,
-                    r.name AS mitigation_effort,
-                    s.min_value AS mitigation_min_cost,
-                    s.max_value AS mitigation_max_cost,
-                    t.name AS mitigation_owner,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ',')
-                        FROM
-                            team, mitigation_to_team mtt 
-                        WHERE
-                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
-                    ) AS mitigation_team,
-
-
-                    NOT(ISNULL(mau.id)) mitigation_accepted, 
-                    p.submission_date AS mitigation_date,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ',')
-                        FROM
-                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                        WHERE
-                            mtc.mitigation_id=p.id 
-                    ) AS mitigation_controls,
-                    p.current_solution,
-                    p.security_recommendations,
-                    p.security_requirements,
-                    p.mitigation_percent,
-                    m.name AS next_step,
-                    l.comments,
-                    n.name AS reviewer,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations p ON b.id = p.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN closures o ON b.close_id = o.id
-                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
-                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
-                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
-                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
-                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
-                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
-                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
-                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
-                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
-                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
-                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
-                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
-                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
-                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
-                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.mitigation_id = 0 and b.status != \"Closed\"  " . $separation_query . "
-                GROUP BY b.id
-                {$sort_query}
-                ;
-            ");
-        }
+                NOT(ISNULL(mau.id)) mitigation_accepted, 
+                p.submission_date AS mitigation_date,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ',')
+                    FROM
+                        `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    WHERE
+                        mtc.mitigation_id=p.id 
+                ) AS mitigation_controls,
+                p.current_solution,
+                p.security_recommendations,
+                p.security_requirements,
+                p.mitigation_percent,
+                m.name AS next_step,
+                rw.name AS review,
+                l.comments,
+                n.name AS reviewer,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+            FROM
+                risk_scoring a
+                LEFT JOIN risks b ON a.id = b.id
+                LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
+                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
+                LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
+                LEFT JOIN mitigations p ON b.id = p.risk_id
+                LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
+                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN closures o ON b.close_id = o.id
+                LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
+                LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+            WHERE
+                b.mitigation_id = 0 and b.status != \"Closed\" {$separation_query}
+            GROUP BY b.id
+            {$sort_query}
+            ;
+        ");
 
         $stmt->execute();
 
@@ -13628,307 +13585,153 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
             $sort_query = " ORDER BY a.calculated_risk DESC ";
         }
 
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT location.name SEPARATOR ',')
-                        FROM
-                            location, risk_to_location rtl
-                        WHERE
-                            rtl.risk_id=b.id AND rtl.location_id=location.value
-                    ) AS location,
-                    v.name AS source, 
-                    d.name AS category,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
-                        FROM
-                            team, risk_to_team rtt
-                        WHERE
-                            rtt.risk_id=b.id AND rtt.team_id=team.value
-                    ) AS team,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
-                        FROM
-                            user u, risk_to_additional_stakeholder rtas
-                        WHERE
-                            rtas.risk_id=b.id AND rtas.user_id=u.value
-                    ) AS additional_stakeholders,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
-                        FROM
-                            technology tech, risk_to_technology rttg
-                        WHERE
-                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
-                    ) AS technology,
-                    g.name AS owner,
-                    h.name AS manager,
-                    a.scoring_method,
-                    k.name AS project, 
-                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
-                    i.name AS submitted_by,
-                    (
-                        SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
-                        FROM
-                            tags t, tags_taggees tt 
-                        WHERE
-                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
-                    ) AS risk_tags,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ')
-                        FROM
-                            risks_to_assets rta
-                            INNER JOIN assets a ON a.id = rta.asset_id
-                        WHERE
-                            rta.risk_id=b.id
-                    ) AS affected_assets,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
-                        FROM
-                            risks_to_asset_groups rtag
-                            INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
-                        WHERE
-                            rtag.risk_id=b.id
-                    ) AS affected_asset_groups,
-                    q.name AS planning_strategy,
-                    p.planning_date,
-                    r.name AS mitigation_effort,
-                    s.min_value AS mitigation_min_cost,
-                    s.max_value AS mitigation_max_cost,
-                    t.name AS mitigation_owner,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
-                        FROM
-                            team, mitigation_to_team mtt 
-                        WHERE
-                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
-                    ) AS mitigation_team,
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [, , $separation_query] = get_risks_team_separation_sql('b', 'b');
+
+        // Query the database
+        $stmt = $db->prepare("
+            SELECT
+                a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT location.name SEPARATOR ',')
+                    FROM
+                        location, risk_to_location rtl
+                    WHERE
+                        rtl.risk_id=b.id AND rtl.location_id=location.value
+                ) AS location,
+                v.name AS source, 
+                d.name AS category,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
+                    FROM
+                        team, risk_to_team rtt
+                    WHERE
+                        rtt.risk_id=b.id AND rtt.team_id=team.value
+                ) AS team,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
+                    FROM
+                        user u, risk_to_additional_stakeholder rtas
+                    WHERE
+                        rtas.risk_id=b.id AND rtas.user_id=u.value
+                ) AS additional_stakeholders,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
+                    FROM
+                        technology tech, risk_to_technology rttg
+                    WHERE
+                        rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                ) AS technology,
+                g.name AS owner,
+                h.name AS manager,
+                a.scoring_method,
+                k.name AS project, 
+                DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                i.name AS submitted_by,
+                (
+                    SELECT
+                        GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
+                    FROM
+                        tags t, tags_taggees tt 
+                    WHERE
+                        tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                ) AS risk_tags,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ')
+                    FROM
+                        risks_to_assets rta
+                        INNER JOIN assets a ON a.id = rta.asset_id
+                    WHERE
+                        rta.risk_id=b.id
+                ) AS affected_assets,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
+                    FROM
+                        risks_to_asset_groups rtag
+                        INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
+                    WHERE
+                        rtag.risk_id=b.id
+                ) AS affected_asset_groups,
+                q.name AS planning_strategy,
+                p.planning_date,
+                r.name AS mitigation_effort,
+                s.min_value AS mitigation_min_cost,
+                s.max_value AS mitigation_max_cost,
+                t.name AS mitigation_owner,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
+                    FROM
+                        team, mitigation_to_team mtt 
+                    WHERE
+                        mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                ) AS mitigation_team,
 
 
-                    NOT(ISNULL(mau.id)) mitigation_accepted, 
-                    p.submission_date AS mitigation_date,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
-                        FROM
-                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                        WHERE
-                            mtc.mitigation_id=p.id 
-                    ) AS mitigation_controls,
-                    p.current_solution,
-                    p.security_recommendations,
-                    p.security_requirements,
-                    p.mitigation_percent,
-                    m.name AS next_step,
-                    rw.name AS review,
-                    l.comments,
-                    n.name AS reviewer,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations p ON b.id = p.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN closures o ON b.close_id = o.id
-                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
-                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
-                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
-                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
-                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
-                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
-                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
-                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
-                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
-                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
-                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
-                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
-                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
-                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
-                    LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
-                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.mgmt_review = 0 and b.status != \"Closed\"
-                GROUP BY
-                    b.id
-                {$sort_query}
-                ;
-            ");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT location.name SEPARATOR '; ')
-                        FROM
-                            location, risk_to_location rtl
-                        WHERE
-                            rtl.risk_id=b.id AND rtl.location_id=location.value
-                    ) AS location,
-                    v.name AS source, 
-                    d.name AS category,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
-                        FROM
-                            team, risk_to_team rtt
-                        WHERE
-                            rtt.risk_id=b.id AND rtt.team_id=team.value
-                    ) AS team,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
-                        FROM
-                            user u, risk_to_additional_stakeholder rtas
-                        WHERE
-                            rtas.risk_id=b.id AND rtas.user_id=u.value
-                    ) AS additional_stakeholders,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
-                        FROM
-                            technology tech, risk_to_technology rttg
-                        WHERE
-                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
-                    ) AS technology,
-                    g.name AS owner,
-                    h.name AS manager,
-                    a.scoring_method,
-                    k.name AS project, 
-                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
-                    i.name AS submitted_by,
-                    (
-                        SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
-                        FROM
-                            tags t, tags_taggees tt 
-                        WHERE
-                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
-                    ) AS risk_tags,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ')
-                        FROM
-                            risks_to_assets rta
-                            INNER JOIN assets a ON a.id = rta.asset_id
-                        WHERE
-                            rta.risk_id=b.id
-                    ) AS affected_assets,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
-                        FROM
-                            risks_to_asset_groups rtag
-                            INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
-                        WHERE
-                            rtag.risk_id=b.id
-                    ) AS affected_asset_groups,
-                    q.name AS planning_strategy,
-                    p.planning_date,
-                    r.name AS mitigation_effort,
-                    s.min_value AS mitigation_min_cost,
-                    s.max_value AS mitigation_max_cost,
-                    t.name AS mitigation_owner,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
-                        FROM
-                            team, mitigation_to_team mtt 
-                        WHERE
-                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
-                    ) AS mitigation_team,
-
-
-                    NOT(ISNULL(mau.id)) mitigation_accepted, 
-                    p.submission_date AS mitigation_date,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
-                        FROM
-                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                        WHERE
-                            mtc.mitigation_id=p.id 
-                    ) AS mitigation_controls,
-                    p.current_solution,
-                    p.security_recommendations,
-                    p.security_requirements,
-                    p.mitigation_percent,
-                    m.name AS next_step,
-                    rw.name AS review,
-                    l.comments,
-                    n.name AS reviewer,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations p ON b.id = p.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN closures o ON b.close_id = o.id
-                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
-                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
-                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
-                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
-                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
-                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
-                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
-                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
-                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
-                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
-                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
-                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
-                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
-                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
-                    LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
-                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.mgmt_review = 0 and b.status != \"Closed\"  {$separation_query}
-                GROUP BY
-                    b.id
-                {$sort_query}
-                ;
-            ");
-        }
+                NOT(ISNULL(mau.id)) mitigation_accepted, 
+                p.submission_date AS mitigation_date,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
+                    FROM
+                        `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    WHERE
+                        mtc.mitigation_id=p.id 
+                ) AS mitigation_controls,
+                p.current_solution,
+                p.security_recommendations,
+                p.security_requirements,
+                p.mitigation_percent,
+                m.name AS next_step,
+                rw.name AS review,
+                l.comments,
+                n.name AS reviewer,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+            FROM
+                risk_scoring a
+                LEFT JOIN risks b ON a.id = b.id
+                LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
+                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
+                LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
+                LEFT JOIN mitigations p ON b.id = p.risk_id
+                LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
+                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN closures o ON b.close_id = o.id
+                LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
+                LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+            WHERE
+                b.mgmt_review = 0 and b.status != \"Closed\" {$separation_query}
+            GROUP BY
+                b.id
+            {$sort_query}
+            ;
+        ");
 
         $stmt->execute();
 
@@ -13944,14 +13747,8 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
             $sort_query = " ORDER BY b.review_date ASC ";
         }
 
-        // Get the separation query string (returns '' if team separation extra is disabled)
-        $separation_query = call_extra_function(
-            'team_separation_extra',
-            __DIR__ . '/../extras/separation/index.php',
-            'get_user_teams_query',
-            ['b', false, true],
-            ''
-        );
+        // risk_to_team and the stakeholder table are always joined here, so only the filter is needed
+        [, , $separation_query] = get_risks_team_separation_sql('b', 'b');
 
         // Query the database
         $stmt = $db->prepare("
@@ -14106,73 +13903,34 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 4 = Show risks that are closed
     else if ($sort_order == 4)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk, b.*, c.next_review, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.status = \"Closed\"
-                GROUP BY b.id
-                ORDER BY
-                    calculated_risk DESC
-            ");
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
 
-//            $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status = \"Closed\" ORDER BY calculated_risk DESC");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.status = \"Closed\"  {$separation_query}
-                GROUP BY b.id
-                ORDER BY
-                    calculated_risk DESC
-
-            ");
-
-//            $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status = \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+            SELECT
+                a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+            FROM
+                risk_scoring a
+                LEFT JOIN risks b ON a.id = b.id
+                {$rtt_join}
+                {$rtas_join}
+                LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
+                LEFT JOIN mitigations mg ON b.id = mg.risk_id
+                LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+            WHERE
+                b.status = \"Closed\" {$separation_query}
+            GROUP BY b.id
+            ORDER BY
+                calculated_risk DESC
+        ");
 
         $stmt->execute();
 
@@ -14183,54 +13941,28 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 5 = Show open risks that should be considered for projects
     else if ($sort_order == 5)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-            FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id
-                LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-            WHERE b.status != \"Closed\"
-            GROUP BY b.id
-            ORDER BY calculated_risk DESC");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-            FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id
-                LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id
-                LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-            WHERE b.status != \"Closed\" " . $separation_query . "
-            GROUP BY b.id
-            ORDER BY calculated_risk DESC");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+        SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+            group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+            group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+        FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id
+            {$rtt_join}
+            {$rtas_join}
+            RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id
+            LEFT JOIN mitigations mg ON b.id = mg.risk_id
+            LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+            LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+            LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+            LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+            LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+            LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+        WHERE b.status != \"Closed\" {$separation_query}
+        GROUP BY b.id
+        ORDER BY calculated_risk DESC");
 
         $stmt->execute();
 
@@ -14241,57 +13973,29 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 6 = Show open risks accepted until next review
     else if ($sort_order == 6)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-            FROM risk_scoring a
-                LEFT JOIN risks b ON a.id = b.id
-                RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id
-                LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-            WHERE b.status != \"Closed\"
-            GROUP BY b.id
-            ORDER BY calculated_risk DESC");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-            FROM risk_scoring a
-                LEFT JOIN risks b ON a.id = b.id
-                LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id
-                LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-            WHERE b.status != \"Closed\" " . $separation_query . "
-            GROUP BY b.id
-            ORDER BY calculated_risk DESC");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+        SELECT a.calculated_risk, b.*, c.next_review,
+            group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+            group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+        FROM risk_scoring a
+            LEFT JOIN risks b ON a.id = b.id
+            {$rtt_join}
+            {$rtas_join}
+            RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id
+            LEFT JOIN mitigations mg ON b.id = mg.risk_id
+            LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+            LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+            LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+            LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+            LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+            LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+        WHERE b.status != \"Closed\" {$separation_query}
+        GROUP BY b.id
+        ORDER BY calculated_risk DESC");
 
         $stmt->execute();
 
@@ -14302,55 +14006,28 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 7 = Show open risks to submit as production issues
     else if ($sort_order == 7)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-            FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, c1.next_review, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id
-                LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-            WHERE b.status != \"Closed\"
-            GROUP BY b.id
-            ORDER BY calculated_risk DESC; ");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+        // Query the database
+        $stmt = $db->prepare("
+        SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
             group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
             group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-            FROM risk_scoring a
-                LEFT JOIN risks b ON a.id = b.id 
-                LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                RIGHT JOIN (SELECT c1.risk_id, c1.next_review , next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id
-                LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-            WHERE b.status != \"Closed\" " . $separation_query . "
-            GROUP BY b.id
-            ORDER BY calculated_risk DESC; ");
-        }
+        FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id
+            {$rtt_join}
+            {$rtas_join}
+            RIGHT JOIN (SELECT c1.risk_id, next_step, c1.next_review, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id
+            LEFT JOIN mitigations mg ON b.id = mg.risk_id
+            LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+            LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+            LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+            LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+            LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+            LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+        WHERE b.status != \"Closed\" {$separation_query}
+        GROUP BY b.id
+        ORDER BY calculated_risk DESC; ");
 
         $stmt->execute();
 
@@ -14361,62 +14038,31 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 8 = Show all open risks assigned to this user by risk level
     else if ($sort_order == 8)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.status != \"Closed\" AND (owner = :uid OR manager = :uid)
-                GROUP BY b.id
-                ORDER BY
-                    calculated_risk DESC");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.status != \"Closed\" AND (owner = :uid OR manager = :uid) " . $separation_query . "
-                GROUP BY b.id
-                ORDER BY
-                    calculated_risk DESC
-            ");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+            group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+            group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+            FROM risk_scoring a
+                LEFT JOIN risks b ON a.id = b.id
+                {$rtt_join}
+                {$rtas_join}
+                LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
+                LEFT JOIN mitigations mg ON b.id = mg.risk_id
+                LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+            WHERE
+                b.status != \"Closed\" AND (owner = :uid OR manager = :uid) {$separation_query}
+            GROUP BY b.id
+            ORDER BY
+                calculated_risk DESC");
 
         $stmt->bindParam(":uid", $_SESSION['uid'], PDO::PARAM_INT);
         $stmt->execute();
@@ -14428,45 +14074,24 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 9 = Show open risks scored by CVSS Scoring
     else if ($sort_order == 9)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
+
         // Query the database
         $stmt = $db->prepare("
-        SELECT a.calculated_risk, b.*,
-            group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-            group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-        FROM risk_scoring a JOIN risks b ON a.id = b.id 
-            LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-            LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-            LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-            LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-        WHERE b.status != \"Closed\" AND a.scoring_method = 2 
-        GROUP BY b.id
-        ORDER BY calculated_risk DESC");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
             SELECT a.calculated_risk, b.*,
                 group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-            FROM risk_scoring a JOIN risks b ON a.id = b.id                 
-                LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+            FROM risk_scoring a JOIN risks b ON a.id = b.id
+                {$rtt_join}
+                {$rtas_join}
                 LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
                 LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
                 LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
                 LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
- WHERE b.status != \"Closed\" AND a.scoring_method = 2 " . $separation_query . " GROUP BY b.id ORDER BY calculated_risk DESC");
-        }
+            WHERE b.status != \"Closed\" AND a.scoring_method = 2 {$separation_query}
+            GROUP BY b.id
+            ORDER BY calculated_risk DESC");
 
         $stmt->execute();
 
@@ -14477,46 +14102,23 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 10 = Show open risks scored by Classic Scoring
     else if ($sort_order == 10)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-    $stmt = $db->prepare("
-    SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.*, mit.mitigation_percent,
-        group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-        group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-    FROM risk_scoring a JOIN risks b ON a.id = b.id 
-        LEFT JOIN mitigations mit ON b.mitigation_id = mit.id 
-        LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-        LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-        LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-        LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-        WHERE b.status != \"Closed\" AND a.scoring_method = 1 GROUP BY b.id ORDER BY calculated_risk DESC, mitigation_percent ASC");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
+        // Query the database
+        $stmt = $db->prepare("
             SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.*, mit.mitigation_percent,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-            FROM risk_scoring a 
-                    JOIN risks b ON a.id = b.id 
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN mitigations mit ON b.mitigation_id = mit.id
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE b.status != \"Closed\" AND a.scoring_method = 1 " . $separation_query . " GROUP BY b.id ORDER BY calculated_risk DESC, mitigation_percent ASC");
-        }
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+            FROM risk_scoring a JOIN risks b ON a.id = b.id
+                {$rtt_join}
+                {$rtas_join}
+                LEFT JOIN mitigations mit ON b.mitigation_id = mit.id
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+            WHERE b.status != \"Closed\" AND a.scoring_method = 1 {$separation_query} GROUP BY b.id ORDER BY calculated_risk DESC, mitigation_percent ASC");
 
         $stmt->execute();
 
@@ -14527,46 +14129,27 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 11 = Show All Risks by Date Submitted
     else if ($sort_order == 11)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, group_concat(distinct d.name) AS team, c.name,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-            FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN risk_to_team rtt ON b.id=rtt.risk_id LEFT JOIN team d ON rtt.team_id=d.value 
-                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-            GROUP BY b.id ORDER BY DATE(b.submission_date) DESC ; ");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        // risk_to_team is always joined here for the team names, so only the stakeholder join is added
+        [, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b', true);
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", true, false);
-
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, group_concat(DISTINCT d.name SEPARATOR ', ') AS team, c.name,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-            FROM risk_scoring a 
-                JOIN risks b ON a.id = b.id 
-                LEFT JOIN user c ON b.submitted_by = c.value 
-                LEFT JOIN risk_to_team rtt ON b.id=rtt.risk_id 
-                LEFT JOIN team d ON rtt.team_id=d.value 
-                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id " . $separation_query . " 
-            GROUP BY b.id ORDER BY DATE(b.submission_date) DESC ; ");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+        SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, group_concat(distinct d.name) AS team, c.name,
+            group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+            group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+        FROM risk_scoring a
+            JOIN risks b ON a.id = b.id
+            LEFT JOIN user c ON b.submitted_by = c.value
+            LEFT JOIN risk_to_team rtt ON b.id=rtt.risk_id
+            LEFT JOIN team d ON rtt.team_id=d.value
+            {$rtas_join}
+            LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+            LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+            LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+            LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+        {$separation_query}
+        GROUP BY b.id ORDER BY DATE(b.submission_date) DESC ; ");
 
         $stmt->execute();
 
@@ -14577,33 +14160,22 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 12 = Show management reviews by date
     else if ($sort_order == 12)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-        // Query the database
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('a', 'a', true);
+
+        // One row per review: grouping by the review's id only collapses the
+        // duplicate rows the Team Separation joins add
         $stmt = $db->prepare("
-        SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value ORDER BY DATE(b.submission_date) DESC");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-            // Get the separation query string
-            $separation_query = get_user_teams_query("a", true, false);
-
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step 
-            FROM risks a 
-                LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
-                LEFT JOIN risk_to_additional_stakeholder rtas ON a.id = rtas.risk_id
-                JOIN mgmt_reviews b ON a.id = b.risk_id 
-                JOIN user c ON b.reviewer = c.value 
-                LEFT JOIN review d ON b.review = d.value 
-                LEFT JOIN next_step e ON b.next_step = e.value " . $separation_query . " 
-            GROUP BY a.id ORDER BY DATE(b.submission_date) DESC");
-        }
+            SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step
+            FROM risks a
+                {$rtt_join}
+                {$rtas_join}
+                JOIN mgmt_reviews b ON a.id = b.risk_id
+                JOIN user c ON b.reviewer = c.value
+                LEFT JOIN review d ON b.review = d.value
+                LEFT JOIN next_step e ON b.next_step = e.value
+            {$separation_query}
+            GROUP BY b.id ORDER BY DATE(b.submission_date) DESC");
 
         $stmt->execute();
 
@@ -14614,36 +14186,24 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 13 = Show mitigations by date
     else if ($sort_order == 13)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, group_concat(distinct g.name) AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN mitigation_to_team mtt ON b.id=mtt.mitigation_id LEFT JOIN team g ON mtt.team_id=g.value GROUP BY a.id ORDER BY DATE(b.submission_date) DESC; ");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('a', 'a', true);
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("a", true, false);
-
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, group_concat(distinct g.name) AS mitigation_team 
-            FROM risks a 
-                LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
-                LEFT JOIN risk_to_additional_stakeholder rtas ON a.id = rtas.risk_id
-                JOIN mitigations b ON a.id = b.risk_id 
-                JOIN user c ON b.submitted_by = c.value 
-                LEFT JOIN planning_strategy d ON b.planning_strategy = d.value 
-                LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value 
-                LEFT JOIN user f ON b.mitigation_owner = f.value 
-                LEFT JOIN mitigation_to_team mtt ON b.id=mtt.mitigation_id 
-                LEFT JOIN team g ON mtt.team_id=g.value " . $separation_query . " 
-            GROUP BY a.id ORDER BY DATE(b.submission_date) DESC; ");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+        SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, group_concat(distinct g.name) AS mitigation_team
+        FROM risks a
+            {$rtt_join}
+            {$rtas_join}
+            JOIN mitigations b ON a.id = b.risk_id
+            JOIN user c ON b.submitted_by = c.value
+            LEFT JOIN planning_strategy d ON b.planning_strategy = d.value
+            LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value
+            LEFT JOIN user f ON b.mitigation_owner = f.value
+            LEFT JOIN mitigation_to_team mtt ON b.id=mtt.mitigation_id
+            LEFT JOIN team g ON mtt.team_id=g.value
+        {$separation_query}
+        GROUP BY a.id ORDER BY DATE(b.submission_date) DESC; ");
 
         $stmt->execute();
 
@@ -14654,144 +14214,76 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 14 = Show open risks scored by DREAD Scoring
     else if ($sort_order == 14)
     {
-            // If the team separation extra is not enabled
-            if (!team_separation_extra())
-            {
-                // Query the database
-                $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-                FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id 
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE b.status != \"Closed\" AND c.scoring_method = 3 GROUP BY b.id ORDER BY calculated_risk DESC");
-            }
-            else
-            {
-                // Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
 
-                // Get the separation query string
-                $separation_query = get_user_teams_query("b", false, true);
+        // Query the database
+        $stmt = $db->prepare("
+        SELECT a.calculated_risk, b.*,
+            group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+            group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+        FROM risk_scoring a JOIN risks b ON a.id = b.id
+            {$rtt_join}
+            {$rtas_join}
+            JOIN risk_scoring c on b.id = c.id
+            LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+            LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+            LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+            LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+        WHERE b.status != \"Closed\" AND c.scoring_method = 3 {$separation_query} GROUP BY b.id ORDER BY calculated_risk DESC");
 
-                // Query the database
-                $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-                FROM risk_scoring a JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    JOIN risk_scoring c on b.id = c.id
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                    WHERE b.status != \"Closed\" AND c.scoring_method = 3 " . $separation_query . " 
-                    GROUP BY b.id 
-                    ORDER BY calculated_risk DESC");
-            }
+        $stmt->execute();
 
-            $stmt->execute();
-
-            // Store the list in the array
-            $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Store the list in the array
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 15 = Show open risks scored by OWASP Scoring
     else if ($sort_order == 15)
     {
-            // If the team separation extra is not enabled
-            if (!team_separation_extra())
-            {
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-            FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
+
+        // Query the database
+        $stmt = $db->prepare("
+        SELECT a.calculated_risk, b.*,
+            group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+            group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+        FROM risk_scoring a JOIN risks b ON a.id = b.id
+            {$rtt_join}
+            {$rtas_join}
+            JOIN risk_scoring c on b.id = c.id
             LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
             LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
             LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
             LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-            WHERE b.status != \"Closed\" AND c.scoring_method = 4 GROUP BY b.id ORDER BY calculated_risk DESC");
-            }
-            else
-            {
-                // Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        WHERE b.status != \"Closed\" AND c.scoring_method = 4 {$separation_query} GROUP BY b.id ORDER BY calculated_risk DESC");
 
-                // Get the separation query string
-                $separation_query = get_user_teams_query("b", false, true);
+        $stmt->execute();
 
-                // Query the database
-                $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-                FROM risk_scoring a JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    JOIN risk_scoring c on b.id = c.id
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                    WHERE b.status != \"Closed\" AND c.scoring_method = 4 " . $separation_query . "
-                    GROUP BY b.id
-                    ORDER BY calculated_risk DESC");
-            }
-
-            $stmt->execute();
-
-            // Store the list in the array
-            $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Store the list in the array
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 16 = Show open risks scored by Custom Scoring
     else if ($sort_order == 16)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-            FROM risk_scoring a JOIN risks b ON a.id = b.id
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
+
+        // Query the database
+        $stmt = $db->prepare("
+        SELECT a.calculated_risk, b.*,
+            group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+            group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+        FROM risk_scoring a JOIN risks b ON a.id = b.id
+            {$rtt_join}
+            {$rtas_join}
             LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
             LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
             LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
             LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-            WHERE b.status != \"Closed\" AND a.scoring_method = 5 GROUP BY b.id ORDER BY calculated_risk DESC");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.calculated_risk, b.*,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-            FROM risk_scoring a JOIN risks b ON a.id = b.id 
-                LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE b.status != \"Closed\" AND a.scoring_method = 5 " . $separation_query . " GROUP BY b.id 
-                ORDER BY calculated_risk DESC;");
-        }
+        WHERE b.status != \"Closed\" AND a.scoring_method = 5 {$separation_query} GROUP BY b.id ORDER BY calculated_risk DESC");
 
         $stmt->execute();
 
@@ -14802,37 +14294,23 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 17 = Show closed risks by date
     else if ($sort_order == 17)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.id, a.subject, group_concat(DISTINCT c.name SEPARATOR ', ') AS team, d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk FROM risks a LEFT JOIN closures b ON a.close_id = b.id LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id LEFT JOIN team c ON rtt.team_id=c.value LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' GROUP BY a.id ORDER BY b.closure_date DESC ; ");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        // risk_to_team is always joined here for the team names, so only the stakeholder join is added
+        [, $rtas_join, $separation_query] = get_risks_team_separation_sql('a', 'a');
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("a", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.id, a.subject, 
-                group_concat(DISTINCT c.name SEPARATOR ', ') AS team, 
-                d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk 
-            FROM risks a 
-                LEFT JOIN closures b ON a.close_id = b.id 
-                LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id 
-                LEFT JOIN team c ON rtt.team_id=c.value 
-                LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                LEFT JOIN user d ON b.user_id = d.value 
-                LEFT JOIN close_reason e ON b.close_reason = e.value 
-                LEFT JOIN risk_scoring f ON a.id = f.id 
-            WHERE a.status='Closed' " . $separation_query . " 
-            GROUP BY a.id ORDER BY b.closure_date DESC; ");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+        SELECT a.id, a.subject, group_concat(DISTINCT c.name SEPARATOR ', ') AS team, d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk
+        FROM risks a
+            LEFT JOIN closures b ON a.close_id = b.id
+            LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id
+            LEFT JOIN team c ON rtt.team_id=c.value
+            {$rtas_join}
+            LEFT JOIN user d ON b.user_id = d.value
+            LEFT JOIN close_reason e ON b.close_reason = e.value
+            LEFT JOIN risk_scoring f ON a.id = f.id
+        WHERE a.status='Closed' {$separation_query}
+        GROUP BY a.id ORDER BY b.closure_date DESC ; ");
 
         $stmt->execute();
 
@@ -14843,34 +14321,20 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 18 = Get open risks by team
     else if ($sort_order == 18)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.id, a.subject, group_concat(DISTINCT c.name SEPARATOR ', ') AS team, a.submission_date, b.calculated_risk FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id LEFT JOIN team c ON rtt.team_id=c.value WHERE status != 'Closed' GROUP BY a.id ORDER BY team, b.calculated_risk DESC; ");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        // risk_to_team is always joined here for the team names, so only the stakeholder join is added
+        [, $rtas_join, $separation_query] = get_risks_team_separation_sql('a', 'a');
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("a", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.id, a.subject, 
-                group_concat(DISTINCT c.name SEPARATOR ', ') AS team, 
-                a.submission_date, b.calculated_risk 
-            FROM risks a 
-                LEFT JOIN risk_scoring b ON a.id = b.id 
-                LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id 
-                LEFT JOIN team c ON rtt.team_id=c.value 
-                LEFT JOIN risk_to_additional_stakeholder rtas ON a.id = rtas.risk_id 
-            WHERE status != 'Closed' " . $separation_query . " 
-            GROUP BY a.id ORDER BY team, b.calculated_risk DESC; ");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+        SELECT a.id, a.subject, group_concat(DISTINCT c.name SEPARATOR ', ') AS team, a.submission_date, b.calculated_risk
+        FROM risks a
+            LEFT JOIN risk_scoring b ON a.id = b.id
+            LEFT JOIN risk_to_team rtt ON a.id=rtt.risk_id
+            LEFT JOIN team c ON rtt.team_id=c.value
+            {$rtas_join}
+        WHERE status != 'Closed' {$separation_query}
+        GROUP BY a.id ORDER BY team, b.calculated_risk DESC; ");
 
         $stmt->execute();
 
@@ -14881,32 +14345,20 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 19 = Get open risks by technology
     else if ($sort_order == 19)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.id, a.subject, c.name AS technology, a.submission_date, b.calculated_risk FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN risk_to_technology rttg ON a.id=rttg.risk_id LEFT JOIN technology c ON rttg.technology_id = c.value WHERE a.status != 'Closed' GROUP BY a.id, c.value ORDER BY c.value, b.calculated_risk DESC");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('a', 'a');
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("a", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.id, a.subject, c.name AS technology, a.submission_date, b.calculated_risk FROM risks a 
-                LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
-                LEFT JOIN risk_to_additional_stakeholder rtas ON a.id = rtas.risk_id
-                LEFT JOIN risk_scoring b ON a.id = b.id 
-                LEFT JOIN risk_to_technology rttg ON a.id=rttg.risk_id 
-                LEFT JOIN technology c ON rttg.technology_id = c.value 
-            WHERE status != 'Closed' " . $separation_query . " 
-            GROUP BY a.id, c.value ORDER BY c.value, b.calculated_risk DESC");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+        SELECT a.id, a.subject, c.name AS technology, a.submission_date, b.calculated_risk
+        FROM risks a
+            {$rtt_join}
+            {$rtas_join}
+            LEFT JOIN risk_scoring b ON a.id = b.id
+            LEFT JOIN risk_to_technology rttg ON a.id=rttg.risk_id
+            LEFT JOIN technology c ON rttg.technology_id = c.value
+        WHERE a.status != 'Closed' {$separation_query}
+        GROUP BY a.id, c.value ORDER BY c.value, b.calculated_risk DESC");
 
         $stmt->execute();
 
@@ -14923,63 +14375,32 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
         $array = $stmt->fetch(PDO::FETCH_ASSOC);
         $high = $array['value'];
 
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.status != \"Closed\" AND a.calculated_risk >= :high
-                GROUP BY
-                    b.id
-                ORDER BY calculated_risk DESC");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
-                FROM risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                WHERE
-                    b.status != \"Closed\" AND a.calculated_risk >= :high " . $separation_query . "
-                GROUP BY
-                    b.id
-                ORDER BY
-                    calculated_risk DESC");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+            SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(mg.mitigation_percent,0) > 0, mg.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping
+            FROM
+                risk_scoring a
+                LEFT JOIN risks b ON a.id = b.id
+                {$rtt_join}
+                {$rtas_join}
+                LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
+                LEFT JOIN mitigations mg ON b.id = mg.risk_id
+                LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
+            WHERE
+                b.status != \"Closed\" AND a.calculated_risk >= :high {$separation_query}
+            GROUP BY
+                b.id
+            ORDER BY calculated_risk DESC");
 
         $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
         $stmt->execute();
@@ -14991,35 +14412,17 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
     // 21 = Get all risks
     else if ($sort_order == 21)
     {
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("SELECT * FROM risks ORDER BY id ASC");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('a', false, true);
 
-            // Get the separation query string
-            $separation_query = get_user_teams_query(false, true, false);
-
-            // Query the database
-            $stmt = $db->prepare("
-            SELECT a.*,
-                group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping 
-            FROM risks a 
-                    LEFT JOIN risk_to_team rtt ON a.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON a.id = rtas.risk_id
-                    LEFT JOIN risk_catalog_mappings rcm on a.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on a.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id
-                    " . $separation_query . " GROUP BY a.id ORDER BY a.id ASC;
-            ");
-        }
+        // Query the database
+        $stmt = $db->prepare("
+            SELECT a.*
+            FROM risks a
+                {$rtt_join}
+                {$rtas_join}
+            {$separation_query}
+            GROUP BY a.id ORDER BY a.id ASC");
 
         $stmt->execute();
 
@@ -15036,7 +14439,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
         }
 
         // Column-parity follow-up (post-merge; .superpowers/sdd/review-risk-
-        // followups/column-parity-report.md): both branches below add
+        // followups/column-parity-report.md): the query below adds
         // `l.submission_date AS mgmt_review_date` to the SELECT list --
         // `mgmt_reviews l` is already joined via `b.mgmt_review = l.id`, so
         // this is the submission_date of the SPECIFIC review the risk
@@ -15066,16 +14469,8 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
         // ambiguity at its root rather than relying on ordering + validation
         // alone to paper over it.
         //
-        // The team-separation branch below was ALSO missing `rw.name AS
-        // review` (the management_review display name) and its
-        // `LEFT JOIN review rw ...` entirely -- a pre-existing bug (the
-        // non-team-separation branch above has both) fixed alongside this
-        // addition, since a customer running Team Separation would
-        // otherwise see a blank Management Review column regardless of
-        // mgmt_review_date.
-        //
-        // risk_catalog_names/threat_catalog_names (post-review fix): both
-        // branches below ALSO add these two GROUP_CONCAT'd name columns,
+        // risk_catalog_names/threat_catalog_names (post-review fix): the
+        // query below ALSO adds these two GROUP_CONCAT'd name columns,
         // deliberately alongside (not replacing) the pre-existing
         // risk_catalog_mapping/threat_catalog_mapping columns (raw comma-
         // separated IDs) -- every other get_risks() sort_order branch that
@@ -15087,10 +14482,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
         // result shape. The Review Risk page's risk_mapping/threat_mapping
         // toggleable columns need display NAMES, not IDs (getReviewRiskDatatableResponse(),
         // includes/api.php, reads $risk['risk_catalog_names']/
-        // $risk['threat_catalog_names']) -- risk_catalog/threat_catalog are
-        // already LEFT JOINed in this query for the ID-based GROUP_CONCATs,
-        // so resolving names is a zero-extra-JOIN, zero-extra-query SQL-level
-        // aggregation (same GROUP_CONCAT(DISTINCT ...) technique
+        // $risk['threat_catalog_names']) -- both the IDs and the names are read
+        // through correlated subqueries (see the fan-out note below), so
+        // resolving names is a zero-extra-query SQL-level aggregation (same GROUP_CONCAT(DISTINCT ...) technique
         // reporting.php's Risk Register export already uses for the
         // identical risk_catalog/threat_catalog name-resolution need,
         // reporting.php ~line 4818) -- NOT a per-row
@@ -15121,23 +14515,29 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
         // couldn't parse `\"Closed\"` as a string literal, producing a
         // syntax error. Single-quoted SQL avoids the whole PHP-quoting
         // mismatch.
-        // 'all' uses `b.id IS NOT NULL`, NOT a bare `1=1` -- risk_scoring can
-        // hold orphaned rows with no matching risks.id (confirmed live on
-        // the dev DB: stale AI-analysis remnants left behind after a risk
-        // is deleted), which the LEFT JOIN turns into a row with b.id NULL.
-        // Both 'open' (`b.status != 'Closed'`) and 'closed'
-        // (`b.status = 'Closed'`) already exclude these incidentally, since
-        // a NULL comparison is neither true nor false in SQL and the WHERE
-        // clause drops it either way -- an unconditional `1=1` does not, and
-        // GROUP BY b.id collapses every orphaned row's NULL id into a
-        // single extra phantom result row (confirmed live: 157 real risks,
-        // 158 rows back from `1=1`).
+        // SR-2416: the FROM below drives off `risks b` (LEFT JOIN
+        // `risk_scoring a`, not the other way around), matching
+        // review_risk_insight_rows()'s join direction (includes/reporting.php)
+        // so the Review Risk KPI tiles and this grid always agree on which
+        // risks exist -- a risk with no risk_scoring row (orphaned by an
+        // interrupted submission, direct DB manipulation, or any future code
+        // path that inserts into `risks` without `risk_scoring`) used to be
+        // counted by the tiles but could never appear in the grid under any
+        // filter, because the old `risk_scoring a LEFT JOIN risks b` drove
+        // off `risk_scoring` and silently dropped it. `b.id` (risks' own
+        // primary key) is therefore never NULL here, so 'all' needs no extra
+        // guard beyond an unconditional true -- unlike the OLD orphan
+        // direction this replaced (a stray risk_scoring row with no matching
+        // risks.id, e.g. stale AI-analysis remnants left behind after a risk
+        // is deleted), which is now excluded automatically: such a row can
+        // no longer enter this query at all, since risk_scoring is the
+        // LEFT-JOINED side.
         switch ($review_status_scope) {
             case 'closed':
                 $status_where = " b.status = 'Closed' ";
                 break;
             case 'all':
-                $status_where = ' b.id IS NOT NULL ';
+                $status_where = ' 1 = 1 ';
                 break;
             case 'open':
             default:
@@ -15203,338 +14603,181 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
             }
         }
 
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk, b.*, c.next_review,
-                    (b.mitigation_id = 0) AS needs_mitigation,
-                    ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT location.name SEPARATOR ',')
-                        FROM
-                            location, risk_to_location rtl
-                        WHERE
-                            rtl.risk_id=b.id AND rtl.location_id=location.value
-                    ) AS location,
-                    v.name AS source, 
-                    d.name AS category,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ',')
-                        FROM
-                            team, risk_to_team rtt
-                        WHERE
-                            rtt.risk_id=b.id AND rtt.team_id=team.value
-                    ) AS team,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ',')
-                        FROM
-                            user u, risk_to_additional_stakeholder rtas
-                        WHERE
-                            rtas.risk_id=b.id AND rtas.user_id=u.value
-                    ) AS additional_stakeholders,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ',')
-                        FROM
-                            technology tech, risk_to_technology rttg
-                        WHERE
-                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
-                    ) AS technology,
-                    g.name AS owner,
-                    h.name AS manager,
-                    a.scoring_method,
-                    k.name AS project, 
-                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
-                    i.name AS submitted_by,
-                    (
-                        SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR ',')
-                        FROM
-                            tags t, tags_taggees tt 
-                        WHERE
-                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
-                    ) AS risk_tags,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT a.name SEPARATOR '|')
-                        FROM
-                            risks_to_assets rta
-                            INNER JOIN assets a ON a.id = rta.asset_id
-                        WHERE
-                            rta.risk_id=b.id
-                    ) AS affected_assets,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
-                        FROM
-                            risks_to_asset_groups rtag
-                            INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
-                        WHERE
-                            rtag.risk_id=b.id
-                    ) AS affected_asset_groups,
-                    q.name AS planning_strategy,
-                    p.planning_date,
-                    r.name AS mitigation_effort,
-                    s.min_value AS mitigation_min_cost,
-                    s.max_value AS mitigation_max_cost,
-                    t.name AS mitigation_owner,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ',')
-                        FROM
-                            team, mitigation_to_team mtt
-                        WHERE
-                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
-                    ) AS mitigation_team,
+        // The one-to-many children of a risk (control mappings for the residual-risk
+        // percentage, risk/threat catalog mappings, and -- outside Team Separation --
+        // team and additional-stakeholder links) are read through correlated
+        // subqueries, NOT LEFT JOINs. Joined directly they multiply across each
+        // other before the GROUP BY (123 risks fanned out to ~955k intermediate
+        // rows and the page never finished loading, SD-907); a subquery returns one
+        // value per risk, so the row count stays at one per risk.
+        $residual_control_percent_sql = "
+            SELECT
+                MAX(IF(mtc_r.validation_mitigation_percent > 0, mtc_r.validation_mitigation_percent, fc_r.mitigation_percent))
+            FROM
+                mitigation_to_controls mtc_r
+                LEFT JOIN framework_controls fc_r ON mtc_r.control_id = fc_r.id AND fc_r.deleted = 0
+            WHERE
+                mtc_r.mitigation_id = p.id
+        ";
+
+        // Team Separation joins and filter (empty strings when the extra is disabled)
+        [$rtt_join, $rtas_join, $separation_query] = get_risks_team_separation_sql('b', 'b');
+
+        // Query the database
+        $stmt = $db->prepare("
+            SELECT
+                a.calculated_risk, b.*, c.next_review,
+                (b.mitigation_id = 0) AS needs_mitigation,
+                ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(({$residual_control_percent_sql}), 0)) / 100)), 2) as residual_risk,
+                o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT location.name SEPARATOR ',')
+                    FROM
+                        location, risk_to_location rtl
+                    WHERE
+                        rtl.risk_id=b.id AND rtl.location_id=location.value
+                ) AS location,
+                v.name AS source, 
+                d.name AS category,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT team.name  SEPARATOR ',')
+                    FROM
+                        team, risk_to_team rtt
+                    WHERE
+                        rtt.risk_id=b.id AND rtt.team_id=team.value
+                ) AS team,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT u.name SEPARATOR ',')
+                    FROM
+                        user u, risk_to_additional_stakeholder rtas
+                    WHERE
+                        rtas.risk_id=b.id AND rtas.user_id=u.value
+                ) AS additional_stakeholders,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT tech.name SEPARATOR ',')
+                    FROM
+                        technology tech, risk_to_technology rttg
+                    WHERE
+                        rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                ) AS technology,
+                g.name AS owner,
+                h.name AS manager,
+                a.scoring_method,
+                k.name AS project, 
+                DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                i.name AS submitted_by,
+                (
+                    SELECT
+                        GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR ',')
+                    FROM
+                        tags t, tags_taggees tt 
+                    WHERE
+                        tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                ) AS risk_tags,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT a.name SEPARATOR '|')
+                    FROM
+                        risks_to_assets rta
+                        INNER JOIN assets a ON a.id = rta.asset_id
+                    WHERE
+                        rta.risk_id=b.id
+                ) AS affected_assets,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
+                    FROM
+                        risks_to_asset_groups rtag
+                        INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
+                    WHERE
+                        rtag.risk_id=b.id
+                ) AS affected_asset_groups,
+                q.name AS planning_strategy,
+                p.planning_date,
+                r.name AS mitigation_effort,
+                s.min_value AS mitigation_min_cost,
+                s.max_value AS mitigation_max_cost,
+                t.name AS mitigation_owner,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT team.name SEPARATOR ',')
+                    FROM
+                        team, mitigation_to_team mtt
+                    WHERE
+                        mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                ) AS mitigation_team,
 
 
-                    NOT(ISNULL(mau.id)) mitigation_accepted,
-                    p.submission_date AS mitigation_date,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ',')
-                        FROM
-                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                        WHERE
-                            mtc.mitigation_id=p.id
-                    ) AS mitigation_controls,
-                    p.current_solution,
-                    p.security_recommendations,
-                    p.security_requirements,
-                    p.mitigation_percent,
-                    m.name AS next_step,
-                    rw.name AS review,
-                    l.submission_date AS mgmt_review_date,
-                    l.comments,
-                    n.name AS reviewer,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping,
-                    group_concat(distinct risk_catalog.name SEPARATOR ',') AS risk_catalog_names,
-                    group_concat(distinct threat_catalog.name SEPARATOR ',') AS threat_catalog_names,
-                    (
-                        SELECT
-                            c.comment
-                        FROM
-                            comments c
-                        WHERE
-                            c.risk_id=b.id
-                        ORDER BY
-                            c.date DESC
-                        LIMIT 1
-                    ) AS last_comment{$custom_field_select_sql}
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations p ON b.id = p.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN closures o ON b.close_id = o.id
-                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
-                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
-                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
-                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
-                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
-                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
-                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
-                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
-                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
-                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
-                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
-                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
-                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
-                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
-                    LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
-                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id{$custom_field_join_sql}
-                WHERE
-                    {$status_scope_where_clause}
-                GROUP BY b.id
-                {$sort_query}
-                ;
-            ");
-        }
-        else
-        {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-            // Get the separation query string
-            $separation_query = get_user_teams_query("b", false, true);
-
-            // Query the database
-            $stmt = $db->prepare("
-                SELECT
-                    a.calculated_risk, b.*, c.next_review,
-                    (b.mitigation_id = 0) AS needs_mitigation,
-                    ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
-                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT location.name SEPARATOR ',')
-                        FROM
-                            location, risk_to_location rtl
-                        WHERE
-                            rtl.risk_id=b.id AND rtl.location_id=location.value
-                    ) AS location,
-                    v.name AS source, 
-                    d.name AS category,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ',')
-                        FROM
-                            team, risk_to_team rtt
-                        WHERE
-                            rtt.risk_id=b.id AND rtt.team_id=team.value
-                    ) AS team,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ',')
-                        FROM
-                            user u, risk_to_additional_stakeholder rtas
-                        WHERE
-                            rtas.risk_id=b.id AND rtas.user_id=u.value
-                    ) AS additional_stakeholders,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ',')
-                        FROM
-                            technology tech, risk_to_technology rttg
-                        WHERE
-                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
-                    ) AS technology,
-                    g.name AS owner,
-                    h.name AS manager,
-                    a.scoring_method,
-                    k.name AS project, 
-                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
-                    i.name AS submitted_by,
-                    (
-                        SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR ',')
-                        FROM
-                            tags t, tags_taggees tt 
-                        WHERE
-                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
-                    ) AS risk_tags,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT a.name SEPARATOR '|')
-                        FROM
-                            risks_to_assets rta
-                            INNER JOIN assets a ON a.id = rta.asset_id
-                        WHERE
-                            rta.risk_id=b.id
-                    ) AS affected_assets,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
-                        FROM
-                            risks_to_asset_groups rtag
-                            INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
-                        WHERE
-                            rtag.risk_id=b.id
-                    ) AS affected_asset_groups,
-                    q.name AS planning_strategy,
-                    p.planning_date,
-                    r.name AS mitigation_effort,
-                    s.min_value AS mitigation_min_cost,
-                    s.max_value AS mitigation_max_cost,
-                    t.name AS mitigation_owner,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ',')
-                        FROM
-                            team, mitigation_to_team mtt
-                        WHERE
-                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
-                    ) AS mitigation_team,
-
-
-                    NOT(ISNULL(mau.id)) mitigation_accepted,
-                    p.submission_date AS mitigation_date,
-                    (
-                        SELECT
-                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ',')
-                        FROM
-                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                        WHERE
-                            mtc.mitigation_id=p.id
-                    ) AS mitigation_controls,
-                    p.current_solution,
-                    p.security_recommendations,
-                    p.security_requirements,
-                    p.mitigation_percent,
-                    m.name AS next_step,
-                    rw.name AS review,
-                    l.submission_date AS mgmt_review_date,
-                    l.comments,
-                    n.name AS reviewer,
-                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
-                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping,
-                    group_concat(distinct risk_catalog.name SEPARATOR ',') AS risk_catalog_names,
-                    group_concat(distinct threat_catalog.name SEPARATOR ',') AS threat_catalog_names,
-                    (
-                        SELECT
-                            c.comment
-                        FROM
-                            comments c
-                        WHERE
-                            c.risk_id=b.id
-                        ORDER BY
-                            c.date DESC
-                        LIMIT 1
-                    ) AS last_comment{$custom_field_select_sql}
-                FROM
-                    risk_scoring a
-                    LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
-                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations p ON b.id = p.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
-                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-                    LEFT JOIN closures o ON b.close_id = o.id
-                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
-                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
-                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
-                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
-                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
-                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
-                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
-                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
-                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
-                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
-                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
-                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
-                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
-                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
-                    LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
-                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
-                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
-                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
-                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
-                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id{$custom_field_join_sql}
-                WHERE
-                    {$status_scope_where_clause}
-                    {$separation_query}
-                GROUP BY b.id
-                {$sort_query}
-                ;
-            ");
-        }
+                NOT(ISNULL(mau.id)) mitigation_accepted,
+                p.submission_date AS mitigation_date,
+                (
+                    SELECT
+                        GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ',')
+                    FROM
+                        `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    WHERE
+                        mtc.mitigation_id=p.id
+                ) AS mitigation_controls,
+                p.current_solution,
+                p.security_recommendations,
+                p.security_requirements,
+                p.mitigation_percent,
+                m.name AS next_step,
+                rw.name AS review,
+                l.submission_date AS mgmt_review_date,
+                l.comments,
+                n.name AS reviewer,
+                (SELECT GROUP_CONCAT(DISTINCT rcm_s.risk_catalog_id) FROM risk_catalog_mappings rcm_s WHERE rcm_s.risk_id = b.id) AS risk_catalog_mapping,
+                (SELECT GROUP_CONCAT(DISTINCT tcm_s.threat_catalog_id) FROM threat_catalog_mappings tcm_s WHERE tcm_s.risk_id = b.id) AS threat_catalog_mapping,
+                (SELECT GROUP_CONCAT(DISTINCT rc_s.name SEPARATOR ',') FROM risk_catalog_mappings rcm_n INNER JOIN risk_catalog rc_s ON rcm_n.risk_catalog_id = rc_s.id WHERE rcm_n.risk_id = b.id) AS risk_catalog_names,
+                (SELECT GROUP_CONCAT(DISTINCT tc_s.name SEPARATOR ',') FROM threat_catalog_mappings tcm_n INNER JOIN threat_catalog tc_s ON tcm_n.threat_catalog_id = tc_s.id WHERE tcm_n.risk_id = b.id) AS threat_catalog_names,
+                (
+                    SELECT
+                        c.comment
+                    FROM
+                        comments c
+                    WHERE
+                        c.risk_id=b.id
+                    ORDER BY
+                        c.date DESC
+                    LIMIT 1
+                ) AS last_comment{$custom_field_select_sql}
+            FROM
+                risks b
+                LEFT JOIN risk_scoring a ON b.id = a.id
+                {$rtt_join}
+                {$rtas_join}
+                LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON b.id = c.risk_id
+                LEFT JOIN mitigations p ON b.id = p.risk_id
+                LEFT JOIN closures o ON b.close_id = o.id
+                LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
+                LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
+                {$custom_field_join_sql}
+            WHERE
+                {$status_scope_where_clause}
+                {$separation_query}
+            GROUP BY b.id
+            {$sort_query}
+            ;
+        ");
 
         $stmt->execute();
 
@@ -17094,7 +16337,10 @@ function get_value_by_name($table, $name, $return_name = false)
         }
     }
 
-    if(!$value || !isset($GLOBALS[$table_key])){
+    // Reload the table only on a miss or a cold cache. `!$value` also fired for a hit whose value is a
+    // legitimate 0 (the stock control_maturity table has one: "Not Performed"), re-running the SELECT on every
+    // such lookup (SD-808).
+    if($value === false || !isset($GLOBALS[$table_key])){
         // Open the database connection
         $db = db_open();
 
@@ -18234,8 +17480,11 @@ function classify_risk_audit_activity($message) {
  *                       $_POST) and the import-export Extra (which builds every
  *                       key explicitly) -- leave this false and are entirely
  *                       unaffected: for them every key is present either way.
+ * @param ?callable $notifier Called with the raw risk id in place of the
+ *                       Notification Extra's notify_mitigation_update(). Tests pass one to
+ *                       observe the notification; production callers omit it.
  */
-function update_mitigation($risk_id, $post, $is_api = false)
+function update_mitigation($risk_id, $post, $is_api = false, ?callable $notifier = null)
 {
     global $escaper;
     // Subtract 1000 from risk_id
@@ -18438,14 +17687,6 @@ function update_mitigation($risk_id, $post, $is_api = false)
     }
 
         
-    // Send the notification (no-op if notification extra is disabled)
-    call_extra_function(
-        'notification_extra',
-        __DIR__ . '/../extras/notification/index.php',
-        'notify_mitigation_update',
-        [$id]
-    );
-
     // Audit log
     if(count($updated_fields)) {
         $detail_updated = [];
@@ -18531,6 +17772,20 @@ function update_mitigation($risk_id, $post, $is_api = false)
     // Otherwise, success
     else $error = 1;
     /****** end uploading files *******/
+
+    // Send the notification (no-op if notification extra is disabled). After
+    // the file changes above, so the email's Mitigation: Supporting
+    // Documentation lists the files this save left, not the ones it replaced.
+    if ($notifier !== null) {
+        $notifier($id);
+    } else {
+        call_extra_function(
+            'notification_extra',
+            __DIR__ . '/../extras/notification/index.php',
+            'notify_mitigation_update',
+            [$id]
+        );
+    }
 
     // Add residual risk score
     $residual_risk = get_residual_risk((int)$id + 1000);
@@ -18697,6 +17952,44 @@ function latest_version($param, $force_refresh = true) {
         return "";
 }
 
+/**
+ * How long a failed releases.xml fetch suppresses further live fetches from page loads, in seconds.
+ */
+const LATEST_VERSIONS_FAILURE_BACKOFF_SECONDS = 3600;
+
+/**
+ * Whether a recorded fetch failure is recent enough that a page load should not try the network again.
+ * Pure so it is testable without a clock or a database.
+ *
+ * @param int $failed_at Unix time of the last recorded failure (0 when there is none)
+ * @param int $now       Current Unix time
+ */
+function latest_versions_failure_is_recent(int $failed_at, int $now, int $backoff_seconds = LATEST_VERSIONS_FAILURE_BACKOFF_SECONDS): bool
+{
+    // A timestamp in the future (clock change) is not trusted as a reason to stay offline
+    return $failed_at > 0 && $failed_at <= $now && ($now - $failed_at) < $backoff_seconds;
+}
+
+/**
+ * Remember that the releases.xml fetch just failed. The failure used to be remembered only for the current
+ * request ($GLOBALS), so an instance that cannot reach updates.simplerisk.com retried, and waited, on every
+ * page that asked for the latest version while the DB cache was empty (SD-829).
+ */
+function latest_versions_record_failure(): void
+{
+    update_or_insert_setting('latest_version_fetch_failed_at', (string)time());
+}
+
+/**
+ * Forget a recorded fetch failure after a fetch succeeds. Does nothing (no write) when none is recorded.
+ */
+function latest_versions_clear_failure(): void
+{
+    if (get_setting('latest_version_fetch_failed_at', false, false) !== false) {
+        delete_setting('latest_version_fetch_failed_at');
+    }
+}
+
 /****************************************************************************
  * FUNCTION: LATEST VERSIONS                                                *
  * Gets the list of the latest versions and caches it, so if it's needed    *
@@ -18721,6 +18014,15 @@ function latest_versions($force_refresh = true) {
                 return $GLOBALS['latest_versions_cached'];
             }
         }
+    }
+
+    // A page load must not repeat a fetch that just failed. The cached value above is empty on an instance
+    // that has never reached the feed (air-gapped, egress-filtered), and every page then waited on the network
+    // again. The queue job passes $force_refresh = true and always tries.
+    if (!$force_refresh && latest_versions_failure_is_recent((int)get_setting('latest_version_fetch_failed_at', 0, false), time()))
+    {
+        $GLOBALS['latest_versions_cached'] = 0;
+        return $GLOBALS['latest_versions_cached'];
     }
 
     // Url for SimpleRisk current versions
@@ -18750,6 +18052,7 @@ function latest_versions($force_refresh = true) {
     if (!is_array($response))
     {
         write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
+        latest_versions_record_failure();
         $GLOBALS['latest_versions_cached'] = 0;
         return $GLOBALS['latest_versions_cached'];
     }
@@ -18759,6 +18062,7 @@ function latest_versions($force_refresh = true) {
     if($return_code !== 200)
     {
         write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
+        latest_versions_record_failure();
 
         // Return 0 for the latest versions
         $GLOBALS['latest_versions_cached'] = 0;
@@ -18776,9 +18080,11 @@ function latest_versions($force_refresh = true) {
         $releases_array = parse_releases_feed($response['response']);
         if ($releases_array === null) {
             write_debug_log("SimpleRisk received an empty or unparseable version response from " . $url, 'warning');
+            latest_versions_record_failure();
             $GLOBALS['latest_versions_cached'] = 0;
             return $GLOBALS['latest_versions_cached'];
         }
+        latest_versions_clear_failure();
         $latest_release = reset($releases_array);
         $latest_versions['version'] = $latest_release[0]['@attributes']['version'];
         $latest_versions['appversion'] = $latest_release[0]['@attributes']['version'];
@@ -18897,12 +18203,12 @@ function extra_compatibility_versions($force_refresh = false, ?callable $fetcher
 
     // Tier 3: the network.
     //
-    // UPDATES_URL is an OVERRIDE, not the normal source: it is defined only by
-    // scripts/bundles-test-installation.sh, so a production instance never has
-    // it and always falls through to the default. The default is therefore the
-    // live production path and must be the service we operate --
-    // updates.simplerisk.com -- not raw.githubusercontent.com, which is rate
-    // limited and returns 429/503 under load.
+    // The base URL is resolved by the update channel resolver, in this order:
+    // an explicit UPDATES_URL constant, then the SIMPLERISK_UPDATE_CHANNEL
+    // constant, then the administrator's update_channel setting, else
+    // production. Production resolves to updates.simplerisk.com -- the service
+    // we operate -- not raw.githubusercontent.com, which is rate limited and
+    // returns 429/503 under load.
     $url = updates_url('/extra_compatibility.xml');
 
     $http_options = [
@@ -19055,16 +18361,49 @@ function current_version($param)
  * Display decision for a version row: compare an installed version to the
  * latest-known version. Pure — no DB, no network.
  *
+ * Only a build strictly BEHIND the feed is "update_available". A dev, CI,
+ * release-candidate or testing-channel build is ahead of the published feed and
+ * must not be told to update to an older release. Identifiers are fixed-width
+ * YYYYMMDD-NNN, so strcmp() is chronological.
+ *
  * @return string 'unknown' when $latest is '' (e.g. the latest-version cache
  *                has not been populated yet), 'up_to_date' when the two match,
- *                otherwise 'update_available'.
+ *                'ahead' when $current is a later release than $latest (a release
+ *                the active update channel has not published -- an abandoned RC,
+ *                or an RC instance switched to Production; never "up to date",
+ *                and never an "update" to an older release), otherwise
+ *                'update_available'. Release identifiers are fixed-width
+ *                YYYYMMDD-NNN, so strcmp() is chronological.
  */
 function version_update_status(string $current, string $latest): string
 {
     if ($latest === '') {
         return 'unknown';
     }
-    return ($current === $latest) ? 'up_to_date' : 'update_available';
+    if ($current === $latest) {
+        return 'up_to_date';
+    }
+    if ($current !== '' && strcmp($current, $latest) > 0) {
+        return 'ahead';
+    }
+    return 'update_available';
+}
+
+/**
+ * Which message, if any, the Register & Upgrade page states under the version
+ * rows for the application's version_update_status(). Pure.
+ *
+ * Only 'ahead' is stated. 'unknown' is a cold latest-version cache -- routine
+ * on a fresh install and right after every update-channel switch, which clears
+ * the cache -- so it says nothing: claiming the update service was unreachable
+ * would be false. (The Upgrade Extra says that itself when it actually fetched
+ * the feed and got nothing back.)
+ *
+ * @return string|null A $lang key, or null for no message.
+ */
+function version_position_message_key(string $status): ?string
+{
+    return $status === 'ahead' ? 'UpdateChannelAheadOfChannel' : null;
 }
 
 /***********************
@@ -19317,6 +18656,49 @@ function language_file($force_default=false)
 }
 
 /*******************************
+ * FUNCTION: LOAD LANGUAGE FILE *
+ *******************************/
+// Populates the global $lang for the active language. Replaces the old
+// require_once(language_file()) at every call site: the active locale is
+// loaded on top of the English strings, so a key missing from a custom or
+// partially translated locale falls back to English instead of being null
+// (which made $escaper->escapeHtml($lang['X']) throw a TypeError and the page
+// return HTTP 500). Like require_once, a given file is applied only once per
+// request; a different file (e.g. after the session language becomes known)
+// replaces $lang again.
+function load_language_file($force_default = false)
+{
+    static $loaded = [];
+
+    require_once(realpath(__DIR__ . '/language_fallback.php'));
+
+    $english_file = realpath(__DIR__ . '/../languages/en/lang.en.php');
+    $file = language_file($force_default);
+    if ($file === false || $file === '') {
+        $file = $english_file;
+    }
+    if ($file === false || isset($loaded[$file])) {
+        return;
+    }
+    $loaded[$file] = true;
+
+    // Pre-session placeholder (languages/empty.php) defines no strings; keep that behaviour.
+    if (basename($file) === 'empty.php') {
+        require_once($file);
+        return;
+    }
+
+    $errors = [];
+    $GLOBALS['lang'] = language_load_with_english_fallback($file, $english_file === false ? null : $english_file, $errors);
+
+    if (!empty($errors) && function_exists('write_debug_log')) {
+        foreach ($errors as $error) {
+            write_debug_log($error, 'error');
+        }
+    }
+}
+
+/*******************************
  * FUNCTION: VALIDATE LANGUAGE *
  *******************************/
 // Helper function to validate and sanitize language code
@@ -19337,6 +18719,117 @@ function validate_language($lang, $allowed_languages) {
     return $lang;
 }
 
+/*********************************
+ * FUNCTION: EXTRA CODE PRESENT  *
+ *********************************/
+/**
+ * Whether an Extra's code is on disk (its extras/<dir>/index.php exists).
+ *
+ * The `*_extra()` gates answer "is the Extra switched on in settings"; this
+ * answers "can its code actually be loaded". The two can disagree when an
+ * Extra's files go away without its setting being cleared (a lapsed trial, a
+ * pod rebuilt from an image that does not carry it). Core then did
+ * require_once(realpath(...)) on a path that no longer exists, and
+ * realpath() returns false, which is require_once('') -- a fatal on every
+ * request that reaches the gate.
+ *
+ * $dir is a directory name under extras/, never a path: anything that is not
+ * [A-Za-z0-9_-] is refused so a caller cannot probe outside extras/.
+ *
+ * Not built on is_extra_installed() on purpose: that one answers "is this a
+ * known Extra whose index.php exists" against the $available_extras whitelist
+ * (and via realpath()), so it is false for any name not on the list and for a
+ * path it cannot resolve. The gates need a plain "is the file there" answer for
+ * a hard-coded directory, with the traversal refusal below and a test seam, and
+ * must not start depending on the whitelist staying in step with the gates.
+ *
+ * Known limitation: with the setting on and the files gone, the gate reports the
+ * Extra as off, so the admin UI shows it as not activated and offers no way to
+ * deactivate it (disable_extra() needs the files). Restoring the Extra's files
+ * brings it straight back on without enable_*_extra() running again.
+ *
+ * @param string      $dir         Directory name under extras/ (e.g. "api", "import-export")
+ * @param string|null $extras_root Override for the extras/ directory; for tests.
+ *                                 When null, $GLOBALS['sr_extras_root_override']
+ *                                 is honored if set (tests only), else extras/.
+ */
+function extra_code_present(string $dir, ?string $extras_root = null): bool
+{
+    if (!preg_match('/^[A-Za-z0-9_-]+$/', $dir)) {
+        return false;
+    }
+
+    $root = $extras_root ?? ($GLOBALS['sr_extras_root_override'] ?? (__DIR__ . '/../extras'));
+
+    return is_file($root . '/' . $dir . '/index.php');
+}
+
+/**
+ * Whether an Extra's SETTING is on, ignoring whether its code is on disk.
+ *
+ * For the upgrade steps that clean up or seed Extra-owned data. They decide
+ * "is this data orphaned?" from the administrator's setting, not from the
+ * files: the `*_extra()` gates now report an Extra as off when its files are
+ * missing, and a Core upgrade must never drop an Extra's tables or delete its
+ * rows merely because the files are absent (a lapsed trial, an image rebuilt
+ * without the Extra). The Extra may be restored later and the data must still
+ * be there. Same truthiness as the gates: true, "true", 1 or "1".
+ *
+ * @param string $setting The settings-table name the Extra's gate reads (e.g. "assessments", "extra_workflows")
+ */
+function extra_setting_enabled(string $setting): bool
+{
+    $value = get_setting($setting);
+
+    return $value === true || $value === "true" || $value === 1 || $value === "1";
+}
+
+/**
+ * Used by the `*_extra()` gates of FEATURE Extras once the setting says the
+ * Extra is on: true when its code is present, otherwise false so Core treats
+ * the Extra as off instead of requiring files that are not there. Logged at
+ * notice because it is a persistent configuration gap an operator can act on;
+ * each gate caches its answer, so this fires at most once per Extra per
+ * request.
+ *
+ * Do NOT use this for an Extra that enforces something -- who can see data,
+ * how users sign in, whether data is encrypted. Treating those as "off" would
+ * run requests unprotected. They use extra_enabled_fail_closed() instead.
+ */
+function extra_enabled_if_present(string $dir): bool
+{
+    if (extra_code_present($dir)) {
+        return true;
+    }
+
+    write_debug_log("The \"{$dir}\" Extra is enabled in settings but its files are not installed; treating it as disabled.", 'notice');
+
+    return false;
+}
+
+/**
+ * The gate helper for Extras that ENFORCE something: Team Separation and
+ * Organizational Hierarchy (who can see which records), Custom Authentication
+ * (how users sign in) and Encryption (whether stored data is encrypted).
+ *
+ * The setting always wins and this returns true even when the code is absent.
+ * Reporting such an Extra as off would let requests run without the protection
+ * the administrator turned on -- every user seeing every team's risks, sign-in
+ * falling back to local accounts, new rows written in plaintext into a column
+ * the rest of the data has encrypted. Leaving the gate on means the code that
+ * needs the Extra's files fails instead, which denies the request. The log
+ * line is at error because the instance is misconfigured and an operator has
+ * to restore the Extra's files or deactivate it properly.
+ */
+function extra_enabled_fail_closed(string $dir): bool
+{
+    if (!extra_code_present($dir)) {
+        write_debug_log("The \"{$dir}\" Extra enforces access or data protection and is enabled in settings, but its files are not installed. Leaving it enabled so requests fail instead of running unprotected; restore the Extra or deactivate it.", 'error');
+    }
+
+    return true;
+}
+
 /*****************************************
  * FUNCTION: CUSTOM AUTHENTICATION EXTRA *
  *****************************************/
@@ -19354,7 +18847,7 @@ function custom_authentication_extra() {
         // If the setting is true or "true" or 1
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1") {
             // The extra is enabled
-            $GLOBALS['authentication_extra'] = true;
+            $GLOBALS['authentication_extra'] = extra_enabled_fail_closed('authentication');
         } else {
             $GLOBALS['authentication_extra'] = false;
         }
@@ -19384,7 +18877,7 @@ function customization_extra()
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
             // The extra is enabled
-            $GLOBALS['customization_extra'] = true;
+            $GLOBALS['customization_extra'] = extra_enabled_if_present('customization');
         }
         else $GLOBALS['customization_extra'] = false;
     }
@@ -19410,7 +18903,7 @@ function team_separation_extra() {
         // If the setting is true or "true" or 1
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1") {
             // The extra is enabled
-            $GLOBALS['separation_extra'] = true;
+            $GLOBALS['separation_extra'] = extra_enabled_fail_closed('separation');
         } else {
             $GLOBALS['separation_extra'] = false;
         }
@@ -19441,7 +18934,7 @@ function notification_extra()
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
             // The extra is enabled
-            $GLOBALS['notification_extra'] = true;
+            $GLOBALS['notification_extra'] = extra_enabled_if_present('notification');
         }
         else $GLOBALS['notification_extra'] = false;
     }
@@ -19468,7 +18961,7 @@ function artificial_intelligence_extra()
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
             // The extra is enabled
-            $GLOBALS['artificial_intelligence_extra'] = true;
+            $GLOBALS['artificial_intelligence_extra'] = extra_enabled_if_present('artificial_intelligence');
         }
         else $GLOBALS['artificial_intelligence_extra'] = false;
     }
@@ -19495,7 +18988,7 @@ function import_export_extra()
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
             // The extra is enabled
-            $GLOBALS['importexport_extra'] = true;
+            $GLOBALS['importexport_extra'] = extra_enabled_if_present('import-export');
         }
         else $GLOBALS['importexport_extra'] = false;
     }
@@ -19522,7 +19015,7 @@ function incident_management_extra()
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
             // The extra is enabled
-            $GLOBALS['incident_management_extra'] = true;
+            $GLOBALS['incident_management_extra'] = extra_enabled_if_present('incident_management');
         }
         else $GLOBALS['incident_management_extra'] = false;
     }
@@ -19549,7 +19042,7 @@ function api_extra()
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
             // The extra is enabled
-            $GLOBALS['api_extra'] = true;
+            $GLOBALS['api_extra'] = extra_enabled_if_present('api');
         }
         else $GLOBALS['api_extra'] = false;
     }
@@ -19576,7 +19069,7 @@ function assessments_extra()
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
             // The extra is enabled
-            $GLOBALS['assessments_extra'] = true;
+            $GLOBALS['assessments_extra'] = extra_enabled_if_present('assessments');
         }
         else $GLOBALS['assessments_extra'] = false;
     }   
@@ -19607,8 +19100,9 @@ function complianceforge_scf_extra() : bool
 
     // 4. Normalize both values
     $is_enabled =
-            normalize_bool($new_setting)
-            || normalize_bool($old_setting);
+            (normalize_bool($new_setting)
+            || normalize_bool($old_setting))
+            && extra_enabled_if_present('complianceforgescf');
 
     // 5. Cache result under the new name
     $GLOBALS['extra_scf'] = $is_enabled;
@@ -19633,7 +19127,7 @@ function advanced_search_extra() {
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
             // The extra is enabled
-            $GLOBALS['advanced_search_extra'] = true;
+            $GLOBALS['advanced_search_extra'] = extra_enabled_if_present('advanced_search');
         }
         else $GLOBALS['advanced_search_extra'] = false;
     }
@@ -19659,7 +19153,7 @@ function jira_extra() {
         // If the setting is true or "true" or 1
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1") {
             // The extra is enabled
-            $GLOBALS['jira_extra'] = true;
+            $GLOBALS['jira_extra'] = extra_enabled_if_present('jira');
         } else {
             $GLOBALS['jira_extra'] = false;
         }
@@ -19670,32 +19164,6 @@ function jira_extra() {
 
     return $GLOBALS['jira_extra'];
 
-}
-
-/***********************
- * FUNCTION: UCF EXTRA *
- ***********************/
-function ucf_extra() {
-    if(isset($GLOBALS['ucf_extra'])){
-        return $GLOBALS['ucf_extra'];
-    }
-
-    $setting = get_setting('ucf');
-
-    // If the setting is not empty
-    if (!empty($setting))
-    {
-        // If the setting is true or "true" or 1
-        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
-        {
-            // The extra is enabled
-            $GLOBALS['ucf_extra'] = true;
-        }
-        else $GLOBALS['ucf_extra'] = false;
-    }
-    else $GLOBALS['ucf_extra'] = false;
-
-    return $GLOBALS['ucf_extra'];
 }
 
 /********************************************
@@ -19714,7 +19182,7 @@ function organizational_hierarchy_extra() {
         // If the setting is true or "true" or 1
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1") {
             // The extra is enabled
-            $GLOBALS['organizational_hierarchy_extra'] = true;
+            $GLOBALS['organizational_hierarchy_extra'] = extra_enabled_fail_closed('organizational_hierarchy');
         } else {
             $GLOBALS['organizational_hierarchy_extra'] = false;
         }
@@ -19743,7 +19211,7 @@ function vulnmgmt_extra() {
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
             // The extra is enabled
-            $GLOBALS['extra_vulnmgmt'] = true;
+            $GLOBALS['extra_vulnmgmt'] = extra_enabled_if_present('vulnmgmt');
         }
 	else $GLOBALS['extra_vulnmgmt'] = false;
     }
@@ -19766,7 +19234,7 @@ function workflows_extra() {
     {
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
-            $GLOBALS['extra_workflows'] = true;
+            $GLOBALS['extra_workflows'] = extra_enabled_if_present('workflows');
         }
         else $GLOBALS['extra_workflows'] = false;
     }
@@ -19845,7 +19313,7 @@ function encryption_extra() {
         // If the setting is true or "true" or 1
         if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1") {
             // The extra is enabled
-            $GLOBALS['encryption_extra'] = true;
+            $GLOBALS['encryption_extra'] = extra_enabled_fail_closed('encryption');
         } else {
             $GLOBALS['encryption_extra'] = false;
         }
@@ -19897,9 +19365,8 @@ function upload_file($risk_id, $file, $view_type = 1) {
             return $refusal;
         }
 
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-
-        $file_type_name = $finfo->file($file['tmp_name']);
+        // An undetectable type is '' which no allow-list entry matches, so the file is refused
+        $file_type_name = detect_file_mime_type($file['tmp_name']) ?? '';
         $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
         // Check if the file type and extension are allowed
@@ -21347,9 +20814,16 @@ function registration_redirect()
     }
 }
 
-/******************************
- * FUNCTION: JS STRING ESCAPE *
- ******************************/
+/*********************************************************************
+ * FUNCTION: JS STRING ESCAPE                                        *
+ * DEPRECATED: not a JavaScript escape, so nothing in SimpleRisk     *
+ * calls it any more. It HTML-escapes the string and then turns      *
+ * &#039; back into a raw apostrophe, which is only safe in HTML     *
+ * text or a double-quoted JS string, and it leaves backslashes and  *
+ * line breaks alone. Use $escaper->escapeJs() for a JS string and   *
+ * $escaper->escapeHtml() for HTML. Kept, unchanged, because an      *
+ * older Extra installed on a newer Core may still call it.          *
+ *********************************************************************/
 function js_string_escape($string)
 {
     global $escaper;
@@ -22987,14 +22461,31 @@ function delete_file($file)
  ******************************/
 function linux_delete_dir($dir)
 {
-    $files = array_diff(scandir($dir), array('.','..'));
-
-    foreach ($files as $file)
+    $entries = is_dir($dir) && !is_link($dir) ? scandir($dir) : false;
+    if ($entries === false)
     {
-        (is_dir("$dir/$file")) ? linux_delete_dir("$dir/$file") : linux_delete_file("$dir/$file");
+        // A symlink (or a path that is not a directory) is removed itself, never followed
+        if (is_link($dir) && @unlink($dir))
+        {
+            return true;
         }
+        write_debug_log("Could not list the directory '{$dir}' for deletion.", 'error');
+        return false;
+    }
 
-    return rmdir($dir);
+    foreach (array_diff($entries, array('.','..')) as $file)
+    {
+        (is_dir("$dir/$file") && !is_link("$dir/$file")) ? linux_delete_dir("$dir/$file") : linux_delete_file("$dir/$file");
+    }
+
+    $removed = rmdir($dir);
+    if (!$removed)
+    {
+        // A half-deleted tree (for example the vendor directory during an upgrade) is otherwise silent
+        write_debug_log("Could not remove the directory '{$dir}'. Files may remain after a delete.", 'error');
+    }
+
+    return $removed;
 }
 
 /*******************************
@@ -23004,7 +22495,14 @@ function linux_delete_file($file)
 {
     // Delete a file in Linux
     $success = false;
-    if(is_file($file)) $success = unlink($file);
+    if (is_file($file) || is_link($file))
+    {
+        $success = unlink($file);
+        if (!$success)
+        {
+            write_debug_log("Could not delete the file '{$file}'.", 'error');
+        }
+    }
 
     // Return the results
     return $success;
@@ -23831,6 +23329,17 @@ function set_simplerisk_timezone()
  **********************************/
 function add_security_headers($x_frame_options = true, $x_xss_protection = true, $x_content_type_options = true, $content_type = true, $content_security_policy = true, $referrer_policy = 'origin', $hsts = true)
 {
+	// Once output has started header() can only raise a "headers already sent" warning, which the
+	// error handler escalates to an exception. That is what turned a partial that is include()d
+	// mid-render (the CVSS modal, pulled in while building the pending-risk review cards) into a
+	// masked 500. The page that is being rendered already sent its own security headers when it
+	// started, so there is nothing left to add (SD-861).
+	if (headers_sent())
+	{
+		write_debug_log("add_security_headers() skipped: output has already started.", 'debug');
+		return;
+	}
+
 	// If we want to send a X-Frame-Options header
 	if ($x_frame_options)
 	{
@@ -23969,15 +23478,31 @@ function mysql_max_allowed_values()
     $max_allowed_packet = $stmt->fetch();
     $max_allowed_packet = $max_allowed_packet['Value'];
 
-    // Get the innodb_log_file_size
-    $stmt = $db->prepare("SHOW VARIABLES LIKE 'innodb_log_file_size';");
-    $stmt->execute();
-    $innodb_log_file_size = $stmt->fetch();
-    $innodb_log_file_size = $innodb_log_file_size['Value'];
-    $innodb_log_file_size = $innodb_log_file_size / 10;
+    // MySQL refuses a single stored value over a tenth of the redo log. MySQL 8.0.30+ sizes the redo
+    // log with innodb_redo_log_capacity and leaves innodb_log_file_size at its (now meaningless)
+    // default, so prefer the capacity when the server has it.
+    $redo_log_size = 0;
+    foreach (['innodb_redo_log_capacity', 'innodb_log_file_size'] as $variable)
+    {
+        $stmt = $db->prepare("SHOW VARIABLES LIKE '{$variable}';");
+        $stmt->execute();
+        $row = $stmt->fetch();
+        if ($row && (int)$row['Value'] > 0)
+        {
+            $redo_log_size = (int)$row['Value'];
+            break;
+        }
+    }
+    $innodb_log_file_size = $redo_log_size / 10;
 
     // Close the database connection
     db_close($db);
+
+    // If the redo log size could not be read it constrains nothing we can measure
+    if ($innodb_log_file_size <= 0)
+    {
+        return $max_allowed_packet;
+    }
 
     // Return the smaller value
     return min($max_allowed_packet, $innodb_log_file_size);
@@ -24216,9 +23741,51 @@ function max_upload_size_label($bytes = null)
 }
 
 /***************************************
+ * FUNCTION: DETECT FILE MIME TYPE     *
+ ***************************************/
+/**
+ * Detects a file's MIME type from its content, or returns null when it cannot.
+ *
+ * The fileinfo extension is optional on minimal PHP builds, and an unguarded `new finfo()`
+ * there is a fatal "Class finfo not found" (a 500). Callers that gate on the result should
+ * treat null as "unknown type" and refuse the file (fail closed) rather than guess from the
+ * extension, since the type/extension allow-list exists to stop mislabelled uploads.
+ *
+ * @param string $path Path of the file to inspect
+ * @return string|null The MIME type, or null if fileinfo is unavailable or detection fails
+ */
+function detect_file_mime_type(string $path): ?string
+{
+    if (!file_type_detection_available() || $path === '' || !is_file($path))
+    {
+        return null;
+    }
+
+    try
+    {
+        $type = (new finfo(FILEINFO_MIME_TYPE))->file($path);
+    }
+    catch (\Throwable $e)
+    {
+        write_debug_log("MIME type detection failed: " . $e->getMessage(), 'warning');
+        return null;
+    }
+
+    return is_string($type) && $type !== '' ? $type : null;
+}
+
+/*********************************************
+ * FUNCTION: FILE TYPE DETECTION AVAILABLE   *
+ *********************************************/
+function file_type_detection_available(): bool
+{
+    return class_exists('finfo');
+}
+
+/***************************************
  * FUNCTION: UPLOAD PRECHECK REFUSAL   *
  ***************************************/
-function upload_precheck_refusal($file, $database_limit = null)
+function upload_precheck_refusal($file, $database_limit = null, ?bool $detection_available = null)
 {
     global $lang;
 
@@ -24245,6 +23812,14 @@ function upload_precheck_refusal($file, $database_limit = null)
     if (upload_exceeds_database_limit($file['size'] ?? 0, $database_limit))
     {
         return $lang['UploadFileTooBigForDatabase'] ?? '';
+    }
+
+    // Uploads are checked against a type/extension allow-list, which needs the fileinfo extension
+    // $detection_available lets a test exercise the missing-extension branch without removing the extension
+    if (!($detection_available ?? file_type_detection_available()))
+    {
+        write_debug_log("Upload refused: the PHP fileinfo extension is not installed, so the file type cannot be verified.", 'notice');
+        return $lang['UploadFileTypeDetectionUnavailable'] ?? '';
     }
 
     return null;
@@ -24545,9 +24120,8 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1, 
                 continue;
             }
 
-            $finfo = new finfo(FILEINFO_MIME_TYPE);
-
-            $file_type_name = $finfo->file($file['tmp_name']);
+            // An undetectable type is '' which no allow-list entry matches, so the file is refused
+            $file_type_name = detect_file_mime_type($file['tmp_name']) ?? '';
             $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     
             // Check if the file type and extension are allowed
@@ -24699,9 +24273,8 @@ function upload_exception_files($test_audit_id, $ref_type, $files, $version=1)
                 continue;
             }
 
-            $finfo = new finfo(FILEINFO_MIME_TYPE);
-
-            $file_type_name = $finfo->file($file['tmp_name']);
+            // An undetectable type is '' which no allow-list entry matches, so the file is refused
+            $file_type_name = detect_file_mime_type($file['tmp_name']) ?? '';
             $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     
             // Check if the file type and extension are allowed
@@ -25991,7 +25564,6 @@ function prevent_extra_double_submit($extra, $is_enable) {
         ($extra == "advanced_search" && (advanced_search_extra() == $is_enable)) ||
         ($extra == "jira" && (jira_extra() == $is_enable)) ||
         ($extra == "organizational_hierarchy" && (organizational_hierarchy_extra() == $is_enable)) ||
-        ($extra == "ucf" && (ucf_extra() == $is_enable)) ||
         ($extra == "extra_vulnmgmt" && (vulnmgmt_extra() == $is_enable)) ||
         ($extra == "workflows" && (workflows_extra() == $is_enable));
 
@@ -30531,9 +30103,8 @@ function upload_validation_file($mitigation_id, $control_id, $file)
             return $refusal;
         }
 
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-
-        $file_type_name = $finfo->file($file['tmp_name']);
+        // An undetectable type is '' which no allow-list entry matches, so the file is refused
+        $file_type_name = detect_file_mime_type($file['tmp_name']) ?? '';
         $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
         // Check if the file type and extension are allowed
@@ -36921,7 +36492,7 @@ function get_localization_required_by_scripts(): array {
         'DiscoveryCancelRun', 'CouldNotLoadDiscoveryRuns', 'Retry', 'RequestFailed', 'DiscoveryPortsInvalid', 'DiscoveryProbeMethod', 'DiscoveryTcpPortsHint',
         'DiscoveryNotConfigured', 'DiscoveryRangeNotAllowed', 'DiscoveryAllowedRangesList'],
     'CUSTOM:pages/compliance-initiate-audits.js' => ['EligibleTests', 'TestName', 'ControlName', 'FrameworkName', 'Schedule', 'ScheduleManual', 'ScheduleInterval', 'ScheduleCalendar', 'LastTestDate', 'NextTestDate', 'ALL', 'Cancel', 'Clear', 'SelectAll', 'NSelected', 'NSelectedAllPages', 'Tags', 'Initiate', 'InitiateSelected', 'InitiateNAudits', 'TagsOptionalAppliedToSelection', 'NoEligibleTestsFound', 'RequestFailed', 'FailedInitiate', 'Search', 'AllFrameworks', 'AllControls', 'ShowAllTests', 'AllTesters', 'AnySchedule', 'Tests', 'InProgress', 'AllTeams', 'days', 'Day', 'ShowingXToYOfZ'],
-    'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last'],
+    'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last', 'RequestFailed'],
     'blockUI' => ['ProcessingPleaseWait'],
     'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table', 'WidgetType_WYSIWYG', 'WidgetType_kpi', 'WidgetType_whats_next'],
     'CUSTOM:pages/governance.js' => ['ExistingMappings', 'Unassigned', 'DocumentName', 'DocumentType', 'ControlFrameworks', 'Controls', 'CreationDate', 'ApprovalDate', 'Status', 'All', 'ExceptionName', 'ID', 'Description', 'Justification', 'NextReviewDate'],
@@ -37679,6 +37250,44 @@ function get_localization_required_by_scripts(): array {
     'CUSTOM:pages/assessment.js' => ['SimpleriskUsers', 'AssessmentContacts'],
     // Data Integrity review/repair page controller (data-integrity.js).
     'CUSTOM:pages/data-integrity.js' => ['DataIntegrityTotalCount', 'Repair', 'DataIntegrityRecordLocation', 'Selected', 'Open', 'RequestFailed', 'DataIntegrityShowingCapped'],
+    // Add and remove values (js/simplerisk/pages/lookup-values.js, SR-2475).
+    'CUSTOM:pages/lookup-values.js' => ['Cancel', 'Save', 'Delete', 'Retry', 'ClearFilters', 'RequestFailed', 'YouNeedToSpecifyANameParameter', 'ANewItemWasAddedSuccessfully', 'AnItemWasUpdatedSuccessfully', 'AnItemWasDeletedSuccessfully', 'LookupDeleteValue', 'LookupNotInUse', 'LookupMatches', 'LookupOneValue', 'LookupNValues', 'LookupUsedBy', 'LookupNOfLimit', 'LookupShowingNOfM', 'LookupNoValuesYet', 'LookupNoValuesYetHint', 'LookupNoValuesMatch', 'LookupNoValuesMatchHint', 'LookupCouldNotLoad', 'LookupCouldNotLoadHint', 'LookupRenameX', 'LookupDeleteX', 'LookupRename', 'LookupValueName', 'LookupRenameUpdatesStatus', 'LookupDeleteTitle', 'LookupDeletePlain', 'LookupInUseWarningOne', 'LookupInUseWarningMany', 'LookupMoveRecordOneTo', 'LookupMoveRecordsTo', 'LookupMoveHint', 'LookupLeaveEmpty', 'LookupRecordsMoved', 'LookupRecordMovedOne', 'LookupAddValue'],
+    // Queue Monitor live view (js/simplerisk/pages/queue-monitor.js, SR-2408).
+    'CUSTOM:pages/queue-monitor.js' => [
+        'Pending', 'UpgradeStateRunning', 'Retrying', 'Stopping', 'Completed', 'Failed', 'Canceled', 'Done', 'NotRun',
+        'Immediate', 'AssetScoringLevelHigh', 'Medium', 'AssetScoringLevelLow', 'Lowest', 'Priority',
+        'ID', 'Progress', 'attempts', 'Duration', 'DiscoveryStatusQueued',
+        'RetryingAttemptXInY', 'RetryingAttemptX', 'RetryAttemptX', 'XOfYSteps',
+        'XSecondsShort', 'XMinutesShort', 'XHoursShort', 'XDaysShort',
+        'LiveUpdatedXAgo', 'UpdateFailedRetryingInX', 'Loading',
+        'QueueWorker', 'StepWorker', 'NotRunning', 'XOfY', 'LastHeartbeatXAgo', 'NoHeartbeatRecorded', 'OldestPending', 'FailedInTheLast24Hours',
+        'FailedAtStepXY', 'LastError', 'AfterXAttempts', 'ViewPayload', 'QueueStepDetailsPurged', 'CouldNotLoadTheSteps',
+        'Step', 'Status', 'Time', 'Note', 'PayloadForTaskX', 'RequestFailed',
+        'NoTasksInTheQueue', 'BackgroundTasksAppearHere', 'NoTasksMatchYourFilters', 'CouldNotLoadTheQueue', 'AdvancedSearchFailedBody',
+        'ClearFilters', 'Retry', 'ShowingXToYOfZ', 'Previous', 'Next', 'Select', 'Expand',
+        'XOfOneStep', 'LastTriedX', 'LiveUpdatesFailed', 'LiveUpdatesResumed', 'LiveUpdatesStopped',
+        'SessionEndedRefreshToSignIn', 'WorkerStatusUnavailable',
+        // Row actions, bulk bar and retention modal
+        'Actions', 'Stop', 'Cancel', 'RunNow', 'Restart', 'Tasks', 'NSelected', 'SelectAllTooManyMatches',
+        'StopTask', 'CancelTask', 'RestartTask', 'CancelXTasks', 'RestartXTasks',
+        'StopTaskXQuestion', 'CancelThisTaskQuestion', 'RestartThisTaskQuestion', 'CancelTaskXQuestion', 'RunTaskXNowQuestion', 'RestartTaskXQuestion',
+        'CancelXSelectedTasksQuestion', 'RestartXSelectedTasksQuestion',
+        'QueueStopConfirmBody', 'QueueCancelConfirmBody', 'QueueCancelSelectedConfirmBody', 'QueueRunNowConfirmBody',
+        'QueueRestartConfirmBody', 'QueueRestartSelectedConfirmBody',
+        'QueueTaskWillRunAgainWarning', 'QueueTasksWillRunAgainWarning', 'QueueTaskWillRunOnNextPassWarning',
+        'XAppliedYSkipped', 'TaskXRestartedAsTaskY',
+        'XSkippedTaskStateChanged', 'XSkippedTaskNoLongerExists', 'XSkippedTaskTypeCannotBeCanceled',
+        'XSkippedTaskTypeCannotBeRestarted', 'XSkippedTaskAlreadyRestarted', 'XSkippedTaskStillStopping', 'XSkippedUnexpectedError',
+        'SelectAllXMatchingTasks', 'AllXMatchingTasksSelected', 'ChooseAStatusFilterToActOnSelectedTasks', 'TooManyTasksSelectedSelectAtMostX',
+        'EnterAWholeNumberFrom0ToX', 'RetentionSettingsSaved',
+        'RestartedAsTaskX', 'NoTasksMatchAnyMore', 'RequestMayHaveBeenAppliedCheckTheList',
+        'QueueWorkerNotRunningTasksWait', 'StepWorkerNotRunningStepsWait', 'WorkerStatusUnknownTasksMayWait',
+        // Bulk delete of finished tasks
+        'DeleteTask', 'DeleteXTasks', 'DeleteTaskXQuestion', 'DeleteThisTaskQuestion', 'DeleteXSelectedTasksQuestion',
+        'QueueDeleteConfirmBody', 'QueueDeleteSelectedConfirmBody', 'XDeletedYSkipped',
+        'XSkippedTaskTypeCannotBeDeleted', 'XSkippedTaskStepStillRunning',
+        'QueueTaskDeletedPermanentlyWarning', 'QueueTasksDeletedPermanentlyWarning',
+    ],
     'CUSTOM:dynamic.js' => ['Risk', 'Mitigation', 'Review', 'RiskScoring', 'Unassigned', 'RiskMapping', 'Remove', 'NoColumnsSelected'],
     'CUSTOM:pages/connectivity-visualizer.js' => ['SearchEntities', 'SearchEntitiesPlaceholder', 'ShowTypes', 'Depth', 'Inspector', 'Connections', 'NoConnectionsFound', 'CouldNotLoadGraph', 'CouldNotSearchEntities', 'ShowingTopNOfM', 'RankedByMaturityGap', 'RankedByRiskScore', 'RankedByRecentFailure', 'RankedByReviewDate', 'RankedBySeverity', 'RankedByName', 'RiskCatalog', 'ThreatCatalog', 'Vulnerability', 'Audit', 'TestResult', 'NodeTypeSelfAssessmentResult', 'Relationship', 'CurrentMaturity', 'DesiredMaturity', 'ControlFamily', 'ApprovalState', 'ApprovalStatus', 'Manager', 'Approver', 'Tester', 'AssetValuation', 'Verified', 'Risk', 'Asset', 'AssetGroup', 'Framework', 'Control', 'Test', 'Document', 'Exception', 'Name', 'Type', 'Status', 'Approved', 'Owner', 'RequestFailed', 'All', 'Close', 'RelationshipOfType', 'MitigationPercent', 'Objective', 'TestSteps', 'ExpectedResults', 'DesiredFrequency', 'LastDate', 'LastResult', 'LastResultDate', 'CalculatedRisk', 'Justification', 'NextReviewDate', 'PercentComplete', 'Response', 'AssessmentDate', 'FrameworkName', 'Score', 'Playbook', 'Severity', 'NextDate', 'ControlID', 'TestID', 'Number', 'Grouping', 'Description', 'Hidden', 'RiskId', 'FirstFound', 'LastFound', 'Patchable', 'Solution', 'Platform', 'Breadcrumb', 'SelectANodeToInspect', 'HiddenUnreachableNodes', 'BrowsableEntityTypes', 'CountFloor', 'NoBrowsableTypes', 'AllTypes', 'FilterEntitiesPlaceholder', 'NoMatchingEntities', 'LoadMore', 'Loading', 'CouldNotLoadEntityCounts', 'CouldNotLoadEntities', 'ClearGraph'],
     // My Profile redesign (js/simplerisk/pages/account-profile.js)
@@ -37692,6 +37301,11 @@ function get_localization_required_by_scripts(): array {
         'ResetCustomDisplaySettings', 'CustomResetSuccessMessage',
         'FullName', 'EmailAddress', 'Username', 'Manager', 'Teams', 'Role', 'Language', 'Display',
         'Resources', 'UserGuide', 'AdminGuide', 'GSWalkthrough',
+    ],
+    // Register & Upgrade update channel selector (js/simplerisk/pages/admin-register-channel.js).
+    // Text the script sets with .text(); toast copy is emitted pre-escaped by admin/register.php.
+    'CUSTOM:pages/admin-register-channel.js' => [
+        'Production', 'ReleaseCandidate', 'UpdateChannelPinnedInConfig', 'UpdateChannelCustomInConfig',
     ],
     ];
 }
@@ -37965,186 +37579,6 @@ function getSpreadsheetData($filePath) {
     }
     $reader->close();
     return $data;
-}
-
-/*****************************
- * FUNCTION: FETCH COUNTRIES *
- *****************************/
-function fetchCountries(?callable $fetcher = null): array
-{
-    // $fetcher is an injectable seam for tests only -- production callers never
-    // pass an argument, so this always resolves to the real API call. Mirrors
-    // the same seam on core_countries_update's queue_check (includes/jobs/core_countries_update.php).
-    $fetcher ??= 'fetchCountriesFromAPI';
-
-    // Open the database connection
-    $db = db_open();
-
-    $setting = get_setting('countries_cache', db: $db);
-    $cache = $setting ? json_decode($setting, true) : null;
-    // !empty($cache['countries']) -- not just isset() -- so a cache entry
-    // that was itself written from a failed fetch (see the write side below,
-    // and the bug this guards against) is treated as invalid and retried
-    // immediately instead of being served, and stuck being re-served,
-    // forever.
-    $cache_valid = $cache && isset($cache['fetched_at']) && !empty($cache['countries']);
-
-    if ($cache_valid) {
-        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable -- $cache_valid guarantees $cache is array with these keys set
-        $age = time() - $cache['fetched_at'];
-        if ($age >= 24 * 60 * 60) { // cache older than 1 day
-            queue_countries_refresh_if_not_already_queued($db);
-        }
-
-        // Return cached countries immediately
-        // @phan-suppress-next-line PhanTypeArraySuspiciousNullable -- $cache_valid guarantees $cache is array with 'countries' key set
-        return $cache['countries'];
-    }
-
-    // Cache missing or invalid. If a live fetch attempt failed recently,
-    // don't retry it inline on THIS request -- restcountries.com's v3.1
-    // endpoint is currently permanently broken (301-redirects to a
-    // deprecation notice), so without this, every single request would
-    // synchronously retry a live HTTPS call (with its own internal retries)
-    // that's essentially guaranteed to fail again. Serve the fallback
-    // immediately and let the background refresh (enqueued below, same as
-    // the stale-cache path above) retry on its own schedule instead. A
-    // short window distinct from the 24h success-staleness TTL: a genuine
-    // outage should degrade to "fallback + occasional background retry,"
-    // not "every request blocks on a doomed live HTTP call."
-    $last_failed_at = (int) get_setting('countries_cache_last_failed_at', 0, db: $db);
-    if ($last_failed_at && (time() - $last_failed_at) < (5 * 60)) {
-        queue_countries_refresh_if_not_already_queued($db);
-        db_close($db);
-        return get_fallback_countries();
-    }
-
-    $countries = $fetcher();
-
-    if (!empty($countries)) {
-        // Only cache a genuine success. Writing an empty result here is what
-        // stranded this field before: it looked identical to a real cache
-        // entry, so every request (and every 24h background refresh) kept
-        // serving -- and re-confirming -- the same empty list indefinitely.
-        update_setting('countries_cache', json_encode([
-            'fetched_at' => time(),
-            'countries' => $countries
-        ]), db: $db);
-
-        db_close($db);
-
-        return $countries;
-    }
-
-    // The live fetch failed (or, as with restcountries.com's now-deprecated
-    // v3.1 endpoint, the third-party API itself is unusable). Record the
-    // failure (read by the negative-cache check above) instead of caching
-    // the empty result under 'countries_cache' itself -- that's what
-    // stranded this field permanently before this fix.
-    update_setting('countries_cache_last_failed_at', (string) time(), db: $db);
-    queue_countries_refresh_if_not_already_queued($db);
-
-    db_close($db);
-
-    return get_fallback_countries();
-}
-
-/**
- * Enqueue a core_countries_update background refresh unless one is already
- * pending/in-progress. Shared by fetchCountries()'s stale-cache path and its
- * two live-fetch-failure paths so recovery from a broken restcountries.com
- * happens asynchronously instead of on someone's page load, without
- * duplicating the existing-task dedup check three times.
- */
-function queue_countries_refresh_if_not_already_queued(PDO $db): void
-{
-    $existing_tasks = get_queue_items($db, 'core_countries_update', ['pending', 'in_progress']);
-    if (empty($existing_tasks)) {
-        $queue_task_payload = [
-            'triggered_at' => time(),
-        ];
-        queue_task($db, 'core_countries_update', $queue_task_payload, 25, 5, 3600);
-        write_debug_log("Queued core_countries_update task", "info");
-    } else {
-        write_debug_log("core_countries_update task already queued or in progress", "info");
-    }
-}
-
-/**
- * Pure decode-and-group step for fetchCountriesFromAPI()'s response body,
- * lifted out so the non-list-response guard and the grouping/sort logic are
- * unit-testable without a live network call (CLAUDE.md: "refactor the
- * testable decision out into a pure helper and test that").
- *
- * @return array<string, string[]>|null null when $decoded is not a JSON
- *         *array* (e.g. restcountries.com's live v3.1 response: a JSON
- *         object -- `{"success":false,"data":null,"errors":[...]}` --
- *         confirmed by requesting the real endpoint, not a list of country
- *         records) -- the caller is responsible for logging that outcome.
- */
-function parse_countries_api_response($decoded): ?array
-{
-    // A 200 response body that isn't a JSON *array* -- a bare scalar/null
-    // (invalid JSON), or a JSON *object* like restcountries.com's
-    // deprecation-notice body -- would otherwise reach foreach() below.
-    // json_decode(..., true) turns a JSON object into a PHP associative
-    // array, which is_array() alone cannot tell apart from a real list of
-    // country records: without the array_is_list() half of this guard, that
-    // object's own values (an error message string, a null, ...) get
-    // foreach'd as if they were country entries, and the `?? 'Unknown'`
-    // fallbacks turn a should-be-empty result into a non-empty
-    // {"Unknown": ["Unknown", ...]} grouping that then gets cached and
-    // served as if it were real data instead of falling through to the
-    // fallback list.
-    if (!is_array($decoded) || !array_is_list($decoded)) {
-        return null;
-    }
-
-    $grouped_countries = [];
-    foreach ($decoded as $country) {
-        $region = $country['region'] ?? 'Unknown';
-        $name = $country['name']['common'] ?? 'Unknown';
-        $grouped_countries[$region][] = $name;
-    }
-
-    // Sort regions and countries alphabetically
-    ksort($grouped_countries);
-    foreach ($grouped_countries as &$region_countries) {
-        sort($region_countries);
-    }
-
-    return $grouped_countries;
-}
-
-/**************************************
- * FUNCTION: FETCH COUNTRIES FROM API *
- **************************************/
-function fetchCountriesFromAPI(): array
-{
-    $http_options = [
-        'method' => 'GET',
-        'header' => ["Content-Type: application/json"],
-        'timeout' => 5,
-    ];
-
-    $validate_ssl = ssl_external_verify_enabled();
-
-    $url = 'https://restcountries.com/v3.1/all?fields=name,region';
-
-    $response = fetch_url_content("stream", $http_options, $validate_ssl, $url);
-    if (!is_array($response) || $response['return_code'] !== 200) {
-        write_debug_log("SimpleRisk was unable to connect to " . $url, "error");
-        return [];
-    }
-
-    $grouped_countries = parse_countries_api_response(json_decode($response['response'], true));
-
-    if ($grouped_countries === null) {
-        write_debug_log("SimpleRisk received an unexpected non-array response from " . $url, "warning");
-        return [];
-    }
-
-    return $grouped_countries;
 }
 
 /*******************************************************************************************
@@ -39291,7 +38725,8 @@ function get_dynamic_risks_data_for_output($filter_status, $group, $sort, $downl
 
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
-                $name = $escaper->escapeHtml($custom_field['name']);
+                // Raw text: the XLSX writer and the HTML table each escape for their own output
+                $name = $custom_field['name'];
             }
         }
         if($status == true) array_push($xlsRow, $name);
@@ -39816,6 +39251,133 @@ function select_all_too_many_matches_message(int $max, string $noun_lang_key): s
     global $lang;
 
     return _lang('SelectAllTooManyMatches', ['max' => $max, 'noun' => $lang[$noun_lang_key] ?? '']);
+}
+
+/**********************************************
+ * FUNCTION: DATATABLE REQUEST DEFAULTS       *
+ **********************************************
+ * Fills in the DataTables request parameters a datatable endpoint reads when the
+ * request did not carry them (SD-804). DataTables always sends draw, start, length,
+ * columns, order and search in server-side mode, but a table that ends up in
+ * client-side mode, or a request made by anything else, sends none of them, and
+ * every endpoint that read them unguarded answered HTTP 500 ("Undefined array
+ * key") instead of an empty page.
+ *
+ * Only keys that are absent are set, so a real DataTables request is untouched.
+ * Applied to both $_POST and $_GET because endpoints read from either. Call it at
+ * the top of a handler that is itself a datatable endpoint, never globally: a
+ * generic endpoint may treat the presence of "start", "length" or "search" as
+ * meaningful.
+ *
+ * $default_length is the page size filled in when the request carries no "length". A
+ * handler whose own contract for an absent length is "return every row" must pass -1,
+ * otherwise this helper would silently truncate it to a single page.
+ */
+function datatable_request_defaults(int $default_length = 10): void
+{
+    $defaults = [
+        'draw'    => 0,
+        'start'   => 0,
+        'length'  => $default_length,
+        'columns' => [],
+        'order'   => [],
+        'search'  => ['value' => '', 'regex' => 'false'],
+    ];
+
+    foreach ($defaults as $key => $value) {
+        if (!isset($_POST[$key])) {
+            $_POST[$key] = $value;
+        }
+        if (!isset($_GET[$key])) {
+            $_GET[$key] = $value;
+        }
+    }
+}
+
+/**************************************************
+ * FUNCTION: BACKUP DOWNLOAD PARSE RANGE          *
+ **************************************************
+ * Decides which bytes of a backup file a download request asks for. Pure so it can be
+ * unit-tested; admin/download_backup.php is a thin wrapper around it.
+ *
+ * Supports a single "bytes=START-END", "bytes=START-" or suffix "bytes=-N" range. Anything else
+ * (no header, another unit, a multi-range) is served in full, as before.
+ *
+ * @param string|null $header The Range header value, or null
+ * @param int         $size   The file size in bytes
+ * @return array{status:int,start:int,end:int} status 200 (whole file), 206 (partial) or 416 (not satisfiable)
+ */
+function backup_download_parse_range(?string $header, int $size): array
+{
+    $start = 0;
+    $end = $size - 1;
+
+    if ($header !== null && preg_match('/^bytes=(\d*)-(\d*)$/', trim($header), $m) && ($m[1] !== '' || $m[2] !== ''))
+    {
+        if ($m[1] === '')
+        {
+            // Suffix range: the last N bytes
+            $start = max(0, $size - (int)$m[2]);
+        }
+        else
+        {
+            $start = (int)$m[1];
+            if ($m[2] !== '')
+            {
+                $end = min($end, (int)$m[2]);
+            }
+        }
+
+        if ($start > $end || $start >= $size)
+        {
+            return ['status' => 416, 'start' => $start, 'end' => $end];
+        }
+
+        return ['status' => 206, 'start' => $start, 'end' => $end];
+    }
+
+    return ['status' => 200, 'start' => $start, 'end' => $end];
+}
+
+
+/**
+ * Validates the POST input of admin/add_remove_values.php for an already-whitelisted action and table.
+ * Pure: no alerts are raised, the caller renders each returned error through a language lookup
+ * (params === null means a plain $lang[key], otherwise _lang(key, params)).
+ *
+ * @param array $post        The request data (action, name, id)
+ * @param int   $lengthLimit Maximum length of the value for the table being edited
+ * @return array{valid: bool, errors: array<int, array{key: string, params: ?array}>, name?: string, id?: int}
+ */
+function validate_add_remove_values_input(array $post, int $lengthLimit): array
+{
+    $result = ['valid' => true, 'errors' => []];
+    $action = $post['action'] ?? '';
+
+    if (in_array($action, ['add', 'update'], true)) {
+        if (!is_string($post['name'] ?? null) || !trim($post['name'])) {
+            $result['errors'][] = ['key' => 'YouNeedToSpecifyANameParameter', 'params' => null];
+            $result['valid'] = false;
+        } else {
+            $name = trim($post['name']);
+            $result['name'] = $name;
+            if (mb_strlen($name) > $lengthLimit) {
+                $result['errors'][] = ['key' => 'TheEnteredValueIsTooLong', 'params' => ['limit' => $lengthLimit]];
+                $result['valid'] = false;
+            }
+        }
+    }
+
+    if (in_array($action, ['update', 'delete'], true)) {
+        if (!is_string($post['id'] ?? null) || !preg_match('/^\d+$/', trim($post['id']))) {
+            $result['errors'][] = ['key' => 'YouNeedToSpecifyAnIdParameter', 'params' => null];
+            $result['valid'] = false;
+        } else {
+            $result['id'] = (int)trim($post['id']);
+        }
+    }
+
+    return $result;
 }
 
 ?>

@@ -36,7 +36,7 @@ enforce_permission("modify_risks");
 include_csrf_magic();
 
 // Include the SimpleRisk language file
-require_once(language_file());
+load_language_file();
 
     // Accept POST only (SR-1718 / HackerOne #3734863). csrf-magic
     // (include_csrf_magic above) skips token validation on non-POST requests, so

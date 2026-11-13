@@ -12,6 +12,7 @@ if (php_sapi_name() !== 'cli') {
 require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/promises.php'));
 require_once(realpath(__DIR__ . '/../includes/workers.php'));
+require_once(realpath(__DIR__ . '/../includes/queue_config.php'));
 require_once(realpath(__DIR__ . '/../includes/files.php'));
 require_once(realpath(__DIR__ . '/../includes/artificial_intelligence.php'));
 require_once(realpath(__DIR__ . '/../includes/tf_idf_enrichment.php'));
@@ -22,19 +23,27 @@ require_once(realpath(__DIR__ . '/../includes/Components/SpreadsheetHandler.php'
 require_once(realpath(__DIR__ . '/../includes/Components/WordHandler.php'));
 
 // === CONFIGURATION ===
-$workerName = 'cron_promise_worker';
-$stalePidThreshold = 24 * 3600; // 24 hours
-$loopDelaySeconds = 5;
-$maxRuntimeMinutes = 60;
-$maxIdleMinutes = 60;
-$maxRetryAttempts = 5;
-$baseRetryDelay = 5;
-$maxRetryDelay = 3600;
-$stuckThresholdMinutes = 30;
-// Soft guard: checked at each loop boundary (between promise batches). When the
-// process RSS crosses this, the worker exits cleanly and cron respawns it,
-// keeping a clean fail-fast at a low blast radius (~512 MB RSS).
-$memoryLimitBytes = 400 * 1024 * 1024;
+// Tuning comes from config.php constants via queue_config() (built-in defaults
+// when absent; see includes/queue_config.php and config.sample.php).
+// Several step workers may run at once (PROMISE_WORKER_COUNT, default 1). Each
+// cron run fills at most one free slot (acquire_worker_slot()); slot 1 keeps
+// this base name, slot k > 1 is "cron_promise_worker_k". $workerName is set to
+// the slot taken below and used for heartbeats, metrics and the lock release.
+$workerBase = 'cron_promise_worker';
+$workerCount = queue_config('PROMISE_WORKER_COUNT');
+$stalePidThreshold = queue_config('WORKER_STALE_LOCK_SECONDS');
+$loopDelaySeconds = queue_config('PROMISE_WORKER_LOOP_DELAY_SECONDS');
+$maxRuntimeMinutes = queue_config('QUEUE_WORKER_MAX_RUNTIME_MINUTES');
+$maxIdleMinutes = queue_config('QUEUE_WORKER_MAX_IDLE_MINUTES');
+$maxRetryAttempts = queue_config('QUEUE_RETRY_MAX_ATTEMPTS');
+$baseRetryDelay = queue_config('QUEUE_RETRY_BASE_DELAY_SECONDS');
+$maxRetryDelay = queue_config('QUEUE_RETRY_MAX_DELAY_SECONDS');
+$stuckThresholdMinutes = queue_config('QUEUE_STUCK_TASK_MINUTES');
+$batchSize = queue_config('PROMISE_WORKER_BATCH_SIZE');
+// Soft guard: checked at each loop boundary (between promise batches). When
+// PHP's tracked memory crosses this, the worker exits cleanly and cron respawns
+// it, keeping a clean fail-fast at a low blast radius.
+$memoryLimitBytes = queue_config('QUEUE_WORKER_MEMORY_SOFT_LIMIT_MB') * 1024 * 1024;
 
 $startTime = time();
 $lastWorkTime = time();
@@ -50,24 +59,38 @@ set_time_limit(0);
 // a runaway parse instead hits a clean PHP-fatal at low RSS. The real defense
 // against oversized files is the pre-parse DocumentSizeGuard (and, as a tracked
 // follow-up, a memory-bounded extraction subprocess) — NOT a higher limit here.
-ini_set('memory_limit', '512M');
+// QUEUE_WORKER_PHP_MEMORY_LIMIT_MB (default 512) lets an administrator change it.
+ini_set('memory_limit', queue_config('QUEUE_WORKER_PHP_MEMORY_LIMIT_MB') . 'M');
 ob_implicit_flush(true);
 
 write_debug_log("Promise worker started (PID " . getmypid() . ")", "info");
 
 // === CHECK FOR ZOMBIE WORKERS ===
-$zombies = list_zombie_workers($workerName, $stalePidThreshold);
-foreach ($zombies as $zombie) {
-    write_debug_log(
-        "Zombie worker detected: PID {$zombie['pid']} on host {$zombie['host']}, last heartbeat {$zombie['last_heartbeat']}",
-        "warning"
-    );
+foreach (worker_slot_names($workerBase, $workerCount) as $slotName) {
+    foreach (list_zombie_workers($slotName, $stalePidThreshold) as $zombie) {
+        write_debug_log(
+            "Zombie worker detected ({$slotName}): PID {$zombie['pid']} on host {$zombie['host']}, last heartbeat {$zombie['last_heartbeat']}",
+            "warning"
+        );
+    }
 }
 
-// === ACQUIRE LOCK ===
-if (!acquire_worker_lock($workerName, $stalePidThreshold)) {
-    write_debug_log("$workerName lock not acquired, exiting.", "info");
+// === ACQUIRE A WORKER SLOT ===
+$workerName = acquire_worker_slot($workerBase, $workerCount, $stalePidThreshold);
+if ($workerName === null) {
+    // 'debug': with cron.php every configured worker's entry runs each
+    // minute, so this is the normal outcome of most runs.
+    write_debug_log("{$workerBase}: all {$workerCount} worker slot(s) are taken, exiting.", "debug");
     exit(0);
+}
+
+// Report config.php tuning once per worker start: 'warning' for a value that
+// was ignored or clamped (the edit is not doing what the administrator meant),
+// 'info' listing every value that differs from the built-in default. After the
+// lock, so the cron runs that find a worker already running (and exit) stay
+// silent instead of repeating these lines every few minutes.
+foreach (queue_config_startup_log_lines() as [$message, $level]) {
+    write_debug_log("{$workerName}: {$message}", $level);
 }
 
 // === REGISTER SIGNAL HANDLERS ===
@@ -89,6 +112,9 @@ if (!$db) {
     write_debug_log("Failed to open database connection, exiting.", "error");
     exit(1);
 }
+// Session wait_timeout: bounds how long a connection left behind by a dead
+// host keeps its claims (worker_session_wait_timeout()).
+worker_prepare_connection($db);
 
 // === MAIN WORKER LOOP ===
 while (true) {
@@ -122,6 +148,14 @@ while (true) {
         break;
     }
 
+    // config.php is read once, at start: exit when it was edited since, so cron
+    // respawns the worker with the new settings (same fail-safe check as the
+    // queue worker — worker_config_changed_since()).
+    if (worker_config_file_changed_since($startTime, $now)) {
+        record_worker_restart($workerName, 'config_changed');
+        break;
+    }
+
     // === METRICS: memory usage ===
     worker_metric_set($workerName, 'memory_bytes', memory_get_usage(true));
     worker_metric_set($workerName, 'peak_memory_bytes', memory_get_peak_usage(true));
@@ -146,28 +180,28 @@ while (true) {
     try {
         $db->query("SELECT 1");
     } catch (\Throwable $t) {
+        // A lost connection also lost every claim it held: the server dropped
+        // them. Reconnect for real (db_close() alone keeps the dead shared
+        // connection) and set the new connection up like the first one.
         write_debug_log("Reconnecting to DB after connection loss...", "warning");
-        db_close($db);
-        $db = db_open();
-        if (!$db) {
-            write_debug_log("Failed to reconnect to database, exiting.", "error");
-            break;
-        }
+        // Returns a working connection or exits: db_open() renders the outage
+        // page and exits when the database cannot be reached, and cron starts
+        // a fresh worker later.
+        $db = worker_reconnect_db();
+        worker_prepare_connection($db);
     }
 
     // === RECOVER STUCK PROMISES ===
+    // A step another step worker is still running (its claim lock is held)
+    // is never reset, however long it takes (recover_stuck_promises()).
     try {
-        $stmt = $db->prepare("
-            UPDATE promises
-            SET state='pending', updated_at=NOW()
-            WHERE state='in_progress'
-              AND updated_at < NOW() - INTERVAL :mins MINUTE
-        ");
-        $stmt->execute([':mins' => $stuckThresholdMinutes ?? 30]);
-        if ($stmt->rowCount() > 0) {
+        // Bounded: a step recovered QUEUE_RECOVERY_MAX_ATTEMPTS times is failed
+        // through the normal terminal path instead.
+        $recoveredPromises = recover_stuck_promises($db, $stuckThresholdMinutes, null, static fn(string $type): ?array => worker_get_job_definition($type));
+        if ($recoveredPromises > 0) {
             // 'notice' for consistency with the queue worker's stuck-task
             // recovery — an infrequent, operator-relevant reclamation event.
-            write_debug_log("Recovered {$stmt->rowCount()} stuck promises.", "notice");
+            write_debug_log("Recovered {$recoveredPromises} stuck promises.", "notice");
         }
     } catch (\Throwable $t) {
         write_debug_log("Error recovering stuck promises: " . $t->getMessage(), "error");
@@ -175,19 +209,7 @@ while (true) {
 
     // === FETCH AND PROCESS PROMISES ===
     try {
-        $stmt = $db->prepare("
-            SELECT p.*
-            FROM promises p
-            WHERE p.state = 'pending'
-              AND (p.depends_on IS NULL OR EXISTS (
-                  SELECT 1 FROM promises d
-                  WHERE d.id = p.depends_on AND d.state = 'completed'
-              ))
-            ORDER BY p.created_at ASC
-            LIMIT 20
-        ");
-        $stmt->execute();
-        $promises = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $promises = fetch_ready_promises($db, $batchSize);
         $pendingCount = count($promises);
 
         // Update pending count gauge
@@ -200,29 +222,38 @@ while (true) {
         // Set the failed promise count
         $failedCount = 0;
 
-        foreach ($promises as $promise) {
-            $jobType = $promise['promise_type'];
+        // Steps this worker claimed and ran; with several step workers the
+        // batches overlap and a step another worker claimed is skipped.
+        $processedCount = 0;
 
-            // === LOOKUP JOB DEFINITION ===
-            $jobDef = worker_get_job_definition($jobType);
-            if (!$jobDef) {
-                handle_promise_failure($db, $promise, "No job definition", $maxRetryAttempts, $baseRetryDelay, $maxRetryDelay);
+        foreach ($promises as $promise) {
+            // === CLAIM, LOOK UP THE JOB AND PROCESS THE STEP ===
+            // worker_run_promise() takes the step's claim (a named lock plus a
+            // re-read, so each step runs once however many step workers there
+            // are), runs it and releases the claim. null = not claimed.
+            $failed = worker_run_promise($db, $promise, $maxRetryAttempts, $baseRetryDelay, $maxRetryDelay);
+            if ($failed === null) {
                 continue;
             }
-
-            // === PROCESS PROMISE ===
-            $failedCount += process_promise($promise, $jobDef, $db, $maxRetryAttempts ?? 5, $baseRetryDelay ?? 5, $maxRetryDelay ?? 3600);
+            $processedCount++;
+            $failedCount += $failed;
         }
 
         // Increment metrics
-        worker_metric_inc($workerName, 'processed_promises', count($promises));
+        worker_metric_inc($workerName, 'processed_promises', $processedCount);
         worker_metric_inc($workerName, 'failed_promises', $failedCount);
 
         if ($pendingCount > 0) {
             $lastWorkTime = time();
         }
     } catch (\Throwable $t) {
-        write_debug_log("Error selecting ready promises: " . $t->getMessage(), "error");
+        write_debug_log("Error selecting or running ready promises: " . $t->getMessage(), "error");
+        if (worker_is_connection_lost($t)) {
+            // The step in hand stays in_progress; stuck-step recovery puts it
+            // back (counted and bounded) once its claim is gone.
+            $db = worker_reconnect_db();
+            worker_prepare_connection($db);
+        }
     }
 
     // === WORKER TICK ===

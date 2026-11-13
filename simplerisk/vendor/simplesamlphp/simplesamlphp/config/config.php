@@ -21,10 +21,20 @@ $simplerisk_base_url = get_base_url();
 if (!endsWith($simplerisk_base_url, '/')) {
     $simplerisk_base_url .= '/';
 }
-$baseurlpath = $simplerisk_base_url . 'vendor/simplesamlphp/simplesamlphp/public/';
+// Serve the base URL under the directory the IdP has registered (SAML_LEGACY_ACS_PATH: www or public),
+// unless the request itself arrived under www/ or public/ (the Destination check must match the URL
+// the response was posted to). See saml_ssp_web_dir().
+$baseurlpath = $simplerisk_base_url . 'vendor/simplesamlphp/simplesamlphp/' . saml_ssp_web_dir($_SERVER['REQUEST_URI'] ?? null, get_setting('SAML_LEGACY_ACS_PATH'));
 
 // Get the system temp directory
 $temp_dir = sys_get_temp_dir();
+
+// SimpleSAMLphp's compiled container cache, keyed to the application version and the vendor tree's
+// last update so a library update never runs against a cache built from the old libraries.
+// current_version() rather than the APP_VERSION constant: SimpleSAMLphp includes this file from its
+// own front controller, where nothing has loaded includes/version.php, so the bare constant is undefined.
+// See saml_ssp_temp_dir().
+$ssp_temp_dir = saml_ssp_temp_dir('/tmp/simplesaml', realpath(__DIR__ . '/../../../composer/installed.php') ?: null, current_version('app'));
 
 // Resolve the per-install SimpleSAMLphp secretsalt. Core's ensure_saml_secretsalt()
 // (includes/authenticate.php) is the single race-safe generate-if-absent path, shared
@@ -99,7 +109,7 @@ $config = [
      */
     'loggingdir' => $temp_dir,
     'datadir' => 'data/',
-    'tempdir' => '/tmp/simplesaml',
+    'tempdir' => $ssp_temp_dir,
 
     /*
      * Certificate and key material can be loaded from different possible
@@ -367,7 +377,12 @@ $config = [
      *
      * Example:
      *   'errors.show_function' => ['SimpleSAML\Module\example\Error', 'show'],
+     *
+     * SimpleRisk: SamlErrorPageHandler (includes/authenticate.php) answers a rejected IdP
+     * response at the ACS endpoint with a generic 4xx page instead of SimpleSAMLphp's
+     * 500, and renders every other error exactly as SimpleSAMLphp would.
      */
+    'errors.show_function' => ['SamlErrorPageHandler', 'show'],
 
 
 

@@ -1710,6 +1710,16 @@
                 SRRowActionsMenu.bind({ container: '#manage-assets-table', scope: $('#manage-assets-table'), namespace: 'manageassets' });
             }
             $('#manage-assets-table').on('click', '[data-action="row-view"]', function () { self.openRecord($(this).data('id'), 'view'); });
+            // Whole-row click opens the record modal (View), like the name
+            // button. Interactive content (buttons, links, form controls,
+            // filter chips, the row-actions menu) and text selection are left
+            // alone so chip filters, row actions and bulk-select still work.
+            $('#manage-assets-table').on('click', 'tbody tr[data-asset-id]', function (e) {
+                if ($(e.target).closest('a, button, input, select, textarea, label, [role="button"], .sr-assets-chip-filter, .sr-chip, .sr-row-actions-wrap, td.sr-check-col, td.sr-actions-col').length) { return; }
+                var sel = window.getSelection ? window.getSelection() : null;
+                if (sel && sel.toString().length) { return; }
+                self.openRecord($(this).data('asset-id'), 'view');
+            });
             $('#manage-assets-table').on('click', '[data-action="row-edit"]', function () { self.openRecord($(this).data('id'), 'edit'); });
             $('#manage-assets-table').on('click', '[data-action="row-verify"]', function () {
                 self.runBulk('verify', { ids: [Number($(this).data('id'))], count: 1 }, {});

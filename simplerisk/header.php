@@ -232,7 +232,39 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
 	<link rel="stylesheet" href="../vendor/node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css?<?= $current_app_version ?>">
 	<script>
     	// Initialize the defaults for the Datatable when the script is loaded
-    	$('#script_datatables').on('load', function () {
+    	// SD-804: the defaults (notably serverSide) used to be installed ONLY from this script's one-shot load event,
+    	// which never replays -- bound after the deferred script finished, or after a bfcache restore, it never ran
+    	// and every table silently fell back to client-side mode. Apply them from a named, idempotent function
+    	// instead, and also from jQuery's ready queue, which runs after every deferred script has executed.
+    	var srDataTablesDefaultsApplied = false;
+    	function srApplyDataTablesDefaults() {
+    		if (srDataTablesDefaultsApplied || !window.DataTable) {
+    			return;
+    		}
+    		srDataTablesDefaultsApplied = true;
+
+
+    		// common.js sets DataTables' errMode to 'none' (the default alert() blocked the whole page), which
+    		// left a failed table silently stuck on "Loading..." -- most visibly after the session expired
+    		// (SD-803). Tell the user instead, at most once every few seconds so a page with several tables
+    		// does not stack identical toasts. DataTables 3 names this event 'dt-error'. It also fires for
+    		// rendering warnings ("Requested unknown parameter", a malformed row), which are not request
+    		// failures, so only an HTTP error response (4xx/5xx, e.g. a 401 after the session expired) toasts.
+    		// A status of 0 is an aborted request (navigation), not a failure.
+    		$(document).on('dt-error.dt', function (e, settings) {
+    			var xhr = settings && settings.jqXHR;
+    			if (!xhr || !(xhr.status >= 400)) {
+    				return;
+    			}
+    			var now = Date.now();
+    			if (window.srDataTablesErrorShownAt && now - window.srDataTablesErrorShownAt < 5000) {
+    				return;
+    			}
+    			window.srDataTablesErrorShownAt = now;
+    			if (typeof toastr !== 'undefined') {
+    				toastr.error(_lang['RequestFailed']);
+    			}
+    		});
 
     		// Readjust the columns on datatables when they are on a tab that was just shown
     		// It's required because when datatables are initialized while not shown the columns don't always line up properly with the headers 
@@ -344,7 +376,9 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             	var table = $('#' + $(this).data('td-id')).DataTable();
             	table.page.len(table.page.info().length === -1 ? DataTable.defaults.lengthMenu[0][0] : -1).draw();
             });
-		});
+    	}
+    	$('#script_datatables').on('load', srApplyDataTablesDefaults);
+    	$(srApplyDataTablesDefaults);
 	</script>
 <?php 
             break;

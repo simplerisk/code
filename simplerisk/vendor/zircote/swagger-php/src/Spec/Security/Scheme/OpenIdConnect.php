@@ -11,6 +11,25 @@ use OpenApi\Spec as OA;
 /**
  * An OpenID Connect Discovery security scheme.
  *
+ * Allows to shorten this:
+ *
+ * ```php
+ * #[OA\Security\Scheme(
+ *     component: 'oidc',
+ *     type: 'openIdConnect',
+ *     openIdConnectUrl: 'https://example.com/.well-known/openid-configuration',
+ * )]
+ * ```
+ *
+ * to this:
+ *
+ * ```php
+ * #[OA\Security\Scheme\OpenIdConnect(
+ *     component: 'oidc',
+ *     openIdConnectUrl: 'https://example.com/.well-known/openid-configuration',
+ * )]
+ * ```
+ *
  * @see [Security Scheme Object](https://spec.openapis.org/oas/v3.1.1.html#security-scheme-object)
  */
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
@@ -27,6 +46,7 @@ class OpenIdConnect extends OA\Security\Scheme
         ?string $component = null,
         ?array $x = null,
         ?array $attachables = null,
+        ?OA\Fan $fan = null,
     ) {
         parent::__construct(
             securityScheme: $securityScheme,
@@ -36,6 +56,7 @@ class OpenIdConnect extends OA\Security\Scheme
             component: $component,
             x: $x,
             attachables: $attachables,
+            fan: $fan,
         );
     }
 }

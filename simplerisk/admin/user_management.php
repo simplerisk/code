@@ -313,10 +313,12 @@
 
             } else {
 
-                password_reset_by_userid($value);
-
-                // Display an alert
-                set_alert(true, "good", "A password reset email was sent to the user.");
+                // Display an alert that reflects whether the email actually went out
+                if (password_reset_by_userid($value)) {
+                    set_alert(true, "good", $lang['PasswordResetEmailSentToUser']);
+                } else {
+                    set_alert(true, "bad", $lang['PasswordResetEmailSendFailed']);
+                }
 
             }
 

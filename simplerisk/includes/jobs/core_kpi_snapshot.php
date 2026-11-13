@@ -16,6 +16,8 @@ require_once(realpath(__DIR__ . '/../compliance.php'));
 
 return [
     'type' => 'core_kpi_snapshot',
+    // One task of this type at a time across all queue workers (periodic: one snapshot per period).
+    'concurrency' => 'serial',
 
     /************************************************************
      * FUNCTION: task_check

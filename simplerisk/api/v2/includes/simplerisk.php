@@ -7,6 +7,8 @@
 require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath(__DIR__ . '/../../../includes/queues.php'));
 require_once(realpath(__DIR__ . '/../../../includes/promises.php'));
+// api_v2_admin_queue_promises() redacts payloads with queue_monitor_redact_payload_json().
+require_once(realpath(__DIR__ . '/../../../includes/queue_monitor.php'));
 require_once(realpath(__DIR__ . '/../../../includes/upgrade.php'));
 // apply_database_release() and is_newest_known_release() live here. Reachable
 // transitively through upgrade.php today, but declared directly per the
@@ -314,7 +316,16 @@ function api_v2_admin_upgrade_db()
 
                     db_close($db);
 
-                    if (!$step['ran'])
+                    if (!$step['ran'] && named_release_has_nothing_to_apply($version, $step['from'], $releases))
+                    {
+                        // The newest release has no migration until the next
+                        // schema change opens one, and the database is already
+                        // on it: nothing to apply.
+                        $status_code = 200;
+                        $status_message = "The database is already at {$version}; there is no migration to apply";
+                        $data = null;
+                    }
+                    elseif (!$step['ran'])
                     {
                         $status_code = 400;
                         $status_message = "Upgrade function not found";
@@ -378,6 +389,8 @@ function api_v2_admin_upgrade_db()
                             $checks_db = db_open();
                             run_upgrade_integrity_checks($checks_db);
                             db_close($checks_db);
+
+                            notify_upgrade_complete($step['from'], $step['to']);
                         }
 
                         $status_code = 200;
@@ -467,88 +480,6 @@ function api_v2_update_all_document_control_mappings()
     api_v2_json_result($status_code, $status_message, $data);
 }
 
-/********************************
- * FUNCTION: API V2 ADMIN QUEUE *
- ********************************/
-function api_v2_admin_queue()
-{
-    // Check that this is an admin user
-    api_v2_check_admin();
-
-    // DataTables server-side parameters
-    $start = isset($_GET['start']) ? (int)$_GET['start'] : 0;
-    $length = isset($_GET['length']) ? (int)$_GET['length'] : 10;
-    /** @var array[] $get_order */
-    $get_order = $_GET['order'] ?? [];
-    $order_column_index = isset($get_order[0]['column']) ? (int)$get_order[0]['column'] : 3; // Default to created_at
-    $order_dir = isset($get_order[0]['dir']) && in_array(strtolower($get_order[0]['dir']), ['asc','desc']) ? $get_order[0]['dir'] : 'desc';
-
-    // Columns mapping
-    $columns = ["id", "task_type", "status", "created_at", "updated_at", "attempts", "priority", "payload"];
-    $order_column = $columns[$order_column_index] ?? 'created_at';
-
-    // Filters
-    $task_type = isset($_GET['task_type']) && $_GET['task_type'] !== '' ? trim($_GET['task_type']) : null;
-
-    // Normalize status input (string, comma-separated, or array)
-    $status = null;
-    if (isset($_GET['status']) && $_GET['status'] !== '') {
-        if (is_array($_GET['status'])) {
-            // Remove empty strings
-            $status = array_filter($_GET['status'], fn($s) => $s !== '');
-            if (in_array('all', $status, true)) {
-                $status = null; // 'all' means no filtering
-            }
-        } else {
-            // Split comma-separated string into array
-            $status_list = array_map('trim', explode(',', $_GET['status']));
-            if (in_array('all', $status_list, true)) {
-                $status = null; // 'all' means no filtering
-            } else {
-                $status = $status_list;
-            }
-        }
-    }
-
-    // Open the database connection
-    $db = db_open();
-
-    // Get all queue items with filters applied
-    $queue_items = get_queue_items($db, $task_type, $status);
-
-    // Close the database connection
-    db_close($db);
-
-    // Total records before filtering
-    $records_total = count(get_queue_items($db));
-
-    // Total records after filtering
-    $records_filtered = count($queue_items);
-
-    // Apply sorting
-    usort($queue_items, function($a, $b) use ($order_column, $order_dir) {
-        if ($a[$order_column] == $b[$order_column]) return 0;
-        if ($order_dir === 'asc') {
-            return ($a[$order_column] < $b[$order_column]) ? -1 : 1;
-        } else {
-            return ($a[$order_column] > $b[$order_column]) ? -1 : 1;
-        }
-    });
-
-    // Apply paging
-    $queue_items_page = array_slice($queue_items, $start, $length);
-
-    // Build response for DataTables
-    $response = [
-        "draw" => isset($_GET['draw']) ? (int)$_GET['draw'] : 0,
-        "recordsTotal" => $records_total,
-        "recordsFiltered" => $records_filtered,
-        "data" => $queue_items_page,
-    ];
-
-    api_v2_json_result(200, "SUCCESS", $response);
-}
-
 function api_v2_admin_queue_promises()
 {
     // Check that this is an admin user
@@ -577,6 +508,14 @@ function api_v2_admin_queue_promises()
         api_v2_json_result(200, "No promises found for queue_task_id {$queue_task_id}", []);
         return;
     }
+
+    // Same secret-key redaction the Queue Monitor applies; payload stays a JSON string.
+    foreach ($promises as &$promise) {
+        if (array_key_exists('payload', $promise) && $promise['payload'] !== null) {
+            $promise['payload'] = queue_monitor_redact_payload_json((string)$promise['payload']);
+        }
+    }
+    unset($promise);
 
     // Return promises as JSON array
     api_v2_json_result(200, "SUCCESS", $promises);

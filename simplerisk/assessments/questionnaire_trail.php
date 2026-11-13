@@ -32,7 +32,7 @@ if(isset($_POST['download_audit_log']))
     add_session_check();
     
     // Include the SimpleRisk language file
-    require_once(language_file());
+    load_language_file();
     
     if(is_admin())
     {

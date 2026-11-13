@@ -13,6 +13,8 @@ use OpenApi\Undefined;
  *
  * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html)
  * @phpstan-import-type EnumValue from \OpenApi\Spec\Schema
+ *
+ * @deprecated since 7.0, removed in 8.0
  */
 trait JsonSchemaTrait
 {
@@ -160,7 +162,7 @@ trait JsonSchemaTrait
     public $patternProperties = Undefined::UNDEFINED;
 
     /**
-     * @var array
+     * @var array|bool
      */
     public $unevaluatedProperties = Undefined::UNDEFINED;
 
@@ -260,7 +262,7 @@ trait JsonSchemaTrait
         int|null $maxContains = null,
         array|null $prefixItems = null,
         array|null $patternProperties = null,
-        array|null $unevaluatedProperties = null,
+        bool|array|null $unevaluatedProperties = null,
         mixed $unevaluatedItems = Undefined::UNDEFINED,
         mixed $dependencies = Undefined::UNDEFINED,
         array|null $dependentRequired = null,

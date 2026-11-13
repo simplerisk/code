@@ -10,6 +10,8 @@ require_once(realpath(__DIR__ . '/../queues.php'));
 
 return [
     'type' => 'core_notifications_purge',
+    // One task of this type at a time across all queue workers (periodic table maintenance).
+    'concurrency' => 'serial',
 
     'task_check' => function(PDO $db) {
         $last = get_setting('queue_timestamp_last_notifications_purge', false, false, db: $db);

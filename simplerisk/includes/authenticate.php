@@ -77,6 +77,57 @@ function hash_password($password)
     return password_hash($password, PASSWORD_BCRYPT, ['cost' => 15]);
 }
 
+/*****************************************************
+ * FUNCTION: UPGRADE LOGIN EQUALIZE TIMING            *
+ * Runs the dummy password check when, and only when, *
+ * the upgrade login got a user that does not exist.  *
+ * index.php already equalizes the timing for the     *
+ * normal login, and doing it here as well would      *
+ * double the cost.  $dummy exists so a test can      *
+ * count the calls; production always uses the        *
+ * default.  Returns whether the check ran.           *
+ *****************************************************/
+function upgrade_login_equalize_timing($type, $upgrade, ?callable $dummy = null)
+{
+    if ($upgrade !== true || $type !== "DNE")
+    {
+        return false;
+    }
+
+    ($dummy ?? 'fake_upgrade_user_validity_check')();
+
+    return true;
+}
+
+/*****************************************************
+ * FUNCTION: FAKE UPGRADE USER VALIDITY CHECK         *
+ * Burns the same bcrypt cost as a real comparison    *
+ * so a missing username is indistinguishable by      *
+ * response time.  It must never throw: an error      *
+ * raised only for a missing user would itself reveal *
+ * that the user does not exist, so any failure of    *
+ * the database-backed check (an empty or unreadable  *
+ * user table, a dropped connection) falls back to a  *
+ * hash at the same cost that needs no database.      *
+ * $primary and $fallback exist so a test can force   *
+ * the failure path; production uses the defaults.    *
+ *****************************************************/
+function fake_upgrade_user_validity_check(?callable $primary = null, ?callable $fallback = null)
+{
+    try
+    {
+        ($primary ?? 'fake_simplerisk_user_validity_check')();
+    }
+    catch (\Throwable $e)
+    {
+        write_debug_log("The dummy password check failed on the upgrade login (" . get_class($e) . ": " . $e->getMessage() . "); using the database-free fallback.", 'warning');
+
+        ($fallback ?? static function () {
+            hash_password(bin2hex(random_bytes(20)));
+        })();
+    }
+}
+
 /***************************
  * FUNCTION: GET USER TYPE *
  ***************************/
@@ -205,7 +256,15 @@ function is_valid_user($user, $pass, $upgrade = false)
     {
         log_user_dne_reason($user);
 
-        // If we should automatically add new users with a default role
+        // The upgrade page calls this function directly instead of going through index.php,
+        // which equalizes the timing itself.  Without this, a missing user returns in
+        // milliseconds while an existing user costs a full bcrypt comparison.
+        upgrade_login_equalize_timing($type, $upgrade);
+
+        // If we should automatically add new users with a default role.
+        // NOTE: with AUTHENTICATION_ADD_NEW_USERS and the authentication Extra, a missing user also
+        // pays an LDAP bind below.  That auto-provisioning path predates this timing fix and is a
+        // separate, larger signal (it can create the account), so the dummy check above does not cover it.
         if (get_setting('AUTHENTICATION_ADD_NEW_USERS') == 1)
         {
             // If custom authentication is enabled
@@ -617,24 +676,32 @@ function generate_token($size)
 /****************************************
  * FUNCTION: PASSWORD RESET BY USERNAME *
  ****************************************/
-function password_reset_by_username($username) {               
+function password_reset_by_username($username) {
 
     $userid = is_simplerisk_user($username);
-    
+    $mail_sent = true;
+
     // Check if the username exists
     if ($userid != 0) {
-        password_reset_by_userid($userid);
+        $mail_sent = password_reset_by_userid($userid);
     }
 
     // Always wait the same range regardless of whether the username exists,
     // so response timing cannot be used to enumerate valid usernames.
     wait(rand(1000, 3000));
-    return ($userid != 0);
+
+    // False only when the user exists AND the reset email could not be sent.
+    // The only caller today (reset.php) ignores it. Never show it to an
+    // unauthenticated visitor: it would reveal which usernames exist.
+    return $mail_sent;
 }
 
 /**************************************
  * FUNCTION: PASSWORD RESET BY USERID *
  **************************************/
+/**
+ * @return bool True if the reset email was handed off successfully.
+ */
 function password_reset_by_userid($userid) {
         
     // Generate a 32 character reset token (~190 bits of entropy)
@@ -699,7 +766,11 @@ function password_reset_by_userid($userid) {
     db_close($db);
 
     // Send the raw token to the user via email
-    send_reset_email($username, $name, $email, $token);
+    $mail_sent = send_reset_email($username, $name, $email, $token);
+
+    if (!$mail_sent) {
+        write_debug_log("Password reset email for user '{$username}' could not be sent. Check the mail settings.", "error");
+    }
 
     // If this was submitted by an unauthenticated user
     if (!isset($_SESSION['uid'])) {
@@ -719,11 +790,15 @@ function password_reset_by_userid($userid) {
     $message = "A password reset request was submitted for user '{$username}' by the '{$user}' user.";
     write_log($userid + 1000, $uid, $message, "user");
 
+    return $mail_sent;
 }
 
 /******************************
  * FUNCTION: SEND RESET EMAIL *
  ******************************/
+/**
+ * @return bool Whether the email was sent successfully.
+ */
 function send_reset_email($username, $name, $email, $token) {
 
     global $escaper;
@@ -771,7 +846,7 @@ function send_reset_email($username, $name, $email, $token) {
     require_once(realpath(__DIR__ . '/mail.php'));
 
     // Send the e-mail
-    send_email_immediate($name, $email, $subject, $body);
+    return (bool)send_email_immediate($name, $email, $subject, $body);
 }
 
 /*************************************
@@ -809,6 +884,22 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
             // If the password is valid
             if ($error_code == 1)
             {
+                // Claim the token atomically BEFORE changing the password. The
+                // validity check above and this DELETE are separate statements, so
+                // two parallel requests can both pass the check; only the one whose
+                // DELETE removes the row may proceed.
+                if (!consume_reset_token($username, $token))
+                {
+                    // Another request already used this token
+                    record_password_reset_attempt($username, $ip);
+
+                    write_debug_log("Password reset token already used for username \"" . $username . "\" from IP " . $ip . ".", "warning");
+
+                    set_alert(true, "bad", $lang['InvalidUserResetToken']);
+
+                    return false;
+                }
+
                 // Open the database connection
                 $db = db_open();
 
@@ -821,18 +912,16 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
                 $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
                 $stmt->execute();
 
-                // Delete tokens for this user
-                $stmt = $db->prepare("DELETE FROM password_reset WHERE username=:username AND token=:token");
-                $token_hash = hash('sha256', $token);
-                $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
-                $stmt->bindParam(":token", $token_hash, PDO::PARAM_STR, 64);
-                $stmt->execute();
-
                 // Close the database connection
                 db_close($db);
 
                 // Clear rate limit attempts on successful reset
                 clear_password_reset_attempts($username);
+
+                // Completing a reset proves control of the account's email address, so it also lifts a
+                // failed-login lockout. Before, the user finished the reset and still could not sign in
+                // until an administrator cleared the lock (SD-835).
+                unlock_user_after_password_reset((int)$userid, $username);
 
                 write_debug_log("Password reset successful for username \"" . $username . "\" from IP " . $ip . ".", "info");
 
@@ -873,7 +962,7 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
         write_debug_log("Invalid password reset token submitted for username \"" . $username . "\" from IP " . $ip . ".", "warning");
 
         // Display an alert
-        set_alert(true, "bad", "Invalid user reset token.");
+        set_alert(true, "bad", $lang['InvalidUserResetToken']);
 
         // Return false
         return false;
@@ -922,6 +1011,39 @@ function is_valid_reset_token($username, $token)
 	db_close($db);
 
     return !empty($array);
+}
+
+/*********************************
+ * FUNCTION: CONSUME RESET TOKEN *
+ *********************************/
+function consume_reset_token($username, $token)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Delete the token and let the affected-row count decide who won: when
+    // requests race with the same token, exactly one DELETE removes the row.
+    // The match mirrors is_valid_reset_token() so the two cannot disagree.
+    if (get_setting('strict_user_validation') == 0)
+    {
+        $stmt = $db->prepare("DELETE FROM password_reset WHERE LOWER(convert(`username` using utf8)) = LOWER(:username) AND token=:token");
+    }
+    else
+    {
+        $stmt = $db->prepare("DELETE FROM password_reset WHERE username=:username AND token=:token");
+    }
+
+    $token_hash = hash('sha256', $token);
+    $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
+    $stmt->bindParam(":token", $token_hash, PDO::PARAM_STR, 64);
+    $stmt->execute();
+
+    $consumed = $stmt->rowCount() > 0;
+
+    // Close the database connection
+    db_close($db);
+
+    return $consumed;
 }
 
 /*********************************************
@@ -1251,6 +1373,12 @@ function session_check()
 	return true;
 }
 
+// Longest an anonymous session (no signed-in user) is kept, however long the
+// configured idle timeout is. Defined next to the handler that applies it.
+if (!defined('SESSION_ANON_MAX_LIFETIME')) {
+    define('SESSION_ANON_MAX_LIFETIME', 3600);
+}
+
 /*****************************************************************************
  * CLASS: SIMPLERISK SESSION HANDLER                                         *
  *                                                                           *
@@ -1504,17 +1632,11 @@ class SimpleRiskSessionHandler implements SessionHandlerInterface
             if ($cap <= 0) {
                 $cap = 500;
             }
-            $old = time() - $max_lifetime;
             $pdo = $this->getPdo();
-            // LIMIT clauses can't be bound as a parameter on every MySQL
-            // build; cast to int and concatenate. $cap was sourced from a
-            // setting and was just int-validated, so concatenation is safe.
-            $stmt = $pdo->prepare(
-                "DELETE FROM sessions WHERE `access` < :old ORDER BY `access` ASC LIMIT " . $cap
-            );
-            $stmt->bindParam(':old', $old, \PDO::PARAM_INT);
-            $stmt->execute();
-            return $stmt->rowCount();
+            // Anonymous sessions get their shorter clock here too; see
+            // session_gc_delete(). The LIMIT is int-cast and concatenated there
+            // ($cap came from a setting and was just int-validated).
+            return session_gc_delete($pdo, (int)$max_lifetime, $cap);
         } catch (\Throwable $e) {
             // gc failure must never cascade into request failure — log,
             // drop the broken connection so the next getPdo() reopens it,
@@ -1862,6 +1984,88 @@ function sess_destroy($sess_id)
         return true;
 }
 
+/*****************************************
+ * FUNCTION: SESSION GC CUTOFFS          *
+ * Idle timestamps below which a session is garbage-collected. An        *
+ * anonymous session (user_id IS NULL) -- a login-page visit, a scanner  *
+ * hit, a mid-MFA or mid-SAML hand-off -- lives at most                  *
+ * SESSION_ANON_MAX_LIFETIME seconds, even when the configured idle      *
+ * timeout is longer: nobody is signed in on it, and bots create one per *
+ * visit, so with a long timeout they would otherwise pile up for hours. *
+ *****************************************/
+function session_gc_cutoffs(int $sess_maxlifetime, int $now): array
+{
+    return [
+        'authenticated' => $now - $sess_maxlifetime,
+        'anonymous'     => $now - min($sess_maxlifetime, SESSION_ANON_MAX_LIFETIME),
+    ];
+}
+
+/*****************************************
+ * FUNCTION: SESSION GC DELETE           *
+ * The one garbage-collection pass shared by sess_gc() and               *
+ * SimpleRiskSessionHandler::gc(), so both apply the same two clocks.    *
+ * Returns the number of rows deleted.                                   *
+ *                                                                       *
+ * The anonymous pass is split into a plain SELECT and a delete by       *
+ * primary key. A single `DELETE ... WHERE user_id IS NULL AND access <  *
+ * x ORDER BY access LIMIT n` lets the optimizer pick sessions_user_id_  *
+ * idx plus a filesort when the cutoff covers much of the table, which   *
+ * scans and locks every anonymous row -- the pattern sessions_access_   *
+ * idx exists to remove. The SELECT is forced onto sessions_access_idx   *
+ * and takes no row locks; the delete then touches only the chosen       *
+ * primary keys (and re-checks the predicate, so a session that signed   *
+ * in meanwhile is spared). Without the index (not yet upgraded) or the  *
+ * user_id column (pre SR-2133) the SELECT fails and only the general    *
+ * pass below runs.                                                      *
+ *****************************************/
+function session_gc_delete(PDO $pdo, int $sess_maxlifetime, int $cap, ?int $now = null): int
+{
+    if ($cap <= 0) {
+        $cap = 500;
+    }
+    $cutoffs = session_gc_cutoffs($sess_maxlifetime, $now ?? time());
+    $deleted = 0;
+
+    // Anonymous sessions first, on their shorter clock. Its own try: a missing
+    // index or column must not stop the general delete below from running.
+    if ($cutoffs['anonymous'] > $cutoffs['authenticated']) {
+        try {
+            $stmt = $pdo->prepare("SELECT `id` FROM sessions FORCE INDEX (`sessions_access_idx`) WHERE `access` < :anon_old AND `user_id` IS NULL ORDER BY `access` ASC LIMIT " . $cap);
+            $stmt->bindValue(':anon_old', $cutoffs['anonymous'], PDO::PARAM_INT);
+            $stmt->execute();
+            $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            // Chunked so an operator-raised session_gc_limit cannot exceed the
+            // prepared-statement placeholder limit.
+            foreach (array_chunk($ids, 500) as $chunk) {
+                $placeholders = implode(',', array_fill(0, count($chunk), '?'));
+                $stmt = $pdo->prepare("DELETE FROM sessions WHERE `id` IN ({$placeholders}) AND `user_id` IS NULL AND `access` < ?");
+                $params = array_values($chunk);
+                $params[] = $cutoffs['anonymous'];
+                $stmt->execute($params);
+                $deleted += $stmt->rowCount();
+            }
+        } catch (\Throwable $e) {
+            // 1054 unknown column / 1176 unknown index: the expected, persistent
+            // "not upgraded yet" state, hit on every call -- keep it out of the
+            // default log. Anything else is unexpected.
+            $code = ($e instanceof PDOException && isset($e->errorInfo[1])) ? (int)$e->errorInfo[1] : 0;
+            if (function_exists('write_debug_log')) {
+                write_debug_log("session_gc_delete (anonymous): " . $e->getMessage(), in_array($code, [1054, 1176], true) ? 'debug' : 'warning');
+            }
+        }
+    }
+
+    // ORDER BY access ASC prioritizes the oldest rows so the table converges
+    // to bounded size deterministically across calls.
+    $stmt = $pdo->prepare("DELETE FROM sessions WHERE `access` < :old ORDER BY `access` ASC LIMIT " . $cap);
+    $stmt->bindValue(':old', $cutoffs['authenticated'], PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $deleted + $stmt->rowCount();
+}
+
 /****************************************
  * FUNCTION: SESSION GARBAGE COLLECTION *
  ****************************************/
@@ -1873,8 +2077,6 @@ function sess_gc($sess_maxlifetime)
     if ($configured) {
         $sess_maxlifetime = (int)$configured;
     }
-    $old = time() - $sess_maxlifetime;
-
     // Use a DEDICATED PDO connection — not the shared db_open() singleton —
     // so the DELETE does not run inside any application-level transaction
     // that might be in progress on the singleton, and so the gc is
@@ -1895,11 +2097,8 @@ function sess_gc($sess_maxlifetime)
             $options[$pdo_mysql_ssl_ca] = DB_SSL_CERTIFICATE_PATH;
         }
         $gc_db = new PDO($dsn, DB_USERNAME, DB_PASSWORD, $options);
-        // ORDER BY access ASC prioritizes the oldest rows so the table
-        // converges to bounded size deterministically across calls.
-        $stmt = $gc_db->prepare("DELETE FROM sessions WHERE `access` < :old ORDER BY `access` ASC LIMIT 500");
-        $stmt->bindParam(":old", $old, PDO::PARAM_INT);
-        $stmt->execute();
+
+        session_gc_delete($gc_db, (int)$sess_maxlifetime, 500);
     } catch (\Throwable $e) {
         // Don't let gc failure cascade into request failure — log and move on.
         if (function_exists('write_debug_log')) {
@@ -2093,6 +2292,54 @@ function clear_failed_logins($user_id)
 
     // Close the database connection
     db_close($db);
+}
+
+/*************************************************
+ * FUNCTION: UNLOCK USER ACCOUNT                 *
+ *************************************************/
+/**
+ * Lift a failed-login lockout and clear the user's failed-login attempts.
+ *
+ * Clears only the lockout flag and the failed-attempt counter. It never changes `enabled`: a disabled
+ * account stays disabled (disabling is its own function, separate from the lockout flag), and it does not
+ * touch multi-factor authentication, which login still requires after the password step.
+ *
+ * @param int      $user_id       The user's id
+ * @param string   $audit_message Audit-log text, written only when the account was actually locked
+ * @param int|null $actor_uid     Who unlocked it, for the audit log (defaults to the user themselves)
+ * @return bool Whether the account was locked out and has been unlocked
+ */
+function unlock_user_account(int $user_id, string $audit_message, ?int $actor_uid = null): bool
+{
+    $db = db_open();
+
+    $stmt = $db->prepare("UPDATE `user` SET `lockout`=0 WHERE `value`=:user_id AND `lockout`=1;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $was_locked = $stmt->rowCount() > 0;
+
+    db_close($db);
+
+    // The counter that locked the account is cleared either way, so one stale attempt cannot lock it again
+    clear_failed_logins($user_id);
+
+    if ($was_locked) {
+        write_log($user_id + 1000, $actor_uid ?? $user_id, $audit_message, "user");
+    }
+
+    return $was_locked;
+}
+
+/*************************************************
+ * FUNCTION: UNLOCK USER AFTER PASSWORD RESET    *
+ *************************************************/
+/**
+ * A completed password reset by email token proves control of the account's email address, so it lifts
+ * a failed-login lockout (SD-835). See unlock_user_account() for what is and is not touched.
+ */
+function unlock_user_after_password_reset(int $user_id, string $username): bool
+{
+    return unlock_user_account($user_id, 'Username "' . $username . '" was unlocked by a completed password reset.');
 }
 
 /***************************************
@@ -2695,6 +2942,265 @@ function ensure_saml_secretsalt(?bool &$generated = null): string
     }
 
     return $secretsalt;
+}
+
+/*********************************************************************
+ * FUNCTION: SAML SSP WEB DIR                                         *
+ * Which web directory of the vendored SimpleSAMLphp SimpleRisk       *
+ * advertises: 'www/' or 'public/'. SimpleSAMLphp 2 serves from       *
+ * public/, but IdPs registered before that move only know the        *
+ * .../simplesamlphp/www/... ACS URL and entityID, and an Entra ID     *
+ * IdP rejects an AuthnRequest whose ACS URL is not the registered    *
+ * one (AADSTS50011). vendor/.htaccess rewrites www/ to public/, so   *
+ * both URLs reach SimpleSAMLphp.                                     *
+ *                                                                    *
+ * $configured is a 'www' / 'public' setting and decides what is     *
+ * advertised. The ACS URL / baseurlpath use SAML_LEGACY_ACS_PATH;    *
+ * the SP entityID uses SAML_LEGACY_ENTITY_ID_PATH. They are separate *
+ * registrations at the IdP and can differ (an IdP registered around  *
+ * the move may hold a public/ Identifier with only a www/ reply      *
+ * URL), so they are not tied together. The outbound login starts at  *
+ * a SimpleRisk page, so the request path says nothing about what     *
+ * the IdP has registered.                                            *
+ *                                                                    *
+ * $request_uri is only an override for a request that already        *
+ * arrived under one of the two directories: SimpleSAMLphp checks a   *
+ * response's Destination against a "current URL" built from          *
+ * baseurlpath, so that has to match the URL the response was posted  *
+ * to. Pass null where there is no such request (the entityID).       *
+ *********************************************************************/
+function saml_ssp_web_dir(?string $request_uri, $configured = null): string
+{
+    // Match on the path only, so a query string that happens to contain
+    // the segment cannot flip the result.
+    $path = (string)parse_url((string)$request_uri, PHP_URL_PATH);
+
+    if (strpos($path, '/simplesamlphp/simplesamlphp/www/') !== false) {
+        return 'www/';
+    }
+    if (strpos($path, '/simplesamlphp/simplesamlphp/public/') !== false) {
+        return 'public/';
+    }
+
+    // Anything else (SimpleRisk pages, CLI, cron) follows the setting; an
+    // unset or unrecognised value is public.
+    return is_string($configured) && strtolower(trim($configured)) === 'www' ? 'www/' : 'public/';
+}
+
+/*********************************************************************
+ * FUNCTION: SAML SSP TEMP DIR                                        *
+ * Where SimpleSAMLphp keeps its compiled service container and other *
+ * cache files. SimpleSAMLphp compiles that container once and never  *
+ * rebuilds it by itself; if the vendored libraries are updated        *
+ * underneath a cache built from the old ones, the stale container    *
+ * calls constructors with their old signatures and every SAML        *
+ * request answers HTTP 500 (a TypeError in AttributeClassLoader)     *
+ * until the web server's private /tmp is discarded -- which the      *
+ * in-product upgrade does not do. Keying the directory to the        *
+ * application version and the vendor tree's modification time gives  *
+ * each library update a fresh, empty cache, with nothing to remember.*
+ * Subdirectory of $base_dir so reset_simplesamlphp_temporary_values() *
+ * (which removes $base_dir) still clears every generation.           *
+ * $marker_file is vendor/composer/installed.php, rewritten by every  *
+ * composer install/update; null or missing is treated as 0.          *
+ *********************************************************************/
+function saml_ssp_temp_dir(string $base_dir, ?string $marker_file, string $app_version): string
+{
+    $marker_mtime = ($marker_file !== null && is_file($marker_file)) ? (string)filemtime($marker_file) : '0';
+
+    return rtrim($base_dir, '/') . '/' . substr(hash('sha256', $app_version . '|' . $marker_mtime), 0, 12);
+}
+
+/*********************************************************************
+ * FUNCTION: CLASSIFY SAML REJECTION                                  *
+ * Maps a failure raised by SimpleSAMLphp while it processes an IdP   *
+ * response at the Assertion Consumer Service to the HTTP status the  *
+ * client should see. SimpleSAMLphp wraps validation failures it did  *
+ * not give their own error class in UNHANDLEDEXCEPTION and answers   *
+ * 500, which pages operators and trips 5xx alarms for what is really *
+ * a rejected request. Returns ['status' => int, 'category' => string,*
+ * 'severity' => string] for a failure that is about the inbound      *
+ * response, or null for anything else so a genuine server fault      *
+ * (database down, missing SP certificate, code error) keeps its 5xx. *
+ * Matching is an allowlist of message prefixes: an unrecognised      *
+ * message, including one reworded by a SimpleSAMLphp upgrade, fails  *
+ * safe to the old 500 rather than to a wrong 4xx. Pure; no globals.  *
+ *********************************************************************/
+function classify_saml_rejection(string $error_code, string $cause_trace): ?array
+{
+    // Errors SimpleSAMLphp raises with their own code
+    $by_code = [
+        'NOTVALIDCERTSIGNATURE' => ['status' => 401, 'category' => 'invalid_signature', 'severity' => 'warning'],
+        'NOTVALIDCERT'          => ['status' => 401, 'category' => 'invalid_signature', 'severity' => 'warning'],
+        'METADATANOTFOUND'      => ['status' => 400, 'category' => 'unknown_idp', 'severity' => 'notice'],
+    ];
+    if (isset($by_code[$error_code])) {
+        return $by_code[$error_code];
+    }
+
+    if ($error_code !== 'UNHANDLEDEXCEPTION') {
+        return null;
+    }
+
+    $prefixes = [
+        "Destination in response doesn't match" => [400, 'destination', 'notice'],
+        'Recipient in SubjectConfirmationData does not match' => [400, 'destination', 'notice'],
+        'Issuer mismatch' => [400, 'issuer', 'warning'],
+        'Missing issuer in Response' => [400, 'issuer', 'warning'],
+        'Missing <saml:Issuer>' => [400, 'issuer', 'notice'],
+        'Response must be signed' => [401, 'unsigned', 'warning'],
+        'Neither the assertion nor the response was signed' => [401, 'unsigned', 'warning'],
+        'Validation of received messages enabled, but no signature' => [401, 'unsigned', 'warning'],
+        'Unsolicited Response MUST NOT' => [400, 'request_correlation', 'notice'],
+        'Missing expected request ID' => [400, 'request_correlation', 'notice'],
+        'Solicited Response' => [400, 'request_correlation', 'notice'],
+        'Response InResponseTo does not match' => [400, 'request_correlation', 'warning'],
+        'InResponseTo in SubjectConfirmationData does not match' => [400, 'request_correlation', 'warning'],
+        'No assertions found in response' => [400, 'no_assertions', 'notice'],
+        'Received an assertion that' => [401, 'assertion_time', 'notice'],
+        'NotBefore in SubjectConfirmationData' => [401, 'assertion_time', 'notice'],
+        'NotOnOrAfter in SubjectConfirmationData' => [401, 'assertion_time', 'notice'],
+        'This SP [' => [400, 'audience', 'notice'],
+        'Error validating SubjectConfirmation' => [401, 'subject_confirmation', 'warning'],
+        'Invalid Method on SubjectConfirmation' => [401, 'subject_confirmation', 'warning'],
+        'Bearer SubjectConfirmation received' => [401, 'subject_confirmation', 'warning'],
+        'Holder-of-Key SubjectConfirmation' => [401, 'subject_confirmation', 'warning'],
+        'No SubjectConfirmationData provided' => [401, 'subject_confirmation', 'warning'],
+        'Duplicate assertion received' => [400, 'replay', 'warning'],
+        'Error decrypting' => [400, 'decrypt', 'notice'],
+        'Could not decrypt the attributes' => [400, 'decrypt', 'notice'],
+        'Received unencrypted assertion' => [400, 'decrypt', 'notice'],
+    ];
+
+    // SimpleSAMLphp's trace lists the wrapped exception as "Caused by: <class>: <message>"
+    foreach (preg_split('/\r\n|\r|\n/', $cause_trace) ?: [] as $line) {
+        if (!preg_match('/^Caused by: [\w\\\\]+: (.*)$/', $line, $m)) {
+            continue;
+        }
+        foreach ($prefixes as $prefix => [$status, $category, $severity]) {
+            if (strncmp($m[1], $prefix, strlen($prefix)) === 0) {
+                return ['status' => $status, 'category' => $category, 'severity' => $severity];
+            }
+        }
+    }
+
+    return null;
+}
+
+/*********************************************************************
+ * FUNCTION: SAML REJECTED RESPONSE HTML                              *
+ * The page shown for a rejected IdP response. Deliberately generic:  *
+ * it never echoes the exception, expected URLs, entity IDs or paths. *
+ * $lang is the language array, $login_url the SimpleRisk login URL.  *
+ *********************************************************************/
+function saml_rejected_response_html(array $lang, string $login_url, string $track_id = ''): string
+{
+    $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $title = $e((string)($lang['SamlLoginRejectedTitle'] ?? 'Sign-in could not be completed'));
+    $message = $e((string)($lang['SamlLoginRejectedMessage'] ?? ''));
+    $back = $e((string)($lang['BackToLogin'] ?? 'Back to login'));
+
+    // SimpleSAMLphp's tracking number lets an administrator find the detail in the server log
+    $reference = '';
+    if (preg_match('/^[A-Za-z0-9]{1,32}$/', $track_id)) {
+        $reference = '<p><small>' . $e(str_replace('{$id}', $track_id, (string)($lang['SamlLoginRejectedReference'] ?? '{$id}'))) . '</small></p>';
+    }
+
+    return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+        . '<title>' . $title . '</title></head><body>'
+        . '<main style="max-width:36rem;margin:4rem auto;padding:0 1rem;font-family:sans-serif">'
+        . '<h1>' . $title . '</h1><p>' . $message . '</p>' . $reference
+        . '<p><a href="' . $e($login_url) . '">' . $back . '</a></p></main></body></html>';
+}
+
+/*********************************************************************
+ * FUNCTION: SAML ERROR PAGE LANGUAGE                                 *
+ * The language array the rejected-response page renders from.  The   *
+ * handler runs inside SimpleSAMLphp, where the global $lang may never *
+ * have been set and no session is started, so language_file() alone   *
+ * returns an empty file.  Force the default language, layered over    *
+ * English per key, so the caller always receives an array.            *
+ *********************************************************************/
+function saml_error_page_language($current, ?callable $load = null, ?string $locale_file = null): array
+{
+    if (is_array($current) && isset($current['SamlLoginRejectedMessage'])) {
+        return $current;
+    }
+
+    require_once(realpath(__DIR__ . '/language_fallback.php'));
+
+    $english_file = realpath(__DIR__ . '/../languages/en/lang.en.php');
+    $locale_file ??= language_file(true);
+    $errors = [];
+
+    // Per-key English fallback: a custom or partial default-language file cannot leave the page without its strings
+    $lang = ($load ?? 'language_load_with_english_fallback')(
+        is_string($locale_file) && $locale_file !== '' ? $locale_file : null,
+        $english_file === false ? null : $english_file,
+        $errors
+    );
+
+    return is_array($lang) && $lang !== [] ? $lang : (is_array($current) ? $current : []);
+}
+
+/*********************************************************************
+ * CLASS: SAML ERROR PAGE HANDLER                                     *
+ * Registered as 'errors.show_function' in the shipped SimpleSAMLphp  *
+ * config (scripts/simplesamlphp/config/config.php), the supported    *
+ * hook SimpleSAMLphp calls from Error::show() with the HTTP status   *
+ * already set to the error's own code. A rejected response at the    *
+ * ACS endpoint is answered with a generic localized 4xx page; every  *
+ * other error is rendered exactly as SimpleSAMLphp would, with its   *
+ * original status.                                                   *
+ *********************************************************************/
+final class SamlErrorPageHandler
+{
+    public static function show($config, array $data): void
+    {
+        $status = http_response_code();
+        $status = is_int($status) ? $status : 500;
+
+        $uri = (string)($_SERVER['REQUEST_URI'] ?? '');
+        $is_acs = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && strpos($uri, '/sp/saml2-acs.php') !== false;
+
+        $rejection = null;
+        if ($is_acs && $status >= 500) {
+            $rejection = classify_saml_rejection(
+                (string)($data['errorCode'] ?? ''),
+                (string)($data['error']['exceptionTrace'] ?? '')
+            );
+        }
+
+        if ($rejection !== null) {
+            // Category and status only: never the message, which can carry URLs and entity IDs
+            write_debug_log(
+                "Rejected SAML response at the ACS endpoint (reason: {$rejection['category']}, HTTP {$rejection['status']}).",
+                $rejection['severity']
+            );
+
+            $lang = saml_error_page_language($GLOBALS['lang'] ?? null);
+
+            http_response_code($rejection['status']);
+            header('Content-Type: text/html; charset=utf-8');
+            header('Cache-Control: no-store');
+            header('X-Content-Type-Options: nosniff');
+            echo saml_rejected_response_html($lang, rtrim(get_base_url(), '/') . '/', (string)($data['error']['trackId'] ?? ''));
+            exit;
+        }
+
+        // Anything else: the stock SimpleSAMLphp error page, with the status it already chose
+        $t = new \SimpleSAML\XHTML\Template($config, 'error.twig');
+        if (!empty($data['includeTemplate']) && strpos($data['includeTemplate'], ':') !== false) {
+            [$module] = explode(':', $data['includeTemplate'], 2);
+            if (\SimpleSAML\Module::isModuleEnabled($module)) {
+                $t->getLocalization()->addModuleDomain($module);
+            }
+        }
+        $t->setStatusCode($status);
+        $t->data = array_merge($t->data, $data);
+        $t->send();
+        exit;
+    }
 }
 
 ?>

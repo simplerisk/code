@@ -23,7 +23,7 @@ require_once(realpath(__DIR__ . '/../../../includes/ai_context_graph.php'));
 // Compliance-specific coupling, otherwise only reachable via compliance.php.
 require_once(realpath(__DIR__ . '/../../../includes/compliance_grid.php'));
 
-require_once(language_file());
+load_language_file();
 
 /******************************************
  * FUNCTION: API V2 GOVERNANCE FRAMEWORKS *
@@ -925,6 +925,9 @@ function saveCustomDocumentsToControlsDisplaySettingsAPI(){
  ******************************************************************/
 function getDocumentsToControlsDatatableResponse()
 {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $lang;
     global $escaper;
 

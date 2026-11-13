@@ -15,6 +15,8 @@ use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Radebatz\TypeInfoExtras\Type\ExplicitType;
 use Radebatz\TypeInfoExtras\Type\IntRangeType;
 use Radebatz\TypeInfoExtras\TypeResolver\StringTypeResolver;
@@ -32,6 +34,7 @@ use Symfony\Component\TypeInfo\Type\UnionType;
 use Symfony\Component\TypeInfo\TypeContext\TypeContextFactory;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 use Symfony\Component\TypeInfo\TypeResolver\ReflectionTypeResolver;
+use Symfony\Component\TypeInfo\TypeResolver\StringTypeResolver as SymfonyStringTypeResolver;
 
 /**
  * Resolves a PHP reflector to a SchemaType value object.
@@ -39,8 +42,10 @@ use Symfony\Component\TypeInfo\TypeResolver\ReflectionTypeResolver;
  * Shared core between the spec-attributes augmenter and the classic annotation resolver.
  * Uses Symfony TypeInfo + phpstan/phpdoc-parser for reflective type resolution.
  */
-class TypeResolver
+class TypeResolver implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     protected TypeMapper $typeMapper;
 
     public function __construct()
@@ -99,7 +104,7 @@ class TypeResolver
             return null;
         }
 
-        $typeContext = (new TypeContextFactory())->createFromReflection($reflector);
+        $typeContext = (new TypeContextFactory(new SymfonyStringTypeResolver()))->createFromReflection($reflector);
 
         $tagName = match (true) {
             $reflector instanceof \ReflectionProperty => $reflector->isPromoted()
@@ -137,12 +142,26 @@ class TypeResolver
                 try {
                     return (new StringTypeResolver())->resolve((string) $tagValue, $typeContext);
                 } catch (UnsupportedException) {
-                    // ignore
+                    $this->logger?->warning(sprintf('Unsupported docblock type "%s" on %s', $tagValue->type, $this->describe($reflector)));
                 }
             }
         }
 
         return null;
+    }
+
+    /**
+     * Name a member for a log message: `Pet::$name`, `Pet::name()`, `$id of Pet::get()`.
+     */
+    public function describe(\Reflector $reflector): string
+    {
+        return match (true) {
+            $reflector instanceof \ReflectionProperty => $reflector->class . '::$' . $reflector->name,
+            $reflector instanceof \ReflectionParameter => '$' . $reflector->name . ' of ' . $this->describe($reflector->getDeclaringFunction()),
+            $reflector instanceof \ReflectionMethod => $reflector->class . '::' . $reflector->name . '()',
+            $reflector instanceof \ReflectionFunctionAbstract => $reflector->name . '()',
+            default => $reflector::class,
+        };
     }
 
     protected function mapType(Type $type): SchemaType
@@ -165,14 +184,20 @@ class TypeResolver
                 return new SchemaType(type: 'object');
             }
 
+            // the date classes themselves are mapped by name, a subclass of them by what it is
+            if (is_a($className, \DateTimeInterface::class, true)) {
+                return new SchemaType(type: 'string', format: 'date-time');
+            }
+
             return new SchemaType(type: $className);
         }
 
         if ($type instanceof IntRangeType) {
+            // an open end comes as `PHP_INT_MIN`/`PHP_INT_MAX`, which is no bound of the API
             return new SchemaType(
                 type: $type->getTypeIdentifier()->value,
-                minimum: $type->getFrom(),
-                maximum: $type->getTo(),
+                minimum: \PHP_INT_MIN === $type->getFrom() ? null : $type->getFrom(),
+                maximum: \PHP_INT_MAX === $type->getTo() ? null : $type->getTo(),
             );
         }
 

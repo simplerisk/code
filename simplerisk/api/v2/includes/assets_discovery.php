@@ -21,7 +21,7 @@ require_once(realpath(__DIR__ . '/../../../includes/assets_write_rules.php'));
 require_once(realpath(__DIR__ . '/../../../includes/assets_discovery.php'));
 require_once(realpath(__DIR__ . '/../../../includes/assets_discovery_probe.php'));
 
-require_once(language_file());
+load_language_file();
 
 /**
  * The base `asset` permission plus the one narrow permission the route needs.

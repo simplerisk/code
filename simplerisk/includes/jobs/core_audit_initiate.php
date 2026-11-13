@@ -9,6 +9,8 @@ require_once(realpath(__DIR__ . '/../compliance.php'));
 
 return [
     'type' => 'core_audit_initiate',
+    // One task of this type at a time across all queue workers (periodic: initiates due audits across all frameworks).
+    'concurrency' => 'serial',
 
     'task_check' => function(PDO $db) {
         write_debug_log("Audit Initiate: checking gate conditions.", "debug");

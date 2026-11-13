@@ -19,24 +19,32 @@ require_once(realpath(__DIR__ . '/../mail.php'));
 
 return [
     'type' => 'core_email_send',
+    // Tasks of this type may run on several queue workers at once (each message is independent; the per-task claim sends it once).
+    'concurrency' => 'parallel',
 
     'queue_check' => function(array $task, PDO $db) {
-        // Claim the task BEFORE validating the payload, not after.
+        // No up-front 'in_progress' claim. Every exit below returns false and
+        // leaves the status to the worker: while retries remain the task stays
+        // 'pending' with a future next_retry_at, and the worker's pick
+        // (queue_claim_next_runnable_task()) skips a pending task that is still
+        // backing off and runs the next runnable one — so a poison payload at
+        // priority 100 does not block the head of the queue. The pick applies
+        // the back-off in its SQL, so even a large backlog of failing emails (a
+        // bulk send during a mail outage) never fills its window. Claiming the task
+        // here (as this job used to) took it out of the pending pool, so the
+        // worker's retry back-off never applied and only the stuck-task
+        // recovery ever ran it again.
         //
-        // Every exit below returns false so the worker's
-        // handle_queue_task_failure() owns retry/backoff and the final status —
-        // per writing-queue-jobs (CLAUDE.md), a queue_check must never
-        // self-mark its own task 'failed'. But while retries remain,
-        // handle_queue_task_failure() ONLY rewrites the payload; it never
-        // changes the status. So a task that fails while still 'pending' stays
-        // in the pending pool carrying a future next_retry_at. The worker
-        // selects with `LIMIT 1 ORDER BY priority DESC` and only then skips a
-        // backoff-gated row (cron_queue_worker.php), and send_email() enqueues
-        // at priority 100 — so an un-parseable payload would sit at the head of
-        // the queue and stall EVERY other background job for the duration of
-        // its backoff windows. Claiming the task first moves it out of the
-        // pending pool immediately, so a poison payload can't block the queue.
-        queue_update_status($task['id'], 'in_progress', $db);
+        // Sent once: the task stays 'pending' while this handler runs, so the
+        // worker's per-task claim (a named lock held from the pick until the
+        // outcome is written) is what keeps a second queue worker, or a worker
+        // on another host, from sending the same email meanwhile.
+        //
+        // The retry window comes from send_email(), which stores a 300-second
+        // base delay on the task; the longest wait and the number of retries
+        // follow the retry settings. At the defaults that is 5, 10, 20, 40 and
+        // 60 minutes (about two and a quarter hours) before the task fails and
+        // on_terminal_failure notifies.
 
         $payload = json_decode($task['payload'], true);
 

@@ -14,6 +14,7 @@ require_once(realpath(__DIR__ . '/../includes/mail.php'));
 require_once(realpath(__DIR__ . '/../includes/queues.php'));
 require_once(realpath(__DIR__ . '/../includes/promises.php'));
 require_once(realpath(__DIR__ . '/../includes/workers.php'));
+require_once(realpath(__DIR__ . '/../includes/queue_config.php'));
 require_once(realpath(__DIR__ . '/../includes/files.php'));
 require_once(realpath(__DIR__ . '/../includes/Components/DocumentTextHandler.php'));
 require_once(realpath(__DIR__ . '/../includes/Components/CsvHandler.php'));
@@ -22,18 +23,24 @@ require_once(realpath(__DIR__ . '/../includes/Components/SpreadsheetHandler.php'
 require_once(realpath(__DIR__ . '/../includes/Components/WordHandler.php'));
 
 // === CONFIGURATION ===
-$workerName = 'cron_queue_worker';
-$stalePidThreshold = 24 * 3600; // 24 hours
-$loopDelaySeconds = 3;
-$maxRuntimeMinutes = 60;
-$maxIdleMinutes = 60;
-$memoryLimitBytes = 400 * 1024 * 1024;
-$stuckThresholdMinutes = 30;
+// Tuning comes from config.php constants via queue_config() (built-in defaults
+// when absent; see includes/queue_config.php and config.sample.php). Retry
+// limits and backoff are resolved per failure in handle_queue_task_failure().
+// Several queue workers may run at once (QUEUE_WORKER_COUNT, default 1). Each
+// cron run fills at most one free slot (acquire_worker_slot()); slot 1 keeps
+// this base name, slot k > 1 is "cron_queue_worker_k". $workerName is set to
+// the slot taken below and used for heartbeats, metrics and the lock release.
+$workerBase = 'cron_queue_worker';
+$workerCount = queue_config('QUEUE_WORKER_COUNT');
+$stalePidThreshold = queue_config('WORKER_STALE_LOCK_SECONDS');
+$loopDelaySeconds = queue_config('QUEUE_WORKER_LOOP_DELAY_SECONDS');
+$maxRuntimeMinutes = queue_config('QUEUE_WORKER_MAX_RUNTIME_MINUTES');
+$maxIdleMinutes = queue_config('QUEUE_WORKER_MAX_IDLE_MINUTES');
+$memoryLimitBytes = queue_config('QUEUE_WORKER_MEMORY_SOFT_LIMIT_MB') * 1024 * 1024;
+$stuckThresholdMinutes = queue_config('QUEUE_STUCK_TASK_MINUTES');
 
 $startTime = time();
 $lastWorkTime = time();
-// config.php, watched so an edit recycles the worker (see the main loop).
-$configPath = __DIR__ . '/../includes/config.php';
 
 // === SESSION IDENTITY FOR AUDIT LOGS ===
 // Functions that write audit log entries read $_SESSION['user'] and $_SESSION['uid'].
@@ -44,24 +51,37 @@ $_SESSION['uid']  = -1;
 // === SYSTEM SETTINGS ===
 ini_set('max_execution_time', 0);
 set_time_limit(0);
-ini_set('memory_limit', '512M');
+ini_set('memory_limit', queue_config('QUEUE_WORKER_PHP_MEMORY_LIMIT_MB') . 'M');
 ob_implicit_flush(true);
 
 write_debug_log("Queue worker started (PID " . getmypid() . ")", "info");
 
 // === CHECK FOR ZOMBIE WORKERS ===
-$zombies = list_zombie_workers($workerName, $stalePidThreshold);
-foreach ($zombies as $zombie) {
-    write_debug_log(
-        "Zombie worker detected: PID {$zombie['pid']} on host {$zombie['host']}, last heartbeat {$zombie['last_heartbeat']}",
-        "warning"
-    );
+foreach (worker_slot_names($workerBase, $workerCount) as $slotName) {
+    foreach (list_zombie_workers($slotName, $stalePidThreshold) as $zombie) {
+        write_debug_log(
+            "Zombie worker detected ({$slotName}): PID {$zombie['pid']} on host {$zombie['host']}, last heartbeat {$zombie['last_heartbeat']}",
+            "warning"
+        );
+    }
 }
 
-// === ACQUIRE LOCK ===
-if (!acquire_worker_lock($workerName, $stalePidThreshold)) {
-    write_debug_log("$workerName lock not acquired, exiting.", "info");
+// === ACQUIRE A WORKER SLOT ===
+$workerName = acquire_worker_slot($workerBase, $workerCount, $stalePidThreshold);
+if ($workerName === null) {
+    // 'debug': with cron.php every configured worker's entry runs each
+    // minute, so this is the normal outcome of most runs.
+    write_debug_log("{$workerBase}: all {$workerCount} worker slot(s) are taken, exiting.", "debug");
     exit(0);
+}
+
+// Report config.php tuning once per worker start: 'warning' for a value that
+// was ignored or clamped (the edit is not doing what the administrator meant),
+// 'info' listing every value that differs from the built-in default. After the
+// lock, so the cron runs that find a worker already running (and exit) stay
+// silent instead of repeating these lines every few minutes.
+foreach (queue_config_startup_log_lines() as [$message, $level]) {
+    write_debug_log("{$workerName}: {$message}", $level);
 }
 
 // === REGISTER SIGNAL HANDLERS ===
@@ -83,6 +103,9 @@ if (!$db) {
     write_debug_log("Failed to open database connection, exiting.", "error");
     exit(1);
 }
+// Session wait_timeout: bounds how long a connection left behind by a dead
+// host keeps its claims (worker_session_wait_timeout()).
+worker_prepare_connection($db);
 
 // === MAIN WORKER LOOP ===
 while (true) {
@@ -117,12 +140,12 @@ while (true) {
     }
 
     // config.php is read once, at start. When a system administrator edits it
-    // (for example the asset discovery allowlist), exit between tasks so cron
-    // respawns the worker with the new configuration. Fail-safe: a stat
-    // failure or a future mtime never triggers this, and the respawned worker
-    // starts after the edit, so it does not loop (worker_config_changed_since()).
-    clearstatcache(true, $configPath);
-    if (worker_config_changed_since($startTime, @filemtime($configPath), $now)) {
+    // (for example the asset discovery allowlist or a queue tuning constant),
+    // exit between tasks so cron respawns the worker with the new
+    // configuration. Fail-safe: a stat failure or a future mtime never triggers
+    // this, and the respawned worker starts after the edit, so it does not loop
+    // (worker_config_changed_since()).
+    if (worker_config_file_changed_since($startTime, $now)) {
         record_worker_restart($workerName, 'config_changed');
         break;
     }
@@ -151,13 +174,15 @@ while (true) {
     try {
         $db->query("SELECT 1");
     } catch (\Throwable $t) {
+        // A lost connection also lost every claim it held: the server dropped
+        // them. Reconnect for real (db_close() alone keeps the dead shared
+        // connection) and set the new connection up like the first one.
         write_debug_log("Reconnecting to DB after connection loss...", "warning");
-        db_close($db);
-        $db = db_open();
-        if (!$db) {
-            write_debug_log("Failed to reconnect to database, exiting.", "error");
-            break;
-        }
+        // Returns a working connection or exits: db_open() renders the outage
+        // page and exits when the database cannot be reached, and cron starts
+        // a fresh worker later.
+        $db = worker_reconnect_db();
+        worker_prepare_connection($db);
     }
 
     // === RECOVER STUCK TASKS ===
@@ -166,82 +191,53 @@ while (true) {
     // queue_check would re-create the whole chain (the re-chaining runaway).
     // See recover_stuck_queue_tasks() in queues.php for the full rationale and
     // the liveness predicate (kept in sync with promise_chain_exists()).
+    // Bounded: a task recovered QUEUE_RECOVERY_MAX_ATTEMPTS times is marked
+    // failed instead, with its terminal hook and admin notification.
     try {
-        $recovered = recover_stuck_queue_tasks($db, $stuckThresholdMinutes);
+        $recovery = worker_recover_stuck_tasks($db, $stuckThresholdMinutes);
+        $recovered = $recovery['recovered'];
         if ($recovered > 0) {
             // 'notice': reclaiming a stale/abandoned task (in_progress past the
             // threshold with no live chain) is an infrequent, operator-relevant
             // event — the "stale lock killed" analog — not a routine info event.
             write_debug_log("Recovered {$recovered} stuck tasks (no live promise chain).", "notice");
         }
+        if (!empty($recovery['failed'])) {
+            worker_metric_inc($workerName, 'failed_queue_tasks', count($recovery['failed']));
+        }
     } catch (\Throwable $t) {
         write_debug_log("Error recovering stuck tasks: " . $t->getMessage(), "error");
     }
 
-    // === FETCH NEXT PENDING TASK ===
-    $task = null;
+    // === CLAIM AND RUN THE NEXT TASK ===
+    // worker_run_next_task() claims the highest-priority runnable task (a
+    // MySQL named lock per task, so no two workers ever run the same one;
+    // tasks still waiting out a retry back-off are skipped, SR-2307), runs its
+    // handler, records the outcome and releases the claim. Jobs marked
+    // 'concurrency' => 'serial' also run one at a time across all workers.
     try {
-        $db->beginTransaction();
-        // Skips tasks still waiting out a retry back-off (SR-2307) so a failing
-        // high-priority task cannot stall the rest of the queue.
-        $task = queue_pick_next_runnable_task($db, $now);
-        if ($db->inTransaction()) {
-            $db->commit();
-        }
+        $run = worker_run_next_task($db, $now, $workerName);
     } catch (\Throwable $t) {
-        if ($db->inTransaction()) $db->rollBack();
-        write_debug_log("Error fetching tasks: " . $t->getMessage(), "error");
-        worker_interruptible_sleep($loopDelaySeconds);
-        continue;
-    }
-
-    if (!$task) {
-        worker_interruptible_sleep($loopDelaySeconds);
-        continue;
-    }
-
-    $taskType = $task['task_type'];
-    write_debug_log("Fetched task #{$task['id']} with type '{$taskType}'", "info");
-
-    // === TASK LOOKUP USING KEYED JOB MAP ===
-    $job_def = worker_get_job_definition($taskType);
-    if (!$job_def) {
-        // Counts every failed attempt, retried or not, like failed_promises. Each
-        // increment comes before the failure handler so a throwing terminal hook
-        // cannot skip it.
-        worker_metric_inc($workerName, 'failed_queue_tasks');
-        handle_queue_task_failure($db, $task, "No job definition");
-        worker_interruptible_sleep($loopDelaySeconds);
-        continue;
-    }
-
-    // === TASK HANDLER EXECUTION ===
-    try {
-        $handler = $job_def['queue_check'] ?? $job_def['task_check'] ?? null;
-        if (!is_callable($handler)) throw new \RuntimeException("No valid handler for task #{$task['id']}");
-
-        $result = $handler($task, $db);
-        write_debug_log("Task #{$task['id']} handler returned: " . var_export($result, true), "debug");
-
-        if ($result === false) {
-            // worker_handle_task_failure() only surfaces the failure to a user
-            // once retries are exhausted — handle_queue_task_failure() (which it
-            // calls) returns true exactly then.
-            worker_metric_inc($workerName, 'failed_queue_tasks');
-            worker_handle_task_failure($job_def, $db, $task, "Handler returned false");
-        } else {
-            if (!empty($job_def['stages']) && is_array($job_def['stages'])) {
-                queue_update_status($task['id'], 'in_progress', $db);
-            } else {
-                queue_update_status($task['id'], 'completed', $db);
-            }
+        write_debug_log("Error picking or running a queue task: " . $t->getMessage(), "error");
+        if (worker_is_connection_lost($t)) {
+            // The connection (and with it the task's claim) is gone; the
+            // task's run-open marker is still set, so its next claim counts
+            // it as a recovery instead of simply running it again.
+            $db = worker_reconnect_db();
+            worker_prepare_connection($db);
         }
-    } catch (\Throwable $t) {
-        write_debug_log("Unexpected error processing task #{$task['id']}: " . $t->getMessage(), "error");
-        // Same retry/backoff policy as the false-return path above — left to the
-        // function's defaults on both so the two can't drift.
-        worker_metric_inc($workerName, 'failed_queue_tasks');
-        worker_handle_task_failure($job_def, $db, $task, $t->getMessage());
+        update_worker_heartbeat($workerName);
+        worker_interruptible_sleep($loopDelaySeconds);
+        continue;
+    }
+
+    // Nothing to run, or a task with no job definition: keep the heartbeat
+    // fresh (an idle worker is alive; the Queue Monitor and the other hosts'
+    // workers judge that by the heartbeat) and wait.
+    if ($run === null || $run['outcome'] === 'no_job_definition') {
+        update_worker_heartbeat($workerName);
+        worker_interruptible_sleep($loopDelaySeconds);
+        continue;
     }
 
     $lastWorkTime = time();

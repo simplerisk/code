@@ -32,7 +32,7 @@ require_once(realpath(__DIR__ . '/notifications.php'));
 require_once(realpath(__DIR__ . '/compliance_grid.php'));
 
 // Include the language file
-require_once(language_file());
+load_language_file();
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 /******************************************************
@@ -5991,6 +5991,17 @@ function delete_test_audit($test_audit_id) {
         DELETE t1,t2 FROM `framework_control_test_results_to_risks` t1 LEFT JOIN `framework_control_test_results` t2 ON t2.id = t1.test_results_id WHERE t2.`test_audit_id`=:test_audit_id");
     $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
     $stmt->execute();
+
+    // The join delete above only removes results that have a risk link. Results without one stayed
+    // behind keyed to this audit id, and surfaced on whatever audit later reused the id (SD-793).
+    $stmt = $db->prepare("DELETE FROM `framework_control_test_results` WHERE `test_audit_id`=:test_audit_id;");
+    $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Delete the evidence files uploaded to this audit, for the same reason
+    foreach (get_compliance_files($test_audit_id, 'test_audit') as $evidence_file) {
+        delete_compliance_file($evidence_file['id']);
+    }
 
     // Delete test audit's teams
     updateTeamsOfItem($test_audit_id, 'audit', []);

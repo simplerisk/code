@@ -579,12 +579,15 @@
     // specificity, so a plain `display: none` here would silently do
     // nothing (and did, the first time this was written without it) the
     // instant the grid finished its own render pass.
-    #document-program-table {
-        [data-col="submitter"],
-        [data-col="approval_date"],
-        [data-col="updated_by"],
-        [data-col="creation_date"],
-        [data-col="last_review"] {
+    //
+    // The same !important also beat the Columns picker: ticking one of these
+    // columns back on wrote inline `display: table-cell`, which this rule
+    // overrode, so the box was ticked and the column stayed hidden (SD-836).
+    // governance-documents.js now adds `sr-dp-col-user-<col>` to the table
+    // for a column the user has chosen, and the rule steps aside for exactly
+    // that column, so the picker's inline style governs it.
+    @each $col in (submitter, approval_date, updated_by, creation_date, last_review) {
+        #document-program-table:not(.sr-dp-col-user-#{$col}) [data-col="#{$col}"] {
             display: none !important;
         }
     }
@@ -594,10 +597,8 @@
 // too, so every width that was compact before keeps exactly the column set
 // it had.
 @media (max-width: 1800px) {
-    #document-program-table {
-        [data-col="controls"] {
-            display: none !important; // same inline-style override, see above
-        }
+    #document-program-table:not(.sr-dp-col-user-controls) [data-col="controls"] {
+        display: none !important; // same inline-style override, see above
     }
 }
 
@@ -606,10 +607,8 @@
 // Approver/Next Review is still a complete, scannable row; which
 // framework(s) map to it is detail reachable by opening the row.
 @media (max-width: 1100px) {
-    #document-program-table {
-        [data-col="frameworks"] {
-            display: none !important; // same inline-style override, see above
-        }
+    #document-program-table:not(.sr-dp-col-user-frameworks) [data-col="frameworks"] {
+        display: none !important; // same inline-style override, see above
     }
 }
 
@@ -663,6 +662,13 @@
         // re-asserted here so the queue tier's own blanket `> td { display:
         // block }` two rules up can never resurrect one of them by accident
         // if this mixin is ever reordered ahead of those.
+        //
+        // !important, because a column the user ticked in the Columns picker
+        // is no longer hidden by the folds above (SD-836) and carries the
+        // picker's inline `display: table-cell`. An inline style beats a plain
+        // rule, so without it that cell would become an extra, auto-placed item
+        // in this row's four-track grid. The queue tier has no room for these
+        // columns whatever the picker says.
         > [data-col="controls"],
         > [data-col="submitter"],
         > [data-col="approval_date"],
@@ -670,7 +676,7 @@
         > [data-col="creation_date"],
         > [data-col="last_review"],
         > [data-col="frameworks"] {
-            display: none;
+            display: none !important;
         }
 
         .sr-check-col   { grid-area: 1 / 1; }

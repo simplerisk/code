@@ -1567,7 +1567,9 @@ function queue_workflow_execution(int $workflow_id, array $context, PDO $db): vo
 
     // Hand off to the async job runner
     require_once(realpath(__DIR__ . '/queues.php'));
-    queue_task($db, 'core_workflow_execute', ['execution_id' => $execution_id]);
+    // Priority 50: user-configured automation reacting to an event. Omitted,
+    // the priority defaulted to 0 and executions sat behind every other task.
+    queue_task($db, 'core_workflow_execute', ['execution_id' => $execution_id], 50);
 }
 
 /***********************************************

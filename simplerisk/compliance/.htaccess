@@ -1,0 +1,23 @@
+# SimpleRisk Core: legacy URL redirects for simplerisk/compliance/ (plan 4b).
+# Shipped with every release and overwritten on upgrade -- do not edit locally.
+# kind=restore: deleted in a shipped release (Manage Audits merge, ca58b46102, last shipped 20260820-001).
+# GET/HEAD answer 302, any other method 303 (never 307/308).
+# Targets start with the install prefix (.*/) captured from REQUEST_URI by the last condition: a relative [R] target
+# would put the filesystem directory into Location (verified on httpd 2.4.62, plan 4b Task 10).
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# legacy-redirect: added=20261105-001 kind=restore
+RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+RewriteCond %{REQUEST_URI} ^(.*/)compliance/[^/]+$
+RewriteRule ^active_audits\.php$ %1compliance/audits.php?status=active [R=302,QSD,L]
+RewriteCond %{REQUEST_METHOD} !^(GET|HEAD)$
+RewriteCond %{REQUEST_URI} ^(.*/)compliance/[^/]+$
+RewriteRule ^active_audits\.php$ %1compliance/audits.php?status=active [R=303,QSD,L]
+RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+RewriteCond %{REQUEST_URI} ^(.*/)compliance/[^/]+$
+RewriteRule ^past_audits\.php$ %1compliance/audits.php?status=past [R=302,QSD,L]
+RewriteCond %{REQUEST_METHOD} !^(GET|HEAD)$
+RewriteCond %{REQUEST_URI} ^(.*/)compliance/[^/]+$
+RewriteRule ^past_audits\.php$ %1compliance/audits.php?status=past [R=303,QSD,L]
+</IfModule>

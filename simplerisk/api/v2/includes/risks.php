@@ -16,7 +16,7 @@ require_once(realpath(__DIR__ . '/../../../includes/entity_graph.php'));
 // applied to the walker results below) is defined here.
 require_once(realpath(__DIR__ . '/../../../includes/ai_context_graph.php'));
 
-require_once(language_file());
+load_language_file();
 
 /**************************
  * FUNCTION: API V2 RISKS *

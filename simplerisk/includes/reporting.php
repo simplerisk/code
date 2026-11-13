@@ -16,7 +16,7 @@ require_once(realpath(__DIR__ . '/permissions.php'));
 // get_home_recent_failures_items(). Declared directly rather than relied on
 // transitively: a caller must load the file defining the helper it calls.
 require_once(realpath(__DIR__ . '/compliance_grid.php'));
-require_once(language_file());
+load_language_file();
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 // get_*_connectivity_for_*() moved out of this file into entity_graph.php.
 // No function in that file is called from HERE any more -- this require is
@@ -4414,7 +4414,7 @@ function get_print_header_columns($columns)
 	$str = "";
     foreach($columns as $column){
         if(stripos($column, "custom_field_") === false){
-            $name = get_label_by_risk_field_name($column);
+            $name = $escaper->escapeHtml(get_label_by_risk_field_name($column));
             $str .= "<th class='{$column}' data-name='{$column}' align=\"left\" >". $name ."</th>\n";
         } else {
             // If customization extra is enabled, includes customization fields 
@@ -4452,7 +4452,7 @@ function get_header_columns($hide, $selected_columns=[]) {
 
     foreach ($selected_columns as $column=>$status) {
         if (stripos($column, "custom_field_") === false) {
-            $name = get_label_by_risk_field_name($column);
+            $name = $escaper->escapeHtml(get_label_by_risk_field_name($column));
             echo "
                 <th class='{$column}' data-name='{$column}' " . ($status == true ? "" : "style='{$display}' ") . "align='left' >{$name}</th>
             "; 
@@ -13228,7 +13228,7 @@ function render_home_risk_by_level_chart()
 
     // Data is server-encoded via json_encode (safe JS embedding); colours are
     // already allow-listed by escapeCssColor above.
-    $labels_json = json_encode(array_values($labels));
+    $labels_json = json_encode($labels); // already a sequential list (built via $labels[] = …)
     $counts_json = json_encode($counts); // already a sequential list (built via $counts[] = …)
     $colors_json = json_encode(array_values($colors));
 

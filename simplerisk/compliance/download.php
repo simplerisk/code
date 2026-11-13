@@ -28,7 +28,7 @@ add_session_check($permissions);
 include_csrf_magic();
 
 // Include the SimpleRisk language file
-require_once(language_file());
+load_language_file();
 
 global $escaper, $lang;
 

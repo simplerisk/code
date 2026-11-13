@@ -370,7 +370,8 @@
         {
             heading: 'SoaAppendixRemediation',
             entries: [
-                { term: 'SoaRemediationUnplanned', definition: 'SoaLegendUnplanned', family: 'danger' }
+                { term: 'SoaRemediationUnplanned', definition: 'SoaLegendUnplanned', family: 'danger' },
+                { term: 'SoaRemediationNoMitigation', definition: 'SoaLegendNoMitigation', family: 'danger' }
             ]
         }
     ];
@@ -670,7 +671,9 @@
                 var line = L('Risk') + ' ' + risk.risk_id;
 
                 if (!risk.planned) {
-                    lines.push(line + ' — ' + L('SoaRemediationUnplanned'));
+                    // The risk IS linked; it simply has no mitigation yet. Saying "no risk
+                    // linked" next to a risk id contradicts itself (SD-903).
+                    lines.push(line + ' — ' + L('SoaRemediationNoMitigation'));
                     return;
                 }
 
@@ -1381,7 +1384,7 @@
                 // Same unplanned emphasis the sub-row carried: the control failed
                 // and NOTHING is planned about it is the finding, not a detail.
                 var unplanned = line === L('SoaRemediationUnplanned')
-                    || line.indexOf('— ' + L('SoaRemediationUnplanned')) !== -1;
+                    || line.indexOf('— ' + L('SoaRemediationNoMitigation')) !== -1;
 
                 $entry.append($('<span class="sr-soa-appendix-l">')
                     .toggleClass('is-unplanned', unplanned)

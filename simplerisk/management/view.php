@@ -4,8 +4,17 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Render the header and sidebar
+require_once(realpath(__DIR__ . '/../includes/functions.php'));
+require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 require_once(realpath(__DIR__ . '/../includes/artificial_intelligence.php'));
+
+// Authenticate before the Team Separation check and risk lookup below, which
+// read $_SESSION['uid']. render_header_and_sidebar() (head.php) runs the same
+// session check again later; repeating it while the session is open is harmless.
+$permissions = ['check_riskmanagement' => true];
+add_security_headers();
+add_session_check($permissions);
 
 // Fetched BEFORE render_header_and_sidebar() (below) rather than where the
 // pre-existing "if (isset($_GET['id']))" block used to do it further down --
@@ -108,7 +117,7 @@ $active_sidebar_submenu = isset($_GET['active']) ? $_GET['active'] : "ReviewRisk
 // narrow viewports -- same token Compliance/Governance/Plan Projects'
 // own row-actions-menu pages load. Placed before CUSTOM:pages/
 // risk-mitigation-controls.js, which calls SRRowActionsMenu.bind().
-render_header_and_sidebar(['blockUI', 'tabs:logic', 'selectize', 'datatables', 'chart.js', 'WYSIWYG', 'multiselect', 'gridstack', 'CUSTOM:common.js', 'CUSTOM:common/cvss-v2-scoring.js', 'CUSTOM:common/dread-scoring.js', 'CUSTOM:common/owasp-scoring.js', 'CUSTOM:common/classic-scoring.js', 'CUSTOM:common/contributing-risk-scoring.js', 'CUSTOM:common/risk-details-form.js', 'CUSTOM:common/risk-details-view.js', 'CUSTOM:pages/risk-view-details.js', 'CUSTOM:sr-faceted-picker.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:pages/risk-mitigation-controls.js', 'CUSTOM:pages/risk-view-mitigation.js', 'CUSTOM:pages/risk-view-review.js', 'CUSTOM:pages/risk.js', 'CUSTOM:sr-select.js', 'CUSTOM:sr-audit-trail.js', 'CUSTOM:pages/risk-audit-trail.js', 'CUSTOM:cve_lookup.js', 'datetimerangepicker', 'JSLocalization', 'easyui:treegrid', 'EXTRA:JS:artificial_intelligence:ai-chat.js'], ['check_riskmanagement' => true, 'show_ai_chat' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, required_localization_keys: ['MitigationPlanned']);
+render_header_and_sidebar(['blockUI', 'tabs:logic', 'selectize', 'datatables', 'chart.js', 'WYSIWYG', 'multiselect', 'gridstack', 'CUSTOM:common.js', 'CUSTOM:common/cvss-v2-scoring.js', 'CUSTOM:common/dread-scoring.js', 'CUSTOM:common/owasp-scoring.js', 'CUSTOM:common/classic-scoring.js', 'CUSTOM:common/contributing-risk-scoring.js', 'CUSTOM:common/risk-details-form.js', 'CUSTOM:common/risk-details-view.js', 'CUSTOM:pages/risk-view-details.js', 'CUSTOM:sr-faceted-picker.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:pages/risk-mitigation-controls.js', 'CUSTOM:pages/risk-view-mitigation.js', 'CUSTOM:pages/risk-view-review.js', 'CUSTOM:pages/risk.js', 'CUSTOM:sr-select.js', 'CUSTOM:sr-audit-trail.js', 'CUSTOM:pages/risk-audit-trail.js', 'CUSTOM:cve_lookup.js', 'datetimerangepicker', 'JSLocalization', 'easyui:treegrid', 'EXTRA:JS:artificial_intelligence:ai-chat.js'], $permissions + ['show_ai_chat' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, required_localization_keys: ['MitigationPlanned']);
 
 // $id/$access/$risk were already computed above (before
 // render_header_and_sidebar(), which needs the risk's subject for the

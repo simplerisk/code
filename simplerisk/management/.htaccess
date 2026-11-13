@@ -1,0 +1,31 @@
+# SimpleRisk Core: legacy URL redirects for simplerisk/management/ (plan 4b).
+# Shipped with every release and overwritten on upgrade -- do not edit locally.
+# kind=restore: these pages were deleted (with an upgrade unlink) in a shipped release; the rules bring their old
+# addresses back. GET/HEAD answer 302, any other method 303 (never 307/308).
+# Targets start with the install prefix (.*/) captured from REQUEST_URI by the last condition: a relative [R] target
+# would put the filesystem directory into Location (verified on httpd 2.4.62, plan 4b Task 10).
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# legacy-redirect: added=20261105-001 kind=restore
+# The retired risk queues (a4e1321963, last shipped 20260909-001): the bare Review Risk page, as the in-app links.
+RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+RewriteCond %{REQUEST_URI} ^(.*/)management/[^/]+$
+RewriteRule ^(plan_mitigations|management_review|review_risks)\.php$ %1management/review_risk.php [R=302,QSD,L]
+RewriteCond %{REQUEST_METHOD} !^(GET|HEAD)$
+RewriteCond %{REQUEST_URI} ^(.*/)management/[^/]+$
+RewriteRule ^(plan_mitigations|management_review|review_risks)\.php$ %1management/review_risk.php [R=303,QSD,L]
+
+# legacy-redirect: added=20261105-001 kind=restore
+# comment.php (52de6ec2c5, last shipped 20260422-001) redirected to view.php?id=<the same id> itself.
+# One condition captures both the id (%2) and the prefix (%4); the query comes first and cannot contain '#'.
+RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+RewriteCond %{QUERY_STRING}#%{REQUEST_URI} ^([^#]*&)?id=([0-9]+)(&[^#]*)?#(.*/)management/[^/]+$
+RewriteRule ^comment\.php$ %4management/view.php?id=%2 [R=302,QSD,L]
+RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+RewriteCond %{REQUEST_URI} ^(.*/)management/[^/]+$
+RewriteRule ^comment\.php$ %1management/review_risk.php [R=302,QSD,L]
+RewriteCond %{REQUEST_METHOD} !^(GET|HEAD)$
+RewriteCond %{REQUEST_URI} ^(.*/)management/[^/]+$
+RewriteRule ^comment\.php$ %1management/review_risk.php [R=303,QSD,L]
+</IfModule>

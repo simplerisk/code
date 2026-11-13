@@ -18,7 +18,7 @@ require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 
 // Include the language file
-require_once(language_file());
+load_language_file();
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 if (!function_exists('table_exists')) {

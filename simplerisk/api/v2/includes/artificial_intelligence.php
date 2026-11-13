@@ -8,7 +8,7 @@ require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../../includes/artificial_intelligence.php'));
 
-require_once(language_file());
+load_language_file();
 
 /***************************************
  * FUNCTION: API V2 AI RECOMMENDATIONS *

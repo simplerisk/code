@@ -24,7 +24,7 @@ require_once(realpath(__DIR__ . '/../../../includes/entity_graph.php'));
 // above.
 require_once(realpath(__DIR__ . '/../../../includes/ai_context_graph.php'));
 
-require_once(language_file());
+load_language_file();
 
 /*************************************
  * FUNCTION: API V2 COMPLIANCE TESTS *

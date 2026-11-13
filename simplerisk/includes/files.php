@@ -70,9 +70,11 @@ function upload_tmp_spreadsheet($file, $first_line, $unique_name = null)
 
         // DO NOT TRUST $file['mime'] VALUE !!
         // Check MIME Type by yourself.
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        if (!file_type_detection_available()) {
+            throw new RuntimeException($lang['UploadFileTypeDetectionUnavailable']);
+        }
 
-        $file_type_name = $finfo->file($file['tmp_name']);
+        $file_type_name = detect_file_mime_type($file['tmp_name']) ?? '';
         $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
         // Check if the file type and extension are allowed
@@ -119,7 +121,7 @@ function upload_tmp_spreadsheet($file, $first_line, $unique_name = null)
 function process_and_save_tmp_spreadsheet(string $file_name, string $file_tmp_name, int $file_size, string $unique_name, bool $first_line = false) {
     
     
-    $file_type = (new finfo(FILEINFO_MIME_TYPE))->file($file_tmp_name);
+    $file_type = detect_file_mime_type($file_tmp_name) ?? '';
     $file_extension = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
     // Read the file
@@ -207,10 +209,9 @@ function process_and_save_tmp_spreadsheet(string $file_name, string $file_tmp_na
     // Open the database connection
     $db = db_open();
     
-    // Delete any tmp files older than 10 minutes
-    $stmt = $db->prepare("DELETE FROM `tmp_files` WHERE `timestamp` < (NOW() - INTERVAL 10 MINUTE);");
-    $stmt->execute();
-    
+    // Delete any uploaded tmp files older than 10 minutes
+    purge_stale_upload_tmp_files($db);
+
     // Store the file in the database
     $stmt = $db->prepare("INSERT INTO `tmp_files` (unique_name, name, type, extension, size, user, content, header_json, content_json) VALUES (:unique_name, :name, :type, :extension, :size, :user, :content, :header_json, :content_json)");
     $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
@@ -346,9 +347,13 @@ function upload_tmp_import_file($file, $unique_name = null) {
             return 0;
         }
 
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        if (!file_type_detection_available()) {
+            write_debug_log("Import refused: the PHP fileinfo extension is not installed.", 'notice');
+            set_alert(true, "bad", $lang['UploadFileTypeDetectionUnavailable']);
+            return 0;
+        }
 
-        $file_type_name = $finfo->file($file['tmp_name']);
+        $file_type_name = detect_file_mime_type($file['tmp_name']) ?? '';
         $file_type_extension_name = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
         // Check if the file type and extension are allowed
@@ -461,6 +466,23 @@ function save_tmp_file(
     ]);
 
     return $unique_name;
+}
+
+/**
+ * FUNCTION: PURGE STALE UPLOAD TMP FILES
+ * Deletes uploaded spreadsheet tmp files older than 10 minutes. Uploads always
+ * carry header_json; rows without it are queue scratch data (save_tmp_file())
+ * that a long-running job is still reading, which cron_temporary_cleanup.php
+ * expires after 24 hours instead.
+ * @param PDO $db
+ * @return int Number of rows deleted
+ */
+function purge_stale_upload_tmp_files(PDO $db): int
+{
+    $stmt = $db->prepare("DELETE FROM `tmp_files` WHERE `header_json` IS NOT NULL AND `timestamp` < (NOW() - INTERVAL 10 MINUTE);");
+    $stmt->execute();
+
+    return $stmt->rowCount();
 }
 
 /**

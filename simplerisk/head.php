@@ -38,7 +38,7 @@ if (session_status() === PHP_SESSION_ACTIVE) {
 }
 
 // Include the SimpleRisk language file
-require_once(language_file());
+load_language_file();
 
 // Set a global variable for the current app version, so we don't have to call a function every time
 $current_app_version = current_version("app");

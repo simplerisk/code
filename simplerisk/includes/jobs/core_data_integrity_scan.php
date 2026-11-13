@@ -100,6 +100,8 @@ $run_data_integrity_scan = function (PDO $db): void {
 
 return [
     'type' => 'core_data_integrity_scan',
+    // One task of this type at a time across all queue workers (periodic whole-database scan).
+    'concurrency' => 'serial',
 
     'run_scan' => $run_data_integrity_scan,
 

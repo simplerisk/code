@@ -8,6 +8,7 @@ require_once(realpath(__DIR__ . '/config_check.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/display.php'));
 require_once(realpath(__DIR__ . '/services.php'));
+require_once(realpath(__DIR__ . '/opcache.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
 // get_risk_connectivity_for_asset() (getAssetRiskAssociations, below). It moved
 // out of reporting.php into entity_graph.php, and is reachable here only
@@ -34,7 +35,7 @@ require_once(realpath(__DIR__ . '/notifications.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 // Include the language file
-require_once(language_file(true));
+load_language_file(true);
 
 // Include Laminas Escaper for HTML Output Encoding
 $escaper = new simpleriskEscaper();
@@ -971,6 +972,9 @@ function viewreview($id = null) {
  ************************************/
 function dynamicriskForm()
 {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $escaper, $lang;
 
     if (!check_permission("riskmanagement")) {
@@ -996,7 +1000,7 @@ function dynamicriskForm()
 
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
-        $group_value_from_db = $_POST['group_value'] ? $_POST['group_value'] : "";
+        $group_value_from_db = !empty($_POST['group_value']) ? $_POST['group_value'] : "";
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
 
@@ -1005,7 +1009,7 @@ function dynamicriskForm()
         $orderColumnName = !empty($_POST['columns'][$orderColumnIndex]['name']) && preg_match('/^[a-zA-Z0-9_]+$/', $_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
         // Sanitizing input
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
+        $orderDir = !empty($_POST['order'][0]['dir']) && strtolower((string)($_POST['order'][0]['dir'] ?? '')) === 'asc'? 'asc' : 'desc';
 
         // Params in risks_by_teams page
         $risks_by_team = isset($_POST['risks_by_team']) ? true : false;
@@ -1168,7 +1172,7 @@ function dynamicriskUniqueColumnDataAPI()
         $status = isset($_POST['status']) ? $_POST['status'] : 0;
         $group  = isset($_POST['group']) ? $_POST['group'] : 0;
         
-        $group_value_from_db = $_POST['group_value'] ? $_POST['group_value'] : "";
+        $group_value_from_db = !empty($_POST['group_value']) ? $_POST['group_value'] : "";
         
         // Params in risks_by_teams page
         $risks_by_team = isset($_POST['risks_by_team']) ? true : false;
@@ -4999,7 +5003,7 @@ function saveMitigation($id = null){
 
             // A create legitimately falls back to the defaults for anything the
             // caller left out -- there is no stored value to preserve.
-            $mitigation_date = submit_mitigation($id, $status, $post);
+            $mitigation_date = submit_mitigation($id, $status, $post, is_api: true);
         }
         else
         {
@@ -5082,7 +5086,7 @@ function saveMitigationOwnerBatch()
             // @phan-suppress-next-line PhanTypeArraySuspiciousNull
             $mitigation_id = $risk_row['mitigation_id'];
             if (!$mitigation_id) {
-                submit_mitigation($id, "Mitigation Planned", $post);
+                submit_mitigation($id, "Mitigation Planned", $post, is_api: true);
             } else {
                 update_mitigation($id, $post, true);
             }
@@ -5262,14 +5266,24 @@ function risk_levels(){
  * FUNCTION: SET CUSTOM DISPLAY COLUMNS *
  ****************************************************************/
 function setCustomDisplay(){
-    $_SESSION['custom_display_settings'] = isset($_POST['columns']) ? $_POST['columns'] : array();
+    // The API session is already closed here (is_session_authenticated() calls session_write_close()),
+    // so a plain $_SESSION write is discarded: the DB row was saved but the next page load read the old
+    // columns from the session (SD-875). with_alert_session() re-opens the session to persist it.
+    $columns = isset($_POST['columns']) ? $_POST['columns'] : array();
+    with_alert_session(function () use ($columns) {
+        $_SESSION['custom_display_settings'] = $columns;
+    });
     save_custom_display_settings();
 }
 /*****************************************************************
  * FUNCTION: SET CUSTOM AUDITS COLUMNS *
  ****************************************************************/
 function setCustomAuditsColumn(){
-    $_SESSION['custom_audits_columns'] = isset($_POST['columns']) ? $_POST['columns'] : array();
+    // See setCustomDisplay(): the session is closed by now, so the write must go through with_alert_session()
+    $columns = isset($_POST['columns']) ? $_POST['columns'] : array();
+    with_alert_session(function () use ($columns) {
+        $_SESSION['custom_audits_columns'] = $columns;
+    });
 }
 
 /****************************
@@ -5483,6 +5497,9 @@ function getTableData()
  * FUNCTION: GET DATA FOR FRAMEWORK CONTROLS DATATABLE *
  *******************************************************/
 function getFrameworkControlsDatatable() {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
 
     global $lang;
     global $escaper;
@@ -5509,7 +5526,7 @@ function getFrameworkControlsDatatable() {
         $control_priority = isset($_POST['control_priority']) ? $_POST['control_priority'] : [];
         $control_type = isset($_POST['control_type']) ? $_POST['control_type'] : [];
         $control_status = isset($_POST['control_status']) ? $_POST['control_status'] : [];
-        $control_text = $_POST['control_text'];
+        $control_text = $_POST['control_text'] ?? '';
 
         $controls = get_framework_controls_by_filter($control_class, $control_phase, $control_owner, $control_family, $control_framework, $control_priority, $control_type, $control_status, $control_text);
         
@@ -5641,15 +5658,20 @@ function getFrameworkControlsDatatable() {
  * FUNCTION: GET DATA FOR Mitigation CONTROLS DATATABLE *
  ********************************************************/
 function getMitigationControlsDatatable(){
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
 
     global $lang;
     global $escaper;
 
     if (check_permission("riskmanagement")) {
         $draw = $escaper->escapeHtml($_POST['draw']);
-        $flag = $escaper->escapeHtml($_POST['flag']);
-        $mitigation_id = $escaper->escapeHtml($_POST['mitigation_id']);
-        $control_ids = $_POST['control_ids'];
+        // The page script omits control_ids (and can omit the others) when its form lookup comes back empty,
+        // because jQuery drops an undefined value from the POST. Treat an absent value as empty.
+        $flag = $escaper->escapeHtml($_POST['flag'] ?? '');
+        $mitigation_id = $escaper->escapeHtml($_POST['mitigation_id'] ?? '');
+        $control_ids = (string)($_POST['control_ids'] ?? '');
         $control_id_array = str_getcsv($control_ids, ',', '"', '');
 
         // The mitigation_id is caller-controlled; deny access to mitigations
@@ -6354,6 +6376,20 @@ function getSelectedParentFrameworksDropdownResponse()
             }
         }
 
+        // The list above only holds frameworks with the child's own status. A parent with a different
+        // status is not in it, so the select fell back to "--" and saving the form cleared the parent
+        // without the user touching it (SD-852). Keep the current parent selectable, as a top-level entry.
+        if ($selected && !in_array((int)$selected, array_map('intval', array_column($new_frameworks, 'value')), true)) {
+            $current_parent = get_framework((int)$selected);
+            if ($current_parent) {
+                $new_frameworks[] = [
+                    'value'  => (int)$current_parent['value'],
+                    'name'   => $current_parent['name'], // get_framework() already decrypts it; decrypting again blanks it under the Encrypted Database Extra
+                    'parent' => 0,
+                ];
+            }
+        }
+
         $html = "<select name='parent' class='form-select'>\n";
         $html .= "<option value='0'>--</option>";
         make_tree_options_html($new_frameworks, 0, $html, "", $selected);
@@ -6583,6 +6619,9 @@ function initiateFrameworkControlTestsResponse()
  *********************************************************************/
 function getInitiateEligibleTestsResponse()
 {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $lang, $escaper;
 
     // If the user has compliance permissions
@@ -6681,6 +6720,9 @@ function initiateTestsBulkResponse()
  ***************************************************************/
 function auditTimelineResponse()
 {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $lang, $escaper;
 
     // If the user has compliance permissions
@@ -6693,7 +6735,7 @@ function auditTimelineResponse()
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumnName = isset($_GET['columns'][$orderColumn]['name']) ? $_GET['columns'][$orderColumn]['name'] : null;
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $orderDir = !empty($_GET['order'][0]['dir']) && strtolower($_GET['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
+        $orderDir = !empty($_GET['order'][0]['dir']) && strtolower((string)($_GET['order'][0]['dir'] ?? '')) === 'asc'? 'asc' : 'desc';
 
         // Get risks requiring mitigations
         $audit_tests = get_audit_tests($orderColumnName, $orderDir);
@@ -6882,6 +6924,9 @@ function getFrameworkResponse()
  ***********************************************************************/
 function getDefineTestsResponse()
 {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $lang;
     global $escaper;
 
@@ -7853,6 +7898,9 @@ function getInitiateTestAuditsResponse() {
  **********************************************************************/
 function getPastTestAuditsResponse()
 {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $lang;
     global $escaper;
 
@@ -7863,13 +7911,13 @@ function getPastTestAuditsResponse()
 
         // Filter params
         $filters = array(
-            "filter_text"   => $escaper->escapeHtml($_POST['filter_text']),
+            "filter_text"   => $escaper->escapeHtml($_POST['filter_text'] ?? ''),
             "filter_control"        => empty($_POST['filter_control']) ? [] : $_POST['filter_control'],
             "filter_test_result"    => empty($_POST['filter_test_result']) ? [] : $_POST['filter_test_result'],
             "filter_framework"      => empty($_POST['filter_framework']) ? [] : $_POST['filter_framework'],
             "filter_tags"           => empty($_POST['filter_tags']) ? [] : $_POST['filter_tags'],
-            "filter_start_audit_date"   => $_POST['filter_start_audit_date'] ? get_standard_date_from_default_format($_POST['filter_start_audit_date']) : "",
-            "filter_end_audit_date"     => $_POST['filter_end_audit_date'] ? get_standard_date_from_default_format($_POST['filter_end_audit_date']) : "",
+            "filter_start_audit_date"   => !empty($_POST['filter_start_audit_date']) ? get_standard_date_from_default_format($_POST['filter_start_audit_date']) : "",
+            "filter_end_audit_date"     => !empty($_POST['filter_end_audit_date']) ? get_standard_date_from_default_format($_POST['filter_end_audit_date']) : "",
             "filter_testname"   => empty($_POST['filter_testname']) ? '' : $_POST['filter_testname']
         );
 
@@ -7886,7 +7934,7 @@ function getPastTestAuditsResponse()
         $orderColumn = isset($_POST['order'][0]['column']) ? (int)$_POST['order'][0]['column'] : -1;
         $columnName = isset($columnNames[$orderColumn]) ? $columnNames[$orderColumn] : false;
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $orderDir = isset($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) == "asc" ? "asc" : "desc";
+        $orderDir = isset($_POST['order'][0]['dir']) && strtolower((string)($_POST['order'][0]['dir'] ?? '')) == "asc" ? "asc" : "desc";
 
         $column_filters = [];
         for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
@@ -7963,6 +8011,9 @@ function getPastTestAuditsResponse()
  * FUNCTION: RETURN JSON DATA FOR ACTIVE AUDITS DATATABLE IN COMPLIANCE *
  ************************************************************************/
 function getActiveTestAuditsResponse() {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
 
     global $lang;
     global $escaper;
@@ -7973,12 +8024,12 @@ function getActiveTestAuditsResponse() {
         $draw = $escaper->escapeHtml($_POST['draw']);
 
         // should check if sorting is enabled
-        if (isset($_POST['order'])) {
+        if (!empty($_POST['order'])) {
 
             // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-            $orderColumn = (int)$_POST['order'][0]['column'];
+            $orderColumn = (int)($_POST['order'][0]['column'] ?? 0);
             // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-            $orderDir = strtolower($_POST['order'][0]['dir']) == "asc" ? "asc" : "desc";
+            $orderDir = strtolower((string)($_POST['order'][0]['dir'] ?? '')) == "asc" ? "asc" : "desc";
 
         // if not, we should set the default value
         } else {
@@ -7990,7 +8041,7 @@ function getActiveTestAuditsResponse() {
 
         // Filter params
         $filters = array(
-            "filter_text"       => $escaper->escapeHtml($_POST['filter_text']),
+            "filter_text"       => $escaper->escapeHtml($_POST['filter_text'] ?? ''),
             "filter_framework"  => empty($_POST['filter_framework']) ? [] : $_POST['filter_framework'],
             "filter_status"     => empty($_POST['filter_status']) ? [] : $_POST['filter_status'],
             "filter_tester"     => empty($_POST['filter_tester']) ? [] : $_POST['filter_tester'],
@@ -8590,8 +8641,9 @@ function getDocumentResponse()
         $document['next_review_date'] = format_date($document['next_review_date']);
         $document['control_ids'] = explode(',', $document['control_ids'] ?? '');
         $document['framework_ids'] = explode(',', $document['framework_ids'] ?? '');
-        $document['team_ids'] = explode(',', $document['team_ids']);
-        $document['additional_stakeholders'] = explode(',', $document['additional_stakeholders']);
+        // GROUP_CONCAT is NULL for a document with no team or stakeholder; return an empty list, not ['']
+        $document['team_ids'] = ($document['team_ids'] ?? '') === '' ? [] : explode(',', $document['team_ids']);
+        $document['additional_stakeholders'] = ($document['additional_stakeholders'] ?? '') === '' ? [] : explode(',', $document['additional_stakeholders']);
 
         json_response(200, "Success", $document);
     }
@@ -8964,6 +9016,9 @@ function get_tooltip_api()
  *******************************************************************/
 function getReviewRiskDatatableResponse()
 {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $lang, $escaper;
 
     // 403 rather than 400: this is an authorization refusal, not a malformed
@@ -9014,7 +9069,7 @@ function getReviewRiskDatatableResponse()
     // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderColumnName = !empty($_POST['columns'][$orderColumn]['name']) && preg_match('/^[a-zA-Z0-9_]+$/', $_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;
     // @phan-suppress-next-line PhanTypeMismatchDimFetch
-    $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc' ? 'asc' : 'desc';
+    $orderDir = !empty($_POST['order'][0]['dir']) && strtolower((string)($_POST['order'][0]['dir'] ?? '')) === 'asc' ? 'asc' : 'desc';
 
     $action_type_raw = $_POST['action_type'] ?? 'all';
     $action_type = in_array($action_type_raw, ['all', 'mitigation', 'review'], true) ? $action_type_raw : 'all';
@@ -9428,9 +9483,9 @@ function getReviewRiskDatatableResponse()
             // which get_risks() populates as raw comma-separated catalog IDs
             // (the established convention for those two keys everywhere else
             // in the codebase, e.g. edit-form pre-population). functions.php's
-            // sort_order==22 SELECT resolves the display NAMES via the
-            // risk_catalog/threat_catalog tables it already LEFT JOINs for
-            // the ID-based columns, so this page shows the same catalog
+            // sort_order==22 SELECT resolves the display NAMES through
+            // correlated subqueries on the risk_catalog/threat_catalog tables,
+            // so this page shows the same catalog
             // names view.php/the risk edit form show, not raw IDs.
             'risk_mapping' => $escaper->escapeHtml($risk['risk_catalog_names'] ?? ''),
             'threat_mapping' => $escaper->escapeHtml($risk['threat_catalog_names'] ?? ''),
@@ -10229,6 +10284,9 @@ function getReviewRiskFilterOptions()
  *********************************************************/
 function getReviewsWithDateIssuesDatatableResponse()
 {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $lang;
     global $escaper;
 
@@ -10240,7 +10298,7 @@ function getReviewsWithDateIssuesDatatableResponse()
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $order_column = isset($_GET['order'][0]['column']) ? (int)$_GET['order'][0]['column'] : 0;
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $order_dir = $escaper->escapeHtml($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
+        $order_dir = $escaper->escapeHtml($_GET['order'][0]['dir'] ?? '') == "asc" ? "asc" : "desc";
         $offset = (int)$_GET['start'];
         $page_size = (int)$_GET['length'];
 
@@ -10770,6 +10828,27 @@ function get_exception_for_display_api()
 
     json_response(200, null, $exception);
 }
+/**
+ * The fields the Document Program create/update forms always post. A request that omits one used to
+ * raise an "Undefined array key" warning that surfaced as a 500; on update, defaulting the missing
+ * value instead would silently clear the stored one, so the request is refused.
+ *
+ * @return string[] The names of the required fields absent from $_POST
+ */
+function document_missing_required_post_fields(): array
+{
+    $missing = [];
+    foreach (['status', 'creation_date', 'last_review_date', 'review_frequency', 'next_review_date', 'approval_date', 'document_owner', 'approver'] as $field)
+    {
+        if (!isset($_POST[$field]) || !is_scalar($_POST[$field]))
+        {
+            $missing[] = $field;
+        }
+    }
+
+    return $missing;
+}
+
 function create_document_api() {
     global $lang;
     // is_admin() bypasses both checks -- matches the row-action buttons'
@@ -10783,6 +10862,12 @@ function create_document_api() {
         return;
     } elseif (!is_admin() && !check_permission('add_documentation')) {
         set_alert(true, "bad", $lang['NoAddDocumentationPermission']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $missing_fields = document_missing_required_post_fields();
+    if (!empty($missing_fields)) {
+        set_alert(true, "bad", _lang_raw('DocumentRequiredFieldsMissing', ['fields' => implode(', ', $missing_fields)]));
         json_response(400, get_alert(true), NULL);
         return;
     }
@@ -10839,6 +10924,12 @@ function update_document_api() {
         return;
     } elseif (!is_admin() && !check_permission('modify_documentation')) {
         set_alert(true, "bad", $lang['NoModifyDocumentationPermission']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $missing_fields = document_missing_required_post_fields();
+    if (!empty($missing_fields)) {
+        set_alert(true, "bad", _lang_raw('DocumentRequiredFieldsMissing', ['fields' => implode(', ', $missing_fields)]));
         json_response(400, get_alert(true), NULL);
         return;
     }
@@ -11149,7 +11240,7 @@ function batch_delete_document_api() {
  */
 function get_document_versions_api()
 {
-    global $lang, $escaper;
+    global $lang;
 
     if (!document_program_read_permitted()) {
         set_alert(true, "bad", $lang['NoPermissionForGovernance']);
@@ -11163,16 +11254,18 @@ function get_document_versions_api()
     }
     $document_id = (int)$_GET['document_id'];
 
-    json_response(200, null, array_map(function ($row) use ($escaper) {
+    json_response(200, null, array_map(function ($row) {
         return array(
             'compliance_file_id' => (int)$row['compliance_file_id'],
             'is_current' => (int)$row['compliance_file_id'] === (int)$row['file_id'],
             'version' => (int)$row['file_version'],
-            'file_name' => $escaper->escapeHtml($row['file_name']),
-            'unique_name' => $escaper->escapeHtml($row['unique_name']),
+            // Raw values: the only consumer (renderVersionHistory() in governance-documents.js) escapes
+            // them when it renders, and escaping here as well showed &amp; / &#039; literally
+            'file_name' => $row['file_name'],
+            'unique_name' => $row['unique_name'],
             'file_size' => (int)$row['file_size'],
             'uploaded_at' => $row['file_upload_time'],
-            'uploaded_by' => $row['uploaded_by_name'] !== null ? $escaper->escapeHtml($row['uploaded_by_name']) : null,
+            'uploaded_by' => $row['uploaded_by_name'],
         );
     }, get_document_versions_by_id($document_id)));
 }
@@ -11435,7 +11528,10 @@ function update_exception_api() {
             $next_review_date = $today_dt;
         }
         $next_review_date = date('Y-m-d', $next_review_date);
-    } elseif (strtotime($posted_next_review_date) < $today_dt) {
+    } elseif (strtotime($posted_next_review_date) < $today_dt && $posted_next_review_date !== $old_exception['next_review_date']) {
+        // A past date is rejected only when the user chose it (SR-2491). The
+        // edit form posts the stored date back unchanged, so an overdue
+        // exception's own date must not block saving an unrelated edit.
         set_alert(true, "bad", $lang['InvalidNextReviewDate']);
 
         json_response(400, get_alert(true), NULL);
@@ -12855,6 +12951,9 @@ function deleteDynamicSelectionForm()
  ****************************************/
 function appetite_report_api()
 {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $lang, $escaper;
 
     if (!check_permission("riskmanagement")) {
@@ -12880,9 +12979,9 @@ function appetite_report_api()
             if (!empty($_GET['order'])) {
 
                 // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-                $orderColumn = (int)$_GET['order'][0]['column'];
+                $orderColumn = (int)($_GET['order'][0]['column'] ?? 0);
                 // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-                $orderDir = strtolower($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
+                $orderDir = strtolower((string)($_GET['order'][0]['dir'] ?? '')) == "asc" ? "asc" : "desc";
 
             } else {
 
@@ -12927,6 +13026,9 @@ function appetite_report_api()
  * FUNCTION: REPORTS - TEAMS AND USERS  *
  ****************************************/
 function user_management_reports_api() {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     
     global $lang, $escaper;
     
@@ -12946,9 +13048,9 @@ function user_management_reports_api() {
             $draw = $escaper->escapeHtml($_POST['draw']);
 
             // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-            $orderColumn = (int)$_POST['order'][0]['column'];
+            $orderColumn = (int)($_POST['order'][0]['column'] ?? 0);
             // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-            $orderDir = strtolower($_POST['order'][0]['dir']) == "asc" ? "asc" : "desc";
+            $orderDir = strtolower((string)($_POST['order'][0]['dir'] ?? '')) == "asc" ? "asc" : "desc";
 
             // Sanitizing filter input data
             if (isset($_POST['columnFilters']) && $_POST['columnFilters'] && is_array($_POST['columnFilters'])) {
@@ -13404,6 +13506,16 @@ function one_click_upgrade() {
                 } elseif (is_array($result) && !empty($result['status_message'])) {
                     stream_write($result['status_message']);
                 }
+
+                // The Extra copied its new files over itself, but under opcache
+                // the web server keeps running the old compilation until it is
+                // restarted, so phase 2 and the Register page would still load
+                // the previous Upgrade Extra. Invalidate it from here: this is
+                // current Core, so it works even when the copy was done by an
+                // older Upgrade Extra that has no such step of its own.
+                if ($status === 200) {
+                    invalidate_opcache_for_directory(__DIR__ . '/../extras/upgrade');
+                }
             }
             // Phase 1 done — return so the JavaScript can call /extras/upgrade/
             // directly for backup and upgrade (phase 2).
@@ -13539,6 +13651,8 @@ function one_click_upgrade() {
         }
 
         if ($need_update_extras) {
+            $extras_replaced = [];
+            $extras_not_upgraded = [];
             if ($is_upgrade_mode_extra) {
                 stream_write($lang['UpdateExtrasStarted']);
                 foreach($extra_upgrades as $extra) {
@@ -13560,10 +13674,38 @@ function one_click_upgrade() {
                     }
                     // Print the success message
                     stream_write($result['status_message']);
+                    $extras_replaced[] = $extra;
                 }
                 stream_write($lang['UpdateExtrasSuccessful']);
             } else {
-                core_upgrade_extras($extra_upgrades);
+                // core_upgrade_extras() returns 0 after the first Extra it cannot
+                // download and stops there. The Extras before it were replaced and
+                // still get their databases migrated below; the rest are reported.
+                core_upgrade_extras($extra_upgrades, $extras_not_upgraded);
+                $extras_replaced = array_values(array_diff($extra_upgrades, $extras_not_upgraded));
+            }
+
+            // SR-2380: the Extras' databases are migrated as a step, once their files
+            // are replaced, by the new code in a fresh process (a loopback request).
+            $extras_databases_ok = true;
+            if (!empty($extras_replaced)) {
+                $extras_databases_ok = core_upgrade_extra_databases($extras_replaced);
+            }
+
+            // Not "Upgrade Complete." when an Extra was left on its old release: its
+            // download failed, and the line above named only that one Extra.
+            // This path does not reuse the Upgrade Extra's upgrade_extras_step_failure_message():
+            // that Extra ships separately and carries its own copy. A database failure alongside
+            // a download failure was already streamed by core_upgrade_extra_databases().
+            if (!empty($extras_not_upgraded)) {
+                stream_write_error(_lang_raw('UpgradeExtraDownloadsFailed', array('extras' => implode(', ', $extras_not_upgraded))));
+                return;
+            }
+
+            if (!$extras_databases_ok) {
+                // Not "Upgrade Complete.": the files and the main database upgraded,
+                // an Extra's database did not, and it must not read as a success.
+                return;
             }
         }
 
@@ -13575,6 +13717,9 @@ function one_click_upgrade() {
  * The High Risk Report datatable's API function    *
  ****************************************************/
 function high_risk_report_datatable() {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
 
     global $escaper, $lang;
 
@@ -13593,7 +13738,7 @@ function high_risk_report_datatable() {
     // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderColumnName = isset($_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
     // @phan-suppress-next-line PhanTypeMismatchDimFetch
-    $orderDir = isset($_POST['order'][0]['dir']) && strtoupper($_POST['order'][0]['dir']) === 'ASC'? "ASC" : 'DESC';
+    $orderDir = isset($_POST['order'][0]['dir']) && strtoupper((string)($_POST['order'][0]['dir'] ?? '')) === 'ASC'? "ASC" : 'DESC';
     $column_filters = [];
     for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
@@ -14623,6 +14768,9 @@ function saveControlFrameworksDisplaySettingsApi()
  * FUNCTION: GET RISK CATALOG DATATABLE *
  ****************************************/
 function getRiskCatalogDatatableAPI() {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $escaper;
 
     if (is_admin()) {
@@ -14662,6 +14810,9 @@ function getRiskCatalogDatatableAPI() {
  * FUNCTION: GET THREAT CATALOG DATATABLE *
  ******************************************/
 function getThreatCatalogDatatableAPI() {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $escaper;
 
     if (is_admin()) {
@@ -15188,6 +15339,9 @@ function saveCustomReviewRiskDisplaySettingsAPI(){
  * The My Open Risk Report datatable's API function  *
  *****************************************************/
 function my_open_risk_datatable() {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $escaper, $lang;
 
     if (!check_permission("riskmanagement")) {
@@ -15204,7 +15358,7 @@ function my_open_risk_datatable() {
     // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderColumnName = isset($_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
     // @phan-suppress-next-line PhanTypeMismatchDimFetch
-    $orderDir = isset($_POST['order'][0]['dir']) && strtoupper($_POST['order'][0]['dir']) === 'ASC'? "ASC" : 'DESC';
+    $orderDir = isset($_POST['order'][0]['dir']) && strtoupper((string)($_POST['order'][0]['dir'] ?? '')) === 'ASC'? "ASC" : 'DESC';
     $column_filters = [];
     for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
@@ -15474,6 +15628,9 @@ function my_open_risk_datatable() {
  * The Recent Commented Risk Report datatable's API function  *
  **************************************************************/
 function recent_commented_risk_datatable() {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $escaper, $lang;
 
     if (!check_permission("riskmanagement")) {
@@ -15490,7 +15647,7 @@ function recent_commented_risk_datatable() {
     // @phan-suppress-next-line PhanTypeMismatchDimFetch
     $orderColumnName = isset($_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
     // @phan-suppress-next-line PhanTypeMismatchDimFetch
-    $orderDir = isset($_POST['order'][0]['dir']) && strtoupper($_POST['order'][0]['dir']) === 'ASC'? "ASC" : 'DESC';
+    $orderDir = isset($_POST['order'][0]['dir']) && strtoupper((string)($_POST['order'][0]['dir'] ?? '')) === 'ASC'? "ASC" : 'DESC';
     $column_filters = [];
     for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
@@ -15748,13 +15905,16 @@ function recent_commented_risk_datatable() {
  *******************************************/
 function controlGapAnalysisResponse()
 {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
     global $lang, $escaper;
 
     // If the user has governance permissions
     if (check_permission("governance"))
     {
-    	$framework_id = $escaper->escapeHtml($_GET['framework_id']);
-    	$maturity = $escaper->escapeHtml($_GET['maturity']);
+    	$framework_id = $escaper->escapeHtml($_GET['framework_id'] ?? '');
+    	$maturity = $escaper->escapeHtml($_GET['maturity'] ?? '');
         $draw = $escaper->escapeHtml($_GET['draw']);
 
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
@@ -15762,7 +15922,7 @@ function controlGapAnalysisResponse()
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
         $orderColumnName = isset($_GET['columns'][$orderColumn]['name']) ? $_GET['columns'][$orderColumn]['name'] : null;
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $orderDir = !empty($_GET['order'][0]['dir']) && strtolower($_GET['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
+        $orderDir = !empty($_GET['order'][0]['dir']) && strtolower((string)($_GET['order'][0]['dir'] ?? '')) === 'asc'? 'asc' : 'desc';
 
     	// Get controls with gaps
     	$control_gaps = get_control_gaps($framework_id, $maturity, $orderColumnName, $orderDir);
@@ -18553,6 +18713,9 @@ function merge_out_of_band_column_filters(array $column_filters, $raw_json, arra
  * point (SR-1721). A default-deny guard rejects any unknown/absent view.         *
  *******************************************************************************/
 function datatable_response_for_view($view) {
+    // SD-804: a datatable request that arrives without its DataTables parameters must not 500.
+    datatable_request_defaults();
+
 
     global $field_settings, $field_settings_views;
 
@@ -18590,7 +18753,7 @@ function datatable_response_for_view($view) {
     if (!empty($_POST['order'])) {
 
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $orderDir = strtoupper($_POST['order'][0]['dir']) == "ASC" ? "ASC" : "DESC";
+        $orderDir = strtoupper((string)($_POST['order'][0]['dir'] ?? '')) == "ASC" ? "ASC" : "DESC";
 
         // Get and validate the order column
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
@@ -18932,7 +19095,7 @@ function activateDeactivateExtraApi() {
                 'openssl_missing'    => 412,
                 default              => 400,
             };
-            return json_response($status_code, $lang['ActivationGuardFailed'] ?? 'Activation could not start. See the alert in the page header for details.', [
+            return json_response($status_code, $lang['DeactivationGuardFailed'] ?? 'Deactivation could not start. See the alert in the page header for details.', [
                 'reason' => $reason,
             ]);
         }

@@ -12,6 +12,18 @@ use OpenApi\Undefined;
 /**
  * A parameter passed via an HTTP header.
  *
+ * Allows to shorten this:
+ *
+ * ```php
+ * #[OA\Parameter(name: 'X-Request-Id', in: 'header', schema: new OA\Schema(type: 'string'))]
+ * ```
+ *
+ * to this:
+ *
+ * ```php
+ * #[OA\Parameter\Header(name: 'X-Request-Id', schema: new OA\Schema(type: 'string'))]
+ * ```
+ *
  * @see [Parameter Object](https://spec.openapis.org/oas/v3.1.1.html#parameter-object)
  */
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
@@ -38,6 +50,7 @@ class Header extends OA\Parameter
         ?string $component = null,
         ?array $x = null,
         ?array $attachables = null,
+        ?OA\Fan $fan = null,
     ) {
         parent::__construct(
             parameter: $parameter,
@@ -55,6 +68,7 @@ class Header extends OA\Parameter
             component: $component,
             x: $x,
             attachables: $attachables,
+            fan: $fan,
         );
     }
 }

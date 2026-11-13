@@ -14,7 +14,7 @@ render_header_and_sidebar(
 );
 
 // Include the language file
-require_once(language_file());
+load_language_file();
 
 // If the extra directory exists
 if (is_dir(realpath(__DIR__ . '/../extras/artificial_intelligence')))

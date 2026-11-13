@@ -4,6 +4,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// get_setting() / update_or_insert_setting() live in functions.php.
+require_once(realpath(__DIR__ . '/../functions.php'));
 // promise_chain_exists() lives in promises.php, which functions.php does not
 // auto-load. Declare it directly so this consumer's defining file is always
 // reachable, not only transitively via the worker (CLAUDE.md).
@@ -17,6 +19,8 @@ require_once(realpath(__DIR__ . '/../setting_values.php'));
 
 return [
     'type' => 'core_ai_context_update',
+    // One task of this type at a time across all queue workers (handler only; task_check keeps one task at a time).
+    'concurrency' => 'serial',
 
     /************************************************************
      * FUNCTION: on_failure
@@ -78,10 +82,39 @@ return [
         $last_saved   = coerce_setting_timestamp($last_saved);
         $last_updated = coerce_setting_timestamp($last_updated);
 
-        if (!$last_updated || $last_updated < $last_saved) {
+        // The attempt gate (writing-queue-jobs Rule 1): stamped below whenever a
+        // task is queued, whatever that task's outcome. ai_context_last_updated
+        // is stamped only on success, so on its own it re-queued a failing
+        // update on every loader tick.
+        $last_attempt = coerce_setting_timestamp(get_setting("queue_timestamp_last_ai_context_update", false, false, db: $db));
+
+        // Attempts that failed since the last one that succeeded, newest
+        // first; bounds how long the gate backs off. Canceled tasks are not
+        // attempts that failed and are not counted.
+        $consecutive_failures = 0;
+        try {
+            $stmt = $db->prepare("
+                SELECT status FROM queue_tasks
+                WHERE task_type = 'core_ai_context_update' AND status IN ('completed','failed')
+                ORDER BY id DESC
+                LIMIT 10
+            ");
+            $stmt->execute();
+            foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $status) {
+                if ($status !== 'failed') {
+                    break;
+                }
+                $consecutive_failures++;
+            }
+        } catch (Exception $e) {
+            write_debug_log("AI Context Update: DB check failed: " . $e->getMessage(), "error");
+            return false;
+        }
+
+        if (ai_context_update_due(time(), $last_saved, $last_updated, $last_attempt, $consecutive_failures)) {
             try {
                 $stmt = $db->prepare("
-                    SELECT COUNT(*) 
+                    SELECT COUNT(*)
                     FROM queue_tasks
                     WHERE task_type = 'core_ai_context_update'
                         AND status IN ('pending','in_progress')
@@ -113,6 +146,10 @@ return [
                     return false;
                 }
 
+                // Stamp the attempt BEFORE queueing, so the gate advances
+                // whatever this task's outcome (see the gate above).
+                update_or_insert_setting("queue_timestamp_last_ai_context_update", time(), db: $db);
+
                 $queue_task_payload = [
                     'triggered_at'      => time(),
                 ];
@@ -127,7 +164,7 @@ return [
                 return false;
             }
         } else {
-            write_debug_log("AI Context Update: No update required.", "debug");
+            write_debug_log("AI Context Update: No update required, or backing off after {$consecutive_failures} failed attempt(s).", "debug");
             return false;
         }
     },
@@ -149,7 +186,11 @@ return [
         // state+status-aware promise_chain_exists() in promises.php.
         if (promise_chain_exists($db, (int)$task['id'], 'core_ai_context_update')) {
             write_debug_log("AI Context Update: Live promise chain already exists for task #{$task['id']}. Skipping duplicate creation.", "info");
-            return false;
+            // true, not false: the chain is running, so this attempt succeeded.
+            // false would burn the retries and fail the task while its chain
+            // still runs; finalize (pending/in_progress only) would then never
+            // complete it, and on_success would never stamp the context.
+            return true;
         }
 
         $stages = [
@@ -179,6 +220,9 @@ return [
                 // its own task 'failed' strands the task out of the worker's
                 // pending retry pool.
                 write_debug_log("AI Context Update: Failed to create promise for stage '{$stage_name}' (task #{$task['id']})", "error");
+                // Cancel the steps already created (a partial chain would run on
+                // its own and finalize the task early); the retry builds a full one.
+                cancel_partial_stage_chain($db, (int)$task['id']);
                 return false;
             }
         }
@@ -258,9 +302,14 @@ return [
                     throw new Exception("No AI advice found in payload");
                 }
 
-                $updated = update_setting("ai_display_recommendations", $ai_advice);
+                $updated = update_setting("ai_display_recommendations", $ai_advice, db: $db);
 
-                if (!$updated) {
+                // update_setting() also returns false when the value is
+                // unchanged. The model returning the same advice as last time is
+                // a success (the paid call already happened) — failing here would
+                // fail the chain and pay for it again. Same comparison as
+                // update_setting()'s own "unchanged" check.
+                if (!$updated && get_setting("ai_display_recommendations", false, false, db: $db) != $ai_advice) {
                     throw new Exception("Failed to update AI recommendations setting");
                 }
 

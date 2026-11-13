@@ -112,6 +112,35 @@ var DocumentProgramGrid = (function ($) {
         approval_date: true, updated_by: true, creation_date: true, last_review: true, next_review: true
     };
 
+    // Narrow viewports fold some columns away by default (the max-width rules in
+    // scss/modules/_governance.scss: keep these breakpoints in step with them). The picker used to
+    // show those boxes ticked while the column was hidden, and ticking one did nothing because the
+    // stylesheet's !important beat the inline style the toggle writes (SD-836). Now the picker starts
+    // unticked for a folded column, and a column the user has chosen is marked on the table
+    // (sr-dp-col-user-<col>) so the stylesheet rule steps aside and the picker governs it.
+    var COMPACT_FOLD_BREAKPOINTS = {
+        submitter: 2000, approval_date: 2000, updated_by: 2000, creation_date: 2000, last_review: 2000,
+        controls: 1800, frameworks: 1100
+    };
+    var userChoseColumn = {};
+
+    function compactDefaultVisible(col) {
+        var breakpoint = COMPACT_FOLD_BREAKPOINTS[col];
+        if (!breakpoint || !window.matchMedia) {
+            return true;
+        }
+        return !window.matchMedia('(max-width: ' + breakpoint + 'px)').matches;
+    }
+
+    // Columns the user has not touched follow the viewport; ones they have chosen keep their choice
+    function syncColumnDefaultsToViewport() {
+        TOGGLE_COLUMNS.forEach(function (col) {
+            if (!userChoseColumn[col]) {
+                columnVisible[col] = compactDefaultVisible(col);
+            }
+        });
+    }
+
     function columnLabel(col) {
         switch (col) {
             case 'document_type': return L('DocumentType');
@@ -778,6 +807,7 @@ var DocumentProgramGrid = (function ($) {
     // re-render since there's no DOM diff to preserve visibility through.
     function applyColumnVisibility() {
         TOGGLE_COLUMNS.forEach(function (col) {
+            $('#document-program-table').toggleClass('sr-dp-col-user-' + col, !!userChoseColumn[col]);
             $('#document-program-table [data-col="' + col + '"]').toggle(!!columnVisible[col]);
         });
     }
@@ -1517,9 +1547,27 @@ var DocumentProgramGrid = (function ($) {
         $(document).on('change', '#document-program-colpanel input[type="checkbox"]', function () {
             var col = $(this).data('col');
             columnVisible[col] = this.checked;
+            userChoseColumn[col] = true;
             applyColumnVisibility();
         });
 
+        // A window resized across a fold breakpoint re-derives the columns the user has not chosen
+        var resizeTimer = null;
+        $(window).on('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () {
+                // Only redo the picker and the cells if a breakpoint was crossed: mobile browsers fire
+                // `resize` as the address bar collapses, and re-rendering would drop focus from an open picker
+                var before = JSON.stringify(columnVisible);
+                syncColumnDefaultsToViewport();
+                if (JSON.stringify(columnVisible) !== before) {
+                    renderColpanel();
+                    applyColumnVisibility();
+                }
+            }, 150);
+        });
+
+        syncColumnDefaultsToViewport();
         renderColpanel();
         // ?type=/?framework=/?status=/?approver=/?review= come from the
         // insights band's KPI tiles (documentation.php?type=<slug>, a real

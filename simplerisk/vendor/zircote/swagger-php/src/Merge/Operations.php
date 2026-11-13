@@ -8,10 +8,10 @@ namespace OpenApi\Merge;
 
 use OpenApi\Contracts\AttributeInterface;
 use OpenApi\Contracts\MergerInterface;
+use OpenApi\Merge\Concerns\FoldTrait;
 use OpenApi\Merge\Concerns\IdentityTrait;
 use OpenApi\Merge\Concerns\ModeTrait;
 use OpenApi\Spec as OA;
-use OpenApi\Undefined;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
@@ -24,7 +24,7 @@ use Psr\Log\LoggerAwareTrait;
  * when one operation is described in more than one place, such as a route table contributed
  * through `withSpecification()` and an attribute adding responses to it.
  *
- * Identity is the catch-all's: path and method, or webhook and method. Registering the fold
+ * Identity is the shared one: path and method, or webhook and method. Registering the fold
  * changes how two operations combine, not which two are the same.
  *
  * What only one of them sets is always taken. What both set is decided by the `Mode` it is
@@ -32,23 +32,26 @@ use Psr\Log\LoggerAwareTrait;
  * take only what does not overlap. The mode can also be a callable that receives both and returns
  * one, so the choice can follow a mark a producer left with `setMeta()` rather than the
  * order they arrive in. A field both set differently is reported, whichever value
- * is kept; one they set the same is not.
+ * is kept. One they set the same is not.
  *
  * - Parameters are keyed by name and location, and responses by status code. Under `First` and
  *   `Last`, a parameter or response both describe is folded one level deep, a parameter's
  *   `schema` included, so a route's `pattern` survives an attribute's `type`. Under
  *   `NonOverlapping` it is the earlier's, whole.
  * - `requestBody`, `externalDocs`, `security`, `servers` and `callbacks` are each one decision,
- *   taken whole from whichever operation the mode keeps; an explicit `security: []` is set,
+ *   taken whole from whichever operation the mode keeps. An explicit `security: []` is set,
  *   and opts out.
  * - `tags` and `attachables` are unions, and `x` merges key by key under the same mode.
  *
- * The survivor is a new operation, a copy of the earlier with the later folded in, so
- * neither contribution is changed. It keeps the earlier's reflector, source location and
- * `meta`, falling back to the later's reflector when the earlier has none.
+ * The survivor is a new operation, a shallow copy of the earlier with the later folded in, so
+ * neither operation is changed. What it takes whole, such as a response or a request body, is
+ * the contribution's own object, and the augmenters that run later change it in place, as they
+ * would without the merge. It keeps the earlier's reflector, source location and `meta`,
+ * falling back to the later's reflector when the earlier has none.
  */
 class Operations implements MergerInterface, LoggerAwareInterface
 {
+    use FoldTrait;
     use IdentityTrait;
     use LoggerAwareTrait;
     use ModeTrait;
@@ -77,6 +80,7 @@ class Operations implements MergerInterface, LoggerAwareInterface
 
         $mode = $this->modeFor($earlier, $later);
 
+        // shallow: the survivor replaces both, so no child it shares ends up with two holders
         $survivor = clone $earlier;
         if (!$survivor->getReflector() instanceof \Reflector && $later->getReflector() instanceof \Reflector) {
             $survivor->setReflector($later->getReflector());
@@ -101,37 +105,6 @@ class Operations implements MergerInterface, LoggerAwareInterface
         }
 
         return $survivor;
-    }
-
-    /**
-     * Fill each named field of `$survivor` that is unset from `$later`. Where both are set and
-     * differ, the field is recorded as a conflict and takes `$later`'s value under `Mode::Last`;
-     * otherwise it keeps its own.
-     *
-     * @param list<string> $fields
-     * @param list<string> $conflicts
-     */
-    protected function fold(object $survivor, object $later, array $fields, Mode $mode, array &$conflicts, string $prefix = ''): void
-    {
-        foreach ($fields as $field) {
-            $value = $later->{$field};
-            if (self::isUnset($value)) {
-                continue;
-            }
-
-            $current = $survivor->{$field};
-            if (self::isUnset($current)) {
-                $survivor->{$field} = $value;
-                continue;
-            }
-
-            if ($current != $value) {
-                $conflicts[] = $prefix . $field;
-                if ($mode === Mode::Last) {
-                    $survivor->{$field} = $value;
-                }
-            }
-        }
     }
 
     /**
@@ -212,7 +185,8 @@ class Operations implements MergerInterface, LoggerAwareInterface
             }
         }
 
-        return $result;
+        // replacing a slot keeps the list in order; the analyser only loses track that it is one
+        return array_values($result);
     }
 
     protected function parameterKey(OA\AbstractAttribute $parameter): ?string
@@ -227,72 +201,5 @@ class Operations implements MergerInterface, LoggerAwareInterface
         return $response instanceof OA\Response && $response->response !== null
             ? (string) $response->response
             : null;
-    }
-
-    /**
-     * @param array<mixed>|null $earlier
-     * @param array<mixed>|null $later
-     *
-     * @return array<mixed>|null
-     */
-    protected function union(?array $earlier, ?array $later): ?array
-    {
-        if ($later === null) {
-            return $earlier;
-        }
-        if ($earlier === null) {
-            return $later;
-        }
-
-        $result = $earlier;
-        foreach ($later as $item) {
-            if (!in_array($item, $result, true)) {
-                $result[] = $item;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Key by key: a key only one side has is taken, and one both have differently is a conflict
-     * resolved by the mode.
-     *
-     * @param array<string, mixed>|null $earlier
-     * @param array<string, mixed>|null $later
-     * @param list<string>              $conflicts
-     *
-     * @return array<string, mixed>|null
-     */
-    protected function extensions(?array $earlier, ?array $later, Mode $mode, array &$conflicts, string $prefix = ''): ?array
-    {
-        if ($later === null) {
-            return $earlier;
-        }
-        if ($earlier === null) {
-            return $later;
-        }
-
-        $result = $earlier;
-        foreach ($later as $key => $value) {
-            if (!array_key_exists($key, $result)) {
-                $result[$key] = $value;
-                continue;
-            }
-
-            if ($result[$key] != $value) {
-                $conflicts[] = $prefix . 'x.' . $key;
-                if ($mode === Mode::Last) {
-                    $result[$key] = $value;
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    protected static function isUnset(mixed $value): bool
-    {
-        return $value === null || Undefined::isDefault($value);
     }
 }

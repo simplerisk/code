@@ -346,14 +346,6 @@ function settings_catalog(): array
             'visibility'  => ['mode' => 'always'],
             'extra_name'  => 'separation',
         ],
-        'ucf_extra' => [
-            'label_key'   => 'UCFExtra',
-            'desc_key'    => 'UCFExtraDesc',
-            'path'        => 'admin/ucf.php',
-            'tags'        => ['extras'],
-            'visibility'  => ['mode' => 'always'],
-            'extra_name'  => 'ucf',
-        ],
         'vulnmgmt_activation' => [
             'label_key'   => 'VulnerabilityManagementExtra',
             'desc_key'    => 'VulnerabilityManagementExtraDesc',

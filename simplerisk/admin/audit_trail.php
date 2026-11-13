@@ -30,7 +30,7 @@
         add_session_check(['check_admin' => true]);
 
         // Include the SimpleRisk language file
-        require_once(language_file());
+        load_language_file();
 
         if (is_admin()) {
 

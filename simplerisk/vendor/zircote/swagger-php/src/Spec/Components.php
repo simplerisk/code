@@ -18,7 +18,8 @@ namespace OpenApi\Spec;
  * — and for grouping several components on one class.
  *
  * On a class it also makes a holder: each member declares a component of its own, and one
- * without a key is named after the member, the way a class names its own.
+ * without a key is named after the member, the way a class names its own. A component declared
+ * on a member needs the holder; without it, a keyed one is left out with a warning.
  *
  *   #[Components]
  *   class SharedComponents {
@@ -48,6 +49,7 @@ class Components extends AbstractAttribute
      * @param list<MediaType>          $mediaTypes      OpenAPI 3.2; earlier compilers omit them with a warning
      * @param array<string,mixed>|null $x               Vendor extensions (x-* properties)
      * @param list<Attachable>|null    $attachables     Reusable custom attachable attributes
+     * @param Fan|null                 $fan             Where this attribute goes when more than one attribute could hold it
      */
     public function __construct(
         public array $schemas = [],
@@ -62,8 +64,9 @@ class Components extends AbstractAttribute
         public array $mediaTypes = [],
         ?array $x = null,
         ?array $attachables = null,
+        ?Fan $fan = null,
     ) {
-        parent::__construct(x: $x, attachables: $attachables);
+        parent::__construct(x: $x, attachables: $attachables, fan: $fan);
     }
 
     public function isRoot(): bool

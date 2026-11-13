@@ -15,6 +15,21 @@ use OpenApi\Utils\SecurityRequirement;
  * Each requirement instance represents one entry in the security array (OR logic).
  * Multiple schemes within a single requirement represent AND logic.
  *
+ * Replaces the raw array form:
+ *
+ * ```php
+ * #[OA\Operation\Get(path: '/pets', security: [['apiKey' => []]])]
+ * ```
+ *
+ * with:
+ *
+ * ```php
+ * #[OA\Operation\Get(path: '/pets', security: [new OA\Security\Requirement(scheme: 'apiKey')])]
+ *
+ * // both schemes at once
+ * new OA\Security\Requirement(schemes: ['apiKey' => [], 'oauth' => ['read:pets']])
+ * ```
+ *
  * @see [Security Requirement Object](https://spec.openapis.org/oas/v3.1.1.html#security-requirement-object)
  */
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
@@ -26,6 +41,7 @@ class Requirement extends OA\AbstractAttribute
      * @param array<string,list<string>>|null $schemes     Map of scheme names to scopes (for AND logic with multiple schemes)
      * @param array<string,mixed>|null        $x           Vendor extensions (x-* properties)
      * @param list<OA\Attachable>|null        $attachables Reusable custom attachable attributes
+     * @param OA\Fan|null                     $fan         Where this attribute goes when more than one attribute could hold it
      */
     public function __construct(
         public ?string $scheme = null,
@@ -33,8 +49,9 @@ class Requirement extends OA\AbstractAttribute
         public ?array $schemes = null,
         ?array $x = null,
         ?array $attachables = null,
+        ?OA\Fan $fan = null,
     ) {
-        parent::__construct(x: $x, attachables: $attachables);
+        parent::__construct(x: $x, attachables: $attachables, fan: $fan);
     }
 
     public function merge(): array

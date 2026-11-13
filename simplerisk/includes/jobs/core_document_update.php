@@ -12,6 +12,72 @@ use SimpleRisk\DocumentHandlers\DocumentTooLargeException;
 // auto-load. The worker requires it at runtime, but declare it directly here too
 // so this consumer's defining file is always reachable (CLAUDE.md).
 require_once(realpath(__DIR__ . '/../promises.php'));
+// queue_task() / queue_update_status() live in queues.php, which functions.php
+// does not auto-load either (writing-queue-jobs §3).
+require_once(realpath(__DIR__ . '/../queues.php'));
+
+// The sweep: ids of documents that have at least one attached file still
+// awaiting keyword extraction and no pending/in_progress task covering them.
+//
+// Only real document attachments qualify. compliance_files is shared by
+// several entities (ref_type 'documents', 'exceptions', 'test_audit'), each
+// keying ref_id to its OWN table, so the same ref_id can name different
+// entities; and ref_id defaults to 0, so a file that was stored without a
+// parent (ref_id 0 / NULL) is not a document at all. Requiring
+// ref_type = 'documents' AND an existing documents row stops the sweep from
+// queueing a payload the job can never process — the SR-2411 loop, where a
+// single unattached file (ref_id 0) was queued, failed after its retries, and
+// re-queued forever (~350 failed tasks/day).
+//
+// Exposed on the returned array as 'sweep_document_ids' so it is testable
+// without queueing real work. A closure (not a named function) because
+// load_all_jobs() include()s this file more than once per process.
+$document_update_sweep_document_ids = function(PDO $db): array {
+    $stmt = $db->prepare("
+        SELECT DISTINCT cf.ref_id
+        FROM compliance_files cf
+        INNER JOIN documents d
+            ON d.id = cf.ref_id
+        LEFT JOIN queue_tasks qt
+            ON qt.task_type = 'core_document_update'
+            AND qt.status IN ('pending','in_progress')
+            AND CAST(JSON_EXTRACT(qt.payload, '$.document_id') AS UNSIGNED) = cf.ref_id
+        WHERE cf.ref_type = 'documents'
+          AND cf.ref_id > 0
+          AND cf.keywords IS NULL
+          AND cf.keyword_count = 0
+          AND cf.keyword_processing_error = 0
+          AND qt.id IS NULL
+        ORDER BY cf.ref_id
+    ");
+    $stmt->execute();
+    return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+};
+
+// Why a queued payload can never be processed, or null when it can. A task
+// that cannot be processed is permanently invalid — retrying it only burns the
+// backoff schedule and ends in 'failed', which the sweep (or the next document
+// save) would then re-queue — so queue_check completes it as a no-op instead.
+$document_update_unprocessable_reason = function(PDO $db, $document_id): ?string {
+    $id = filter_var($document_id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if ($id === false) {
+        return "invalid document_id " . var_export($document_id, true);
+    }
+
+    $stmt = $db->prepare("SELECT 1 FROM documents WHERE id = :id");
+    $stmt->execute([':id' => $id]);
+    if (!$stmt->fetchColumn()) {
+        return "document #{$id} no longer exists";
+    }
+
+    $stmt = $db->prepare("SELECT 1 FROM compliance_files WHERE ref_id = :id AND ref_type = 'documents' LIMIT 1");
+    $stmt->execute([':id' => $id]);
+    if (!$stmt->fetchColumn()) {
+        return "document #{$id} has no attached files";
+    }
+
+    return null;
+};
 
 // Shared tmp cleanup for both on_failure and the clean_tmp stage. Declared as a
 // closure (not a top-level function) because load_all_jobs() include()s this
@@ -42,6 +108,8 @@ $document_update_clean_tmp = function(PDO $db, array $payload): void {
 
 return [
     'type' => 'core_document_update',
+    // Tasks of this type may run on several queue workers at once (per document; the handler only builds that document's step chain).
+    'concurrency' => 'parallel',
 
     'on_failure' => function(PDO $db, array $promise, string $error_message, int $attempts) use ($document_update_clean_tmp) {
         $payload = json_decode($promise['payload'], true) ?? [];
@@ -51,7 +119,9 @@ return [
         // Flag only the not-yet-processed files of this bundle, so a permanent
         // chain failure stops the retry loop without clobbering siblings that
         // already extracted successfully (those have keywords set).
-        $stmt = $db->prepare("UPDATE compliance_files SET keyword_processing_error = 1 WHERE ref_id = :id AND keywords IS NULL");
+        // ref_type-scoped: the same ref_id can belong to an exception or a
+        // test audit, whose files this job never processes.
+        $stmt = $db->prepare("UPDATE compliance_files SET keyword_processing_error = 1 WHERE ref_id = :id AND ref_type = 'documents' AND keywords IS NULL");
         $stmt->execute([':id' => $document_id]);
 
         // Clean up any tmp files/data written before the failure.
@@ -67,21 +137,12 @@ return [
         if ($document_id) write_debug_log("Document Update: Successfully processed document #{$document_id}", "info");
     },
 
-    'task_check' => function(PDO $db) {
-        $stmt = $db->prepare("
-            SELECT DISTINCT cf.ref_id
-            FROM compliance_files cf
-            LEFT JOIN queue_tasks qt
-                ON qt.task_type = 'core_document_update'
-                AND qt.status IN ('pending','in_progress')
-                AND CAST(JSON_EXTRACT(qt.payload, '$.document_id') AS UNSIGNED) = cf.ref_id
-            WHERE cf.keywords IS NULL
-              AND cf.keyword_count = 0
-              AND cf.keyword_processing_error = 0
-              AND qt.id IS NULL
-        ");
-        $stmt->execute();
-        $document_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    // Not a framework hook — exposed so tests can exercise the sweep query
+    // without running task_check (which queues real tasks).
+    'sweep_document_ids' => $document_update_sweep_document_ids,
+
+    'task_check' => function(PDO $db) use ($document_update_sweep_document_ids) {
+        $document_ids = $document_update_sweep_document_ids($db);
 
         foreach ($document_ids as $document_id) {
             $queue_task_payload = [
@@ -89,16 +150,15 @@ return [
                 'document_id' => (int)$document_id,
                 'refresh' => true,
             ];
-            queue_task($db, 'core_document_update', $queue_task_payload, 100, 5, 3600);
+            queue_task($db, 'core_document_update', $queue_task_payload, CORE_DOCUMENT_UPDATE_PRIORITY, 5, 3600);
         }
 
         return !empty($document_ids);
     },
 
-    'queue_check' => function(array $task, PDO $db) {
+    'queue_check' => function(array $task, PDO $db) use ($document_update_unprocessable_reason) {
         $payload = json_decode($task['payload'], true) ?? [];
         $document_id = $payload['document_id'] ?? null;
-        if (!$document_id) return false;
 
         // Idempotency guard: if a live promise chain already exists for this
         // task, do not create another. Without this, the queue worker's
@@ -107,8 +167,24 @@ return [
         // promise_chain_exists() in promises.php.
         if (promise_chain_exists($db, (int)$task['id'], 'core_document_update')) {
             write_debug_log("Document Update: Live promise chain already exists for task #{$task['id']}; skipping duplicate creation.", "info");
-            return false;
+            // true: the chain is running, so this attempt succeeded (audit F10).
+            return true;
         }
+
+        // A payload that can never be processed (no/invalid document id, a
+        // document deleted since it was queued, or a document with no attached
+        // files) is abandoned: complete the task as a no-op. Returning false
+        // here would send it through the worker's retry-then-fail path, and a
+        // failed task no longer blocks the sweep from re-queueing it — the
+        // SR-2411 loop. Never set 'failed' ourselves (writing-queue-jobs Rule 2).
+        $reason = $document_update_unprocessable_reason($db, $document_id);
+        if ($reason !== null) {
+            queue_update_status($task['id'], 'completed', $db);
+            write_debug_log("Document Update: Task #{$task['id']} abandoned without processing: {$reason}.", "notice");
+            return true;
+        }
+        $document_id = (int)$document_id;
+        $payload['document_id'] = $document_id;
 
         $stages = [
             'fetch_document',
@@ -138,6 +214,14 @@ return [
                 $task['id'],
                 $db
             );
+            // A failed create (0) would give the next step no predecessor, so
+            // it would run at once, out of order. Cancel what was created and
+            // return false: the retry builds a complete chain.
+            if (!$prev_promise_id) {
+                write_debug_log("QUEUE_CHECK core_document_update: failed to create the '{$stage_name}' step for task #{$task['id']}; canceling the partial chain.", "error");
+                cancel_partial_stage_chain($db, (int)$task['id']);
+                return false;
+            }
         }
 
         queue_update_status($task['id'], 'in_progress', $db);
@@ -146,8 +230,8 @@ return [
 
     'stages' => [
 
-        // Fetch EVERY file attached to this ref_id. A document (audit bundle)
-        // can hold several files of mixed types under one ref_id; processing
+        // Fetch EVERY file attached to this document. A document can hold
+        // several files of mixed types under one ref_id; processing
         // only the first row left supported siblings unextracted (Defect 3).
         // Two-pass — list the rows first, then stream each file's content into
         // tmp storage — so we never hold every blob in memory at once.
@@ -157,7 +241,10 @@ return [
             if (!$document_id) throw new Exception("Missing document_id");
 
             try {
-                $stmt = $db->prepare("SELECT id, name, type FROM compliance_files WHERE ref_id = :id ORDER BY id");
+                // ref_type-scoped to match the sweep: the same ref_id can
+                // name an exception or a test audit, whose files are not
+                // part of this document.
+                $stmt = $db->prepare("SELECT id, name, type FROM compliance_files WHERE ref_id = :id AND ref_type = 'documents' ORDER BY id");
                 $stmt->execute([':id' => $document_id]);
                 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

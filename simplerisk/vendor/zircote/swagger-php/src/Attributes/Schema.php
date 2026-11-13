@@ -11,6 +11,8 @@ use OpenApi\Undefined;
 
 /**
  * @phpstan-import-type EnumValue from \OpenApi\Spec\Schema
+ *
+ * @deprecated since 7.0, removed in 8.0 - use `OpenApi\Spec\Schema` instead
  */
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::TARGET_PROPERTY | \Attribute::IS_REPEATABLE)]
 class Schema extends OA\Schema
@@ -78,7 +80,7 @@ class Schema extends OA\Schema
         int|null $maxContains = null,
         array|null $prefixItems = null,
         array|null $patternProperties = null,
-        array|null $unevaluatedProperties = null,
+        bool|array|null $unevaluatedProperties = null,
         mixed $unevaluatedItems = Undefined::UNDEFINED,
         mixed $dependencies = Undefined::UNDEFINED,
         array|null $dependentRequired = null,

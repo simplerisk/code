@@ -11,7 +11,7 @@ require_once(realpath(__DIR__ . '/../../../includes/self_assessments.php'));
 // directly rather than lean on self_assessments.php's transitive include.
 require_once(realpath(__DIR__ . '/../../../includes/assessments.php'));
 
-require_once(language_file());
+load_language_file();
 
 /*******************************************
  * FUNCTION: API V2 SELF-ASSESSMENT        *

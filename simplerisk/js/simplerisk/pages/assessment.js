@@ -594,9 +594,17 @@ function applyDraftFileState(savedFiles, committedInputs, pendingDeletions, toke
 }
 
 /**
+ * Sentinel "t_q_p" key for the questionnaire-level file uploader, which isn't
+ * scoped to any question. Exported as a global so other inline scripts on this
+ * page (e.g. the questionnaire fill form's per-question dirty-tracking) can
+ * compare against it instead of repeating the literal '0_0_0'.
+ */
+var QUESTIONNAIRE_LEVEL_UPLOADER_KEY = '0_0_0';
+
+/**
  * Derive an uploader's "t_q_p" key. Per-question uploaders carry a hidden
  * .file_name input with data-file="question_file[t_q_p]"; the questionnaire-level
- * uploader has none and maps to "0_0_0".
+ * uploader has none and maps to QUESTIONNAIRE_LEVEL_UPLOADER_KEY.
  */
 function uploaderKey($up) {
     var df = $up.find('.file_name').data('file');
@@ -604,5 +612,99 @@ function uploaderKey($up) {
         var m = /question_file\[(.+?)\]/.exec(df);
         if (m) { return m[1]; }
     }
-    return '0_0_0';
+    return QUESTIONNAIRE_LEVEL_UPLOADER_KEY;
+}
+
+/**
+ * Pure post-save reconciliation decision for the questionnaire fill form's
+ * per-question autosave (extras/assessments/index.php's saveDraft()), lifted
+ * out of its AJAX success callback so it can be exercised directly with plain
+ * data instead of mocking jQuery/$.ajax (CLAUDE.md: "refactor the testable
+ * decision out into a pure helper and test that"). No DOM access, no mutation
+ * of its inputs. Lives here (not inline in index.php) so it is reachable by
+ * name from a Playwright page.evaluate() call, alongside this file's other
+ * shared pure helpers (applyDraftFileState, uploaderKey).
+ *
+ * A committed question clears from dirty-tracking only when BOTH:
+ *  - its seq number still matches the snapshot taken when this request was
+ *    built (nothing re-dirtied it while the request was in flight), AND
+ *  - the server's `acceptedQuestions` list confirms it was actually processed
+ *    this request (the server caps changed_questions[] at 50 server-side, and
+ *    separately rejects a key that fails validation; either way an
+ *    unacknowledged key must stay dirty and resend on the next tick rather
+ *    than being silently dropped).
+ *
+ * @param {{dirtyQuestions: Map<string, number>, pendingFileDeletions: Object<string, string[]>, questionnaireLevelFileDirty: number, assetsDirty: number}} state
+ *        Current live state (read-only here).
+ * @param {{questionEntries: Array<[string, number]>, deletionEntries: Array<[string, string[]]>, questionnaireLevelFileDirty: number, assetsDirty: number}} committed
+ *        Snapshot of exactly what THIS request sent.
+ * @param {string[]} acceptedQuestions Server-confirmed processed keys (response.data.accepted_questions).
+ * @returns {{clearedQuestionKeys: string[], remainingPendingDeletions: Object<string, string[]>, clearQuestionnaireLevelFileDirty: boolean, clearAssetsDirty: boolean}}
+ */
+function reconcileAfterSave(state, committed, acceptedQuestions) {
+    var acceptedSet = {};
+    (acceptedQuestions || []).forEach(function(k) { acceptedSet[k] = true; });
+
+    var clearedQuestionKeys = [];
+    committed.questionEntries.forEach(function(entry) {
+        var key = entry[0], snapshotSeq = entry[1];
+        if (state.dirtyQuestions.get(key) === snapshotSeq && acceptedSet[key]) {
+            clearedQuestionKeys.push(key);
+        }
+    });
+
+    var remainingPendingDeletions = {};
+    Object.keys(state.pendingFileDeletions).forEach(function(k) {
+        remainingPendingDeletions[k] = (state.pendingFileDeletions[k] || []).slice();
+    });
+    committed.deletionEntries.forEach(function(entry) {
+        var key = entry[0], committedNames = entry[1];
+        var remaining = (remainingPendingDeletions[key] || []).filter(function(u) {
+            return committedNames.indexOf(u) === -1;
+        });
+        if (remaining.length > 0) {
+            remainingPendingDeletions[key] = remaining;
+        } else {
+            delete remainingPendingDeletions[key];
+        }
+    });
+
+    return {
+        clearedQuestionKeys: clearedQuestionKeys,
+        remainingPendingDeletions: remainingPendingDeletions,
+        clearQuestionnaireLevelFileDirty: !!(committed.questionnaireLevelFileDirty && state.questionnaireLevelFileDirty === committed.questionnaireLevelFileDirty),
+        clearAssetsDirty: !!(committed.assetsDirty && state.assetsDirty === committed.assetsDirty),
+    };
+}
+
+/**
+ * Resolves an <input>/<select>/<textarea>'s `name` attribute to the
+ * "t_q_p" (templateId_questionId_parentId) key of the question it
+ * belongs to, or null if the field isn't part of a question (e.g.
+ * assets_asset_groups[], or the questionnaire-level file[] input --
+ * that one has its own questionnaireLevelFileDirty flag instead, since
+ * it isn't scoped to any single question).
+ *
+ * Three field shapes resolve to a key: answer[t][q_p] / answer[t][q_p][]
+ * (radio/checkbox), additional_information[t][q_p] (every question
+ * type's textarea), and question_file[t_q_p][] (per-question file
+ * input, extras/assessments/index.php:15341) -- the first two carry
+ * "t" and "q_p" as separate bracket groups and are joined with an
+ * underscore here; question_file[]'s bracket content is already the
+ * full "t_q_p" string (extras/assessments/index.php:15341-15342), so
+ * no reassembly is needed there. All three end up in the same "t_q_p"
+ * format parse_question_file_key() (includes/question_file_utils.php)
+ * already parses server-side.
+ *
+ * A pure, DOM-free parser -- moved here (not inline in index.php)
+ * alongside reconcileAfterSave()/uploaderKey() so it is reachable by
+ * name from a Playwright page.evaluate() call for direct testing.
+ */
+function questionKeyFromFieldName(name) {
+    if (!name) { return null; }
+    var m = /^(?:answer|additional_information)\[(\d+)\]\[(\d+_\d+)\](?:\[\])?$/.exec(name);
+    if (m) { return m[1] + '_' + m[2]; }
+    var fm = /^question_file\[(\d+_\d+_\d+)\](?:\[\])?$/.exec(name);
+    if (fm) { return fm[1]; }
+    return null;
 }

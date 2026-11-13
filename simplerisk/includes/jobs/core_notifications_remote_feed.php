@@ -10,6 +10,8 @@ require_once(realpath(__DIR__ . '/../queues.php'));
 
 return [
     'type' => 'core_notifications_remote_feed',
+    // One task of this type at a time across all queue workers (periodic: syncs the shared remote feed).
+    'concurrency' => 'serial',
 
     /************************************************************
      * FUNCTION: task_check

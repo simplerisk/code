@@ -15,6 +15,33 @@ use OpenApi\Spec as OA;
  * bundles property and encoding together. The `MediaTypes` augmenter promotes the nested
  * encoding to the parent MediaType automatically.
  *
+ * Allows to shorten this:
+ *
+ * ```php
+ * new OA\MediaType\Json(
+ *     properties: [
+ *         new OA\Property(property: 'avatar', schema: new OA\Schema(type: 'object')),
+ *     ],
+ *     encoding: [
+ *         new OA\Encoding(encoding: 'avatar', contentType: 'image/png'),
+ *     ],
+ * )
+ * ```
+ *
+ * to this:
+ *
+ * ```php
+ * new OA\MediaType\Json(
+ *     properties: [
+ *         new OA\Property\Encoded(
+ *             property: 'avatar',
+ *             schema: new OA\Schema(type: 'object'),
+ *             encoding: new OA\Encoding(contentType: 'image/png'),
+ *         ),
+ *     ],
+ * )
+ * ```
+ *
  * @see [Encoding Object](https://spec.openapis.org/oas/v3.1.1.html#encoding-object)
  */
 #[\Attribute(\Attribute::TARGET_PROPERTY | \Attribute::TARGET_METHOD | \Attribute::TARGET_PARAMETER | \Attribute::TARGET_CLASS_CONSTANT | \Attribute::IS_REPEATABLE)]
@@ -27,6 +54,7 @@ class Encoded extends OA\Property
      * @param OA\Schema|null           $schema      The schema defining the property type and constraints
      * @param array<string,mixed>|null $x           Vendor extensions (x-* properties)
      * @param list<OA\Attachable>|null $attachables Reusable custom attachable attributes
+     * @param OA\Fan|null              $fan         Where this attribute goes when more than one attribute could hold it
      */
     public function __construct(
         ?string $property = null,
@@ -34,8 +62,9 @@ class Encoded extends OA\Property
         ?OA\Encoding $encoding = null,
         ?array $x = null,
         ?array $attachables = null,
+        ?OA\Fan $fan = null,
     ) {
-        parent::__construct(property: $property, schema: $schema, x: $x, attachables: $attachables);
+        parent::__construct(property: $property, schema: $schema, x: $x, attachables: $attachables, fan: $fan);
 
         $this->encoding = $encoding;
     }

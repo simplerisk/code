@@ -8,8 +8,9 @@
 // ajax errors globally instead of popping a UI-blocking modal for what is
 // normally a transient, non-fatal condition (a denied cross-team request,
 // a request aborted by the user navigating away, a dropped connection).
-// error.dt still fires for anyone who wants to react to a specific table's
-// failure; this only suppresses the default alert() side effect.
+// The 'dt-error.dt' event (DataTables 3's name for it) still fires for anyone who
+// wants to react to a specific table's failure; this only suppresses the default
+// alert() side effect. header.php listens for it to show a non-blocking toast.
 $(function () {
     if ($.fn.dataTable) {
         $.fn.dataTable.ext.errMode = 'none';

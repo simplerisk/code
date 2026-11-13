@@ -1,4 +1,5 @@
 <?php
+// @phan-file-suppress PhanDeprecatedClass -- swagger-php 7 deprecates the OpenApi\Attributes classes (removed in 8.0); move these to OpenApi\Spec before upgrading to swagger-php 8
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
@@ -13,7 +14,7 @@ $permissions = array(
 );
 add_session_check($permissions);
 
-require_once(language_file());
+load_language_file();
 
 use OpenApi\Annotations\Schema;
 use OpenApi\Annotations\Property;
@@ -115,6 +116,11 @@ function autoloader(string $name)
     {
         require_once realpath(__DIR__ . '/data_integrity.php');
     }
+
+    if (file_exists(realpath(__DIR__ . '/queue_monitor.php')))
+    {
+        require_once realpath(__DIR__ . '/queue_monitor.php');
+    }
 }
 
 // Include required functions file
@@ -138,6 +144,7 @@ $scan_directories = [
     realpath(__DIR__ . '/notifications.php'),
     realpath(__DIR__ . '/self_assessments.php'),
     realpath(__DIR__ . '/data_integrity.php'),
+    realpath(__DIR__ . '/queue_monitor.php'),
 ];
 
 // If the Secure Controls Framework (SCF) Extra is installed

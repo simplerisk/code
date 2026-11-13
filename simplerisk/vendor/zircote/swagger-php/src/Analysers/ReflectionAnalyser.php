@@ -22,6 +22,8 @@ use OpenApi\Utils\TokenScanner;
  *
  * Due to the nature of reflection, this requires all related classes to be auto-loadable.
  *
+ * @deprecated since 7.0, removed in 8.0
+ *
  * @phpstan-import-type ClassDefinition from Analysis
  * @phpstan-import-type InterfaceDefinition from Analysis
  * @phpstan-import-type TraitDefinition from Analysis
@@ -87,10 +89,22 @@ class ReflectionAnalyser implements AnalyserInterface
             return $analysis;
         }
 
+        if (!is_file($filename)) {
+            $analysis->context?->logger?->warning("Skipping {$fqdn}: its source file {$filename} cannot be read");
+
+            return $analysis;
+        }
+
         $scanner = new TokenScanner();
         $fileDetails = $scanner->scanFile($filename);
 
-        $this->analyzeFqdn($fqdn, $analysis, $fileDetails[$fqdn]);
+        // the scanner keys a class in the global namespace with its leading backslash
+        $details = $fileDetails[$fqdn] ?? $fileDetails['\\' . $fqdn] ?? null;
+        if ($details === null) {
+            return $analysis;
+        }
+
+        $this->analyzeFqdn($fqdn, $analysis, $details);
 
         return $analysis;
     }

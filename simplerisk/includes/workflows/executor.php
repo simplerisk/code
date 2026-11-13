@@ -207,13 +207,15 @@ function execute_workflow_execution(int $execution_id, PDO $db, bool $inline = f
                     $inputs, [], null, false, $db);
 
                 require_once(realpath(__DIR__ . '/../queues.php'));
+                // Priority 50, like the execution that queued it (0 when omitted,
+                // which left actions waiting behind every other task).
                 queue_task($db, 'core_workflow_action_execute', [
                     'execution_id' => $execution_id,
                     'step_id'      => $step_id,
                     'action_type'  => $action_type,
                     'inputs'       => $inputs,
                     'context'      => $context,
-                ]);
+                ], 50);
 
                 // Async actions produce no output for downstream resolution
                 $step_outputs[$current_node_id] = [];

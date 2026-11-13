@@ -459,6 +459,11 @@ var ExceptionsGrid = (function ($) {
             window.history.replaceState(null, '', window.location.pathname + (query ? '?' + query : ''));
         });
         syncSortIcons();
+        // The 'draw' handler above is attached after DataTable() has already
+        // run its initial draw, so restore the rebuilt checkboxes from
+        // selectedIds here -- otherwise every reload (e.g. approving a
+        // different exception) renders the surviving selection unchecked.
+        syncCheckboxes();
 
         wireSelection(tableEl);
     }

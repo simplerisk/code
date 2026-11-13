@@ -9,6 +9,7 @@ render_header_and_sidebar(['multiselect', 'CUSTOM:permissions-widget.js'], ['che
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 
 // If a user was posted
 if (isset($_POST['user']))
@@ -18,6 +19,25 @@ if (isset($_POST['user']))
 }
 // Otherwise an admin is not editing itself
 else $admin_editing_itself = false;
+
+// An administrator unlocking a locked-out account. The flag is only ever SET by the failed-login counter
+// (an administrator keeps someone out by disabling the account), so this is the one thing the page does
+// with it. Unlocking does not save the rest of the form, and never re-enables a disabled account.
+if (isset($_POST['unlock_user']) && isset($_POST['user']))
+{
+    $unlock_user_id = (int)$_POST['user'];
+    $unlock_target = $unlock_user_id ? get_user_by_id($unlock_user_id) : false;
+
+    if ($unlock_target) {
+        $unlocked = unlock_user_account(
+            $unlock_user_id,
+            'Username "' . $unlock_target['username'] . '" was unlocked by the "' . ($_SESSION['user'] ?? 'unknown') . '" user.',
+            (int)($_SESSION['uid'] ?? 0)
+        );
+
+        set_alert(true, $unlocked ? "good" : "warn", $unlocked ? $lang['AccountUnlocked'] : $lang['AccountWasNotLocked']);
+    }
+}
 
 // If the user has been updated
 if (isset($_POST['update_user']) && isset($_POST['user']))
@@ -29,14 +49,22 @@ if (isset($_POST['update_user']) && isset($_POST['user']))
     if ($user_id) {
 
         // Get the submitted values
-        $lockout          = isset($_POST['lockout']) ? '1' : '0';
+        // Not taken from the form any more: the page has no way to lock an account. The current state is
+        // kept, so saving the form never locks or unlocks anyone (use Unlock, or Disable to keep someone out).
+        $current_user = get_user_by_id($user_id);
+        $lockout          = !empty($current_user['lockout']) ? '1' : '0';
         $type             = $_POST['type'];
         $name             = $_POST['name'];
         $email            = $_POST['email'];
         $manager          = (int)$_POST['manager'];
         $teams            = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
         $role_id          = (int)(isset($_POST['role']) ? $_POST['role'] : 0);
-        $language         = get_name_by_value("languages", (int)$_POST['languages']);
+        // Leaving the dropdown on "--" keeps the user's stored language instead of overwriting it with
+        // a blank one (SD-916)
+        $posted_language  = (int)($_POST['languages'] ?? 0);
+        $language         = $posted_language > 0
+            ? get_name_by_value("languages", $posted_language)
+            : ($current_user['lang'] ?? '');
         $multi_factor         = (int)(isset($_POST['multi_factor']) ? $_POST['multi_factor'] : 0);
         $change_password      = (int)(isset($_POST['change_password']) ? $_POST['change_password'] : 0);
         $admin            = isset($_POST['admin']) ? '1' : '0';
@@ -48,8 +76,8 @@ if (isset($_POST['update_user']) && isset($_POST['user']))
             // Get the new role
             $role = get_role($role_id);
 
-            // If the role was changed to a non-admin role, the user removed its own admin permission or trying to lock itself out then we can't let this change be saved
-            $admin_role_issue = !isset($role['admin']) || !$role['admin'] || !$admin || $lockout;
+            // If the role was changed to a non-admin role, the user removed its own admin permission then we can't let this change be saved
+            $admin_role_issue = !isset($role['admin']) || !$role['admin'] || !$admin;
         }
 
         if (!$admin_role_issue) {
@@ -112,7 +140,9 @@ if (isset($_POST['user']))
         $name = $user_info['name'];
         $email = $user_info['email'];
         $last_login = $user_info['last_login'];
-        $language = (int)$user_info['lang'];
+        // user.lang holds the language's code (e.g. 'en'), not a languages-table id; casting it to int
+        // gave 0 and left the dropdown on "--"
+        $language = (string)$user_info['lang'];
         $teams = $user_info['teams'];
         $role_id = $user_info['role_id'];
         $admin = $user_info['admin'];
@@ -160,10 +190,13 @@ else
             <div class="row">
                 <form name="update_user" method="post" action="">
                     <input type="hidden" name="user" value="<?= isset($_POST['user']) ? (int)$_POST['user'] : '' ?>"/>
-                    <div class="col-12">
-                        <input class="form-check-input" name="lockout" id="lockout" type="checkbox"<?php if ($lockout) echo " checked" ?> />
-                        <label class="form-check-label"  for="lockout">&nbsp;&nbsp;&nbsp; <?php echo $lang['AccountLockedOut']; ?></label>
+                    <?php if (!empty($lockout)) { ?>
+                    <div class="col-12 mb-2">
+                        <span class="badge text-bg-danger"><?php echo $escaper->escapeHtml($lang['AccountLockedOut']); ?></span>
+                        <button type="submit" form="unlock_user_form" name="unlock_user" value="1" class="btn btn-secondary btn-sm ms-2"><?php echo $escaper->escapeHtml($lang['UnlockAccount']); ?></button>
+                        <div class="form-text"><?php echo $escaper->escapeHtml($lang['AccountLockedOutHelp']); ?></div>
                     </div>
+                    <?php } ?>
                     <div class="col-12">
                         <input name="change_password" id="change_password" <?php if(isset($change_password) && $change_password == 1) echo "checked"; ?> class="form-check-input" type="checkbox" value="1" />
                         <label for="change_password" class="form-check-label">  &nbsp;&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['RequirePasswordChangeOnLogin']); ?> </label>
@@ -348,6 +381,12 @@ else
                         </div>
                     </div>
                 </form>
+                <?php if (!empty($lockout)) { ?>
+                <?php // Separate form (the Unlock button above points at it via form=) so the Update button stays the update form's only submitter and Enter in a text field saves the edits. ?>
+                <form name="unlock_user_form" id="unlock_user_form" method="post" action="">
+                    <input type="hidden" name="user" value="<?= isset($_POST['user']) ? (int)$_POST['user'] : '' ?>"/>
+                </form>
+                <?php } ?>
             </div>
         </div>
     </div>

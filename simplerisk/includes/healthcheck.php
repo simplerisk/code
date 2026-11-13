@@ -5,10 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once(language_file());
+load_language_file();
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
+require_once(realpath(__DIR__ . '/update_channel.php'));
 require_once(realpath(__DIR__ . '/data_integrity.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
@@ -527,7 +528,7 @@ function check_web_connectivity()
 	set_proxy_stream_context($method, $header);
 
 	// URLs to check
-	$urls = array("https://licensing.simplerisk.com/healthz", "https://scf.simplerisk.com", "https://services.nvd.nist.gov", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
+	$urls = array(update_channel_service_url('licensing', '/healthz'), "https://scf.simplerisk.com", "https://services.nvd.nist.gov", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
 
 	// Create an empty array
 	$array = array();
@@ -535,20 +536,22 @@ function check_web_connectivity()
 	// Check the URLs
 	foreach ($urls as $url)
 	{
-		write_debug_log("Healthcheck for URL: " . $url, 'info');
+		// The licensing URL may be a config.php override carrying credentials
+		$shown = update_channel_redact_url($url);
+		write_debug_log("Healthcheck for URL: " . $shown, 'info');
 
 		// Get the headers for the URL
 		$file_headers = @get_headers($url, 1);
 
 		if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
 		{
-			write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
-			$array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to " . $url . ".");
+			write_debug_log("SimpleRisk was unable to connect to " . $shown, 'warning');
+			$array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to " . $shown . ".");
 		}
 		else
 		{
-			write_debug_log("SimpleRisk connected to " . $url, 'info');
-			$array[] = array("result" => 1, "text" => "SimpleRisk connected to " . $url . ".");
+			write_debug_log("SimpleRisk connected to " . $shown, 'info');
+			$array[] = array("result" => 1, "text" => "SimpleRisk connected to " . $shown . ".");
 		}
 	}
 
@@ -656,7 +659,8 @@ function check_php_extensions()
 	// List of extensions required by SimpleRisk Core. Extensions only needed by the
 	// Custom Authentication Extra (ldap, tokenizer, ...) are checked separately in
 	// check_custom_authentication_php_extensions().
-	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "dom", "curl", "posix", "zip", "gd", "intl");
+	// fileinfo is not a PHP default on every build. Without it uploads cannot be type-checked and are refused.
+	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "dom", "curl", "posix", "zip", "gd", "intl", "fileinfo");
 
 	// Create an empty array
 	$array = array();

@@ -30,7 +30,9 @@ define('NOTIFICATION_AUDIENCE_TYPES',        ['user', 'team', 'role', 'all_admin
 // Subset of NOTIFICATION_AUDIENCE_TYPES used by remote feed ingest (Task 8).
 define('NOTIFICATION_REMOTE_AUDIENCE_TYPES', ['all_admin', 'all_user']);
 // Valid source values for notifications.
-define('NOTIFICATION_SOURCES',              ['workflow', 'remote_promo', 'license', 'data_integrity']);
+define('NOTIFICATION_SOURCES',              ['workflow', 'remote_promo', 'license', 'data_integrity', 'upgrade']);
+// Fixed page the post-upgrade notification links to; release notes are published manually.
+define('NOTIFICATION_RELEASE_NOTES_URL',    'https://www.simplerisk.com/product-releases');
 define('NOTIFICATION_MAX_LINK_LENGTH',       2048);
 define('NOTIFICATION_MAX_BULK_IDS',          100);
 
@@ -397,6 +399,45 @@ function get_notification_counts_for_user(int $user_id, PDO $db): array
 }
 
 /**
+ * Resolves the stored title/body of a key-based notification to the viewer's language.
+ *
+ * Only the 'upgrade' source stores text this way, because the row is written once
+ * but read by users of every locale: "lang:<Key>" or "lang:<Key>|<version>". Any
+ * other source -- including remote feed text, which must never be able to pull
+ * arbitrary language strings -- and any key missing from $lang is returned as stored.
+ * The result is plain text: the UI escapes it when it renders.
+ *
+ * Pure (no I/O): $lang is passed in.
+ */
+function resolve_notification_text(string $source, string $text, array $lang): string
+{
+    if ($source !== 'upgrade' || strncmp($text, 'lang:', 5) !== 0) {
+        return $text;
+    }
+
+    $parts = explode('|', substr($text, 5), 2);
+    $key   = $parts[0];
+
+    if (!isset($lang[$key]) || !is_string($lang[$key])) {
+        return $text;
+    }
+
+    return str_replace('{$version}', $parts[1] ?? '', $lang[$key]);
+}
+
+/**
+ * Builds the stored form of a key-based notification text: "lang:<Key>" or
+ * "lang:<Key>|<arg>", the format resolve_notification_text() parses. Producers
+ * use this rather than concatenating the string, so the two ends cannot drift.
+ *
+ * Pure (no I/O).
+ */
+function notification_lang_ref(string $key, ?string $arg = null): string
+{
+    return 'lang:' . $key . ($arg !== null ? '|' . $arg : '');
+}
+
+/**
  * Returns notifications for the given user filtered by tab.
  *
  * Returns ['items' => [...], 'total' => int, 'limit' => int, 'offset' => int].
@@ -439,9 +480,12 @@ function get_notifications_for_user(int $user_id, string $tab, int $limit, int $
     $list_stmt->execute([':uid' => $user_id]);
     $rows = $list_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    global $lang;
     foreach ($rows as &$r) {
         $r['id']       = (int)$r['id'];
         $r['is_promo'] = (bool)$r['is_promo'];
+        $r['title']    = resolve_notification_text($r['source'], (string)$r['title'], $lang ?? []);
+        $r['body']     = resolve_notification_text($r['source'], (string)$r['body'], $lang ?? []);
     }
     unset($r);
 
